@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport"
+		content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>DXCharts Lite Colors</title>
+	<link rel="stylesheet" href="../../style.css">
+	<script src="https://webdev.prosp.devexperts.com:8095/dxcharts-lite-cdn/dxchart.min.js"></script>
+</head>
+
+<body>
+	<div class="container">
+		<h1>DXCharts Lite custom colors example</h1>
+		<button class="btn" type="button" id="theme_1">Theme №1</button>
+		<button class="btn" type="button" id="theme_2">Theme №2</button>
+		<button class="btn" type="button" id="theme_3">Theme №3</button>
+		<br>
+		<br>
+		<div id="chart" style="height: 80vh"></div>
+	</div>
+
+	<script type="module">
+		import generateCandlesData from 'https://webdev.prosp.devexperts.com:8095/dxcharts-lite-cdn/chart/utils/candles-generator.utils.js';
+
+		const container = document.getElementById('chart');
+		const chartInstance = DXChart.createChart(container);
+
+		const candles = generateCandlesData({ quantity: 1000, withVolume: true });
+		chartInstance.chartComponent.setMainSeries({ candles });
+
+		chartInstance.watermarkComponent.setWaterMarkData({
+			firstRow: "My Instrument",
+			secondRow: "Some description",
+			thirdRow: "Some very useful message",
+		});
+		chartInstance.watermarkComponent.setWaterMarkVisible(true);
+
+		const colorsConfig1 = {
+			xAxis: {
+				backgroundColor: "#91ffde",
+				labelTextColor: "#318b6f",
+			},
+			yAxis: {
+				backgroundColor: "#fff668",
+				labelTextColor: "#99922a",
+			},
+			xAxis: {
+				backgroundColor: "#91ffde",
+				labelTextColor: "#318b6f",
+			},
+			yAxis: {
+				backgroundColor: "#ffd7d7",
+				labelTextColor: "#99922a",
+			},
+			candleTheme: {
+				upColor: "#5ba500",
+				downColor: "#352fff",
+				upWickColor: "#5ba500",
+				downWickColor: "#352fff",
+			},
+			chartAreaTheme: {
+				backgroundMode: "gradient",
+				backgroundColor: "#61acff",
+				backgroundGradientTopColor: "#fcffac",
+				backgroundGradientBottomColor: "#fbacff",
+				axisColor: "yellow",
+				gridColor: "#318b6f",
+			},
+			waterMarkTheme: {
+				firstRowColor: "#2ba3ff",
+				secondRowColor: "#720c69",
+				thirdRowColor: "#bd4000",
+			},
+			crossTool: {
+				lineColor: "#a100ff",
+				labelBoxColor: "#a100ff",
+				labelTextColor: "#d58eff",
+			}
+		};
+
+		const colorsConfig2 = {
+			candleTheme: {
+				upColor: '#0fa68a',
+				downColor: '#e91d25',
+				downWickColor: '#e91d25',
+				upWickColor: '#0fa68a',
+				noneColor: '#4c5458',
+			},
+			barTheme: {
+				upColor: '#0fa68a',
+				downColor: '#e91d25',
+				noneColor: '#4c5458',
+			},
+			lineTheme: {
+				upColor: '#0fa68a',
+				downColor: '#e91d25',
+				noneColor: '#4c5458',
+			},
+			equivolumeTheme: {
+				upColor: '#0fa68a',
+				downColor: '#e91d25',
+				noneColor: '#4c5458',
+			},
+			scatterPlot: {
+				mainColor: '#ffffff',
+			},
+			areaTheme: {
+				lineColor: 'rgba(226,61,25,1)',
+				startColor: 'rgba(226,61,25,0.8)',
+				stopColor: 'rgba(226,61,25,0)',
+			},
+			baseLineTheme: {
+				lowerSectionStrokeColor: '#D92C40',
+				upperSectionStrokeColor: '#4D9953',
+				lowerSectionFillColor: 'rgba(217,44,64,0.07)',
+				upperSectionFillColor: 'rgba(77,153,83,0.07)',
+				baselineColor: 'rgba(255, 255, 255, 0.15)',
+			},
+			histogram: {
+				upCap: 'rgba(51, 153, 51, 0.4)',
+				upBottom: 'rgba(51, 153, 51, 0.1)',
+				upBright: 'rgba(77, 153, 83, 1)',
+				downCap: 'rgba(153, 51, 51, 0.4)',
+				downBottom: 'rgba(153, 51, 51, 0.1)',
+				downBright: 'rgba(217, 44, 64, 1)',
+				noneCap: 'rgba(255,255,255,0.4)',
+				noneBottom: 'rgba(255,255,255,0.1)',
+				noneBright: 'rgba(255,255,255,1)',
+			},
+			chartAreaTheme: {
+				backgroundMode: 'regular',
+				backgroundGradientTopColor: '#ffffff',
+				backgroundGradientBottomColor: '#ffffff',
+				backgroundColor: '#ffffff',
+				gridColor: '#373d40',
+			},
+			crossTool: {
+				lineColor: 'rgb(59, 59, 59)',
+				labelBoxColor: 'rgb(59, 59, 59)',
+				labelTextColor: '#aeb1b3',
+			},
+			waterMarkTheme: {
+				firstRowColor: 'rgba(0, 0, 0, .3)',
+				secondRowColor: 'rgba(0, 0, 0, .3)',
+				thirdRowColor: 'rgba(0, 0, 0, .3)',
+			},
+			newsTheme: {
+				backgroundColor: 'rgba(100, 217, 245, 1)',
+			},
+			xAxis: {
+				backgroundColor: '#ffffff',
+				labelTextColor: "#318b6f",
+			},
+			yAxis: {
+				backgroundColor: '#ffffff',
+				labelTextColor: "#99922a",
+			},
+		}
+
+		const colorsConfig3 = {
+			candleTheme: {
+				upColor: "rgba(77,153,83,1)",
+				downColor: "rgba(217,44,64,1)",
+				noneColor: "rgba(255,255,255,1)",
+				upWickColor: "rgba(77,153,83,1)",
+				downWickColor: "rgba(217,44,64,1)"
+			},
+			barTheme: {
+				upColor: "rgba(77,153,83,1)",
+				downColor: "rgba(217,44,64,1)",
+				noneColor: "rgba(255,255,255,1)"
+			},
+			lineTheme: {
+				upColor: "rgba(77,153,83,1)",
+				downColor: "rgba(217,44,64,1)",
+				noneColor: "rgba(255,255,255,1)"
+			},
+			equivolumeTheme: {
+				upColor: "rgba(77,153,83,1)",
+				downColor: "rgba(217,44,64,1)",
+				noneColor: "rgba(255,255,255,1)"
+			},
+			chartAreaTheme: {
+				backgroundMode: "gradient",
+				backgroundColor: "rgba(20,20,19,1)",
+				backgroundGradientBottomColor: "rgba(20,20,19,1)",
+				backgroundGradientTopColor: "rgba(20,20,19,1)",
+				gridColor: "rgba(37,37,36,1)"
+			},
+			scatterPlot: {
+				mainColor: "rgba(255,255,255,1)"
+			},
+			areaTheme: {
+				lineColor: "rgba(127,120,214,1)",
+				startColor: "rgba(103,119,190,0.4)",
+				stopColor: "rgba(103,119,190,0.1)"
+			},
+			baseLineTheme: {
+				lowerSectionStrokeColor: "rgba(217,44,64,1)",
+				upperSectionStrokeColor: "rgba(77,153,83,1)",
+				lowerSectionFillColor: "rgba(217, 44, 64, 0.07)",
+				upperSectionFillColor: "rgba(77, 153, 83, 0.07)",
+				baselineColor: "rgba(55,55,54,1)"
+			},
+			histogram: {
+				upCap: "rgba(77,153,83,1)",
+				upBottom: "rgba(77,153,83,0.1)",
+				upBright: "rgba(77,153,83,0.4)",
+				downCap: "rgba(217,44,64,1)",
+				downBottom: "rgba(217,44,64,0.1)",
+				downBright: "rgba(217,44,64,0.4)",
+				noneCap: "rgba(255,255,255,1)",
+				noneBottom: "rgba(255,255,255,0.1)",
+				noneBright: "rgba(255,255,255,0.4)"
+			},
+			crossTool: {
+				lineColor: "rgba(107,96,86,1)",
+				labelBoxColor: "rgba(107,96,86,1)",
+				labelTextColor: "rgba(255,255,255,1)"
+			},
+			waterMarkTheme: {
+				firstRowColor: "rgba(255,255,255,0.2)",
+				secondRowColor: "rgba(255,255,255,0.2)",
+				thirdRowColor: "rgba(255,255,255,0.2)"
+			},
+			newsTheme: {
+				backgroundColor: "rgba(100, 217, 245, 1)"
+			},
+			xAxis: {
+				labelTextColor: "rgba(128,128,128,1)",
+				backgroundColor: "rgba(20,20,19,1)"
+			},
+			yAxis: {
+				labelTextColor: "rgba(128,128,128,1)",
+				backgroundColor: "rgba(20,20,19,1)",
+			}
+		}
+
+		const theme1Btn = document.querySelector('#theme_1');
+		theme1Btn.addEventListener('click', () => chartInstance.setColors(colorsConfig1));
+
+		const theme2Btn = document.querySelector('#theme_2');
+		theme2Btn.addEventListener('click', () => chartInstance.setColors(colorsConfig2));
+
+		const theme3Btn = document.querySelector('#theme_3');
+		theme3Btn.addEventListener('click', () => chartInstance.setColors(colorsConfig3));
+	</script>
+</body>
+
+</html>

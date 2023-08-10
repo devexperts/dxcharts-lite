@@ -1,0 +1,1 @@
+npx webpack --env=md=source --no-devtool --config ./tests/memory-leak/webpack.test.config.js && npx webpack --env=md=case --no-devtool --config ./tests/memory-leak/webpack.test.config.js && node ./tests/memory-leak/runner.js

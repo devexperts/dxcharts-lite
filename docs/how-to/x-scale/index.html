@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>DXCharts Lite X Scale</title>
+    <link rel="stylesheet" href="../../style.css">
+    <script src="https://webdev.prosp.devexperts.com:8095/dxcharts-lite-cdn/dxchart.min.js"></script>
+    <script src="https://webdev.prosp.devexperts.com:8095/dxcharts-lite-cdn/chart/utils/candles-generator.utils.js"
+        type="module"></script>
+</head>
+
+<body>
+    <div class="container">
+        <h1>DXCharts Lite X Scale </h1>
+        <button class="btn" type="button" id="basic-scale-btn">Reset scale</button>
+        <button class="btn" type="button" id="custom-scale-btn">Do scale by units</button>
+        <button class="btn" type="button" id="timestamp-scale-btn">Do scale by timestamp range</button>
+        <br>
+        <br>
+        <div id="chart" style="height: 80vh"></div>
+    </div>
+    <script type="module">
+        const container = document.getElementById('chart');
+        const chartInstance = DXChart.createChart(container);
+
+        const candles = DXChart.generateCandlesData({ quantity: 1000, withVolume: true });
+        chartInstance.chartComponent.setMainSeries({ candles });
+
+        const basicScaleBtn = document.querySelector('#basic-scale-btn');
+        basicScaleBtn.addEventListener('click', () => chartInstance.chartComponent.resetChartScale());
+
+        const customScaleBtn = document.querySelector('#custom-scale-btn');
+        customScaleBtn.addEventListener('click', () => chartInstance.chartComponent.setXScale(0, 20));
+
+        const timestampScaleBtn = document.querySelector('#timestamp-scale-btn');
+        timestampScaleBtn.addEventListener('click', () => chartInstance.chartComponent.setTimestampRange(candles[0].timestamp, candles[150].timestamp));
+
+    </script>
+</body>
+
+</html>

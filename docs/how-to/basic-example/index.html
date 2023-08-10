@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport"
+		content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>DXCharts Lite Basic Example</title>
+	<link rel="stylesheet" href="../../style.css">
+	<script src="https://webdev.prosp.devexperts.com:8095/dxcharts-lite-cdn/dxchart.min.js"></script>
+	<script src="https://webdev.prosp.devexperts.com:8095/dxcharts-lite-cdn/chart/utils/candles-generator.utils.js"
+		type="module"></script>
+</head>
+
+<body>
+	<div class="settings">
+		<h1>DXCharts Lite Basic example</h1>
+	</div>
+
+	<div id="dxcharts_lite" class="chart"></div>
+	<script type="module">
+		const container = document.getElementById('dxcharts_lite');
+		const chartInstance = DXChart.createChart(container);
+
+		const candles = DXChart.generateCandlesData({ quantity: 1000, withVolume: true });
+		chartInstance.chartComponent.setMainSeries({ candles });
+	</script>
+</body>
+
+</html>

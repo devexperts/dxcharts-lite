@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "allowJs": true
+  },
+  "include": [
+    "./src/**/*",
+    "./docs/**/*",
+    "./examples/**/*",
+    ".eslintrc.js",
+    ".eslintrc.jest.js",
+    "./scripts/**/*",
+    "./jest.config.js"
+  ],
+  "exclude": ["node_modules", "dist"]
+}

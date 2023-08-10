@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport"
+		content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
+	<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+	<title>DXCharts Lite Y-Axis example</title>
+	<link rel="stylesheet" href="./style.css">
+	<script src="https://webdev.prosp.devexperts.com:8095/dxcharts-lite-cdn/dxchart.min.js"></script>
+	<script src="https://webdev.prosp.devexperts.com:8095/dxcharts-lite-cdn/chart/utils/candles-generator.utils.js"
+		type="module"></script>
+</head>
+
+<body>
+	<div class="container">
+		<div class="grid">
+			<div id="chart" class="chart"></div>
+			<div>
+				<label> <input name="visible" type="checkbox" checked /> <small>Is visible</small> </label>
+				<label> <input name="inverse" type="checkbox" /> <small>Inverse</small> </label>
+				<label> <input name="lock" type="checkbox" /> <small>setLockPriceToBarRatio</small> </label>
+				<p>Axis alignment</p>
+				<div class="flex">
+					<label> <input name="align" type="radio" value="right" checked /> <small>Right</small> </label>
+					<label> <input name="align" type="radio" value="left" /><small>Left</small> </label>
+				</div>
+				<p>Axis type</p>
+				<div class="flex">
+					<label> <input name="type" type="radio" value="percent" /> <small>Percent</small> </label>
+					<label> <input name="type" type="radio" value="regular" checked /> <small>Regular</small> </label>
+					<label> <input name="type" type="radio" value="logarithmic" /> <small>Logarithmic</small> </label>
+				</div>
+
+			</div>
+		</div>
+		<script type="module">
+			const container = document.getElementById('chart');
+			const chartInstance = DXChart.createChart(container);
+
+			const candles = DXChart.generateCandlesData({ quantity: 1000, withVolume: true });
+
+			chartInstance.chartComponent.setMainSeries({ candles });
+
+			// Handle options
+			const visibility = document.querySelector('input[name="visible"]');
+			visibility.addEventListener('click', () => chartInstance.yAxisComponent.setVisible(visibility.checked));
+
+			const inverse = document.querySelector('input[name="inverse"]');
+			inverse.addEventListener('click', () => {
+				chartInstance.yAxisComponent.togglePriceScaleInverse(inverse.checked);
+				chartInstance.redraw();
+			});
+
+			const lock = document.querySelector('input[name="lock"]');
+			lock.addEventListener('click', () => chartInstance.yAxisComponent.setLockPriceToBarRatio(lock.checked));
+
+			const align = [].slice.call(document.querySelectorAll('input[name="align"]'));
+			align.forEach(input => {
+				input.addEventListener('click', () => chartInstance.yAxisComponent.setYAxisAlign(input.value));
+			});
+
+			const type = [].slice.call(document.querySelectorAll('input[name="type"]'));
+			type.forEach(input => {
+				input.addEventListener('click', () => chartInstance.yAxisComponent.setAxisType(input.value));
+			});
+
+		</script>
+</body>
+
+</html>

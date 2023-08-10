@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport"
+		content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
+	<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+	<title>DXCharts Lite with react example</title>
+	<link rel="stylesheet" href="./style.css" />
+	<script src="https://webdev.prosp.devexperts.com:8095/dxcharts-lite-cdn/dxchart.min.js"></script>
+	<script src="https://webdev.prosp.devexperts.com:8095/dxcharts-lite-cdn/chart/utils/candles-generator.utils.js"
+		type="module"></script>
+	<script type="module">
+		const config = {
+			components: {
+				yAxis: {
+					labels: {
+						descriptions: true,
+						settings: {
+							lastPrice: {
+								mode: 'line-label',
+								type: 'badge',
+							},
+						},
+					},
+				},
+			},
+		};
+
+		const node = document.querySelector('#root');
+		const chartInstance = DXChart.createChart(node, config);
+		const candles = DXChart.generateCandlesData({ quantity: 1000, withVolume: true });
+
+		chartInstance.chartComponent.setMainSeries({
+			candles,
+		});
+
+		chartInstance.chartModel.mainCandleSeries.instrument = { symbol: 'GGLMZN' };
+
+		const priceLabelMode = document.querySelector('[name="pricelabelmode"]');
+		priceLabelMode.addEventListener('change', e => {
+			chartInstance.yAxisComponent.changeLabelMode('lastPrice', e.target.value);
+		});
+
+		const priceLabelAppearance = document.querySelector('[name="pricelabelappearance"]');
+		priceLabelAppearance.addEventListener('change', e => {
+			chartInstance.yAxisComponent.changeLabelAppearance('lastPrice', e.target.value);
+		});
+
+		const description = document.querySelector('[name="description"]');
+		description.addEventListener('change', e => {
+			chartInstance.yAxisComponent.changeLabelsDescriptionVisibility(e.target.value === 'true');
+		});
+	</script>
+</head>
+
+<body>
+	<div class="chart__container">
+		<div id="root"></div>
+		<form action="" id="form">
+			<div>
+				<select name="pricelabelmode" value="{selectedMode}">
+					<option value="none">none</option>
+					<option value="label">label</option>
+					<option value="line">line</option>
+					<option value="line-label" selected>line-label</option>
+				</select>
+				<small>label type for price label</small>
+			</div>
+			<div>
+				<select name="pricelabelappearance" value="{selectedMode}">
+					<option value="badge" selected>badge</option>
+					<option value="rectangle">rectangle</option>
+					<option value="plain">plain</option>
+				</select>
+				<small>appearance for price label</small>
+			</div>
+			<div>
+				<select name="description" value="{selectedType}">
+					<option value="true" selected>visible</option>
+					<option value="false">hidden</option>
+				</select>
+				<small>description</small>
+			</div>
+		</form>
+	</div>
+</body>
+
+</html>

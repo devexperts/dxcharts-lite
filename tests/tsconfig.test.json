@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "declaration": true,
+    "importHelpers": true,
+    "lib": ["dom", "es2015", "es5"],
+    "noEmit": true,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "noEmitOnError": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "preserveConstEnums": true,
+    "resolveJsonModule": true,
+    "strict": true,
+    "stripInternal": false,
+    "target": "es2016",
+    "typeRoots": ["node_modules/@types"],
+    "types": []
+  },
+  "include": ["./tests/memory-leak/*.ts"],
+  "exclude": []
+}

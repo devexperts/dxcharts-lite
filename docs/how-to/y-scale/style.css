@@ -1,0 +1,56 @@
+* {
+	padding: 0;
+}
+
+html,
+body {
+	height: 100%;
+	min-height: 100%;
+}
+
+.h-full {
+	height: 100%;
+}
+
+.container {
+	margin: auto;
+}
+
+.grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	grid-gap: 20px;
+}
+
+.flex {
+	display: flex;
+}
+
+.flex.align-center {
+	align-items: center;
+}
+
+.flex.justify-center {
+	justify-content: center;
+}
+
+.flex label:not(:first-child) {
+	margin-left: 20px;
+}
+
+.chart {
+	height: 300px;
+}
+
+h1 {
+	margin: 3rem 0 2rem;
+}
+
+label {
+	display: block;
+	margin-bottom: 5px;
+}
+
+p {
+	margin-bottom: 7px;
+}

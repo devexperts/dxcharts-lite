@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport"
+		content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
+	<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+	<title>DXCharts Lite y-axis labels</title>
+	<link rel="stylesheet" href="./style.css" />
+	<script src="https://webdev.prosp.devexperts.com:8095/dxcharts-lite-cdn/dxchart.min.js"></script>
+	<script src="https://webdev.prosp.devexperts.com:8095/dxcharts-lite-cdn/chart/utils/candles-generator.utils.js"
+		type="module"></script>
+	<script type="module">
+		const node = document.querySelector('#root');
+		const chartInstance = DXChart.createChart(node);
+		const candles = DXChart.generateCandlesData({ quantity: 1000, withVolume: true });
+		chartInstance.chartComponent.setMainSeries({
+			candles,
+		});
+
+		const yInput = document.querySelector('[name="y"]');
+		yInput.setAttribute('value', candles.at(-1).close | 0);
+
+		const labelInputs = [].slice.call(document.querySelectorAll('#form input, #form select'));
+		chartInstance.yAxisComponent.changeLabelMode('lastPrice', 'none');
+
+		const updateFromInputs = () => {
+			const options = labelInputs.reduce(
+				(accum, current) => ({
+					...accum,
+					[current.name]: current.value,
+				}),
+				{},
+			);
+			console.log(options);
+			chartInstance.yAxisComponent.addSimpleYAxisLabel('custom_label', {
+				y: parseInt(chartInstance.chartModel.toY(options.y)),
+				labelText: options.labelText,
+				bgColor: options.bgColor,
+				labelType: options.labelType,
+				mode: options.mode,
+				description: options.textDescription,
+				textColor: options.textColor,
+				descColor: options.descColor,
+				lineColor: options.lineColor,
+				paddingTop: parseInt(options.vPadding, 10),
+				paddingBottom: parseInt(options.vPadding, 10),
+			});
+
+			chartInstance.yAxisComponent.changeLabelsDescriptionVisibility(options.description === 'true');
+		};
+
+		labelInputs.forEach(input => {
+			input.addEventListener('change', updateFromInputs);
+			input.addEventListener('keyup', updateFromInputs);
+		});
+
+		chartInstance.scaleModel.yChanged.subscribe(updateFromInputs);
+		setTimeout(updateFromInputs, 100);
+	</script>
+</head>
+
+<body>
+	<div class="chart__container">
+		<div id="root"></div>
+		<form action="" id="form">
+			<label>
+				<input name="y" type="number" value="220" />
+				<small>price</small>
+			</label>
+
+			<label>
+				<input name="labelText" type="text" value="Label" />
+				<small>text on the label</small>
+			</label>
+			<label>
+				<input name="textDescription" type="text" value="description" />
+				<small>text of description</small>
+			</label>
+			<label>
+				<input name="bgColor" type="color" value="#ffcc00" />
+				<small>label color</small>
+			</label>
+
+			<label>
+				<input name="textColor" type="color" value="#ffffff" />
+				<small>text color</small>
+			</label>
+
+			<label>
+				<input name="descColor" type="color" value="#ffffff" />
+				<small>description color</small>
+			</label>
+
+			<label>
+				<input name="lineColor" type="color" value="#ffffff" />
+				<small>line color</small>
+			</label>
+
+			<label>
+				<input name="vPadding" type="range" min="0" max="20" value="5" step="1" />
+				<small>vertical padding</small>
+			</label>
+
+			<div>
+				<select name="labelType" value="{selectedType}">
+					<option value="badge">badge</option>
+					<option value="rectangle">rectangle</option>
+					<option value="plain">plain</option>
+				</select>
+				<small>label type</small>
+			</div>
+
+			<div>
+				<select name="mode" value="{selectedType}">
+					<option value="line">line</option>
+					<option value="line-label" selected>line-label</option>
+					<option value="label">label</option>
+				</select>
+				<small>label mode</small>
+			</div>
+
+			<div>
+				<select name="description" value="{selectedType}">
+					<option value="true" selected>visible</option>
+					<option value="false">hidden</option>
+				</select><small>description</small>
+			</div>
+		</form>
+	</div>
+</body>
+
+</html>

@@ -1,0 +1,37 @@
+html,
+body {
+	height: 100%;
+}
+#root {
+	height: 300px;
+}
+
+body {
+	background: #fff;
+}
+
+.chart__container {
+	display: grid;
+	gap: 20px;
+	grid-template-columns: 1fr 1fr;
+}
+
+#form {
+	align-self: start;
+	display: grid;
+	grid-template-columns: 100px 1fr;
+	column-gap: 10px;
+	row-gap: 5px;
+	align-items: center;
+}
+
+form > * {
+	display: contents;
+}
+
+form input {
+	width: auto;
+}
+[type='checkbox'] {
+	justify-self: end;
+}

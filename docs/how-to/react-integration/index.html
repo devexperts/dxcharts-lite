@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport"
+		content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
+	<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+	<title>DXCharts Lite with react example</title>
+	<link rel="stylesheet" href="./style.css" />
+	<script src="https://webdev.prosp.devexperts.com:8095/dxcharts-lite-cdn/dxchart.min.js"></script>
+	<script src="https://webdev.prosp.devexperts.com:8095/dxcharts-lite-cdn/chart/utils/candles-generator.utils.js"
+		type="module"></script>
+	<script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+	<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+</head>
+
+<body>
+	<div id="root"></div>
+
+	<script type="module">
+		const React = window.React;
+		const ReactDOM = window.ReactDOM;
+		if (!(React && ReactDOM)) {
+			console.error('React is not loaded');
+		}
+
+		const App = props => {
+			const [candles, setCandles] = React.useState([]);
+			const [chartInstance, setChartInstance] = React.useState(null);
+
+			React.useEffect(() => {
+				setTimeout(() => {
+					setCandles(DXChart.generateCandlesData({ quantity: 1000, withVolume: true }));
+				}, 1000); // simulating load from network
+			}, []);
+
+			const setRef = React.useCallback(node => node && setChartInstance(DXChart.createChart(node)), []);
+
+			React.useEffect(() => {
+				chartInstance &&
+					chartInstance.chartComponent.setMainSeries({
+						candles,
+					});
+			}, [candles, chartInstance]);
+
+			if (candles.length === 0) {
+				return React.createElement('div', { className: 'chart__loading' }, ['...loading']);
+			}
+			return React.createElement('div', { id: 'dxcharts_lite', className: 'chart__container', ref: setRef });
+		};
+
+		ReactDOM.createRoot(document.querySelector('#root')).render(React.createElement(App));
+	</script>
+</body>
+
+</html>

@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "module": "esnext",
+    "moduleResolution": "node",
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitAny": true,
+    "noUnusedLocals": true,
+    "removeComments": false,
+    "preserveConstEnums": true,
+    "strict": true,
+    "experimentalDecorators": false,
+    "allowSyntheticDefaultImports": true,
+    "sourceMap": false,
+    "target": "es6",
+    "lib": ["dom", "ES2016"],
+    "declaration": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "types": ["jest", "node"],
+    "rootDir": "src",
+    "outDir": "dist",
+    "typeRoots": ["node_modules/@types"],
+    "allowJs": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "./src/index.dev.ts"]
+}

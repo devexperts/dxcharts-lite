@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport"
+		content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
+	<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+	<title>DXCharts Lite Events</title>
+	<link rel="stylesheet" href="../../style.css" />
+	<script src="https://webdev.prosp.devexperts.com:8095/dxcharts-lite-cdn/dxchart.min.js"></script>
+</head>
+
+<body>
+	<div class="container">
+		<h1>DXCharts Lite events example</h1>
+		<button class="btn" type="button" id="set_visible">Set events visible</button>
+		<button class="btn" type="button" id="set_events">Set events</button>
+		<button class="btn" type="button" id="add_handler">Add hover handler with drawer</button>
+		<br />
+		<br />
+		<div id="chart" style="height: 80vh"></div>
+	</div>
+
+	<script type="module">
+		import generateCandlesData from 'https://webdev.prosp.devexperts.com:8095/dxcharts-lite-cdn/chart/utils/candles-generator.utils.js';
+
+		const container = document.getElementById('chart');
+		const chart = DXChart.createChart(container);
+
+		const candles = generateCandlesData({ quantity: 1000, withVolume: true });
+		chart.chartComponent.setMainSeries({ candles });
+
+		const now = new Date();
+		const setEvents = () => {
+			chart.eventsComponent.setEvents([
+				{
+					type: 'earnings',
+					timestamp: now.setHours(now.getHours() - 10),
+					style: 'rhombus-large',
+				},
+				{
+					type: 'dividends',
+					timestamp: now.setHours(now.getHours() - 20),
+					style: 'rhombus-small',
+				},
+				{
+					type: 'conference-calls',
+					timestamp: now.setHours(now.getHours() - 30),
+					style: 'rhombus-small',
+				},
+				{
+					type: 'splits',
+					timestamp: now.setHours(now.getHours() - 50),
+					style: 'rhombus',
+				},
+			]);
+		};
+
+		const setVisible = () => {
+			chart.eventsComponent.setVisible(true);
+		};
+
+		const addHandler = () => {
+			let hoveredEvent = null;
+			chart.drawingManager.addDrawer(
+				{
+					getCanvasIds() {
+						return [chart.dataSeriesCanvasModel.canvasId];
+					},
+					draw() {
+						const ctx = chart.dataSeriesCanvasModel.ctx;
+						ctx.save();
+						ctx.fillStyle = '#e0134d';
+						ctx.font = '18px Open Sans, sans-serif';
+						const text = hoveredEvent ? JSON.stringify(hoveredEvent) : 'none';
+						ctx.fillText('hovered event:', 30, 30);
+						ctx.fillText(text, 30, 50);
+						ctx.restore();
+					},
+				},
+				'DRAWER_NAME',
+			);
+			chart.eventsComponent.observeEventHovered().subscribe(event => {
+				hoveredEvent = event;
+			});
+		};
+
+		const setVisibleBtn = document.querySelector('#set_visible');
+		setVisibleBtn.addEventListener('click', setVisible);
+
+		const setEventsBtn = document.querySelector('#set_events');
+		setEventsBtn.addEventListener('click', setEvents);
+
+		const addHandlerBtn = document.querySelector('#add_handler');
+		addHandlerBtn.addEventListener('click', addHandler);
+	</script>
+</body>
+
+</html>

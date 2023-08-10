@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport"
+		content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
+	<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+	<title>DXCharts Lite Custom drawer</title>
+	<link rel="stylesheet" href="../../style.css" />
+	<script src="https://webdev.prosp.devexperts.com:8095/dxcharts-lite-cdn/dxchart.min.js"></script>
+</head>
+
+<body>
+	<div class="settings">
+		<h1>Chart custom drawer example</h1>
+	</div>
+	<div id="chart" class="chart"></div>
+	<script type="module">
+		import { clipToBounds } from 'https://webdev.prosp.devexperts.com:8095/dxcharts-lite-cdn/chart/drawers/data-series.drawer.js';
+		import generateCandlesData from 'https://webdev.prosp.devexperts.com:8095/dxcharts-lite-cdn/chart/utils/candles-generator.utils.js';
+		const container = document.getElementById('chart');
+		const chart = DXChart.createChart(container);
+
+		const candles = generateCandlesData({ quantity: 1000, withVolume: true });
+		chart.chartComponent.setMainSeries({ candles });
+
+		const customDrawer = {
+			draw() {
+				const ctx = chart.dataSeriesCanvasModel.ctx;
+				const series = chart.chartModel.mainCandleSeries.getSeriesInViewport().flat();
+				const lastCandle = series[series.length - 1];
+				const startCandle = series[0];
+				// to get actual coordinates for canvas we need to use scaleModel,
+				// since actual coordinates in pixels depends on current zoom level and viewport (scale)
+				const [x1, y1] = [startCandle.x(chart.scaleModel), startCandle.y(chart.scaleModel)];
+				const [x2, y2] = [lastCandle.x(chart.scaleModel), lastCandle.y(chart.scaleModel)];
+				// below we do some manipulations which modifies ctx state, so we need to save it and restore after drawing
+				ctx.save();
+				const bounds = chart.canvasBoundsContainer.getBounds('PANE_CHART');
+				// clip drawing bounds to chart pane, so it will not be drawn outside of chart pane (on y-axis, for example)
+				clipToBounds(ctx, bounds);
+
+				ctx.beginPath();
+				ctx.lineWidth = 3;
+				ctx.strokeStyle = 'orange';
+				ctx.fillStyle = 'orange';
+				// draw line
+				ctx.moveTo(x1, y1);
+				ctx.lineTo(x2, y2);
+				ctx.stroke();
+				// draw circle on the end of the line
+				ctx.beginPath();
+				ctx.arc(x2, y2, 5, 0, 2 * Math.PI);
+				ctx.fill();
+				// restore ctx state
+				ctx.restore();
+			},
+			// this methods should return ids of canvases which this drawers uses
+			getCanvasIds() {
+				return [chart.dataSeriesCanvasModel.canvasId];
+			},
+		};
+
+		chart.drawingManager.addDrawerAfter(customDrawer, 'arrowTrendDrawer', 'DATA_SERIES');
+	</script>
+</body>
+
+</html>
