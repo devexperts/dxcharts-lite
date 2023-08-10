@@ -23,7 +23,7 @@
     <img src="https://img.shields.io/static/v1?label=PRs&message=Welcome&color=blue" alt="PRs: Welcome" />
   </a>&nbsp;
   <a href="https://devexperts.com/dxcharts-demo/?lang=en">
-    <img src="https://img.shields.io/static/v1?label=Latest%20version&message=5.3.1&color=blue" alt="Version" />
+    <img src="https://img.shields.io/static/v1?label=Latest%20version&message=1.0.0&color=blue" alt="Version" />
   </a>
 </p>
 
@@ -39,15 +39,15 @@
 
 Get started with DXCharts Lite, install the library and configure it as you want.
 
--   🚀[Quick start](#quick-start)
-    -   📦[Installation](#installation)
-    -   🛠️[Create Chart](#create-chart)
-    -   📈[Set data](#set-data)
-    -   📄[HTML markup](#html-markup)
--   ⚙️[Configuration](#configuration)
--   🔌[API](#api)
--   📒[Examples](#examples)
--   🧮[Demo](#demo)
+-   🚀 [Quick start](#quick-start)
+    -   📦 [Installation](#installation)
+    -   🛠️ [Create Chart](#create-chart)
+    -   📈 [Set data](#set-data)
+    -   📄 [HTML markup](#html-markup)
+-   ⚙️ [Configuration](#configuration)
+-   🔌 [API](#api)
+-   📒 [Examples](#examples)
+-   🧮 [Demo](#demo)
 
 ## Quick-start
 
@@ -63,12 +63,12 @@ Your `package.json` after installation:
 
 ```json
 "dependencies": {
-	"@devexperts/dxcharts-lite": "5.3.1",
+	"@devexperts/dxcharts-lite": "1.0.0",
 	...
 }
 ```
 
-### Create-chart
+### Create chart
 
 If you use webpack or any other bundler - import `createChart` method and pass element where the chart will be rendered as a first argument.
 
@@ -87,13 +87,13 @@ Method accepts 2 parameters:
 -   `element` - The HTML element where the chart will be rendered
 -   `config` (optional) - instance of [ChartConfig](/chart/chart-config/overview)
 
-> Also, please set `width: 100%` and `height: 100%` for parent container
+> Also, please, set `width: 100%` and `height: 100%` for parent container
 > by default chart is auto-resizing to parent
 > you can change it by setting `fixedSize` in config
 
 Now you should have empty chart on screen.
 
-### Set-data
+### Set data
 
 Let's pass in some data i.e. `Candles`. You can use bundled function to generate some mock data.
 Import `generateCandlesData` and call it to generate candles.
@@ -177,7 +177,7 @@ Here are the links of the main components:
 ## Examples
 
 We have created a lot of examples with different chart configuration.
-You can find it [here](docs).
+You can find them [here](https://github.com/devexperts/dxcharts-lite/tree/master/docs/how-to).
 
 ## Demo
 
