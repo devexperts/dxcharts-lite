@@ -3,7 +3,6 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { merge } from 'rxjs';
 import { CanvasBoundsContainer } from '../../canvas/canvas-bounds-container';
 import { FullChartConfig } from '../../chart.config';
 import EventBus from '../../events/event-bus';
@@ -26,20 +25,19 @@ export class YAxisModel extends ChartBaseElement {
 		eventBus: EventBus,
 		private config: FullChartConfig,
 		private canvasBoundsContainer: CanvasBoundsContainer,
-		private canvasModel: CanvasModel,
+		canvasModel: CanvasModel,
 		private chartModel: ChartModel,
 		scaleModel: ScaleModel,
 	) {
 		super();
-		// TODO rework, make formatter library instead of taking chartModel one
 		const formatter = paneComponent.valueFormatter;
 		this.yAxisLabelsGenerator = new NumericYAxisLabelsGenerator(
 			null,
-			chartModel,
+			undefined,
 			scaleModel,
 			formatter,
 			() => this.config.components.yAxis.type,
-			() => this.chartModel.getBaseLine(),
+			() => 1,
 			config.components.yAxis.labelHeight,
 		);
 		this.yAxisBaseLabelsModel = new YAxisBaseLabelsModel(
@@ -70,24 +68,5 @@ export class YAxisModel extends ChartBaseElement {
 			getYAxisAlign: () => this.config.components.yAxis.align,
 			getPaneUUID: () => paneComponent.uuid,
 		});
-	}
-
-	/**
-	 * This method is used to activate the chart and auto-adjust the width of the Y axis depending on data.
-	 * It subscribes to the candlesSetSubject and invalidates the labelsCache of yAxisLabelsGenerator, updates the labels of yAxisLabelsModel and yAxisBaseLabelsModel, and fires the draw event of canvasModel.
-	 * @protected
-	 * @returns {void}
-	 */
-	protected doActivate(): void {
-		super.doActivate();
-		// auto-adjust width of Y axis depending on data
-		this.addRxSubscription(
-			merge(this.chartModel.candlesSetSubject).subscribe(() => {
-				this.yAxisLabelsGenerator.labelsCache.invalidate();
-				this.yAxisLabelsModel.updateLabels();
-				this.yAxisBaseLabelsModel.updateLabels();
-				this.canvasModel.fireDraw();
-			}),
-		);
 	}
 }

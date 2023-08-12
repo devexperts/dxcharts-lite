@@ -5,8 +5,6 @@
  */
 import { Observable, Subject, merge } from 'rxjs';
 import { distinctUntilChanged } from 'rxjs/operators';
-import { PriceAxisType } from '../labels_generator/numeric-axis-labels.generator';
-import { ChartBaseElement } from '../../model/chart-base-element';
 import {
 	CHART_UUID,
 	CanvasBoundsContainer,
@@ -14,17 +12,21 @@ import {
 	areBoundsChanged,
 } from '../../canvas/canvas-bounds-container';
 import { BarType, ChartConfigComponentsOffsets, FullChartConfig, getDefaultConfig } from '../../chart.config';
-import { CanvasModel, MIN_SUPPORTED_CANVAS_SIZE } from '../../model/canvas.model';
 import EventBus from '../../events/event-bus';
 import { ChartResizeHandler, PickedDOMRect } from '../../inputhandlers/chart-resize.handler';
 import { CandleSeriesColors, CandleSeriesModel, PartialCandleSeriesColors } from '../../model/candle-series.model';
 import { Candle, copyCandle } from '../../model/candle.model';
+import { CanvasModel, MIN_SUPPORTED_CANVAS_SIZE } from '../../model/canvas.model';
+import { ChartBaseElement } from '../../model/chart-base-element';
 import { DataSeriesType } from '../../model/data-series.config';
 import { MainCandleSeriesModel } from '../../model/main-candle-series.model';
 import { ScaleModel } from '../../model/scale.model';
 import { candleEdgesConstrait } from '../../model/scaling/constrait.functions';
 import { Index, Pixel, Price, Timestamp, Unit, pixelsToUnits } from '../../model/scaling/viewport.model';
 import VisualCandle from '../../model/visual-candle';
+import { binarySearch, lastOf } from '../../utils/array.utils';
+import { searchCandleIndex } from '../../utils/candles.utils';
+import { floor, round } from '../../utils/math.utils';
 import { merge as mergeObj } from '../../utils/merge.utils';
 import { PaneManager } from '../pane/pane-manager.component';
 import { PaneComponent } from '../pane/pane.component';
@@ -36,9 +38,6 @@ import { ChartBaseModel } from './chart-base.model';
 import { CandleSeries, ChartInstrument, PartialCandle } from './chart.component';
 import { fakeCandle } from './fake-candles';
 import { SecondaryChartColorsPool } from './secondary-chart-colors-pool';
-import { binarySearch, lastOf } from '../../utils/array.utils';
-import { searchCandleIndex } from '../../utils/candles.utils';
-import { floor, round } from '../../utils/math.utils';
 
 export type VisualCandleCalculator = (
 	candle: Candle,
@@ -62,7 +61,6 @@ export class ChartModel extends ChartBaseElement {
 	}
 
 	public readonly nextCandleTimeStampSubject: Subject<void> = new Subject<void>();
-	public readonly axisTypeSetSubject: Subject<PriceAxisType> = new Subject<PriceAxisType>();
 	public readonly chartTypeChanged: Subject<BarType> = new Subject<BarType>();
 	public readonly mainInstrumentChangedSubject: Subject<ChartInstrument> = new Subject<ChartInstrument>();
 	public readonly scaleInversedSubject: Subject<void> = new Subject<void>();

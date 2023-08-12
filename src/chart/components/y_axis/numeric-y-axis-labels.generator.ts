@@ -15,10 +15,13 @@ import { lastOf } from '../../utils/array.utils';
 export class NumericYAxisLabelsGenerator extends NumericAxisLabelsGenerator {
 	constructor(
 		increment: number | null,
+		// TODO y-axis refactor
+		// should be data from main data series
 		private chartModel: ChartModel | undefined,
 		viewportModel: ViewportModel,
 		valueFormatter: (value: number) => string,
 		axisTypeProvider: () => PriceAxisType = () => 'regular',
+		// same - replace with dataSeriesProvider
 		baseLineProvider = () => 1,
 		singleLabelHeightPixels: number = 23,
 	) {

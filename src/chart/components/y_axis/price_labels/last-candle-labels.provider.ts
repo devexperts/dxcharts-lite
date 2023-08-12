@@ -10,7 +10,7 @@ import { ChartModel, LastCandleLabelHandler } from '../../chart/chart.model';
 import { getPrimaryLabelTextColor } from '../label-color.functions';
 import { YAxisLabelDrawConfig } from '../y-axis-labels.drawer';
 import { LabelGroup, VisualYAxisLabel, YAxisLabelsProvider } from './y-axis-labels.model';
-import { LabelColorResolver } from '../y-axis.component';
+import { LabelColorResolver } from '../y-axis-global.component';
 import { lastOf } from '../../../utils/array.utils';
 import { getLabelTextColorByBackgroundColor } from '../../../utils/canvas/canvas-text-functions.utils';
 

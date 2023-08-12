@@ -55,6 +55,7 @@ import { TimeZoneModel } from './model/time-zone.model';
 import { clearerSafe } from './utils/function.utils';
 import { merge } from './utils/merge.utils';
 import { DeepPartial } from './utils/object.utils';
+import { YAxisGlobalComponent } from './components/y_axis/y-axis-global.component';
 
 export type FitType = 'studies' | 'orders' | 'positions';
 
@@ -99,6 +100,7 @@ export default class ChartBootstrap implements ChartContainer {
 	public hoverProducer: HoverProducerComponent;
 	public canvasModels: CanvasModel[] = [];
 	public chartResizeHandler: ChartResizeHandler;
+	public yAxisGlobalComponent: YAxisGlobalComponent;
 
 	public canvasAnimation: CanvasAnimation;
 	constructor(element: HTMLElement, userConfig: PartialChartConfig = {}) {
@@ -394,6 +396,8 @@ export default class ChartBootstrap implements ChartContainer {
 			drawingManager,
 		);
 		this.chartComponents.push(highLowComponent);
+
+		this.yAxisGlobalComponent = new YAxisGlobalComponent();
 		// Y-axis component
 		this.yAxisComponent = new YAxisComponent(
 			eventBus,
@@ -409,6 +413,8 @@ export default class ChartBootstrap implements ChartContainer {
 			chartPanComponent,
 			paneManager,
 			this.cursorHandler,
+			CHART_UUID,
+			0,
 		);
 		this.chartComponents.push(this.yAxisComponent);
 		this.userInputListenerComponents.push(this.yAxisComponent.yAxisScaleHandler);
