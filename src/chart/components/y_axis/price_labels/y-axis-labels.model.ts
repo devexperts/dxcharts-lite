@@ -16,6 +16,7 @@ import { uuid } from '../../../utils/uuid.utils';
 import { ChartModel } from '../../chart/chart.model';
 import { YAxisLabelDrawConfig } from '../y-axis-labels.drawer';
 import { calcLabelsYCoordinates } from './labels-positions-calculator';
+import { flat } from '../../../utils/array.utils';
 
 export type YAxisVisualLabelType = 'badge' | 'rectangle' | 'plain';
 
@@ -165,13 +166,11 @@ export class YAxisLabelsModel extends ChartBaseElement {
 
 		for (const providers of Object.values(this.labelsProviders)) {
 			// generated label groups
-			const labelGroups = Object.values(providers)
-				.map(c => c.getUnorderedLabels())
-				.flat();
-			const labelsPointsAndWeight = labelGroups
-				.map(g => g.labels)
-				.flat()
-				.map(label => ({ y: label.y, weight: label.labelWeight ?? Number.POSITIVE_INFINITY }));
+			const labelGroups = flat(Object.values(providers).map(c => c.getUnorderedLabels()));
+			const labelsPointsAndWeight = flat(labelGroups.map(g => g.labels)).map(label => ({
+				y: label.y,
+				weight: label.labelWeight ?? Number.POSITIVE_INFINITY,
+			}));
 			// coordinates are generated in order they were passed to generator
 			const updatedCoordinates = calcLabelsYCoordinates(labelsPointsAndWeight, labelHeight);
 			labelGroups.forEach(labelGroup => {

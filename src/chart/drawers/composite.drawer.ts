@@ -5,6 +5,7 @@
  */
 import { Drawer } from './drawing-manager';
 import { findKeyFromValue } from '../utils/object.utils';
+import { flat } from '../utils/array.utils';
 
 /**
  * Container for grouping multiple drawers.
@@ -76,9 +77,8 @@ export class CompositeDrawer<D extends Drawer = Drawer> implements Drawer {
 	}
 
 	getCanvasIds(): Array<string> {
-		const canvasIds = Array.from(this.drawers)
-			.map(([, d]) => d.getCanvasIds())
-			.flat(3);
+		const canvasIds = flat(Array.from(this.drawers)
+			.map(([, d]) => d.getCanvasIds()));
 		const distinctedCanvasIds = new Set([...canvasIds]);
 		return Array.from(distinctedCanvasIds);
 	}

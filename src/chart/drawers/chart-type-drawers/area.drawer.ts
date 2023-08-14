@@ -7,6 +7,7 @@ import { ChartConfigComponentsChart } from '../../chart.config';
 import { CandleSeriesModel } from '../../model/candle-series.model';
 import { DataSeriesModel, VisualSeriesPoint } from '../../model/data-series.model';
 import VisualCandle from '../../model/visual-candle';
+import { flat } from '../../utils/array.utils';
 import { floor } from '../../utils/math.utils';
 import { ChartDrawerConfig, SeriesDrawer } from '../data-series.drawer';
 
@@ -21,7 +22,7 @@ export class AreaDrawer implements SeriesDrawer {
 	) {
 		if (model instanceof CandleSeriesModel) {
 			// @ts-ignore
-			const visualCandles: VisualCandle[] = points.flat();
+			const visualCandles: VisualCandle[] = flat(points);
 			if (visualCandles.length === 0) {
 				return;
 			}

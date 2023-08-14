@@ -15,6 +15,7 @@ import { resolveColorUsingConfig } from './volume-color-resolvers.functions';
 import { VolumeColorResolver } from './volumes.component';
 import { VolumesModel } from './volumes.model';
 import { PriceMovement } from '../../model/candle-series.model';
+import { flat } from '../../utils/array.utils';
 
 // ratio of CHART bounds height which is for overlay volumes
 const OVERLAY_VOLUME_TOTAL_HEIGHT_DIVISOR = 3;
@@ -99,10 +100,11 @@ export class VolumesDrawer implements Drawer {
 		if (volumeMax === 0) {
 			return;
 		}
-		const candles = this.chartModel.mainCandleSeries
-			// TODO volumes drawer should be a part of data series drawer
-			.getSeriesInViewport(this.chartModel.scaleModel.xStart - 1, this.chartModel.scaleModel.xEnd + 1)
-			.flat();
+		const candles = flat(
+			this.chartModel.mainCandleSeries
+				// TODO volumes drawer should be a part of data series drawer
+				.getSeriesInViewport(this.chartModel.scaleModel.xStart - 1, this.chartModel.scaleModel.xEnd + 1),
+		);
 		candles.forEach((vCandle, idx) => {
 			if (vCandle.candle.volume) {
 				const bounds = this.viewportModel.getBounds();

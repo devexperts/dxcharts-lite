@@ -5,7 +5,7 @@
  */
 import { BehaviorSubject, Subject } from 'rxjs';
 import { distinctUntilChanged, map } from 'rxjs/operators';
-import { arrayCompare, arrayRemove2, moveInArrayMutable, reorderArray } from '../utils/array.utils';
+import { arrayCompare, arrayRemove2, flat, moveInArrayMutable, reorderArray } from '../utils/array.utils';
 import { isMobile } from '../utils/device/browser.utils';
 import { FullChartConfig } from '../chart.config';
 import { calcTimeLabelBounds } from '../components/navigation_map/navigation-map.model';
@@ -596,7 +596,7 @@ export class CanvasBoundsContainer {
 			const calcLabelBounds = (timestamp: number): number => {
 				return calcTimeLabelBounds(this.canvasModel.ctx, timestamp, this.formatterFactory, this.config)[0];
 			};
-			const candleSource = this.mainCandleSeries?.getSeriesInViewport().flat() ?? [];
+			const candleSource = flat(this.mainCandleSeries?.getSeriesInViewport() ?? []);
 			const leftTimeLabelWidth =
 				timeLabelsVisible && candleSource.length ? calcLabelBounds(candleSource[0].candle.timestamp) : 0;
 			const rightTimeLabelWidth =

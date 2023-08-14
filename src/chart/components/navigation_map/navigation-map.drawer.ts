@@ -18,6 +18,7 @@ import {
 } from '../../utils/canvas/canvas-text-functions.utils';
 import { DateTimeFormatterFactory } from '../../model/date-time.formatter';
 import { getFormattedTimeLabel } from './navigation-map.model';
+import { flat } from '../../utils/array.utils';
 
 const BTN_ARROW_WIDTH = 4;
 
@@ -229,7 +230,7 @@ export class NavigationMapDrawer implements Drawer {
 	 * @returns {void}
 	 */
 	private drawTimeLabels(ctx: CanvasRenderingContext2D) {
-		const candleSource = this.chartModel.mainCandleSeries.getSeriesInViewport().flat();
+		const candleSource = flat(this.chartModel.mainCandleSeries.getSeriesInViewport());
 		const timeLabelsConfig = this.config.components.navigationMap.timeLabels;
 		const timeLabelsVisible = timeLabelsConfig.visible;
 		if (candleSource.length && timeLabelsVisible) {
