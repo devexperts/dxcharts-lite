@@ -1,4 +1,4 @@
-import { clamp } from "../math.utils";
+import { clamp } from '../math.utils';
 
 describe('math.utils', () => {
 	describe('clamp', () => {
@@ -10,7 +10,7 @@ describe('math.utils', () => {
 			expect(clamp(-5, 0, 10)).toEqual(0);
 		});
 
-        it('should return the max value if the value is more than the max', () => {
+		it('should return the max value if the value is more than the max', () => {
 			expect(clamp(15, 0, 10)).toEqual(10);
 		});
 	});
