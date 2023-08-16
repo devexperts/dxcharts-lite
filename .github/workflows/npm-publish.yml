@@ -6,6 +6,12 @@ name: Node.js Package
 on:
   release:
     types: [created]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Bump Version
+        default: 1.0.0
+        required: true
 
 jobs:
   publish-npm:
