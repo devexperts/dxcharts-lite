@@ -2,8 +2,8 @@
   "name": "@devexperts/dxcharts-lite",
   "version": "1.0.0",
   "description": "DXCharts Lite",
-  "author": "devexperts",
-  "license": "UNLICENSED",
+  "author": "Devexperts Solutions IE Limited",
+  "license": "MPL 2.0",
   "scripts": {
     "//<----dev server---->": "dev server",
     "watch": "tsc --watch --outDir dist",
