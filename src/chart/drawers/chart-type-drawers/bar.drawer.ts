@@ -7,6 +7,7 @@ import { ChartConfigComponentsChart } from '../../chart.config';
 import { CandleSeriesModel } from '../../model/candle-series.model';
 import { DataSeriesModel, VisualSeriesPoint } from '../../model/data-series.model';
 import VisualCandle from '../../model/visual-candle';
+import { flat } from '../../utils/array.utils';
 import { avoidAntialiasing } from '../../utils/canvas/canvas-drawing-functions.utils';
 import { floorToDPR } from '../../utils/device/device-pixel-ratio.utils';
 import { ChartDrawerConfig, SeriesDrawer, setLineWidth } from '../data-series.drawer';
@@ -38,7 +39,7 @@ export class BarDrawer implements SeriesDrawer {
 	) {
 		if (candleSeries instanceof CandleSeriesModel) {
 			// @ts-ignore
-			const visualCandles: VisualCandle[] = points.flat();
+			const visualCandles: VisualCandle[] = flat(points);
 			setLineWidth(ctx, this.config.barLineWidth, candleSeries, drawerConfig);
 			avoidAntialiasing(ctx, () => {
 				for (const visualCandle of visualCandles) {

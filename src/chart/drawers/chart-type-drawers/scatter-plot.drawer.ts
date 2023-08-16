@@ -5,6 +5,7 @@
  */
 import { ScatterPlotStyle } from '../../chart.config';
 import { DataSeriesModel, VisualSeriesPoint } from '../../model/data-series.model';
+import { flat } from '../../utils/array.utils';
 import { floorToDPR } from '../../utils/device/device-pixel-ratio.utils';
 import { ChartDrawerConfig, SeriesDrawer } from '../data-series.drawer';
 
@@ -20,7 +21,7 @@ export class ScatterPlotDrawer implements SeriesDrawer {
 		drawerConfig: ChartDrawerConfig,
 	) {
 		ctx.fillStyle = drawerConfig.singleColor ?? this.config.mainColor;
-		for (const visualCandle of points.flat()) {
+		for (const visualCandle of flat(points)) {
 			ctx.beginPath();
 			const lineX = floorToDPR(model.view.toX(visualCandle.centerUnit));
 			const closeY = floorToDPR(model.view.toY(visualCandle.close));

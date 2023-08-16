@@ -8,6 +8,7 @@ import { CandleSeriesModel } from '../../model/candle-series.model';
 import VisualCandle from '../../model/visual-candle';
 import { ChartDrawerConfig, SeriesDrawer, setLineWidth } from '../data-series.drawer';
 import { DataSeriesModel, VisualSeriesPoint } from '../../model/data-series.model';
+import { flat } from '../../utils/array.utils';
 
 export class LineDrawer implements SeriesDrawer {
 	constructor(private config: ChartConfigComponentsChart) {}
@@ -20,7 +21,7 @@ export class LineDrawer implements SeriesDrawer {
 	) {
 		if (candleSeries instanceof CandleSeriesModel) {
 			// @ts-ignore
-			const visualCandles: VisualCandle[] = points.flat();
+			const visualCandles: VisualCandle[] = flat(points);
 			// TODO rework, make sure drawing is precise
 			setLineWidth(ctx, this.config.lineWidth, candleSeries, drawerConfig, this.config.selectedWidth);
 			const lineTheme = candleSeries.colors.lineTheme;

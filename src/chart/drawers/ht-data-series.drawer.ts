@@ -6,6 +6,7 @@
 import { PaneManager } from '../components/pane/pane-manager.component';
 import { DataSeriesModel } from '../model/data-series.model';
 import { HitTestCanvasModel } from '../model/hit-test-canvas.model';
+import { flatMap } from '../utils/array.utils';
 import { ChartDrawerConfig, clipToBounds, SeriesDrawer } from './data-series.drawer';
 import { Drawer } from './drawing-manager';
 
@@ -21,14 +22,12 @@ export class HTDataSeriesDrawer implements Drawer {
 
 	draw() {
 		const ctx = this.canvasModel.ctx;
-		Object.values(this.paneManager.paneComponents)
-			.flatMap(c => c.yExtentComponents)
-			.forEach(comp => {
-				ctx.save();
-				clipToBounds(ctx, comp.getBounds());
-				comp.dataSeries.forEach(series => this.drawSeries(ctx, series));
-				ctx.restore();
-			});
+		flatMap(Object.values(this.paneManager.paneComponents), c => c.yExtentComponents).forEach(comp => {
+			ctx.save();
+			clipToBounds(ctx, comp.getBounds());
+			comp.dataSeries.forEach(series => this.drawSeries(ctx, series));
+			ctx.restore();
+		});
 	}
 
 	public drawSeries(ctx: CanvasRenderingContext2D, series: DataSeriesModel) {

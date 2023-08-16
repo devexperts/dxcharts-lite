@@ -6,6 +6,7 @@
 import { CanvasModel } from '../../model/canvas.model';
 import { DataSeriesModel, DataSeriesPoint, VisualSeriesPoint } from '../../model/data-series.model';
 import { HIT_TEST_ID_RANGE, HitTestSubscriber } from '../../model/hit-test-canvas.model';
+import { flatMap } from '../../utils/array.utils';
 import { PaneComponent } from './pane.component';
 
 export class PaneHitTestController implements HitTestSubscriber<DataSeriesModel> {
@@ -24,9 +25,10 @@ export class PaneHitTestController implements HitTestSubscriber<DataSeriesModel>
 		return HIT_TEST_ID_RANGE.DATA_SERIES;
 	}
 	get allDataSeries(): DataSeriesModel[] {
-		return Object.values(this.paneComponents)
-			.flatMap(c => c.yExtentComponents)
-			.flatMap(p => Array.from(p.dataSeries));
+		return flatMap(
+			flatMap(Object.values(this.paneComponents), c => c.yExtentComponents),
+			p => Array.from(p.dataSeries),
+		);
 	}
 
 	/**

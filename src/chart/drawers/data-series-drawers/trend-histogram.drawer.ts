@@ -5,6 +5,7 @@
  */
 
 import { VisualSeriesPoint, DataSeriesModel } from '../../model/data-series.model';
+import { flat } from '../../utils/array.utils';
 import { floor } from '../../utils/math.utils';
 import { SeriesDrawer } from '../data-series.drawer';
 
@@ -14,7 +15,7 @@ export class TrendHistogramDrawer implements SeriesDrawer {
 	draw(ctx: CanvasRenderingContext2D, allPoints: VisualSeriesPoint[][], model: DataSeriesModel): void {
 		const zero = model.view.toY(0);
 		// here I do flat, thinks that there is no more that 1 series
-		const allPointsFlat = allPoints.flatMap(item => item);
+		const allPointsFlat = flat(allPoints);
 		const items: [VisualSeriesPoint[], VisualSeriesPoint[]] = [[], []];
 		allPointsFlat.forEach((item, idx, array) => {
 			items[item.close < this.previousValue(array, idx) ? 1 : 0].push(item);

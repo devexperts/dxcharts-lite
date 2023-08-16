@@ -10,6 +10,7 @@ import { avoidAntialiasing } from '../../utils/canvas/canvas-drawing-functions.u
 import { dpr, floorToDPR } from '../../utils/device/device-pixel-ratio.utils';
 import { ChartDrawerConfig, SeriesDrawer, setLineWidth } from '../data-series.drawer';
 import { DataSeriesModel, VisualSeriesPoint } from '../../model/data-series.model';
+import { flat } from '../../utils/array.utils';
 
 export class CandleDrawer implements SeriesDrawer {
 	constructor(private config: ChartConfigComponentsChart) {}
@@ -45,7 +46,7 @@ export class CandleDrawer implements SeriesDrawer {
 	) {
 		if (model instanceof CandleSeriesModel) {
 			// @ts-ignore
-			const visualCandles: VisualCandle[] = points.flat();
+			const visualCandles: VisualCandle[] = flat(points);
 			// TODO FIXME draw called 3-4 times on single candle update even if multichart is off
 			setLineWidth(ctx, this.config.candleLineWidth, model, drawerConfig, this.config.candleLineWidth);
 			avoidAntialiasing(ctx, () => {

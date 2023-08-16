@@ -8,6 +8,7 @@ import { BaselineModel } from '../../model/baseline.model';
 import { CandleSeriesModel } from '../../model/candle-series.model';
 import { DataSeriesModel, VisualSeriesPoint } from '../../model/data-series.model';
 import { Pixel } from '../../model/scaling/viewport.model';
+import { flat } from '../../utils/array.utils';
 import { ChartDrawerConfig, SeriesDrawer } from '../data-series.drawer';
 
 export class BaselineDrawer implements SeriesDrawer {
@@ -20,7 +21,7 @@ export class BaselineDrawer implements SeriesDrawer {
 		drawerConfig?: ChartDrawerConfig,
 	) {
 		if (drawerConfig !== undefined && model instanceof CandleSeriesModel) {
-			const visualCandles = points.flat();
+			const visualCandles = flat(points);
 			// calculate baseline
 			const baselineYPercents = this.baseLineModel.baselineYPercents;
 			const chartBounds = this.canvasBoundContainer.getBounds(CanvasElement.CHART);

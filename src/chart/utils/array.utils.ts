@@ -161,6 +161,29 @@ export const slice2DArray = <T>(arr: Array<T[]>, startIdx: number, endIdx: numbe
 // Array.at() polyfill (as of December 2022 method is not supported on iOS <= v15)
 export const at = <T>(idx: number, arr: T[]) => (idx >= 0 ? arr[idx] : arr[arr.length + idx]);
 
+// Array.flat() polyfill (support for chrome 66)
+export const flat = <T>(arr: T[][]) => {
+	// @ts-ignore
+	if (Array.prototype.flat) {
+		return arr.flat();
+	}
+	return flatMap(arr, identity);
+};
+
+// Array.flatMap() polyfill (support for chrome 66)
+export const flatMap = <T, U>(arr: T[], callback: (value: T, index: number, array: T[]) => U[]) => {
+	// @ts-ignore
+	if (Array.prototype.flatMap) {
+		return arr.flatMap(callback);
+	}
+	const result: U[] = [];
+	for (let i = 0; i < arr.length; i++) {
+		const item = arr[i];
+		result.push(...callback(item, i, arr));
+	}
+	return result;
+};
+
 export interface BinarySearchResult {
 	// index or -1 if not found
 	index: number;

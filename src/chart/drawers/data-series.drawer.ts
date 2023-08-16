@@ -8,6 +8,7 @@ import { Bounds } from '../model/bounds.model';
 import { DataSeriesModel, VisualSeriesPoint } from '../model/data-series.model';
 import { CanvasModel } from '../model/canvas.model';
 import { Drawer } from './drawing-manager';
+import { flatMap } from '../utils/array.utils';
 
 export interface ChartDrawerConfig {
 	singleColor?: string;
@@ -46,14 +47,12 @@ export class DataSeriesDrawer implements Drawer {
 
 	draw() {
 		const ctx = this.canvasModel.ctx;
-		Object.values(this.paneManager.paneComponents)
-			.flatMap(c => c.yExtentComponents)
-			.forEach(comp => {
-				ctx.save();
-				clipToBounds(ctx, comp.getBounds());
-				comp.dataSeries.forEach(series => this.drawSeries(ctx, series));
-				ctx.restore();
-			});
+		flatMap(Object.values(this.paneManager.paneComponents), c => c.yExtentComponents).forEach(comp => {
+			ctx.save();
+			clipToBounds(ctx, comp.getBounds());
+			comp.dataSeries.forEach(series => this.drawSeries(ctx, series));
+			ctx.restore();
+		});
 	}
 
 	public drawSeries(ctx: CanvasRenderingContext2D, series: DataSeriesModel) {
