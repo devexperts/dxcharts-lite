@@ -87,7 +87,7 @@ Method accepts 2 parameters:
 -   `element` - The HTML element where the chart will be rendered
 -   `config` (optional) - instance of [ChartConfig](/chart/chart-config/overview)
 
-> Also, please, set `width: 100%` and `height: 100%` for parent container
+> Also, please, set `width` and `height` for parent container (px or vw/vh)
 > by default chart is auto-resizing to parent
 > you can change it by setting `fixedSize` in config
 
@@ -126,7 +126,7 @@ Here is full quick-start code example:
         <script src="https://webdev.prosp.devexperts.com:8095/dxcharts-lite-cdn/dxchart.min.js"></script>
     </head>
     <body>
-        <div id="chart_container"></div>
+        <div id="chart_container" style="width: 70vw; height: 70vh;"></div>
     </body>
     <script type="module">
         import generateCandlesData from 'https://webdev.prosp.devexperts.com:8095/dxcharts-lite-cdn/chart/utils/candles-generator.utils.js';
@@ -142,6 +142,7 @@ Here is full quick-start code example:
         };
         chartInstance.chartComponent.setMainSeries({ candles: mockCandles, instrument: mockInstrument });
   </script>
+</html>
 ```
 
 ## Configuration
