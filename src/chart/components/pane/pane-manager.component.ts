@@ -58,7 +58,6 @@ export class PaneManager extends ChartBaseElement {
 		const mainPane = this.createPane(CHART_UUID, {
 			useDefaultHighLow: false,
 			scaleModel: this.mainScaleModel,
-			useDefaultYAxis: false,
 		});
 		mainPane.mainYExtentComponent.scaleModel.autoScaleModel.setHighLowProvider(
 			'series',
@@ -137,7 +136,6 @@ export class PaneManager extends ChartBaseElement {
 			this.chartPanComponent,
 			this.mainCanvasModel,
 			this.canvasInputListener,
-			this.userInputListenerComponents,
 			this.canvasAnimation,
 			this.cursorHandler,
 			this.eventBus,

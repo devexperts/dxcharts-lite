@@ -19,7 +19,7 @@ export class NumericYAxisLabelsGenerator extends NumericAxisLabelsGenerator {
 		// should be data from main data series
 		private chartModel: ChartModel | undefined,
 		viewportModel: ViewportModel,
-		valueFormatter: (value: number) => string,
+		valueFormatterProvider: () => (value: number) => string,
 		axisTypeProvider: () => PriceAxisType = () => 'regular',
 		// same - replace with dataSeriesProvider
 		baseLineProvider = () => 1,
@@ -29,7 +29,7 @@ export class NumericYAxisLabelsGenerator extends NumericAxisLabelsGenerator {
 			increment,
 			() => [viewportModel.yStart, viewportModel.yEnd],
 			() => viewportModel.getBounds().height,
-			valueFormatter,
+			valueFormatterProvider,
 			false,
 			axisTypeProvider,
 			baseLineProvider,

@@ -56,6 +56,8 @@ import { clearerSafe } from './utils/function.utils';
 import { merge } from './utils/merge.utils';
 import { DeepPartial } from './utils/object.utils';
 import { YAxisGlobalComponent } from './components/y_axis/y-axis-global.component';
+import { LastCandleLabelsProvider } from './components/y_axis/price_labels/last-candle-labels.provider';
+import { LabelsGroups } from './components/y_axis/price_labels/y-axis-labels.model';
 
 export type FitType = 'studies' | 'orders' | 'positions';
 
@@ -397,27 +399,25 @@ export default class ChartBootstrap implements ChartContainer {
 		);
 		this.chartComponents.push(highLowComponent);
 
-		this.yAxisGlobalComponent = new YAxisGlobalComponent();
-		// Y-axis component
-		this.yAxisComponent = new YAxisComponent(
-			eventBus,
-			config,
+		this.yAxisGlobalComponent = new YAxisGlobalComponent(
+			this.config,
+			drawingManager,
 			mainCanvasModel,
 			yAxisLabelsCanvasModel,
-			backgroundCanvasModel,
-			chartModel,
-			scaleModel,
-			this.canvasInputListener,
-			canvasBoundsContainer,
-			this.drawingManager,
-			chartPanComponent,
 			paneManager,
-			this.cursorHandler,
-			CHART_UUID,
-			0,
 		);
-		this.chartComponents.push(this.yAxisComponent);
-		this.userInputListenerComponents.push(this.yAxisComponent.yAxisScaleHandler);
+
+		// default labels provider
+		const lastCandleLabelsProvider = new LastCandleLabelsProvider(
+			this.chartModel,
+			this.config,
+			this.chartModel.lastCandleLabelsByChartType,
+			this.yAxisGlobalComponent.getLabelsColorResolver.bind(this.yAxisGlobalComponent),
+		);
+
+		this.yAxisComponent = this.paneManager.paneComponents[CHART_UUID].mainYExtentComponent.yAxisComponent;
+		this.yAxisComponent.registerYAxisLabelsProvider(lastCandleLabelsProvider, LabelsGroups.MAIN);
+
 		this.volumesComponent = new VolumesComponent(
 			this.dataSeriesCanvasModel,
 			chartComponent,
@@ -439,7 +439,7 @@ export default class ChartBootstrap implements ChartContainer {
 			() => this.canvasBoundsContainer.getBounds(CanvasElement.ALL_PANES),
 			() => this.canvasBoundsContainer.getBounds(CanvasElement.PANE_UUID(CHART_UUID)),
 			() => this.xAxisComponent.xAxisLabelsGenerator.labels,
-			() => this.yAxisComponent.yAxisModel.yAxisBaseLabelsModel.labels,
+			() => this.yAxisComponent.model.baseLabelsModel.labels,
 			() => this.chartModel.toY(this.chartModel.getBaseLine()),
 			() => config.components.grid.visible,
 		);

@@ -13,25 +13,18 @@ import {
 	YAxisAlign,
 	YAxisLabelAppearanceType,
 	YAxisLabelMode,
-	YAxisLabelType
+	YAxisLabelType,
 } from '../../chart.config';
-import { ClearCanvasDrawer } from '../../drawers/clear-canvas.drawer';
-import { CompositeDrawer } from '../../drawers/composite.drawer';
-import { DrawingManager } from '../../drawers/drawing-manager';
 import EventBus from '../../events/event-bus';
 import { CanvasInputListenerComponent } from '../../inputlisteners/canvas-input-listener.component';
 import { CanvasModel } from '../../model/canvas.model';
 import { ChartBaseElement } from '../../model/chart-base-element';
 import { ScaleModel } from '../../model/scale.model';
 import { uuid } from '../../utils/uuid.utils';
-import { ChartModel } from '../chart/chart.model';
 import { PriceAxisType } from '../labels_generator/numeric-axis-labels.generator';
 import { ChartPanComponent } from '../pan/chart-pan.component';
-import { PaneManager } from '../pane/pane-manager.component';
 import { LabelsGroups, VisualYAxisLabel, YAxisLabelsProvider } from './price_labels/y-axis-labels.model';
-import { YAxisPriceLabelsDrawer } from './price_labels/y-axis-price-labels.drawer';
 import { YAxisScaleHandler } from './y-axis-scale.handler';
-import { YAxisDrawer } from './y-axis.drawer';
 import { YAxisModel } from './y-axis.model';
 
 /**
@@ -39,36 +32,25 @@ import { YAxisModel } from './y-axis.model';
  */
 export class YAxisComponent extends ChartBaseElement {
 	public yAxisScaleHandler: YAxisScaleHandler;
-	yAxisModel: YAxisModel;
+	model: YAxisModel;
 	public axisTypeSetSubject: Subject<PriceAxisType> = new Subject<PriceAxisType>();
 	public readonly state: ChartConfigComponentsYAxis;
-	public drawer: CompositeDrawer;
 
 	constructor(
 		private eventBus: EventBus,
 		private config: FullChartConfig,
 		private canvasModel: CanvasModel,
-		private yAxisLabelsCanvasModel: CanvasModel,
-		private backgroundCanvasModel: CanvasModel,
-		chartModel: ChartModel,
 		private scaleModel: ScaleModel,
 		canvasInputListeners: CanvasInputListenerComponent,
 		private canvasBoundsContainer: CanvasBoundsContainer,
-		drawingManager: DrawingManager,
 		chartPanComponent: ChartPanComponent,
-		paneManager: PaneManager,
 		private cursorHandler: CursorHandler,
+		valueFormatterProvider: () => (value: number) => string,
 		private paneUUID: string,
 		private extentIdx: number,
 	) {
 		super();
 		this.state = config.components.yAxis;
-		const yAxisCompositeDrawer = new CompositeDrawer();
-		this.drawer = yAxisCompositeDrawer;
-		const clearYAxis = new ClearCanvasDrawer(this.yAxisLabelsCanvasModel);
-		yAxisCompositeDrawer.addDrawer(clearYAxis, 'YAXIS_CLEAR');
-
-		drawingManager.addDrawer(yAxisCompositeDrawer, 'Y_AXIS');
 
 		//#region init yAxisScaleHandler
 		this.yAxisScaleHandler = new YAxisScaleHandler(
@@ -84,59 +66,16 @@ export class YAxisComponent extends ChartBaseElement {
 		this.addChildEntity(this.yAxisScaleHandler);
 		//#endregion
 
-		this.yAxisModel = new YAxisModel(
-			paneManager.paneComponents[this.paneUUID],
+		this.model = new YAxisModel(
+			this.paneUUID,
 			eventBus,
 			this.config,
 			canvasBoundsContainer,
 			canvasModel,
-			chartModel,
 			scaleModel,
+			valueFormatterProvider,
 		);
-		this.addChildEntity(this.yAxisModel);
-
-		// TODO hack, remove in future
-		// @ts-ignore
-		paneManager.paneComponents[CHART_UUID].yAxisLabelsGenerator = this.yAxisModel.yAxisLabelsGenerator;
-
-		//#region init YAxisDrawer
-		const yAxisDrawer = new YAxisDrawer(
-			config,
-			this.state,
-			canvasModel,
-			() => this.yAxisModel.yAxisBaseLabelsModel.labels,
-			() => canvasBoundsContainer.getBounds(CanvasElement.Y_AXIS),
-			() => this.state.visible,
-			scaleModel.toY.bind(scaleModel),
-		);
-		yAxisCompositeDrawer.addDrawer(yAxisDrawer);
-		//#endregion
-
-		const yAxisLabelsDrawer = new YAxisPriceLabelsDrawer(
-			() => this.yAxisModel.yAxisLabelsModel.orderedLabels,
-			this.yAxisLabelsCanvasModel,
-			this.backgroundCanvasModel,
-			this.state,
-			this.canvasBoundsContainer,
-			this.config.colors.yAxis,
-			this.yAxisModel.yAxisLabelsModel.customLabels,
-		);
-		yAxisCompositeDrawer.addDrawer(yAxisLabelsDrawer);
-
-		//#region init YAxisLabels related stuff
-		// default labels provider
-		// const lastCandleLabelsProvider = new LastCandleLabelsProvider(
-		// 	this.chartModel,
-		// 	this.config,
-		// 	this.chartModel.lastCandleLabelsByChartType,
-		// 	this.getLabelsColorResolver.bind(this),
-		// );
-
-		// this.registerYAxisLabelsProvider(lastCandleLabelsProvider, LabelsGroups.MAIN);
-		//#endregion
-
-		// TODO hack, remove when each pane will have separate y-axis component
-		paneManager.paneComponents[CHART_UUID].mainYExtentComponent.getAxisType = () => this.state.type;
+		this.addChildEntity(this.model);
 		this.updateCursor();
 	}
 
@@ -158,7 +97,7 @@ export class YAxisComponent extends ChartBaseElement {
 	 * Updates labels visual appearance on canvas
 	 */
 	public updateOrderedLabels(adjustYAxisWidth = false) {
-		this.yAxisModel.yAxisLabelsModel.updateLabels(adjustYAxisWidth);
+		// this.yAxisModel.yAxisLabelsModel.updateLabels(adjustYAxisWidth);
 	}
 
 	//#region public methods
@@ -173,7 +112,7 @@ export class YAxisComponent extends ChartBaseElement {
 		groupName: string = LabelsGroups.MAIN,
 		id = uuid(),
 	) {
-		this.yAxisModel.yAxisLabelsModel.registerYAxisLabelsProvider(groupName, provider, id);
+		// this.yAxisModel.yAxisLabelsModel.registerYAxisLabelsProvider(groupName, provider, id);
 		return id;
 	}
 
@@ -184,14 +123,14 @@ export class YAxisComponent extends ChartBaseElement {
 	 * @param label
 	 */
 	public addSimpleYAxisLabel(name: string, label: VisualYAxisLabel) {
-		this.yAxisModel.yAxisLabelsModel.customLabels[name] = label;
+		// this.yAxisModel.yAxisLabelsModel.customLabels[name] = label;
 		this.canvasModel.fireDraw();
 	}
 	/**
 	 * @param name
 	 */
 	public deleteSimpleYAxisLabel(name: string) {
-		delete this.yAxisModel.yAxisLabelsModel.customLabels[name];
+		// delete this.yAxisModel.yAxisLabelsModel.customLabels[name];
 		this.canvasModel.fireDraw();
 	}
 
@@ -202,8 +141,12 @@ export class YAxisComponent extends ChartBaseElement {
 	 * @returns {string} - The ID of the unregistered provider.
 	 */
 	public unregisterYAxisLabelsProvider(groupName: string = LabelsGroups.MAIN, id: string): string {
-		this.yAxisModel.yAxisLabelsModel.unregisterYAxisLabelsProvider(groupName, id);
+		// this.yAxisModel.yAxisLabelsModel.unregisterYAxisLabelsProvider(groupName, id);
 		return id;
+	}
+
+	public getBounds() {
+		return this.canvasBoundsContainer.getBounds(CanvasElement.PANE_UUID_Y_AXIS(this.paneUUID, this.extentIdx));
 	}
 
 	/**
@@ -223,7 +166,7 @@ export class YAxisComponent extends ChartBaseElement {
 			this.state.type = type;
 			this.axisTypeSetSubject.next(type);
 			this.scaleModel.autoScale(true);
-			this.yAxisModel.yAxisLabelsModel.updateLabels(true);
+			// this.yAxisModel.yAxisLabelsModel.updateLabels(true);
 			this.updateCursor();
 		}
 	}
@@ -267,7 +210,7 @@ export class YAxisComponent extends ChartBaseElement {
 	 */
 	public changeLabelMode(type: YAxisLabelType, mode: YAxisLabelMode): void {
 		this.state.labels.settings[type].mode = mode;
-		this.yAxisModel.yAxisLabelsModel.updateLabels();
+		// this.yAxisModel.yAxisLabelsModel.updateLabels();
 	}
 
 	/**
@@ -277,7 +220,7 @@ export class YAxisComponent extends ChartBaseElement {
 	 */
 	public changeLabelAppearance(type: YAxisLabelType, mode: YAxisLabelAppearanceType): void {
 		this.state.labels.settings[type].type = mode;
-		this.yAxisModel.yAxisLabelsModel.updateLabels();
+		// this.yAxisModel.yAxisLabelsModel.updateLabels();
 	}
 
 	/**

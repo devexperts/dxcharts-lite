@@ -4,7 +4,6 @@
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 import { CanvasBoundsContainer, CanvasElement } from '../../../canvas/canvas-bounds-container';
-import { YAxisWidthContributor } from '../../../canvas/y-axis-bounds.container';
 import { Bounds } from '../../../model/bounds.model';
 import { CanvasModel } from '../../../model/canvas.model';
 import { ChartBaseElement } from '../../../model/chart-base-element';
@@ -21,14 +20,14 @@ import { ChartBaseModel } from '../../chart/chart-base.model';
 import { createYExtentFormatters } from '../../chart/price.formatter';
 import { DragNDropYComponent } from '../../dran-n-drop_helper/drag-n-drop-y.component';
 import { PriceAxisType } from '../../labels_generator/numeric-axis-labels.generator';
+import { YAxisComponent } from '../../y_axis/y-axis.component';
 import { PaneHitTestController } from '../pane-hit-test.controller';
-import { ExtentYAxis, PaneComponent, YExtentFormatters } from '../pane.component';
+import { PaneComponent, YExtentFormatters } from '../pane.component';
 
 export interface YExtentCreationOptions {
 	scaleModel: ScaleModel;
 	order: number;
 	useDefaultHighLow: boolean;
-	useDefaultYAxis: boolean;
 	cursor: string;
 	paneFormatters: YExtentFormatters;
 	increment: number | null;
@@ -46,8 +45,7 @@ export class YExtentComponent extends ChartBaseElement {
 		private hitTestController: PaneHitTestController,
 		public dataSeriesCanvasModel: CanvasModel,
 		public readonly scaleModel: ScaleModel,
-		// TODO when y-axis component will be refactored this shouldn't be undefined
-		public readonly yAxisComponent: ExtentYAxis | undefined,
+		public readonly yAxisComponent: YAxisComponent,
 		public readonly dragNDrop: DragNDropYComponent,
 		public dataSeries: Set<DataSeriesModel> = new Set(),
 		public formatters: YExtentFormatters = {
@@ -56,20 +54,7 @@ export class YExtentComponent extends ChartBaseElement {
 	) {
 		super();
 		this.addChildEntity(scaleModel);
-		if (yAxisComponent !== undefined) {
-			this.addChildEntity(yAxisComponent.yAxisScaleHandler);
-			this.addSubscription(yAxisComponent.unsub);
-			const contributor: YAxisWidthContributor = {
-				getLargestLabel: () => yAxisComponent.labelsGenerator.getLargestLabel() ?? '',
-				getYAxisIndex: () => idx,
-				getYAxisAlign: () => yAxisComponent.state.align,
-				getPaneUUID: () => paneComponent.uuid,
-			};
-			this.canvasBoundsContainer.yAxisBoundsContainer.registerYAxisWidthContributor(contributor);
-			this.addSubscription(() =>
-				this.canvasBoundsContainer.yAxisBoundsContainer.removeYAxisWidthContributor(contributor),
-			);
-		}
+		this.addChildEntity(yAxisComponent);
 		this.setValueFormatters(createYExtentFormatters(this));
 	}
 

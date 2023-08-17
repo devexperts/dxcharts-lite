@@ -44,7 +44,7 @@ export class NumericAxisLabelsGenerator implements LabelsGenerator {
 		private increment: number | null,
 		private startEndProvider: () => [Unit, Unit],
 		private lengthProvider: () => Unit,
-		public valueFormatter: (value: number) => string,
+		public valueFormatterProvider: () => (value: number) => string,
 		private withZero: boolean = false,
 		protected axisTypeProvider: () => PriceAxisType,
 		private baseLineProvider: () => number,
@@ -58,10 +58,11 @@ export class NumericAxisLabelsGenerator implements LabelsGenerator {
 		const newLabels: NumericAxisLabel[] = [];
 		this.withZero && newLabels.push({ value: 0, text: '0' });
 		let value = MathUtils.roundToNearest(min, singleLabelHeightValue);
+		const valueFormatter = this.valueFormatterProvider();
 		while (value < max) {
 			// Adjust value to increment
 			const adjustedValue = MathUtils.roundToNearest(value, singleLabelHeightValue);
-			const labelText = this.valueFormatter(adjustedValue);
+			const labelText = valueFormatter(adjustedValue);
 			newLabels.push({
 				value: adjustedValue,
 				text: labelText,
@@ -75,11 +76,12 @@ export class NumericAxisLabelsGenerator implements LabelsGenerator {
 		const newLabels: NumericAxisLabel[] = [];
 		const baseLine = this.baseLineProvider();
 		let value: Percent = MathUtils.roundToNearest(min, singleLabelHeightValue);
+		const valueFormatter = this.valueFormatterProvider();
 		while (value < max) {
 			// Adjust value to increment
 			const adjustedValue = MathUtils.roundToNearest(value, singleLabelHeightValue);
 			const valueUnit = percentToUnit(adjustedValue, baseLine);
-			const labelText = this.valueFormatter(valueUnit);
+			const labelText = valueFormatter(valueUnit);
 			newLabels.push({
 				value: adjustedValue,
 				text: labelText,
@@ -92,9 +94,10 @@ export class NumericAxisLabelsGenerator implements LabelsGenerator {
 	private generateLogarithmLabels(min: Unit, max: Unit, singleLabelHeightValue: number): NumericAxisLabel[] {
 		const newLabels: NumericAxisLabel[] = [];
 		let value = MathUtils.roundToNearest(min, singleLabelHeightValue);
+		const valueFormatter = this.valueFormatterProvider();
 		while (value < max) {
 			const realValue = logValueToUnit(value);
-			const labelText = this.valueFormatter(realValue);
+			const labelText = valueFormatter(realValue);
 			newLabels.push({
 				value,
 				text: labelText,

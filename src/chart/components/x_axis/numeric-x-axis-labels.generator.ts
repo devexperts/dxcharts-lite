@@ -19,7 +19,7 @@ export class NumericXAxisLabelsGenerator extends NumericAxisLabelsGenerator impl
 			null,
 			() => [viewportModel.yStart, viewportModel.yEnd],
 			() => viewportModel.getBounds().width,
-			valueFormatter,
+			() => valueFormatter,
 			false,
 			() => 'regular',
 			() => 0,

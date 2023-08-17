@@ -1,21 +1,62 @@
-import { BarType, FullChartColors } from '../../chart.config';
+import { BarType, FullChartColors, FullChartConfig } from '../../chart.config';
+import { ClearCanvasDrawer } from '../../drawers/clear-canvas.drawer';
+import { CompositeDrawer } from '../../drawers/composite.drawer';
+import { DrawingManager } from '../../drawers/drawing-manager';
 import { PriceMovement } from '../../model/candle-series.model';
+import { CanvasModel } from '../../model/canvas.model';
 import { ChartBaseElement } from '../../model/chart-base-element';
 import { DataSeriesType } from '../../model/data-series.config';
-import { resolveColorForArea, resolveColorForBar, resolveColorForBaseLine, resolveColorForCandle, resolveColorForHistogram, resolveColorForLine, resolveColorForScatterPlot, resolveColorForTrendAndHollow, resolveDefaultColorForLabel } from './label-color.functions';
+import { PaneManager } from '../pane/pane-manager.component';
+import {
+	resolveColorForArea,
+	resolveColorForBar,
+	resolveColorForBaseLine,
+	resolveColorForCandle,
+	resolveColorForHistogram,
+	resolveColorForLine,
+	resolveColorForScatterPlot,
+	resolveColorForTrendAndHollow,
+	resolveDefaultColorForLabel,
+} from './label-color.functions';
+import { YAxisDrawer } from './y-axis.drawer';
 
 export type LabelColorResolver = (priceMovement: PriceMovement, colors: FullChartColors) => string;
 
 export class YAxisGlobalComponent extends ChartBaseElement {
 	private labelsColorByChartTypeMap: Partial<Record<DataSeriesType, LabelColorResolver>> = {};
+	public drawer: CompositeDrawer;
 
-    // public yAxisLabelsModel: YAxisLabelsModel;
-
-	constructor() {
-        super();
-        // this.yAxisLabelsModel = new YAxisLabelsModel();
-        // this.addChildEntity(this.yAxisLabelsModel);
+	constructor(
+		config: FullChartConfig,
+		drawingManager: DrawingManager,
+		mainCanvasModel: CanvasModel,
+		yAxisLabelsCanvasModel: CanvasModel,
+		paneManager: PaneManager,
+	) {
+		super();
 		this.registerDefaultLabelColorResolver();
+		const yAxisCompositeDrawer = new CompositeDrawer();
+		this.drawer = yAxisCompositeDrawer;
+		const clearYAxis = new ClearCanvasDrawer(yAxisLabelsCanvasModel);
+		yAxisCompositeDrawer.addDrawer(clearYAxis, 'YAXIS_CLEAR');
+
+		drawingManager.addDrawer(yAxisCompositeDrawer, 'Y_AXIS');
+
+		//#region init YAxisDrawers
+		const yAxisDrawer = new YAxisDrawer(config, mainCanvasModel, paneManager);
+		yAxisCompositeDrawer.addDrawer(yAxisDrawer);
+
+		// const yAxisLabelsDrawer = new YAxisPriceLabelsDrawer(
+		// 	() => this.yAxisModel.yAxisLabelsModel.orderedLabels,
+		// 	yAxisLabelsCanvasModel,
+		// 	this.backgroundCanvasModel,
+		// 	this.state,
+		// 	this.canvasBoundsContainer,
+		// 	this.config.colors.yAxis,
+		// 	this.yAxisModel.yAxisLabelsModel.customLabels,
+		// );
+		// yAxisCompositeDrawer.addDrawer(yAxisLabelsDrawer);
+		//#endregion
 	}
 
 	/**
