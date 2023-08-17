@@ -1,6 +1,6 @@
 # Custom data series drawer
 
-#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/w7my4l)<!--/CSB_LINK-->
+#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/lg7lvc)<!--/CSB_LINK-->
 
 ## Creating new drawer for data series
 
