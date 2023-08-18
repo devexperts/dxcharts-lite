@@ -123,13 +123,13 @@ Here is full quick-start code example:
 ```markup
 <html>
     <head>
-        <script src="https://webdev.prosp.devexperts.com:8095/dxcharts-lite-cdn/dxchart.min.js"></script>
+        <script src="https://www.unpkg.com/@devexperts/dxcharts-lite@1.0.1/dist/dxchart.min.js"></script>
     </head>
     <body>
         <div id="chart_container"></div>
     </body>
     <script type="module">
-        import generateCandlesData from 'https://webdev.prosp.devexperts.com:8095/dxcharts-lite-cdn/chart/utils/candles-generator.utils.js';
+        import generateCandlesData from 'https://www.unpkg.com/@devexperts/dxcharts-lite@1.0.1/dist/chart/utils/candles-generator.utils.js';
 
         // create chart instance, pass parent container as 1st argument
         const container = document.getElementById("chart_container");
