@@ -65,7 +65,7 @@ export class YAxisModel extends ChartBaseElement {
 			getLargestLabel: () =>
 				(this.labelsGenerator.labelsCache.getLastCachedValue() ?? [])
 					.map(label => label.text)
-					// .concat(this.yAxisLabelsModel.orderedLabels.flatMap(l => l.labels).map(l => l.labelText))
+					.concat(this.fancyLabelsModel.orderedLabels.flatMap(l => l.labels).map(l => l.labelText))
 					.reduce(
 						(maxLengthText, label) => (label.length > maxLengthText.length ? label : maxLengthText),
 						'',
