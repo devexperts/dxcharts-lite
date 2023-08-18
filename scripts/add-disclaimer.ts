@@ -22,7 +22,7 @@ program
 		const currentYear = new Date().getFullYear();
 		const prevYear = new Date().getFullYear() - 1;
 		const getDisclaimerText = (fullYear: number) => `/*
- * Copyright (C) 2002 - ${fullYear} Devexperts LLC
+ * Copyright (C) 2019 - ${fullYear} Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */`;
