@@ -167,24 +167,29 @@ export class PaneComponent extends ChartBaseElement {
 			options?.scaleModel ??
 			new SyncedByXScaleModel(this.mainScaleModel, this.config, getBounds, this.canvasAnimation);
 
-		// TODO hack, think later how to revert dependency
-		let formatter = (value: number) => `${value}`;
-
-		const yAxisComp = new YAxisComponent(
-			this.eventBus,
-			this.config,
-			this.mainCanvasModel,
-			scaleModel,
-			this.canvasInputListener,
-			this.canvasBoundsContainer,
-			this.chartPanComponent,
-			this.cursorHandler,
-			() => formatter,
-			this.uuid,
-			extentIdx,
-		);
-
 		const [unsub, dragNDrop] = this.createYPanHandler(this.uuid, scaleModel);
+
+		// creating partially resolved constructor except formatter & dataSeriesProvider - bcs it's not possible to provide formatter
+		// before y-extent is created
+		const newYAxisComponent = (
+			formatter: (value: number) => string,
+			dataSeriesProvider: () => DataSeriesModel | undefined,
+		) =>
+			new YAxisComponent(
+				this.eventBus,
+				this.config,
+				this.mainCanvasModel,
+				scaleModel,
+				this.canvasInputListener,
+				this.canvasBoundsContainer,
+				this.chartPanComponent,
+				this.cursorHandler,
+				formatter,
+				dataSeriesProvider,
+				this.uuid,
+				extentIdx,
+			);
+
 		const yExtentComponent = new YExtentComponent(
 			this.uuid,
 			extentIdx,
@@ -194,14 +199,11 @@ export class PaneComponent extends ChartBaseElement {
 			this.hitTestController,
 			this.dataSeriesCanvasModel,
 			scaleModel,
-			yAxisComp,
+			newYAxisComponent,
 			dragNDrop,
 		);
-
-		formatter = yExtentComponent.valueFormatter.bind(yExtentComponent);
-
 		yExtentComponent.addSubscription(unsub);
-		yExtentComponent.addSubscription(this.addCursors(extentIdx, yAxisComp));
+		yExtentComponent.addSubscription(this.addCursors(extentIdx, yExtentComponent.yAxisComponent));
 
 		options?.paneFormatters && yExtentComponent.setValueFormatters(options.paneFormatters);
 
@@ -219,8 +221,8 @@ export class PaneComponent extends ChartBaseElement {
 		const gridComponent = this.createGridComponent(
 			this.uuid,
 			scaleModel,
-			yAxisComp.model.labelsGenerator,
-			yAxisComp.state,
+			yExtentComponent.yAxisComponent.model.labelsGenerator,
+			yExtentComponent.yAxisComponent.state,
 		);
 		yExtentComponent.addChildEntity(gridComponent);
 

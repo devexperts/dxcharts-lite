@@ -4,17 +4,17 @@
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 import { merge, Observable, Subject } from 'rxjs';
-import { CanvasBoundsContainer, CanvasElement, CHART_UUID } from '../../../canvas/canvas-bounds-container';
+import { CanvasBoundsContainer, CanvasElement } from '../../../canvas/canvas-bounds-container';
 import { YAxisConfig, YAxisLabelMode } from '../../../chart.config';
 import EventBus from '../../../events/event-bus';
 import { Bounds } from '../../../model/bounds.model';
 import { CanvasModel } from '../../../model/canvas.model';
 import { ChartBaseElement } from '../../../model/chart-base-element';
+import { ScaleModel } from '../../../model/scale.model';
 import { Unit } from '../../../model/scaling/viewport.model';
 import { flat } from '../../../utils/array.utils';
-import { animationFrameThrottledPrior } from '../../../utils/perfomance/request-animation-frame-throttle.utils';
+import { animationFrameThrottledPrior } from '../../../utils/performance/request-animation-frame-throttle.utils';
 import { uuid } from '../../../utils/uuid.utils';
-import { ChartModel } from '../../chart/chart.model';
 import { YAxisLabelDrawConfig } from '../y-axis-labels.drawer';
 import { calcLabelsYCoordinates } from './labels-positions-calculator';
 
@@ -61,7 +61,7 @@ export const LabelsGroups = {
  * - ...
  * Anything but the base labels which are generated in other component {@link YAxisBaseLabelsModel}
  */
-export class YAxisLabelsModel extends ChartBaseElement {
+export class FancyYAxisLabelsModel extends ChartBaseElement {
 	public orderedLabels: LabelGroup[] = [];
 	/**
 	 * an easier way to manage custom y-axis labels, than y-axis labels providers, but doesn't support overlapping avoidance
@@ -73,10 +73,11 @@ export class YAxisLabelsModel extends ChartBaseElement {
 
 	constructor(
 		public eventBus: EventBus,
-		private chartModel: ChartModel,
+		private scaleModel: ScaleModel,
 		private canvasBoundsContainer: CanvasBoundsContainer,
 		private state: YAxisConfig,
 		private canvasModel: CanvasModel,
+		private paneUUID: string,
 		private updateYAxisWidth: () => void,
 	) {
 		super();
@@ -98,11 +99,9 @@ export class YAxisLabelsModel extends ChartBaseElement {
 		super.doActivate();
 		this.addRxSubscription(
 			merge(
-				this.chartModel.observeCandlesChanged(),
-				this.canvasBoundsContainer.observeBoundsChanged(CanvasElement.PANE_UUID(CHART_UUID)),
-				this.chartModel.nextCandleTimeStampSubject,
+				this.canvasBoundsContainer.observeBoundsChanged(CanvasElement.PANE_UUID(this.paneUUID)),
 				this.canvasBoundsContainer.barResizerChangedSubject,
-				this.chartModel.scaleModel.changed,
+				this.scaleModel.changed,
 			).subscribe(() => {
 				this.updateLabels();
 			}),
@@ -126,13 +125,11 @@ export class YAxisLabelsModel extends ChartBaseElement {
 	 * @returns {void}
 	 */
 	private initLabelsGroups(): void {
-		if (Object.keys(this.labelsProviders).length !== 0) {
-			for (const groupName of Object.keys(this.labelsProviders)) {
-				this.createGroup(groupName);
-				Object.entries(this.labelsProviders[groupName]).forEach(([id, provider]) => {
-					this.addToGroup(provider, groupName, id);
-				});
-			}
+		for (const groupName of Object.keys(this.labelsProviders)) {
+			this.createGroup(groupName);
+			Object.entries(this.labelsProviders[groupName]).forEach(([id, provider]) => {
+				this.addToGroup(provider, groupName, id);
+			});
 		}
 	}
 

@@ -32,7 +32,7 @@ export class GridDrawer implements Drawer {
 		private xLabelsProvider: () => NumericAxisLabel[],
 		private yLabelsProvider: () => NumericAxisLabel[],
 		private drawPredicate: () => boolean = () => true,
-		private getBaseLine?: () => Unit,
+		private getBaseline?: () => Unit,
 	) {}
 
 	/**
@@ -54,12 +54,12 @@ export class GridDrawer implements Drawer {
 	 */
 	drawZeroLine(ctx: CanvasRenderingContext2D) {
 		if (
-			this.getBaseLine &&
+			this.getBaseline &&
 			this.yAxisState.type === 'percent' &&
 			this.yAxisState.zeroPercentLine
 		) {
 			const bounds = this.xBoundsProvider();
-			const y = floor(this.getBaseLine());
+			const y = floor(this.getBaseline());
 			ctx.beginPath();
 			ctx.strokeStyle = this.config.colors.yAxis.zeroPercentLine;
 			ctx.setLineDash([]);

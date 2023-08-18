@@ -5,10 +5,9 @@
  */
 import { PaneManager } from '../components/pane/pane-manager.component';
 import { Bounds } from '../model/bounds.model';
-import { DataSeriesModel, VisualSeriesPoint } from '../model/data-series.model';
 import { CanvasModel } from '../model/canvas.model';
+import { DataSeriesModel, VisualSeriesPoint } from '../model/data-series.model';
 import { Drawer } from './drawing-manager';
-import { flatMap } from '../utils/array.utils';
 
 export interface ChartDrawerConfig {
 	singleColor?: string;
@@ -47,7 +46,7 @@ export class DataSeriesDrawer implements Drawer {
 
 	draw() {
 		const ctx = this.canvasModel.ctx;
-		flatMap(Object.values(this.paneManager.paneComponents), c => c.yExtentComponents).forEach(comp => {
+		this.paneManager.yExtents.forEach(comp => {
 			ctx.save();
 			clipToBounds(ctx, comp.getBounds());
 			comp.dataSeries.forEach(series => this.drawSeries(ctx, series));

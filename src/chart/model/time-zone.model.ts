@@ -6,7 +6,7 @@
 import { getTimezoneOffset as getTimezoneOffsetDateFnsTz } from 'date-fns-tz';
 import { Observable, ReplaySubject, Subject } from 'rxjs';
 import { DateFormatter, FullChartConfig } from '../chart.config';
-import { memoize } from '../utils/perfomance/memoize.utils';
+import { memoize } from '../utils/performance/memoize.utils';
 import { DateTimeFormatter, DateTimeFormatterFactory, dateTimeFormatterFactory } from './date-time.formatter';
 import { Timestamp } from './scaling/viewport.model';
 

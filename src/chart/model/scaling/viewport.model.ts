@@ -60,8 +60,8 @@ export type Timestamp = Unit;
 export type Percent = Unit;
 export type LogValue = Unit;
 export type YUnit = Price | Percent | LogValue;
-export const unitToPercent = (value: Unit, baseLine: Unit): Percent => ((value - baseLine) * 100) / baseLine;
-export const percentToUnit = (percent: Percent, baseLine: Unit): Unit => (percent * baseLine) / 100 + baseLine;
+export const unitToPercent = (value: Unit, baseline: Unit): Percent => ((value - baseline) * 100) / baseline;
+export const percentToUnit = (percent: Percent, baseline: Unit): Unit => (percent * baseline) / 100 + baseline;
 // log calculations
 export const calcLogValue = (value: Price): LogValue => Math.log2(value);
 export const logValueToUnit = (logValue: LogValue) => Math.pow(2, logValue);

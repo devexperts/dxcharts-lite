@@ -9,14 +9,16 @@ import { YAxisConfig } from '../../chart.config';
 import EventBus from '../../events/event-bus';
 import { CanvasModel } from '../../model/canvas.model';
 import { ChartBaseElement } from '../../model/chart-base-element';
+import { DataSeriesModel } from '../../model/data-series.model';
 import { ScaleModel } from '../../model/scale.model';
 import { NumericYAxisLabelsGenerator } from './numeric-y-axis-labels.generator';
+import { FancyYAxisLabelsModel } from './price_labels/y-axis-labels.model';
 import { YAxisBaseLabelsModel } from './y-axis-base-labels.model';
 
 export class YAxisModel extends ChartBaseElement {
 	labelsGenerator: NumericYAxisLabelsGenerator;
 	baseLabelsModel: YAxisBaseLabelsModel;
-	// yAxisLabelsModel: YAxisLabelsModel;
+	fancyLabelsModel: FancyYAxisLabelsModel;
 
 	constructor(
 		private paneUUID: string,
@@ -25,33 +27,37 @@ export class YAxisModel extends ChartBaseElement {
 		private canvasBoundsContainer: CanvasBoundsContainer,
 		canvasModel: CanvasModel,
 		scaleModel: ScaleModel,
-		valueFormatterProvider: () => (value: number) => string,
+		valueFormatter: (value: number) => string,
+		dataSeriesProvider: () => DataSeriesModel | undefined,
+		extentIdx: number,
 	) {
 		super();
 		this.labelsGenerator = new NumericYAxisLabelsGenerator(
 			null,
-			undefined,
+			dataSeriesProvider,
 			scaleModel,
-			valueFormatterProvider,
+			valueFormatter,
 			() => this.state.type,
-			() => 1,
 			state.labelHeight,
 		);
 		this.baseLabelsModel = new YAxisBaseLabelsModel(
 			scaleModel,
 			this.labelsGenerator,
 			this.canvasBoundsContainer,
+			paneUUID,
+			extentIdx,
 		);
 		this.addChildEntity(this.baseLabelsModel);
-		// this.yAxisLabelsModel = new YAxisLabelsModel(
-		// 	eventBus,
-		// 	this.chartModel,
-		// 	this.canvasBoundsContainer,
-		// 	this.config,
-		// 	canvasModel,
-		// 	() => this.canvasBoundsContainer.updateYAxisWidths(),
-		// );
-		// this.addChildEntity(this.yAxisLabelsModel);
+		this.fancyLabelsModel = new FancyYAxisLabelsModel(
+			eventBus,
+			scaleModel,
+			canvasBoundsContainer,
+			state,
+			canvasModel,
+			paneUUID,
+			() => this.canvasBoundsContainer.updateYAxisWidths(),
+		);
+		this.addChildEntity(this.fancyLabelsModel);
 	}
 
 	protected doActivate(): void {

@@ -9,7 +9,6 @@ import { Drawer } from '../../drawers/drawing-manager';
 import { Bounds } from '../../model/bounds.model';
 import { CanvasModel } from '../../model/canvas.model';
 import { Unit } from '../../model/scaling/viewport.model';
-import { flatMap } from '../../utils/array.utils';
 import { calculateSymbolHeight, calculateTextWidth } from '../../utils/canvas/canvas-font-measure-tool.utils';
 import { YExtentComponent } from '../pane/extent/y-extent-component';
 import { PaneManager } from '../pane/pane-manager.component';
@@ -45,7 +44,7 @@ export class YAxisDrawer implements Drawer {
 	 * @function
 	 */
 	draw() {
-		flatMap(Object.values(this.paneManager.paneComponents), pane => pane.yExtentComponents).forEach(extent => {
+		this.paneManager.yExtents.forEach(extent => {
 			const yAxisComponent: YAxisComponent = extent.yAxisComponent;
 			if (yAxisComponent.state.visible) {
 				const labels = yAxisComponent.model.baseLabelsModel.labels;

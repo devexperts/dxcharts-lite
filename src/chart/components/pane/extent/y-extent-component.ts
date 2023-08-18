@@ -15,11 +15,10 @@ import {
 } from '../../../model/data-series.model';
 import { ScaleModel } from '../../../model/scale.model';
 import { HighLowProvider, mergeHighLow } from '../../../model/scaling/auto-scale.model';
-import { Unit } from '../../../model/scaling/viewport.model';
+import { Pixel, Price, Unit } from '../../../model/scaling/viewport.model';
 import { ChartBaseModel } from '../../chart/chart-base.model';
 import { createYExtentFormatters } from '../../chart/price.formatter';
 import { DragNDropYComponent } from '../../dran-n-drop_helper/drag-n-drop-y.component';
-import { PriceAxisType } from '../../labels_generator/numeric-axis-labels.generator';
 import { YAxisComponent } from '../../y_axis/y-axis.component';
 import { PaneHitTestController } from '../pane-hit-test.controller';
 import { PaneComponent, YExtentFormatters } from '../pane.component';
@@ -35,6 +34,7 @@ export interface YExtentCreationOptions {
 
 export class YExtentComponent extends ChartBaseElement {
 	private mainDataSeries?: DataSeriesModel;
+	public yAxisComponent: YAxisComponent;
 
 	constructor(
 		public paneUuid: string,
@@ -45,7 +45,10 @@ export class YExtentComponent extends ChartBaseElement {
 		private hitTestController: PaneHitTestController,
 		public dataSeriesCanvasModel: CanvasModel,
 		public readonly scaleModel: ScaleModel,
-		public readonly yAxisComponent: YAxisComponent,
+		newYAxisComponent: (
+			formatter: (value: number) => string,
+			dataSeriesProvider: () => DataSeriesModel | undefined,
+		) => YAxisComponent,
 		public readonly dragNDrop: DragNDropYComponent,
 		public dataSeries: Set<DataSeriesModel> = new Set(),
 		public formatters: YExtentFormatters = {
@@ -54,8 +57,9 @@ export class YExtentComponent extends ChartBaseElement {
 	) {
 		super();
 		this.addChildEntity(scaleModel);
-		this.addChildEntity(yAxisComponent);
 		this.setValueFormatters(createYExtentFormatters(this));
+		this.yAxisComponent = newYAxisComponent(this.valueFormatter.bind(this), () => this.mainDataSeries);
+		this.addChildEntity(this.yAxisComponent);
 	}
 
 	protected doDeactivate(): void {
@@ -77,6 +81,10 @@ export class YExtentComponent extends ChartBaseElement {
 	 */
 	public getBounds(): Bounds {
 		return this.scaleModel.getBounds();
+	}
+
+	public getBaseline() {
+		return this.mainDataSeries?.getBaseline() ?? 1;
 	}
 
 	private toVisualPoints = (points: DataSeriesPoint[]): VisualSeriesPoint[] =>
@@ -105,6 +113,10 @@ export class YExtentComponent extends ChartBaseElement {
 		this.paneComponent.updateView();
 	}
 
+	toY = (value: Price): Pixel => {
+		return this.mainDataSeries?.view.toY(value) ?? 1;
+	};
+
 	/**
 	 * Removes a data series from the chart.
 	 *
@@ -116,19 +128,8 @@ export class YExtentComponent extends ChartBaseElement {
 		this.paneComponent.updateView();
 	}
 
-	// TODO hack, remove when each pane will have separate y-axis component
-	/**
-	 * Returns the type of the y-axis component for the current pane.
-	 *
-	 * @returns {PriceAxisType} The 'regular' type of the y-axis component for the current pane.
-	 *
-	 */
-	public getAxisType(): PriceAxisType {
-		return 'regular';
-	}
-
 	public valueFormatter = (value: Unit, dataSeries?: DataSeriesModel) => {
-		const formatter = this.formatters[this.getAxisType()] ?? this.formatters.regular;
+		const formatter = this.formatters[this.yAxisComponent.getAxisType()] ?? this.formatters.regular;
 		return formatter(value, dataSeries);
 	};
 

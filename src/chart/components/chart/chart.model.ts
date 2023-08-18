@@ -621,15 +621,7 @@ export class ChartModel extends ChartBaseElement {
 		// lineX is the middle of candle - it's correct
 		return this.scaleModel.toX(visualCandle.centerUnit);
 	}
-
-	/**
-	 * Returns the baseline of the main candle series.
-	 * @returns {Unit} The baseline of the main candle series.
-	 */
-	public getBaseLine(): Unit {
-		return this.mainCandleSeries.getBaseLine();
-	}
-
+	
 	/**
 	 * Transforms X coordinate (relative to canvas element) to Candle object.
 	 * If extrapolate = false, then it takes leftmost/rightmost existing candle

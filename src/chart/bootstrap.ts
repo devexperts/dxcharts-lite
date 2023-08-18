@@ -224,7 +224,7 @@ export default class ChartBootstrap implements ChartContainer {
 		//#region ScaleModel init
 		const scaleModel = new ScaleModel(
 			config,
-			() => canvasBoundsContainer.getBounds(CanvasElement.CHART),
+			() => canvasBoundsContainer.getBounds(CanvasElement.PANE_UUID(CHART_UUID)),
 			canvasAnimation,
 		);
 		this.scaleModel = scaleModel;
@@ -403,7 +403,9 @@ export default class ChartBootstrap implements ChartContainer {
 			this.config,
 			drawingManager,
 			mainCanvasModel,
+			backgroundCanvasModel,
 			yAxisLabelsCanvasModel,
+			canvasBoundsContainer,
 			paneManager,
 		);
 
@@ -415,7 +417,9 @@ export default class ChartBootstrap implements ChartContainer {
 			this.yAxisGlobalComponent.getLabelsColorResolver.bind(this.yAxisGlobalComponent),
 		);
 
-		this.yAxisComponent = this.paneManager.paneComponents[CHART_UUID].mainYExtentComponent.yAxisComponent;
+		const mainPane = this.paneManager.paneComponents[CHART_UUID];
+
+		this.yAxisComponent = mainPane.mainYExtentComponent.yAxisComponent;
 		this.yAxisComponent.registerYAxisLabelsProvider(lastCandleLabelsProvider, LabelsGroups.MAIN);
 
 		this.volumesComponent = new VolumesComponent(
@@ -441,7 +445,7 @@ export default class ChartBootstrap implements ChartContainer {
 			() => this.canvasBoundsContainer.getBounds(CanvasElement.PANE_UUID(CHART_UUID)),
 			() => this.xAxisComponent.xAxisLabelsGenerator.labels,
 			() => this.yAxisComponent.model.baseLabelsModel.labels,
-			() => this.chartModel.toY(this.chartModel.getBaseLine()),
+			() => mainPane.mainYExtentComponent.toY(mainPane.mainYExtentComponent.getBaseline()),
 			() => config.components.grid.visible,
 		);
 		this.chartComponents.push(mainChartGridComponent);
@@ -698,14 +702,6 @@ export default class ChartBootstrap implements ChartContainer {
 			this.config.components.chart.showCandlesBorder = show;
 			this.redraw();
 		}
-	}
-
-	/**
-	 * Returns related Y-axis coordinate by provided value
-	 * @param price
-	 */
-	valueToY(price: number): number {
-		return this.chartModel.toY(price);
 	}
 
 	/**

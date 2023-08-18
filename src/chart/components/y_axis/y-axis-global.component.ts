@@ -1,3 +1,4 @@
+import { CanvasBoundsContainer } from '../../canvas/canvas-bounds-container';
 import { BarType, FullChartColors, FullChartConfig } from '../../chart.config';
 import { ClearCanvasDrawer } from '../../drawers/clear-canvas.drawer';
 import { CompositeDrawer } from '../../drawers/composite.drawer';
@@ -18,10 +19,14 @@ import {
 	resolveColorForTrendAndHollow,
 	resolveDefaultColorForLabel,
 } from './label-color.functions';
+import { YAxisPriceLabelsDrawer } from './price_labels/y-axis-price-labels.drawer';
 import { YAxisDrawer } from './y-axis.drawer';
 
 export type LabelColorResolver = (priceMovement: PriceMovement, colors: FullChartColors) => string;
 
+/**
+ * Contains common y-axis stuff, like drawers & label color resolver
+ */
 export class YAxisGlobalComponent extends ChartBaseElement {
 	private labelsColorByChartTypeMap: Partial<Record<DataSeriesType, LabelColorResolver>> = {};
 	public drawer: CompositeDrawer;
@@ -30,7 +35,9 @@ export class YAxisGlobalComponent extends ChartBaseElement {
 		config: FullChartConfig,
 		drawingManager: DrawingManager,
 		mainCanvasModel: CanvasModel,
+		backgroundCanvasModel: CanvasModel,
 		yAxisLabelsCanvasModel: CanvasModel,
+		canvasBoundsContainer: CanvasBoundsContainer,
 		paneManager: PaneManager,
 	) {
 		super();
@@ -46,16 +53,14 @@ export class YAxisGlobalComponent extends ChartBaseElement {
 		const yAxisDrawer = new YAxisDrawer(config, mainCanvasModel, paneManager);
 		yAxisCompositeDrawer.addDrawer(yAxisDrawer);
 
-		// const yAxisLabelsDrawer = new YAxisPriceLabelsDrawer(
-		// 	() => this.yAxisModel.yAxisLabelsModel.orderedLabels,
-		// 	yAxisLabelsCanvasModel,
-		// 	this.backgroundCanvasModel,
-		// 	this.state,
-		// 	this.canvasBoundsContainer,
-		// 	this.config.colors.yAxis,
-		// 	this.yAxisModel.yAxisLabelsModel.customLabels,
-		// );
-		// yAxisCompositeDrawer.addDrawer(yAxisLabelsDrawer);
+		const yAxisLabelsDrawer = new YAxisPriceLabelsDrawer(
+			yAxisLabelsCanvasModel,
+			backgroundCanvasModel,
+			canvasBoundsContainer,
+			config.colors.yAxis,
+			paneManager,
+		);
+		yAxisCompositeDrawer.addDrawer(yAxisLabelsDrawer);
 		//#endregion
 	}
 

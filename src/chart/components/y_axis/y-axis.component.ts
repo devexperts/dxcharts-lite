@@ -19,6 +19,7 @@ import EventBus from '../../events/event-bus';
 import { CanvasInputListenerComponent } from '../../inputlisteners/canvas-input-listener.component';
 import { CanvasModel } from '../../model/canvas.model';
 import { ChartBaseElement } from '../../model/chart-base-element';
+import { DataSeriesModel } from '../../model/data-series.model';
 import { ScaleModel } from '../../model/scale.model';
 import { cloneUnsafe } from '../../utils/object.utils';
 import { uuid } from '../../utils/uuid.utils';
@@ -33,7 +34,7 @@ import { YAxisModel } from './y-axis.model';
  */
 export class YAxisComponent extends ChartBaseElement {
 	public yAxisScaleHandler: YAxisScaleHandler;
-	model: YAxisModel;
+	public model: YAxisModel;
 	public axisTypeSetSubject: Subject<PriceAxisType> = new Subject<PriceAxisType>();
 	public readonly state: YAxisConfig;
 
@@ -46,7 +47,8 @@ export class YAxisComponent extends ChartBaseElement {
 		private canvasBoundsContainer: CanvasBoundsContainer,
 		chartPanComponent: ChartPanComponent,
 		private cursorHandler: CursorHandler,
-		valueFormatterProvider: () => (value: number) => string,
+		valueFormatter: (value: number) => string,
+		dataSeriesProvider: () => DataSeriesModel | undefined,
 		public paneUUID: string,
 		public extentIdx: number,
 	) {
@@ -74,10 +76,20 @@ export class YAxisComponent extends ChartBaseElement {
 			canvasBoundsContainer,
 			canvasModel,
 			scaleModel,
-			valueFormatterProvider,
+			valueFormatter,
+			dataSeriesProvider,
+			extentIdx,
 		);
 		this.addChildEntity(this.model);
 		this.updateCursor();
+	}
+
+	protected doActivate() {
+		this.addRxSubscription(
+			this.scaleModel.beforeStartAnimationSubject.subscribe(
+				() => this.state.type === 'percent' && this.scaleModel.haltAnimation(),
+			),
+		);
 	}
 
 	private updateCursor() {
@@ -98,7 +110,7 @@ export class YAxisComponent extends ChartBaseElement {
 	 * Updates labels visual appearance on canvas
 	 */
 	public updateOrderedLabels(adjustYAxisWidth = false) {
-		// this.yAxisModel.yAxisLabelsModel.updateLabels(adjustYAxisWidth);
+		this.model.fancyLabelsModel.updateLabels(adjustYAxisWidth);
 	}
 
 	//#region public methods
@@ -113,7 +125,7 @@ export class YAxisComponent extends ChartBaseElement {
 		groupName: string = LabelsGroups.MAIN,
 		id = uuid(),
 	) {
-		// this.yAxisModel.yAxisLabelsModel.registerYAxisLabelsProvider(groupName, provider, id);
+		this.model.fancyLabelsModel.registerYAxisLabelsProvider(groupName, provider, id);
 		return id;
 	}
 
@@ -124,15 +136,19 @@ export class YAxisComponent extends ChartBaseElement {
 	 * @param label
 	 */
 	public addSimpleYAxisLabel(name: string, label: VisualYAxisLabel) {
-		// this.yAxisModel.yAxisLabelsModel.customLabels[name] = label;
+		this.model.fancyLabelsModel.customLabels[name] = label;
 		this.canvasModel.fireDraw();
 	}
 	/**
 	 * @param name
 	 */
 	public deleteSimpleYAxisLabel(name: string) {
-		// delete this.yAxisModel.yAxisLabelsModel.customLabels[name];
+		delete this.model.fancyLabelsModel.customLabels[name];
 		this.canvasModel.fireDraw();
+	}
+
+	public getAxisType(): PriceAxisType {
+		return this.state.type;
 	}
 
 	/**
@@ -142,7 +158,7 @@ export class YAxisComponent extends ChartBaseElement {
 	 * @returns {string} - The ID of the unregistered provider.
 	 */
 	public unregisterYAxisLabelsProvider(groupName: string = LabelsGroups.MAIN, id: string): string {
-		// this.yAxisModel.yAxisLabelsModel.unregisterYAxisLabelsProvider(groupName, id);
+		this.model.fancyLabelsModel.unregisterYAxisLabelsProvider(groupName, id);
 		return id;
 	}
 
@@ -167,7 +183,7 @@ export class YAxisComponent extends ChartBaseElement {
 			this.state.type = type;
 			this.axisTypeSetSubject.next(type);
 			this.scaleModel.autoScale(true);
-			// this.yAxisModel.yAxisLabelsModel.updateLabels(true);
+			this.model.fancyLabelsModel.updateLabels(true);
 			this.updateCursor();
 		}
 	}
@@ -211,7 +227,7 @@ export class YAxisComponent extends ChartBaseElement {
 	 */
 	public changeLabelMode(type: YAxisLabelType, mode: YAxisLabelMode): void {
 		this.state.labels.settings[type].mode = mode;
-		// this.yAxisModel.yAxisLabelsModel.updateLabels();
+		this.model.fancyLabelsModel.updateLabels();
 	}
 
 	/**
@@ -221,7 +237,7 @@ export class YAxisComponent extends ChartBaseElement {
 	 */
 	public changeLabelAppearance(type: YAxisLabelType, mode: YAxisLabelAppearanceType): void {
 		this.state.labels.settings[type].type = mode;
-		// this.yAxisModel.yAxisLabelsModel.updateLabels();
+		this.model.fancyLabelsModel.updateLabels();
 	}
 
 	/**

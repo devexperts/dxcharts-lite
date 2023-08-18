@@ -60,6 +60,7 @@ export class SeparateVolumesComponent extends ChartBaseElement {
 				useDefaultHighLow: false,
 				increment: 1,
 			});
+			volumePane.mainYExtentComponent.yAxisComponent.setAxisType('regular');
 			const { scaleModel } = volumePane;
 			const volumesHighLowProvider = createCandlesOffsetProvider(
 				() => ({ top: 10, bottom: 0, left: 0, right: 0, visible: true }),

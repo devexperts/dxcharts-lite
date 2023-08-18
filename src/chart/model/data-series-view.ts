@@ -28,10 +28,10 @@ class PercentScaleAnimationHandler {
 
 	/**
 	 * This logic calculates correct baseline helping avoid shaking during zoom animation
-	 * @param getBaseLine
+	 * @param getBaseline
 	 * @returns
 	 */
-	public getBaselineForPercent(getBaseLine: (idx?: Index) => Unit) {
+	public getBaselineForPercent(getBaseline: (idx?: Index) => Unit) {
 		const animation = this.scaleModel.currentAnimation;
 		let baseline: number;
 		if (animation?.animationInProgress) {
@@ -42,12 +42,12 @@ class PercentScaleAnimationHandler {
 			}
 			const easedProgress = animation.easingFn(animation.getProgress());
 			if (this.initialBaseline === undefined) {
-				this.initialBaseline = getBaseLine(
+				this.initialBaseline = getBaseline(
 					binarySearch(this.dataSeries.visualPoints, animation.xStart, i => i.centerUnit).index,
 				);
 			}
 			if (this.targetBaseline === undefined) {
-				this.targetBaseline = getBaseLine(
+				this.targetBaseline = getBaseline(
 					binarySearch(
 						this.dataSeries.visualPoints,
 						animation.animationConfig.targetXStart,
@@ -57,7 +57,7 @@ class PercentScaleAnimationHandler {
 			}
 			baseline = this.initialBaseline + (this.targetBaseline - this.initialBaseline) * easedProgress;
 		} else {
-			baseline = getBaseLine();
+			baseline = getBaseline();
 		}
 		return baseline;
 	}
@@ -75,7 +75,7 @@ export class DataSeriesView implements Viewable {
 		private dataSeries: DataSeriesModel,
 		private scaleModel: ScaleModel,
 		private getAxisType: () => PriceAxisType,
-		private getBaseLine: (idx?: Index) => Unit,
+		private getBaseline: (idx?: Index) => Unit,
 	) {
 		this.percentAnimationHandler = new PercentScaleAnimationHandler(this.scaleModel, this.dataSeries);
 	}
@@ -92,13 +92,13 @@ export class DataSeriesView implements Viewable {
 	/**
 	 * Convert the input value to the corresponding unit based on the current axis type.
 	 * @param value - The value to be converted to unit.
-	 * @param getBaseLine - A function that returns the baseline for percent.
+	 * @param getBaseline - A function that returns the baseline for percent.
 	 * @returns - The converted value in the corresponding unit.
 	 */
-	toAxisUnits(value: Price, getBaseLine = this.getBaseLine): Unit {
+	toAxisUnits(value: Price, getBaseline = this.getBaseline): Unit {
 		switch (this.getAxisType()) {
 			case 'percent':
-				const baseline = this.percentAnimationHandler.getBaselineForPercent(getBaseLine);
+				const baseline = this.percentAnimationHandler.getBaselineForPercent(getBaseline);
 				return unitToPercent(value, baseline);
 			case 'logarithmic':
 				return calcLogValue(value);
@@ -138,7 +138,7 @@ export class DataSeriesView implements Viewable {
 	fromAxisUnits(unit: Unit): Price {
 		switch (this.getAxisType()) {
 			case 'percent':
-				return percentToUnit(unit, this.getBaseLine());
+				return percentToUnit(unit, this.getBaseline());
 			case 'logarithmic':
 				return logValueToUnit(unit);
 			case 'regular':

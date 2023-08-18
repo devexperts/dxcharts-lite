@@ -10,7 +10,7 @@ import { CanvasBoundsContainer, CanvasElement } from '../../canvas/canvas-bounds
 import { ChartBaseElement } from '../../model/chart-base-element';
 import { ScaleModel } from '../../model/scale.model';
 import { uuid } from '../../utils/uuid.utils';
-import { animationFrameThrottledPrior } from '../../utils/perfomance/request-animation-frame-throttle.utils';
+import { animationFrameThrottledPrior } from '../../utils/performance/request-animation-frame-throttle.utils';
 import { isDiffersBy } from '../../utils/math.utils';
 
 // TODO rework, make this the source of Y labels for main chart
@@ -21,8 +21,10 @@ export class YAxisBaseLabelsModel extends ChartBaseElement {
 
 	constructor(
 		private scaleModel: ScaleModel,
-		private yAxisLabelsGenerator: NumericAxisLabelsGenerator,
+		private labelsGenerator: NumericAxisLabelsGenerator,
 		private canvasBoundsContainer: CanvasBoundsContainer,
+		private paneUUID: string,
+		private extentIdx: number,
 	) {
 		super();
 	}
@@ -39,15 +41,17 @@ export class YAxisBaseLabelsModel extends ChartBaseElement {
 		this.addRxSubscription(
 			merge(
 				this.scaleModel.yChanged,
-				this.canvasBoundsContainer.observeBoundsChanged(CanvasElement.Y_AXIS).pipe(
-					map(bounds => bounds.height),
-					// do not recalculate height every time bounds is changed, recalculate only if it differs by 1.5 times
-					filter(height => isDiffersBy(height, this.prevYAxisHeight, 1.5)),
-					tap(height => {
-						this.yAxisLabelsGenerator.labelsCache.invalidate();
-						this.prevYAxisHeight = height;
-					}),
-				),
+				this.canvasBoundsContainer
+					.observeBoundsChanged(CanvasElement.PANE_UUID_Y_AXIS(this.paneUUID, this.extentIdx))
+					.pipe(
+						map(bounds => bounds.height),
+						// do not recalculate height every time bounds is changed, recalculate only if it differs by 1.5 times
+						filter(height => isDiffersBy(height, this.prevYAxisHeight, 1.5)),
+						tap(height => {
+							this.labelsGenerator.labelsCache.invalidate();
+							this.prevYAxisHeight = height;
+						}),
+					),
 			).subscribe(() => this.updateLabels()),
 		);
 	}
@@ -57,7 +61,7 @@ export class YAxisBaseLabelsModel extends ChartBaseElement {
 	 * Then, it calls the updateYAxisWidth method to update the width of the y-axis.
 	 */
 	public updateLabels() {
-		this.labels = this.yAxisLabelsGenerator.generateNumericLabels();
+		this.labels = this.labelsGenerator.generateNumericLabels();
 		animationFrameThrottledPrior(this.animFrameId, () => this.canvasBoundsContainer.updateYAxisWidths());
 	}
 }

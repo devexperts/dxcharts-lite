@@ -130,8 +130,8 @@ export class DataSeriesModel<
 		this.view = new DataSeriesView(
 			this,
 			this.scaleModel,
-			() => this.extentComponent.getAxisType(),
-			this.getBaseLine,
+			() => this.extentComponent.yAxisComponent.getAxisType(),
+			this.getBaseline,
 		);
 		this.yAxisLabelProvider = new DataSeriesYAxisLabelsProvider(
 			this,
@@ -185,8 +185,8 @@ export class DataSeriesModel<
 		this.view = new DataSeriesView(
 			this,
 			this.scaleModel,
-			() => this.extentComponent.getAxisType(),
-			this.getBaseLine,
+			() => this.extentComponent.yAxisComponent.getAxisType(),
+			this.getBaseline,
 		);
 		this.yAxisLabelProvider.yAxisBoundsProvider = extent.getYAxisBounds;
 		this.yAxisLabelProvider.axisState = extent.yAxisComponent?.state;
@@ -271,7 +271,7 @@ export class DataSeriesModel<
 	 * @param {number} [idx=this.dataIdxStart] - The index of the visual point to retrieve the close value for.
 	 * @returns {Unit} The close value of the visual point at the given index, or 1 if the visual point is not defined.
 	 */
-	public getBaseLine = (idx = this.dataIdxStart): Unit => this.visualPoints[idx]?.close ?? 1;
+	public getBaseline = (idx = this.dataIdxStart): Unit => this.visualPoints[idx]?.close ?? 1;
 
 	/**
 	 * Returns the string representation of the close value of the given visual point.

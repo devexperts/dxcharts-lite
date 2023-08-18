@@ -9,7 +9,7 @@ import { ChartResizeHandler } from '../inputhandlers/chart-resize.handler';
 import { MIN_SUPPORTED_CANVAS_SIZE } from '../model/canvas.model';
 import { arrayIntersect, reorderArray } from '../utils/array.utils';
 import { StringTMap } from '../utils/object.utils';
-import { animationFrameThrottled } from '../utils/perfomance/request-animation-frame-throttle.utils';
+import { animationFrameThrottled } from '../utils/performance/request-animation-frame-throttle.utils';
 import { uuid } from '../utils/uuid.utils';
 
 export const HIT_TEST_PREFIX = 'HIT_TEST_';

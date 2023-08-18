@@ -54,6 +54,8 @@ type Constraints = (initialState: ViewportModelState, state: ViewportModelState)
  */
 export class ScaleModel extends ViewportModel {
 	public scaleInversedSubject: Subject<boolean> = new Subject<boolean>();
+	// y-axis component needs this subject in order to halt prev animation if axis type is percent
+	public beforeStartAnimationSubject = new Subject<void>();
 
 	// TODO rework, make a new history based on units
 	history: ScaleHistoryItem[] = [];
@@ -123,8 +125,7 @@ export class ScaleModel extends ViewportModel {
 		forceNoAnimation: boolean = false,
 		zoomSensitivity: number = this.config.scale.zoomSensitivity,
 	) {
-		// TODO yaxis think how revert dependency
-		this.config.components.yAxis.type === 'percent' && this.haltAnimation();
+		this.beforeStartAnimationSubject.next();
 		const state = this.export();
 		zoomXToPercentViewportCalculator(this, state, viewportPercent, zoomSensitivity, zoomIn);
 		this.zoomXTo(state, forceNoAnimation);
@@ -136,14 +137,13 @@ export class ScaleModel extends ViewportModel {
 	 * @param zoomSensitivity - The sensitivity of the zoom. Default value is taken from the configuration object.
 	 */
 	public zoomXToEnd(zoomIn: boolean, zoomSensitivity: number = this.config.scale.zoomSensitivity) {
-		this.config.components.yAxis.type === 'percent' && this.haltAnimation();
+		this.beforeStartAnimationSubject.next();
 		const state = this.export();
 		zoomXToEndViewportCalculator(this, state, zoomSensitivity, zoomIn);
 		this.zoomXTo(state);
 	}
 
-	private haltAnimation() {
-		// TODO: get rid of percent check
+	public haltAnimation() {
 		if (this.currentAnimation?.animationInProgress) {
 			this.currentAnimation.finishAnimation();
 			this.doAutoScale();
@@ -153,18 +153,18 @@ export class ScaleModel extends ViewportModel {
 	private zoomXTo(state: ViewportModelState, forceNoAnimation?: boolean) {
 		const initialStateCopy = { ...state };
 
-		const constraitedState = this.scalePostProcessor(initialStateCopy, state);
+		const constrainedState = this.scalePostProcessor(initialStateCopy, state);
 		if (this.state.lockPriceToBarRatio) {
-			lockedYEndViewportCalculator(constraitedState, this.zoomXYRatio);
+			lockedYEndViewportCalculator(constrainedState, this.zoomXYRatio);
 		}
 		if (this.state.auto) {
-			this.autoScaleModel.setAutoAndRecalculateState(constraitedState, true);
+			this.autoScaleModel.setAutoAndRecalculateState(constrainedState, true);
 		}
 
 		if (forceNoAnimation) {
-			this.apply(constraitedState);
+			this.apply(constrainedState);
 		} else {
-			startViewportModelAnimation(this.canvasAnimation, this, constraitedState);
+			startViewportModelAnimation(this.canvasAnimation, this, constrainedState);
 		}
 	}
 

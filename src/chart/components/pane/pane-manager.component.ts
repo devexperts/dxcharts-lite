@@ -21,10 +21,15 @@ import { ChartBaseModel } from '../chart/chart-base.model';
 import { createHighLowOffsetCalculator } from '../chart/data-series.high-low-provider';
 import { ChartPanComponent } from '../pan/chart-pan.component';
 import { BarResizerComponent } from '../resizer/bar-resizer.component';
-import { YExtentCreationOptions, createDefaultYExtentHighLowProvider } from './extent/y-extent-component';
+import {
+	YExtentComponent,
+	YExtentCreationOptions,
+	createDefaultYExtentHighLowProvider,
+} from './extent/y-extent-component';
 import { PaneHitTestController } from './pane-hit-test.controller';
 import { PaneComponent } from './pane.component';
 import { Unsubscriber } from '../../utils/function.utils';
+import { flatMap } from '../../utils/array.utils';
 
 export class PaneManager extends ChartBaseElement {
 	public paneComponents: Record<string, PaneComponent> = {};
@@ -103,6 +108,10 @@ export class PaneManager extends ChartBaseElement {
 		);
 		this.userInputListenerComponents.push(barResizerComponent);
 		return barResizerComponent;
+	}
+
+	get yExtents(): YExtentComponent[] {
+		return flatMap(Object.values(this.paneComponents), c => c.yExtentComponents);
 	}
 
 	/**
