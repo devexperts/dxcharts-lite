@@ -5,7 +5,7 @@
  */
 import { CanvasBoundsContainer, CanvasElement, CHART_UUID } from '../../../canvas/canvas-bounds-container';
 import {
-	ChartConfigComponentsYAxis,
+	YAxisConfig,
 	FullChartColors,
 	getFontFromConfig,
 	YAxisAlign,
@@ -46,7 +46,7 @@ export function drawLabel(
 	paneBounds: Bounds,
 	visualLabel: VisualYAxisLabel,
 	canvasBoundsContainer: CanvasBoundsContainer,
-	config: ChartConfigComponentsYAxis,
+	config: YAxisConfig,
 	colors: FullChartColors['yAxis'],
 ) {
 	const centralY = visualLabel.y;
@@ -127,7 +127,7 @@ function drawDescription(
 	paneBounds: Bounds,
 	visualLabel: VisualYAxisLabel,
 	align: YAxisAlign = 'right',
-	yAxisState: ChartConfigComponentsYAxis,
+	yAxisState: YAxisConfig,
 ): void {
 	const description = visualLabel.description;
 	if (!description || description.length === 0) {

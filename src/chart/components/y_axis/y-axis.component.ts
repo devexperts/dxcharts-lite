@@ -4,13 +4,13 @@
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 import { Subject } from 'rxjs';
-import { CanvasBoundsContainer, CanvasElement, CHART_UUID } from '../../canvas/canvas-bounds-container';
+import { CanvasBoundsContainer, CanvasElement } from '../../canvas/canvas-bounds-container';
 import { CursorHandler } from '../../canvas/cursor.handler';
 import { YAxisWidthContributor } from '../../canvas/y-axis-bounds.container';
 import {
-	ChartConfigComponentsYAxis,
 	FullChartConfig,
 	YAxisAlign,
+	YAxisConfig,
 	YAxisLabelAppearanceType,
 	YAxisLabelMode,
 	YAxisLabelType,
@@ -20,6 +20,7 @@ import { CanvasInputListenerComponent } from '../../inputlisteners/canvas-input-
 import { CanvasModel } from '../../model/canvas.model';
 import { ChartBaseElement } from '../../model/chart-base-element';
 import { ScaleModel } from '../../model/scale.model';
+import { cloneUnsafe } from '../../utils/object.utils';
 import { uuid } from '../../utils/uuid.utils';
 import { PriceAxisType } from '../labels_generator/numeric-axis-labels.generator';
 import { ChartPanComponent } from '../pan/chart-pan.component';
@@ -34,11 +35,11 @@ export class YAxisComponent extends ChartBaseElement {
 	public yAxisScaleHandler: YAxisScaleHandler;
 	model: YAxisModel;
 	public axisTypeSetSubject: Subject<PriceAxisType> = new Subject<PriceAxisType>();
-	public readonly state: ChartConfigComponentsYAxis;
+	public readonly state: YAxisConfig;
 
 	constructor(
 		private eventBus: EventBus,
-		private config: FullChartConfig,
+		config: FullChartConfig,
 		private canvasModel: CanvasModel,
 		private scaleModel: ScaleModel,
 		canvasInputListeners: CanvasInputListenerComponent,
@@ -46,11 +47,11 @@ export class YAxisComponent extends ChartBaseElement {
 		chartPanComponent: ChartPanComponent,
 		private cursorHandler: CursorHandler,
 		valueFormatterProvider: () => (value: number) => string,
-		private paneUUID: string,
-		private extentIdx: number,
+		public paneUUID: string,
+		public extentIdx: number,
 	) {
 		super();
-		this.state = config.components.yAxis;
+		this.state = cloneUnsafe(config.components.yAxis);
 
 		//#region init yAxisScaleHandler
 		this.yAxisScaleHandler = new YAxisScaleHandler(
@@ -60,7 +61,7 @@ export class YAxisComponent extends ChartBaseElement {
 			scaleModel,
 			canvasInputListeners,
 			canvasBoundsContainer,
-			canvasBoundsContainer.getBoundsHitTest(CanvasElement.PANE_UUID_Y_AXIS(CHART_UUID)),
+			canvasBoundsContainer.getBoundsHitTest(CanvasElement.PANE_UUID_Y_AXIS(paneUUID, extentIdx)),
 			auto => scaleModel.autoScale(auto),
 		);
 		this.addChildEntity(this.yAxisScaleHandler);
@@ -69,7 +70,7 @@ export class YAxisComponent extends ChartBaseElement {
 		this.model = new YAxisModel(
 			this.paneUUID,
 			eventBus,
-			this.config,
+			this.state,
 			canvasBoundsContainer,
 			canvasModel,
 			scaleModel,
@@ -83,12 +84,12 @@ export class YAxisComponent extends ChartBaseElement {
 		if (this.state.type === 'percent') {
 			this.cursorHandler.setCursorForCanvasEl(
 				CanvasElement.PANE_UUID_Y_AXIS(this.paneUUID, this.extentIdx),
-				this.config.components.yAxis.resizeDisabledCursor,
+				this.state.resizeDisabledCursor,
 			);
 		} else {
 			this.cursorHandler.setCursorForCanvasEl(
 				CanvasElement.PANE_UUID_Y_AXIS(this.paneUUID, this.extentIdx),
-				this.config.components.yAxis.cursor,
+				this.state.cursor,
 			);
 		}
 	}

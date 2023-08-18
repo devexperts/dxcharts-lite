@@ -123,6 +123,7 @@ export class ScaleModel extends ViewportModel {
 		forceNoAnimation: boolean = false,
 		zoomSensitivity: number = this.config.scale.zoomSensitivity,
 	) {
+		// TODO yaxis think how revert dependency
 		this.config.components.yAxis.type === 'percent' && this.haltAnimation();
 		const state = this.export();
 		zoomXToPercentViewportCalculator(this, state, viewportPercent, zoomSensitivity, zoomIn);

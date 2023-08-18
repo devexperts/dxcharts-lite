@@ -434,6 +434,7 @@ export default class ChartBootstrap implements ChartContainer {
 			mainCanvasModel,
 			scaleModel,
 			config,
+			this.yAxisComponent.state,
 			'GRID',
 			drawingManager,
 			() => this.canvasBoundsContainer.getBounds(CanvasElement.ALL_PANES),

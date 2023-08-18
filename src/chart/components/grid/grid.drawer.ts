@@ -5,7 +5,7 @@
  */
 import { NumericAxisLabel } from '../labels_generator/numeric-axis-labels.generator';
 import { BoundsProvider } from '../../model/bounds.model';
-import { FullChartConfig } from '../../chart.config';
+import { FullChartConfig, YAxisConfig } from '../../chart.config';
 import { CanvasModel } from '../../model/canvas.model';
 import { Drawer } from '../../drawers/drawing-manager';
 import { Unit, ViewportModel } from '../../model/scaling/viewport.model';
@@ -26,6 +26,7 @@ export class GridDrawer implements Drawer {
 		private canvasModel: CanvasModel,
 		private viewportModel: ViewportModel,
 		private config: FullChartConfig,
+		private yAxisState: YAxisConfig,
 		private xBoundsProvider: BoundsProvider,
 		private yBoundsProvider: BoundsProvider,
 		private xLabelsProvider: () => NumericAxisLabel[],
@@ -54,8 +55,8 @@ export class GridDrawer implements Drawer {
 	drawZeroLine(ctx: CanvasRenderingContext2D) {
 		if (
 			this.getBaseLine &&
-			this.config.components.yAxis.type === 'percent' &&
-			this.config.components.yAxis.zeroPercentLine
+			this.yAxisState.type === 'percent' &&
+			this.yAxisState.zeroPercentLine
 		) {
 			const bounds = this.xBoundsProvider();
 			const y = floor(this.getBaseLine());

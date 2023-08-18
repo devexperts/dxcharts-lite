@@ -5,7 +5,7 @@
  */
 import { NumericAxisLabel } from '../labels_generator/numeric-axis-labels.generator';
 import { BoundsProvider } from '../../model/bounds.model';
-import { FullChartConfig } from '../../chart.config';
+import { FullChartConfig, YAxisConfig } from '../../chart.config';
 import { ChartBaseElement } from '../../model/chart-base-element';
 import { CanvasModel } from '../../model/canvas.model';
 import { CompositeDrawer } from '../../drawers/composite.drawer';
@@ -19,6 +19,7 @@ export class GridComponent extends ChartBaseElement {
 		canvasModel: CanvasModel,
 		viewportModel: ViewportModel,
 		config: FullChartConfig,
+		yAxisState: YAxisConfig,
 		private drawerName: string,
 		private drawingManager: DrawingManager | CompositeDrawer,
 		xBoundsProvider: BoundsProvider,
@@ -33,6 +34,7 @@ export class GridComponent extends ChartBaseElement {
 			canvasModel,
 			viewportModel,
 			config,
+			yAxisState,
 			xBoundsProvider,
 			yBoundsProvider,
 			xLabelsProvider,

@@ -5,7 +5,7 @@
  */
 import { CanvasBoundsContainer } from '../../canvas/canvas-bounds-container';
 import { YAxisWidthContributor } from '../../canvas/y-axis-bounds.container';
-import { FullChartConfig } from '../../chart.config';
+import { YAxisConfig } from '../../chart.config';
 import EventBus from '../../events/event-bus';
 import { CanvasModel } from '../../model/canvas.model';
 import { ChartBaseElement } from '../../model/chart-base-element';
@@ -21,7 +21,7 @@ export class YAxisModel extends ChartBaseElement {
 	constructor(
 		private paneUUID: string,
 		eventBus: EventBus,
-		private config: FullChartConfig,
+		private state: YAxisConfig,
 		private canvasBoundsContainer: CanvasBoundsContainer,
 		canvasModel: CanvasModel,
 		scaleModel: ScaleModel,
@@ -33,9 +33,9 @@ export class YAxisModel extends ChartBaseElement {
 			undefined,
 			scaleModel,
 			valueFormatterProvider,
-			() => this.config.components.yAxis.type,
+			() => this.state.type,
 			() => 1,
-			config.components.yAxis.labelHeight,
+			state.labelHeight,
 		);
 		this.baseLabelsModel = new YAxisBaseLabelsModel(
 			scaleModel,
@@ -65,7 +65,7 @@ export class YAxisModel extends ChartBaseElement {
 						'',
 					),
 			getYAxisIndex: () => 0,
-			getYAxisAlign: () => this.config.components.yAxis.align,
+			getYAxisState: () => this.state,
 			getPaneUUID: () => this.paneUUID,
 		};
 		this.canvasBoundsContainer.yAxisBoundsContainer.registerYAxisWidthContributor(contributor);

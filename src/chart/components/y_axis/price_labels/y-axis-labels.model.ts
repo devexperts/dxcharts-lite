@@ -5,18 +5,18 @@
  */
 import { merge, Observable, Subject } from 'rxjs';
 import { CanvasBoundsContainer, CanvasElement, CHART_UUID } from '../../../canvas/canvas-bounds-container';
-import { ChartConfigComponentsYAxis, FullChartConfig, YAxisLabelMode } from '../../../chart.config';
+import { YAxisConfig, YAxisLabelMode } from '../../../chart.config';
 import EventBus from '../../../events/event-bus';
 import { Bounds } from '../../../model/bounds.model';
 import { CanvasModel } from '../../../model/canvas.model';
 import { ChartBaseElement } from '../../../model/chart-base-element';
 import { Unit } from '../../../model/scaling/viewport.model';
+import { flat } from '../../../utils/array.utils';
 import { animationFrameThrottledPrior } from '../../../utils/perfomance/request-animation-frame-throttle.utils';
 import { uuid } from '../../../utils/uuid.utils';
 import { ChartModel } from '../../chart/chart.model';
 import { YAxisLabelDrawConfig } from '../y-axis-labels.drawer';
 import { calcLabelsYCoordinates } from './labels-positions-calculator';
-import { flat } from '../../../utils/array.utils';
 
 export type YAxisVisualLabelType = 'badge' | 'rectangle' | 'plain';
 
@@ -40,7 +40,7 @@ export interface VisualYAxisLabel extends YAxisLabelDrawConfig {
 export interface LabelGroup {
 	labels: VisualYAxisLabel[];
 	bounds?: Bounds;
-	axisState?: ChartConfigComponentsYAxis;
+	axisState?: YAxisConfig;
 }
 
 export type ProviderGroups = Record<string, YAxisLabelsProvider[]>;
@@ -75,7 +75,7 @@ export class YAxisLabelsModel extends ChartBaseElement {
 		public eventBus: EventBus,
 		private chartModel: ChartModel,
 		private canvasBoundsContainer: CanvasBoundsContainer,
-		private config: FullChartConfig,
+		private state: YAxisConfig,
 		private canvasModel: CanvasModel,
 		private updateYAxisWidth: () => void,
 	) {
@@ -160,9 +160,7 @@ export class YAxisLabelsModel extends ChartBaseElement {
 	public recalculateLabels(): void {
 		this.orderedLabels = [];
 		const labelHeight =
-			this.config.components.yAxis.fontSize +
-			(this.config.components.yAxis.labelBoxMargin.top ?? 0) +
-			(this.config.components.yAxis.labelBoxMargin.bottom ?? 0);
+			this.state.fontSize + (this.state.labelBoxMargin.top ?? 0) + (this.state.labelBoxMargin.bottom ?? 0);
 
 		for (const providers of Object.values(this.labelsProviders)) {
 			// generated label groups

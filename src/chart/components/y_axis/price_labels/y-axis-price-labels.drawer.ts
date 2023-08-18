@@ -9,7 +9,7 @@ import {
 	CHART_UUID,
 	limitYToBounds,
 } from '../../../canvas/canvas-bounds-container';
-import { ChartConfigComponentsYAxis, FullChartColors } from '../../../chart.config';
+import { YAxisConfig, FullChartColors } from '../../../chart.config';
 import { Drawer } from '../../../drawers/drawing-manager';
 import { CanvasModel } from '../../../model/canvas.model';
 import { fillRect } from '../../../utils/canvas/canvas-drawing-functions.utils';
@@ -21,7 +21,7 @@ export class YAxisPriceLabelsDrawer implements Drawer {
 		private labelsProvider: () => LabelGroup[],
 		private yAxisLabelsCanvasModel: CanvasModel,
 		private backgroundCanvasModel: CanvasModel,
-		private yAxisState: ChartConfigComponentsYAxis,
+		private yAxisState: YAxisConfig,
 		private canvasBoundsContainer: CanvasBoundsContainer,
 		private yAxisColors: FullChartColors['yAxis'],
 		private readonly customLabels: Record<string, VisualYAxisLabel>,

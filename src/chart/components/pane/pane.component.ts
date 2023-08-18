@@ -12,7 +12,7 @@ import {
 	HitBoundsTest,
 } from '../../canvas/canvas-bounds-container';
 import { CursorHandler } from '../../canvas/cursor.handler';
-import { FullChartConfig } from '../../chart.config';
+import { FullChartConfig, YAxisConfig } from '../../chart.config';
 import { DrawingManager } from '../../drawers/drawing-manager';
 import EventBus from '../../events/event-bus';
 import { CanvasInputListenerComponent } from '../../inputlisteners/canvas-input-listener.component';
@@ -116,11 +116,13 @@ export class PaneComponent extends ChartBaseElement {
 		uuid: string,
 		scaleModel: ScaleModel,
 		yAxisLabelsGenerator: NumericYAxisLabelsGenerator,
+		yAxisState: YAxisConfig,
 	) {
 		const gridComponent = new GridComponent(
 			this.mainCanvasModel,
 			scaleModel,
 			this.config,
+			yAxisState,
 			`PANE_${uuid}_grid_drawer`,
 			this.drawingManager,
 			() => this.canvasBoundsContainer.getBounds(CanvasElement.PANE_UUID(uuid)),
@@ -152,9 +154,9 @@ export class PaneComponent extends ChartBaseElement {
 		];
 	}
 
-	private addCursors(extentIdx: number): Unsubscriber {
+	private addCursors(extentIdx: number, yAxisComponent: YAxisComponent): Unsubscriber {
 		const paneYAxis = CanvasElement.PANE_UUID_Y_AXIS(this.uuid, extentIdx);
-		this.cursorHandler.setCursorForCanvasEl(paneYAxis, this.config.components.yAxis.cursor);
+		this.cursorHandler.setCursorForCanvasEl(paneYAxis, yAxisComponent.state.cursor);
 		return () => this.cursorHandler.removeCursorForCanvasEl(paneYAxis);
 	}
 
@@ -199,7 +201,7 @@ export class PaneComponent extends ChartBaseElement {
 		formatter = yExtentComponent.valueFormatter.bind(yExtentComponent);
 
 		yExtentComponent.addSubscription(unsub);
-		yExtentComponent.addSubscription(this.addCursors(extentIdx));
+		yExtentComponent.addSubscription(this.addCursors(extentIdx, yAxisComp));
 
 		options?.paneFormatters && yExtentComponent.setValueFormatters(options.paneFormatters);
 
@@ -218,6 +220,7 @@ export class PaneComponent extends ChartBaseElement {
 			this.uuid,
 			scaleModel,
 			yAxisComp.model.labelsGenerator,
+			yAxisComp.state,
 		);
 		yExtentComponent.addChildEntity(gridComponent);
 
