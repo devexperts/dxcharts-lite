@@ -86,7 +86,7 @@ export class PaneComponent extends ChartBaseElement {
 		// TODO in future there will be yAxisComponents with getBounds method
 		private canvasBoundsContainer: CanvasBoundsContainer,
 		public readonly uuid: string,
-		public readonly dataSeriesCanvasModel: CanvasModel,
+		public readonly dynamicObjectsCanvasModel: CanvasModel,
 		options?: AtLeastOne<YExtentCreationOptions>,
 	) {
 		super();
@@ -113,7 +113,7 @@ export class PaneComponent extends ChartBaseElement {
 				.pipe(distinctUntilChanged(areBoundsChanged))
 				.subscribe(() => {
 					this.yExtentComponents.forEach(c => c.scaleModel.recalculateZoomY());
-					this.dataSeriesCanvasModel.fireDraw();
+					this.dynamicObjectsCanvasModel.fireDraw();
 				}),
 		);
 	}
@@ -265,7 +265,7 @@ export class PaneComponent extends ChartBaseElement {
 			this.chartBaseModel,
 			this.canvasBoundsContainer,
 			this.hitTestController,
-			this.dataSeriesCanvasModel,
+			this.dynamicObjectsCanvasModel,
 			scaleModel,
 			yAxisComp,
 			dragNDrop,

@@ -45,14 +45,21 @@ export class DataSeriesDrawer implements Drawer {
 		private readonly seriesDrawers: Record<string, SeriesDrawer>,
 	) {}
 
-	draw() {
+	draw(model?: DataSeriesModel) {
 		const ctx = this.canvasModel.ctx;
-		flatMap(Object.values(this.paneManager.paneComponents), c => c.yExtentComponents).forEach(comp => {
+		if (model) {
 			ctx.save();
-			clipToBounds(ctx, comp.getBounds());
-			comp.dataSeries.forEach(series => this.drawSeries(ctx, series));
+			// clipToBounds(ctx, comp.getBounds());
+			this.drawSeries(ctx, model);
 			ctx.restore();
-		});
+		} else {
+			flatMap(Object.values(this.paneManager.paneComponents), c => c.yExtentComponents).forEach(comp => {
+				ctx.save();
+				clipToBounds(ctx, comp.getBounds());
+				comp.dataSeries.forEach(series => this.drawSeries(ctx, series));
+				ctx.restore();
+			});
+		}
 	}
 
 	public drawSeries(ctx: CanvasRenderingContext2D, series: DataSeriesModel) {

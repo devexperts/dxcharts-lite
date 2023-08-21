@@ -10,8 +10,7 @@ export default (devexpertsPromoLink: boolean) =>
 	'\t\t\t<canvas data-element="snapshotCanvas" style="z-index: 0"></canvas>\n' +
 	'\t\t\t<canvas data-element="backgroundCanvas" style="z-index: 1"></canvas>\n' +
 	'\t\t\t<canvas data-element="mainCanvas" style="z-index: 2"></canvas>\n' +
-	'\t\t\t<canvas data-element="staticDrawingCanvas" style="z-index: 3"></canvas>\n' +
-	'\t\t\t<canvas data-element="dataSeriesCanvas" style="z-index: 5"></canvas>\n' +
+	'\t\t\t<canvas data-element="dynamicObjectsCanvas" style="z-index: 5"></canvas>\n' +
 	'\t\t\t<canvas data-element="overDataSeriesCanvas" style="z-index: 6"></canvas>\n' +
 	'\t\t\t<canvas data-element="dynamicDrawingCanvas" style="z-index: 7"></canvas>\n' +
 	'\t\t\t<canvas data-element="yAxisLabelsCanvas" style="z-index: 8"></canvas>\n' +

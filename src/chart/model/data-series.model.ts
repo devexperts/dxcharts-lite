@@ -212,7 +212,7 @@ export class DataSeriesModel<
 
 	public setType(type: DataSeriesType) {
 		this.config.type = type;
-		this.extentComponent.dataSeriesCanvasModel.fireDraw();
+		this.extentComponent.dynamicObjectsCanvasModel.fireDraw();
 	}
 
 	/**

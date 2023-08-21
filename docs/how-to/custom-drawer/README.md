@@ -14,8 +14,7 @@ Canvases list:
 
 -   backgroundCanvas
 -   mainCanvas
--   staticDrawingCanvas
--   dataSeriesCanvas
+-   dynamicObjectsCanvas
 -   overDataSeriesCanvas
 -   dynamicDrawingCanvas
 -   yAxisLabelsCanvas
@@ -83,7 +82,7 @@ To add any custom drawing to chart you need to create a Drawer and add it with `
 ```js
 const customDrawer = {
 	draw() {
-		const ctx = chart.dataSeriesCanvasModel.ctx;
+		const ctx = chart.dynamicObjectsCanvasModel.ctx;
 		const series = chart.chartModel.mainCandleSeries.getSeriesInViewport().flat();
 		const lastCandle = series[series.length - 1];
 		const startCandle = series[0];
@@ -114,7 +113,7 @@ const customDrawer = {
 	},
 	// this methods should return ids of canvases which this drawers uses
 	getCanvasIds() {
-		return [chart.dataSeriesCanvasModel.canvasId];
+		return [chart.dynamicObjectsCanvasModel.canvasId];
 	},
 };
 ```
