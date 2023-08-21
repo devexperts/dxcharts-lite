@@ -14,7 +14,6 @@ import { ChartComponent } from '../chart/chart.component';
 import { PaneManager } from '../pane/pane-manager.component';
 import { SeparateVolumesComponent } from './separate-volumes.component';
 import { resolveColorForBar, resolveColorForCandle, resolveColorForLine } from './volume-color-resolvers.functions';
-import { VolumesDrawer } from './volumes.drawer';
 import { VolumesModel } from './volumes.model';
 import { YAxisComponent } from '../y_axis/y-axis.component';
 import { BehaviorSubject } from 'rxjs';
@@ -53,16 +52,6 @@ export class VolumesComponent extends ChartBaseElement {
 			paneManager,
 		);
 		this.addChildEntity(this.separateVolumes);
-		const volumesDrawer = new VolumesDrawer(
-			canvasModel,
-			config,
-			volumesModel,
-			chartComponent.chartModel,
-			scaleModel,
-			this.volumesColorByChartTypeMap,
-			() => !config.components.volumes.showSeparately,
-		);
-		drawingManager.addDrawer(volumesDrawer, 'VOLUMES');
 		this.registerDefaultVolumeColorResolvers();
 		this.volumeSettingChangedSubject.next(config.components.volumes.visible);
 	}

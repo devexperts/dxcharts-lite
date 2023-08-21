@@ -46,14 +46,14 @@ export class PaneManager extends ChartBaseElement {
 		private canvasAnimation: CanvasAnimation,
 		private canvasInputListener: CanvasInputListenerComponent,
 		private drawingManager: DrawingManager,
-		private dataSeriesCanvasModel: CanvasModel,
+		private dynamicObjectsCanvasModel: CanvasModel,
 		private cursorHandler: CursorHandler,
 		private crossEventProducer: CrossEventProducerComponent,
 		public chartPanComponent: ChartPanComponent,
 		private mainCanvasModel: CanvasModel,
 	) {
 		super();
-		this.hitTestController = new PaneHitTestController(this.paneComponents, this.dataSeriesCanvasModel);
+		this.hitTestController = new PaneHitTestController(this.paneComponents, this.dynamicObjectsCanvasModel);
 
 		const mainPane = this.createPane(CHART_UUID, {
 			useDefaultHighLow: false,
@@ -143,7 +143,7 @@ export class PaneManager extends ChartBaseElement {
 			this.eventBus,
 			this.canvasBoundsContainer,
 			uuid,
-			this.dataSeriesCanvasModel,
+			this.dynamicObjectsCanvasModel,
 			options,
 		);
 

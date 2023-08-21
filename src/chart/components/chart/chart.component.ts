@@ -25,7 +25,7 @@ import { LinearDrawer } from '../../drawers/data-series-drawers/linear.drawer';
 import { PointsDrawer } from '../../drawers/data-series-drawers/points.drawer';
 import { TextDrawer } from '../../drawers/data-series-drawers/text.drawer';
 import { TriangleDrawer } from '../../drawers/data-series-drawers/triangle.drawer';
-import { DataSeriesDrawer, SeriesDrawer } from '../../drawers/data-series.drawer';
+import { SeriesDrawer } from '../../drawers/data-series.drawer';
 import { DrawingManager, HIT_TEST_PREFIX } from '../../drawers/drawing-manager';
 import { HTDataSeriesDrawer } from '../../drawers/ht-data-series.drawer';
 import { CanvasInputListenerComponent } from '../../inputlisteners/canvas-input-listener.component';
@@ -78,7 +78,6 @@ export class ChartComponent extends ChartBaseElement {
 	public readonly baselineModel: BaselineModel;
 	private readonly backgroundDrawer: BackgroundDrawer;
 	private readonly dataSeriesDrawers: Record<DataSeriesType, SeriesDrawer> = {};
-	private readonly dataSeriesDrawer: DataSeriesDrawer;
 	constructor(
 		public readonly chartModel: ChartModel,
 		public canvasModel: CanvasModel,
@@ -111,8 +110,8 @@ export class ChartComponent extends ChartBaseElement {
 		this.drawingManager.addDrawerBefore(hTChartDrawer, HIT_TEST_PREFIX + 'DATA_SERIES', 'HIT_TEST_EVENTS');
 		//#endregion
 		//#region data series drawers
-		this.dataSeriesDrawer = new DataSeriesDrawer(paneManager, canvasModel, this.dataSeriesDrawers);
-		this.drawingManager.addDrawer(this.dataSeriesDrawer, 'DATA_SERIES');
+		// this.dataSeriesDrawer = new DataSeriesDrawer(paneManager, canvasModel, this.dataSeriesDrawers);
+		// this.drawingManager.addDrawer(this.dataSeriesDrawer, 'DATA_SERIES');
 		this.registerDefaultDataSeriesDrawers();
 		//#endregion
 		this.backgroundDrawer = new BackgroundDrawer(backgroundCanvasModel, this.config);
@@ -145,6 +144,10 @@ export class ChartComponent extends ChartBaseElement {
 	get barTypeValues(): Array<BarType> {
 		// @ts-ignore
 		return keys(this.dataSeriesDrawers);
+	}
+
+	get _dataSeriesDrawers() {
+		return this.dataSeriesDrawers;
 	}
 
 	public strToBarType = (str: string): BarType => this.barTypeValues.find(t => t === str) ?? 'candle';

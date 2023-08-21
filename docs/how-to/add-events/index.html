@@ -66,10 +66,10 @@
 			chart.drawingManager.addDrawer(
 				{
 					getCanvasIds() {
-						return [chart.dataSeriesCanvasModel.canvasId];
+						return [chart.dynamicObjectsCanvasModel.canvasId];
 					},
 					draw() {
-						const ctx = chart.dataSeriesCanvasModel.ctx;
+						const ctx = chart.dynamicObjectsCanvasModel.ctx;
 						ctx.save();
 						ctx.fillStyle = '#e0134d';
 						ctx.font = '18px Open Sans, sans-serif';

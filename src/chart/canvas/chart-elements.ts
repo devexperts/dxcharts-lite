@@ -8,7 +8,7 @@ export interface ChartElements {
 	snapshotCanvas?: HTMLCanvasElement;
 	backgroundCanvas?: HTMLCanvasElement;
 	mainCanvas?: HTMLCanvasElement;
-	dataSeriesCanvas?: HTMLCanvasElement;
+	dynamicObjectsCanvas?: HTMLCanvasElement;
 	overDataSeriesCanvas?: HTMLCanvasElement;
 	staticDrawingCanvas?: HTMLCanvasElement;
 	dynamicDrawingCanvas?: HTMLCanvasElement;
@@ -27,21 +27,19 @@ export const validateChartElements = (els: ChartElements): els is ValidatedChart
 	const backgroundCanvasAvailable = els.backgroundCanvas !== null;
 	const mainCanvasAvailable = els.mainCanvas !== null;
 	const overDataSeriesCanvasAvailable = els.overDataSeriesCanvas !== null;
-	const staticDrawingCanvasAvailable = els.staticDrawingCanvas !== null;
 	const dynamicDrawingCanvasAvailable = els.dynamicDrawingCanvas !== null;
 	const yAxisLabelsCanvasAvailable = els.yAxisLabelsCanvas !== null;
 	const crossToolCanvasAvailable = els.crossToolCanvas !== null;
 	const hitTestCanvasAvailable = els.hitTestCanvas !== null;
 	const chartResizerAvailable = els.chartResizer !== null;
 	const chartContainerAvailable = els.chartContainer !== null;
-	const dataCanvasAvailable = els.dataSeriesCanvas !== null;
+	const dataCanvasAvailable = els.dynamicObjectsCanvas !== null;
 	return (
 		canvasAreaAvailable &&
 		snapshotCanvasAvailable &&
 		backgroundCanvasAvailable &&
 		mainCanvasAvailable &&
 		overDataSeriesCanvasAvailable &&
-		staticDrawingCanvasAvailable &&
 		dynamicDrawingCanvasAvailable &&
 		yAxisLabelsCanvasAvailable &&
 		crossToolCanvasAvailable &&

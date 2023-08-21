@@ -44,7 +44,7 @@ export class YExtentComponent extends ChartBaseElement {
 		private chartBaseModel: ChartBaseModel<'candle'>,
 		private canvasBoundsContainer: CanvasBoundsContainer,
 		private hitTestController: PaneHitTestController,
-		public dataSeriesCanvasModel: CanvasModel,
+		public dynamicObjectsCanvasModel: CanvasModel,
 		public readonly scaleModel: ScaleModel,
 		// TODO when y-axis component will be refactored this shouldn't be undefined
 		public readonly yAxisComponent: ExtentYAxis | undefined,

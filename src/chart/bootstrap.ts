@@ -55,6 +55,7 @@ import { TimeZoneModel } from './model/time-zone.model';
 import { clearerSafe } from './utils/function.utils';
 import { merge } from './utils/merge.utils';
 import { DeepPartial } from './utils/object.utils';
+import { DynamicObjectsComponent } from './components/dynamic-objects/dynamic-objects.component';
 
 export type FitType = 'studies' | 'orders' | 'positions';
 
@@ -84,12 +85,13 @@ export default class ChartBootstrap implements ChartContainer {
 	chartModel: ChartModel;
 	public backgroundCanvasModel: CanvasModel;
 	public mainCanvasModel: CanvasModel;
-	public dataSeriesCanvasModel: CanvasModel;
+	public dynamicObjectsCanvasModel: CanvasModel;
 	public overSeriesCanvasModel: CanvasModel;
 	public hitTestCanvasModel: HitTestCanvasModel;
 	public canvasBoundsContainer: CanvasBoundsContainer;
 	public canvasInputListener: CanvasInputListenerComponent;
 	public volumesComponent: VolumesComponent;
+	public dynamicObjectsComponent: DynamicObjectsComponent;
 	public highlightsComponent: HighlightsComponent;
 	public chartComponent: ChartComponent;
 	public eventsComponent: EventsComponent;
@@ -163,15 +165,15 @@ export default class ChartBootstrap implements ChartContainer {
 		this.overSeriesCanvasModel = overSeriesCanvasModel;
 		const overSeriesCanvasClearDrawer = new ClearCanvasDrawer(overSeriesCanvasModel);
 		drawingManager.addDrawer(overSeriesCanvasClearDrawer, 'OVER_SERIES_CLEAR');
-		this.dataSeriesCanvasModel = createCanvasModel(
+		this.dynamicObjectsCanvasModel = createCanvasModel(
 			eventBus,
-			elements.dataSeriesCanvas,
+			elements.dynamicObjectsCanvas,
 			config,
 			drawingManager,
 			this.canvasModels,
 			elements.chartResizer,
 		);
-		const dataSeriesCanvasClearDrawer = new ClearCanvasDrawer(this.dataSeriesCanvasModel);
+		const dataSeriesCanvasClearDrawer = new ClearCanvasDrawer(this.dynamicObjectsCanvasModel);
 		drawingManager.addDrawer(dataSeriesCanvasClearDrawer, 'SERIES_CLEAR');
 		const yAxisLabelsCanvasModel = createCanvasModel(
 			eventBus,
@@ -275,7 +277,7 @@ export default class ChartBootstrap implements ChartContainer {
 			canvasAnimation,
 			canvasInputListener,
 			drawingManager,
-			this.dataSeriesCanvasModel,
+			this.dynamicObjectsCanvasModel,
 			this.cursorHandler,
 			this.crossEventProducer,
 			chartPanComponent,
@@ -287,7 +289,7 @@ export default class ChartBootstrap implements ChartContainer {
 			chartBaseModel,
 			paneManager,
 			eventBus,
-			this.dataSeriesCanvasModel,
+			this.dynamicObjectsCanvasModel,
 			config,
 			scaleModel,
 			formatterFactory,
@@ -298,7 +300,7 @@ export default class ChartBootstrap implements ChartContainer {
 		//#region main chart component init
 		const chartComponent = new ChartComponent(
 			this.chartModel,
-			this.dataSeriesCanvasModel,
+			this.dynamicObjectsCanvasModel,
 			config,
 			scaleModel,
 			canvasBoundsContainer,
@@ -388,7 +390,7 @@ export default class ChartBootstrap implements ChartContainer {
 		// high low component
 		const highLowComponent = new HighLowComponent(
 			config,
-			this.dataSeriesCanvasModel,
+			this.dynamicObjectsCanvasModel,
 			chartModel,
 			canvasBoundsContainer,
 			drawingManager,
@@ -413,7 +415,7 @@ export default class ChartBootstrap implements ChartContainer {
 		this.chartComponents.push(this.yAxisComponent);
 		this.userInputListenerComponents.push(this.yAxisComponent.yAxisScaleHandler);
 		this.volumesComponent = new VolumesComponent(
-			this.dataSeriesCanvasModel,
+			this.dynamicObjectsCanvasModel,
 			chartComponent,
 			scaleModel,
 			canvasBoundsContainer,
@@ -423,6 +425,14 @@ export default class ChartBootstrap implements ChartContainer {
 			this.yAxisComponent,
 		);
 		this.chartComponents.push(this.volumesComponent);
+		// dynamic objects component
+		this.dynamicObjectsComponent = new DynamicObjectsComponent(
+			this.dynamicObjectsCanvasModel,
+			drawingManager,
+			paneManager,
+			chartComponent,
+		);
+		this.chartComponents.push(this.dynamicObjectsComponent);
 		// grid component
 		const mainChartGridComponent = new GridComponent(
 			mainCanvasModel,

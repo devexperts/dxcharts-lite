@@ -7,6 +7,7 @@ import EventBus from '../events/event-bus';
 import { EVENT_DRAW } from '../events/events';
 import { ChartResizeHandler } from '../inputhandlers/chart-resize.handler';
 import { MIN_SUPPORTED_CANVAS_SIZE } from '../model/canvas.model';
+import { DataSeriesModel } from '../model/data-series.model';
 import { arrayIntersect, reorderArray } from '../utils/array.utils';
 import { StringTMap } from '../utils/object.utils';
 import { animationFrameThrottled } from '../utils/perfomance/request-animation-frame-throttle.utils';
@@ -23,13 +24,14 @@ const drawerTypes = [
 	'OVER_SERIES_CLEAR',
 	'HIT_TEST_DRAWINGS',
 	'GRID',
-	'VOLUMES',
+	// 'VOLUMES',
 	'UNDERLAY_VOLUMES_AREA',
 	'X_AXIS',
 	'Y_AXIS',
 	'HIGH_LOW',
 	'DRAWINGS',
-	'DATA_SERIES',
+	// 'DATA_SERIES',
+	'DYNAMIC_OBJECTS',
 	'N_MAP_CHART',
 	'PL_CHART',
 	'WATERMARK',
@@ -200,7 +202,7 @@ export class DrawingManager {
 }
 
 export interface Drawer {
-	draw(): void;
+	draw(model?: DataSeriesModel): void;
 	/**
 	 * Used for optimization when we have to update only the last candle
 	 * Doesn't work for line chart types
