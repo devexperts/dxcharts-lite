@@ -19,7 +19,7 @@ import { CHART_UUID } from '../../canvas/canvas-bounds-container';
 
 export class DynamicObjectsComponent extends ChartBaseElement {
 	model: DynamicObjectsModel<DynamicObject>;
-	public objects: Record<PaneId, LinkedList<DynamicObject>>;
+	public objects: Record<PaneId, LinkedList<DynamicObject>>[];
 	chartComponent: ChartComponent;
 	paneManager: PaneManager;
 	canvasModel: CanvasModel;
@@ -74,11 +74,11 @@ export class DynamicObjectsComponent extends ChartBaseElement {
 		dataSeriesDrawer: DataSeriesDrawer,
 		volumesDrawer: VolumesDrawer,
 		mainCandleSeries: CandleSeriesModel,
-	): Record<PaneId, LinkedList<DynamicObject>> {
+	): Record<PaneId, LinkedList<DynamicObject>>[] {
 		const components = flatMap(Object.values(this.paneManager.paneComponents), c => c.yExtentComponents);
 		// each pane has it's own order
 		// TODO: make volume a data series to avoid a hack which adds it manually
-		const objects: Record<PaneId, LinkedList<DynamicObject>> = components.map(c => {
+		const objects: Record<PaneId, LinkedList<DynamicObject>>[] = components.map(c => {
 			const componentSeries = components
 				.filter(innerC => innerC.paneUuid === c.paneUuid)
 				.map(cc => {
@@ -98,7 +98,7 @@ export class DynamicObjectsComponent extends ChartBaseElement {
 					return convertArrayToLinkedList(innerCCObjects);
 				});
 			return { [c.paneUuid]: componentSeries[0] };
-		})[0];
+		});
 
 		console.log(objects);
 
