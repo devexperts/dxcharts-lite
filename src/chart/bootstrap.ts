@@ -431,6 +431,9 @@ export default class ChartBootstrap implements ChartContainer {
 			drawingManager,
 			paneManager,
 			chartComponent,
+			config,
+			this.volumesComponent,
+			scaleModel,
 		);
 		this.chartComponents.push(this.dynamicObjectsComponent);
 		// grid component
