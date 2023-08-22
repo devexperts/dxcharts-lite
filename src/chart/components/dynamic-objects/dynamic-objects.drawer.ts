@@ -14,12 +14,15 @@ export class DynamicObjectsDrawer implements Drawer {
 	draw() {
 		const objectListsModel = this.dynamicObjectsModel._objects;
 		console.log(objectListsModel);
-		Object.values(objectListsModel).forEach(list => {
-			const listArr = convertLinkedListToArray(list);
-			for (const obj of listArr) {
-				const { model, drawer } = obj;
-				drawer.draw(model);
-			}
+		objectListsModel.forEach(record => {
+			Object.values(record).forEach(list => {
+				const paneName = Object.keys(record)[0];
+				const listArr = convertLinkedListToArray(list);
+				for (const obj of listArr) {
+					const { model, drawer } = obj;
+					drawer.draw(model, paneName);
+				}
+			});
 		});
 	}
 

@@ -202,7 +202,7 @@ export class DrawingManager {
 }
 
 export interface Drawer {
-	draw(model?: DataSeriesModel): void;
+	draw(model?: DataSeriesModel, paneName?: string): void;
 	/**
 	 * Used for optimization when we have to update only the last candle
 	 * Doesn't work for line chart types

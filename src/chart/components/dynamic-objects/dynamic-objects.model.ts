@@ -13,11 +13,11 @@ export interface DynamicObject {
 }
 
 export class DynamicObjectsModel<DynamicObject> extends ChartBaseElement {
-	objects: BehaviorSubject<Record<PaneId, LinkedList<DynamicObject>>>;
+	objects: BehaviorSubject<Record<PaneId, LinkedList<DynamicObject>>[]>;
 	chartComponent: ChartComponent;
 	// objectsMap: Map<DataSeriesModel | unknown, ListNode<T>>;
 
-	constructor(objects: Record<PaneId, LinkedList<DynamicObject>>, chartComponent: ChartComponent) {
+	constructor(objects: Record<PaneId, LinkedList<DynamicObject>>[], chartComponent: ChartComponent) {
 		super();
 		this.objects = new BehaviorSubject(objects);
 		this.chartComponent = chartComponent;
@@ -31,74 +31,84 @@ export class DynamicObjectsModel<DynamicObject> extends ChartBaseElement {
 	// being at front means the element should be the last node, because the last canvas element is before the others
 	bringToFront(paneId: PaneId, listNode: ListNode<DynamicObject>) {
 		const objects = this._objects;
-		const targetObj = Object.keys(objects).find(pane => pane === paneId);
-
-		if (targetObj) {
-			const targetList = objects[targetObj];
-			const targetPos = targetList.getNodePosition(listNode);
-			if (targetPos >= 0 && targetPos < targetList.size()) {
-				const nodeToReplace = targetList.removeAt(targetPos);
-				if (nodeToReplace) {
-					targetList.insertAtEnd(nodeToReplace.data);
+		const targetRecord = objects.find(record => Object.keys(record)[0] === paneId);
+		if (targetRecord) {
+			const targetObj = Object.keys(targetRecord).find(pane => pane === paneId);
+			if (targetObj) {
+				const targetList = targetRecord[targetObj];
+				const targetPos = targetList.getNodePosition(listNode);
+				if (targetPos >= 0 && targetPos < targetList.size()) {
+					const nodeToReplace = targetList.removeAt(targetPos);
+					if (nodeToReplace) {
+						targetList.insertAtEnd(nodeToReplace.data);
+					}
 				}
+				targetRecord[targetObj] = targetList;
+				this.setDynamicObjects(objects);
 			}
-			objects[targetObj] = targetList;
-			this.setDynamicObjects(objects);
 		}
 	}
 
 	// being at back means the element should be the first node, because the first canvas element is after the others
 	bringToBack(paneId: PaneId, listNode: ListNode<DynamicObject>) {
 		const objects = this._objects;
-		const targetObj = Object.keys(objects).find(pane => pane === paneId);
-
-		if (targetObj) {
-			const targetList = objects[targetObj];
-			const targetPos = targetList.getNodePosition(listNode);
-			if (targetPos > 0 && targetPos <= targetList.size()) {
-				const nodeToReplace = targetList.removeAt(targetPos);
-				if (nodeToReplace) {
-					targetList.insertAt(0, nodeToReplace?.data);
+		const targetRecord = objects.find(record => Object.keys(record)[0] === paneId);
+		if (targetRecord) {
+			const targetObj = Object.keys(targetRecord).find(pane => pane === paneId);
+			if (targetObj) {
+				const targetList = targetRecord[targetObj];
+				const targetPos = targetList.getNodePosition(listNode);
+				if (targetPos > 0 && targetPos <= targetList.size()) {
+					const nodeToReplace = targetList.removeAt(targetPos);
+					if (nodeToReplace) {
+						targetList.insertAt(0, nodeToReplace?.data);
+					}
 				}
+				targetRecord[targetObj] = targetList;
+				this.setDynamicObjects(objects);
 			}
-			objects[targetObj] = targetList;
-			this.setDynamicObjects(objects);
 		}
 	}
 
 	moveForward(paneId: PaneId, listNode: ListNode<DynamicObject>) {
 		const objects = this._objects;
-		const targetObj = Object.keys(objects).find(pane => pane === paneId);
+		const targetRecord = objects.find(record => Object.keys(record)[0] === paneId);
+		if (targetRecord) {
+			const targetObj = Object.keys(objects).find(pane => pane === paneId);
 
-		if (targetObj) {
-			const targetList = objects[targetObj];
-			const targetPos = targetList.getNodePosition(listNode);
-			if (targetPos >= 0 && targetPos < targetList.size()) {
-				const nodeToReplace = targetList.removeAt(targetPos);
-				if (nodeToReplace) {
-					targetList.insertAt(targetPos + 1, nodeToReplace.data);
+			if (targetObj) {
+				const targetList = targetRecord[targetObj];
+				const targetPos = targetList.getNodePosition(listNode);
+				if (targetPos >= 0 && targetPos < targetList.size()) {
+					const nodeToReplace = targetList.removeAt(targetPos);
+					if (nodeToReplace) {
+						targetList.insertAt(targetPos + 1, nodeToReplace.data);
+					}
 				}
+				targetRecord[targetObj] = targetList;
+				this.setDynamicObjects(objects);
 			}
-			objects[targetObj] = targetList;
-			this.setDynamicObjects(objects);
 		}
 	}
 
 	sendBackward(paneId: PaneId, listNode: ListNode<DynamicObject>) {
 		const objects = this._objects;
-		const targetObj = Object.keys(objects).find(pane => pane === paneId);
+		const targetRecord = objects.find(record => Object.keys(record)[0] === paneId);
+		if (targetRecord) {
+			const targetObj = Object.keys(objects).find(pane => pane === paneId);
 
-		if (targetObj) {
-			const targetList = objects[targetObj];
-			const targetPos = targetList.getNodePosition(listNode);
-			if (targetPos > 0 && targetPos <= targetList.size()) {
-				const nodeToReplace = targetList.removeAt(targetPos);
-				if (nodeToReplace) {
-					targetList.insertAt(targetPos - 1, nodeToReplace?.data);
+			if (targetObj) {
+				const targetList = targetRecord[targetObj];
+				const targetPos = targetList.getNodePosition(listNode);
+				if (targetPos > 0 && targetPos <= targetList.size()) {
+					const nodeToReplace = targetList.removeAt(targetPos);
+					if (nodeToReplace) {
+						targetList.insertAt(targetPos - 1, nodeToReplace?.data);
+					}
 				}
+				targetRecord[targetObj] = targetList;
+				this.setDynamicObjects(objects);
 			}
-			objects[targetObj] = targetList;
-			this.setDynamicObjects(objects);
 		}
 	}
 
@@ -106,7 +116,7 @@ export class DynamicObjectsModel<DynamicObject> extends ChartBaseElement {
 		return this.objects.getValue();
 	}
 
-	setDynamicObjects(objects: Record<PaneId, LinkedList<DynamicObject>>) {
+	setDynamicObjects(objects: Record<PaneId, LinkedList<DynamicObject>>[]) {
 		this.objects.next(objects);
 	}
 }
