@@ -12,13 +12,15 @@ export class DynamicObjectsDrawer implements Drawer {
 	}
 
 	draw() {
-		const objects = convertLinkedListToArray(this.dynamicObjectsModel._objects);
-		console.log('objects', objects);
-		for (const obj of objects) {
-			const { model, drawer } = obj;
-			console.log('model', model);
-			drawer.draw(model);
-		}
+		const objectListsModel = this.dynamicObjectsModel._objects;
+		console.log(objectListsModel);
+		Object.values(objectListsModel).forEach(list => {
+			const listArr = convertLinkedListToArray(list);
+			for (const obj of listArr) {
+				const { model, drawer } = obj;
+				drawer.draw(model);
+			}
+		});
 	}
 
 	getCanvasIds(): string[] {

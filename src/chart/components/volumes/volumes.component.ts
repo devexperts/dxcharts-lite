@@ -22,7 +22,7 @@ export type VolumeColorResolver = (priceMovement: PriceMovement, colors: FullCha
 
 export class VolumesComponent extends ChartBaseElement {
 	separateVolumes: SeparateVolumesComponent;
-	private volumesColorByChartTypeMap: Partial<Record<BarType, VolumeColorResolver>> = {};
+	public volumesColorByChartTypeMap: Partial<Record<BarType, VolumeColorResolver>> = {};
 	volumesModel: VolumesModel;
 	yAxisComponent: YAxisComponent;
 	public volumeSettingChangedSubject = new BehaviorSubject<boolean>(false);
