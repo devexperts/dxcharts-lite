@@ -14,10 +14,6 @@ body {
 	min-height: 100%;
 }
 
-body {
-	background: #262626;
-}
-
 h1 {
 	color: #fff;
 	margin: 3rem 0 2rem;
@@ -54,43 +50,32 @@ h1 {
 	margin: auto;
 }
 
-
-.h-full {
-	height: 100%;
+body {
+	background: #fff;
 }
 
-.grid {
+.chart__container {
 	display: grid;
+	gap: 20px;
 	grid-template-columns: 1fr;
-	grid-gap: 20px;
 }
 
-.flex {
-	display: flex;
-}
-
-.flex.align-center {
+#form {
+	align-self: start;
+	display: grid;
+	grid-template-columns: 100px 1fr;
+	column-gap: 10px;
+	row-gap: 5px;
 	align-items: center;
 }
 
-.flex.justify-center {
-	justify-content: center;
+form > * {
+	display: contents;
 }
 
-.flex label:not(:first-child) {
-	margin-left: 20px;
+form input {
+	width: auto;
 }
-
-h1 {
-	margin: 3rem 0 2rem;
-}
-
-label {
-	display: block;
-	margin-bottom: 5px;
-	color: rgb(117, 117, 117);
-}
-
-p {
-	margin-bottom: 7px;
+[type='checkbox'] {
+	justify-self: end;
 }

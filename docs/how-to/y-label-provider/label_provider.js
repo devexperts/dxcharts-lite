@@ -1,4 +1,4 @@
-export const provider = (y, name, group) => ({
+export default (y, name, group) => ({
 	getUnorderedLabels: () => [
 		{
 			labels: [
