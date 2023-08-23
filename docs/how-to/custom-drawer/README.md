@@ -1,6 +1,6 @@
 # Custom Drawer
 
-#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/gkd95v)<!--/CSB_LINK-->
+#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/23mgpg)<!--/CSB_LINK-->
 
 ### Drawing Manager
 
