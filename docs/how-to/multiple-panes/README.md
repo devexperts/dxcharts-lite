@@ -1,6 +1,6 @@
 # Pane & PaneManager
 
-#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/rgk5tz)<!--/CSB_LINK-->
+#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/cqsl5g)<!--/CSB_LINK-->
 
 Pane is a container for data series. Visually it represents a rectangle area where data series are drawn.
 
