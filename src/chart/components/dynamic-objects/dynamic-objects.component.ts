@@ -100,21 +100,14 @@ export class DynamicObjectsComponent extends ChartBaseElement {
 			return { [c.paneUuid]: componentSeries[0] };
 		});
 
-		console.log(objects);
-
 		return objects;
 	}
 
-	private transformIntoDynamicObject(model: DataSeriesModel | VolumesModel | unknown, dataSeriesDrawer: Drawer): any {
-		if (model instanceof DataSeriesModel) {
-			return {
-				model,
-				drawer: dataSeriesDrawer,
-			};
-		}
-
-		// if not dataseries => drawing
-		return {};
+	public transformIntoDynamicObject(model: DataSeriesModel | VolumesModel | unknown, drawer: Drawer): DynamicObject {
+		return {
+			model,
+			drawer,
+		};
 	}
 
 	protected doActivate() {

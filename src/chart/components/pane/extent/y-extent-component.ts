@@ -113,6 +113,7 @@ export class YExtentComponent extends ChartBaseElement {
 	 * @returns {void}
 	 */
 	public addDataSeries(series: DataSeriesModel): void {
+		// console.log('add data');
 		this.dataSeries.add(series);
 		if (this.dataSeries.size === 1) {
 			this.mainDataSeries = series;
@@ -127,6 +128,7 @@ export class YExtentComponent extends ChartBaseElement {
 	 * @returns {void}
 	 */
 	public removeDataSeries(series: DataSeriesModel): void {
+		// console.log('remove data');
 		this.dataSeries.delete(series);
 		this.paneComponent.updateView();
 	}

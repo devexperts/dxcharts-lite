@@ -127,6 +127,7 @@ export class PaneManager extends ChartBaseElement {
 		if (this.paneComponents[uuid] !== undefined) {
 			return this.paneComponents[uuid];
 		}
+		// console.log('create pane');
 
 		const paneComponent: PaneComponent = new PaneComponent(
 			this.chartBaseModel,
@@ -169,6 +170,8 @@ export class PaneManager extends ChartBaseElement {
 	 * @param uuid
 	 */
 	public removePane(uuid: string) {
+		// console.log('remove pane');
+
 		const pane = this.paneComponents[uuid];
 		if (pane !== undefined) {
 			pane.disable();
