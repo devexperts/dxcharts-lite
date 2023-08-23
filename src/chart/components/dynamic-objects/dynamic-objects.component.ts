@@ -19,13 +19,12 @@ import { CHART_UUID } from '../../canvas/canvas-bounds-container';
 import { merge } from 'rxjs';
 
 export class DynamicObjectsComponent extends ChartBaseElement {
-	model: DynamicObjectsModel<DynamicObject>;
+	public model: DynamicObjectsModel<DynamicObject>;
 	public objects: Record<PaneId, LinkedList<DynamicObject>>[];
-	chartComponent: ChartComponent;
-	paneManager: PaneManager;
-	canvasModel: CanvasModel;
-	dataSeriesDrawer: DataSeriesDrawer;
-	volumesDrawer: VolumesDrawer;
+	private chartComponent: ChartComponent;
+	private paneManager: PaneManager;
+	private dataSeriesDrawer: DataSeriesDrawer;
+	private volumesDrawer: VolumesDrawer;
 
 	constructor(
 		canvasModel: CanvasModel,
@@ -36,13 +35,12 @@ export class DynamicObjectsComponent extends ChartBaseElement {
 		volumesComponent: VolumesComponent,
 		scaleModel: ScaleModel,
 	) {
-		// init
 		super();
 		this.chartComponent = chartComponent;
 		this.paneManager = paneManager;
-		this.canvasModel = canvasModel;
+
 		const dataSeriesDrawers = this.chartComponent._dataSeriesDrawers;
-		const dataSeriesDrawer = new DataSeriesDrawer(this.paneManager, this.canvasModel, dataSeriesDrawers);
+		const dataSeriesDrawer = new DataSeriesDrawer(this.paneManager, canvasModel, dataSeriesDrawers);
 		this.dataSeriesDrawer = dataSeriesDrawer;
 		const volumesDrawer = new VolumesDrawer(
 			canvasModel,
@@ -54,7 +52,7 @@ export class DynamicObjectsComponent extends ChartBaseElement {
 			() => !config.components.volumes.showSeparately,
 		);
 		this.volumesDrawer = volumesDrawer;
-		const initObjects = this.getObjectsList(
+		const initObjects = this.getDynamicObjects(
 			this.dataSeriesDrawer,
 			this.volumesDrawer,
 			this.chartComponent.chartModel.mainCandleSeries,
@@ -71,72 +69,88 @@ export class DynamicObjectsComponent extends ChartBaseElement {
 		drawingManager.addDrawer(dynamicObjectsDrawer, 'DYNAMIC_OBJECTS');
 	}
 
-	private getObjectsList(
+	/**
+	 * Takes panes models of dataseries and transform them into linked list of dynamic objects (each pane has separate list)
+	 * Also combines with outer dynamic objects (only drawings so far)
+	 * @param dataSeriesDrawer
+	 * @param volumesDrawer
+	 * @param mainCandleSeries
+	 */
+	private getDynamicObjects(
 		dataSeriesDrawer: DataSeriesDrawer,
 		volumesDrawer: VolumesDrawer,
 		mainCandleSeries: CandleSeriesModel,
 	): Record<PaneId, LinkedList<DynamicObject>>[] {
-		const components = flatMap(Object.values(this.paneManager.paneComponents), c => c.yExtentComponents);
-		// each pane has it's own order
+		const yExtendComponents = flatMap(Object.values(this.paneManager.paneComponents), c => c.yExtentComponents);
 		// TODO: make volume a data series to avoid a hack which adds it manually
-		const objects: Record<PaneId, LinkedList<DynamicObject>>[] = components.map(c => {
-			const componentSeries = components
-				.filter(innerC => innerC.paneUuid === c.paneUuid)
-				.map(cc => {
-					const innerCCObjects: DynamicObject[] = [];
+		const objects: Record<PaneId, LinkedList<DynamicObject>>[] = yExtendComponents.map(comp => {
+			const componentPaneObjects = yExtendComponents
+				.filter(innerComp => innerComp.paneUuid === comp.paneUuid)
+				.map(_innerComp => {
+					const compObjects: DynamicObject[] = [];
 					// add volumes as a dynamic object to the separate volume pane
-					if (cc.paneUuid === 'volumes') {
-						innerCCObjects.push({ model: mainCandleSeries, drawer: volumesDrawer });
+					if (_innerComp.paneUuid === 'volumes') {
+						compObjects.push({ model: mainCandleSeries, drawer: volumesDrawer });
 						if (this.model) {
-							const additionalObjPane = this.model.objects
-								.getValue()
-								.find(el => Object.keys(el)[0] === cc.paneUuid);
-							if (additionalObjPane) {
-								const additionalObjects: DynamicObject[] = convertLinkedListToArray(
-									additionalObjPane[`${cc.paneUuid}`],
-								).filter(
-									(o: DynamicObject) =>
-										o.drawer !== this.dataSeriesDrawer && o.drawer !== this.volumesDrawer,
-								);
-								const finale = innerCCObjects.concat(additionalObjects);
-								console.log(finale);
-								return convertArrayToLinkedList(finale);
-							}
+							const combinedObjects = this.combineWithOuterObjects(
+								compObjects,
+								this.model,
+								_innerComp.paneUuid,
+							);
+							return convertArrayToLinkedList(combinedObjects);
 						}
-						return convertArrayToLinkedList(innerCCObjects);
+						return convertArrayToLinkedList(compObjects);
 					}
-					cc.dataSeries.forEach((series: DataSeriesModel) => {
-						innerCCObjects.push(this.transformIntoDynamicObject(series, dataSeriesDrawer));
+
+					_innerComp.dataSeries.forEach((series: DataSeriesModel) => {
+						compObjects.push(this.transformIntoDynamicObject(series, dataSeriesDrawer));
 					});
 					// add volumes as a dynamic object to the chart pane
-					if (cc.paneUuid === CHART_UUID) {
-						innerCCObjects.push({ model: mainCandleSeries, drawer: volumesDrawer });
+					if (_innerComp.paneUuid === CHART_UUID) {
+						compObjects.push({ model: mainCandleSeries, drawer: volumesDrawer });
 					}
 					if (this.model) {
-						const additionalObjPane = this.model.objects
-							.getValue()
-							.find(el => Object.keys(el)[0] === cc.paneUuid);
-						if (additionalObjPane) {
-							const additionalObjects: DynamicObject[] = convertLinkedListToArray(
-								additionalObjPane[`${cc.paneUuid}`],
-							).filter(
-								(o: DynamicObject) =>
-									o.drawer !== this.dataSeriesDrawer && o.drawer !== this.volumesDrawer,
-							);
-							innerCCObjects.concat(additionalObjects);
-							console.log('additional', additionalObjects);
-							const finale = innerCCObjects.concat(additionalObjects);
-							return convertArrayToLinkedList(finale);
-						}
+						const combinedObjects = this.combineWithOuterObjects(
+							compObjects,
+							this.model,
+							_innerComp.paneUuid,
+						);
+						return convertArrayToLinkedList(combinedObjects);
 					}
-					return convertArrayToLinkedList(innerCCObjects);
+					return convertArrayToLinkedList(compObjects);
 				});
-			return { [c.paneUuid]: componentSeries[0] };
+			return { [comp.paneUuid]: componentPaneObjects[0] };
 		});
-
 		return objects;
 	}
 
+	/**
+	 * Combines pane objects with the ones from outside chart-core
+	 * @param initObjects
+	 * @param model
+	 * @param paneId
+	 */
+	private combineWithOuterObjects(
+		initObjects: DynamicObject[],
+		model: DynamicObjectsModel<DynamicObject>,
+		paneId: PaneId,
+	) {
+		const additionalObjPane = model._objects.find(el => Object.keys(el)[0] === paneId);
+		if (additionalObjPane) {
+			const additionalObjects: DynamicObject[] = convertLinkedListToArray(additionalObjPane[`${paneId}`]).filter(
+				(o: DynamicObject) => o.drawer !== this.dataSeriesDrawer && o.drawer !== this.volumesDrawer,
+			);
+			const combined = initObjects.concat(additionalObjects);
+			return combined;
+		}
+		return initObjects;
+	}
+
+	/**
+	 * Takes model and it's corresponding drawer and makes it as a single object
+	 * @param model
+	 * @param drawer
+	 */
 	public transformIntoDynamicObject(model: DataSeriesModel | VolumesModel | unknown, drawer: Drawer): DynamicObject {
 		return {
 			model,
@@ -146,17 +160,18 @@ export class DynamicObjectsComponent extends ChartBaseElement {
 
 	protected doActivate() {
 		super.doActivate();
+		// update dynamic objects when data series are added/removed
 		this.addRxSubscription(
 			merge(
-				this.paneManager.dataSeriesChangedSubject,
 				this.chartComponent.chartModel.candlesSetSubject,
+				this.paneManager.dataSeriesChangedSubject,
 			).subscribe(() => {
-				const objectsList = this.getObjectsList(
+				const objects = this.getDynamicObjects(
 					this.dataSeriesDrawer,
 					this.volumesDrawer,
 					this.chartComponent.chartModel.mainCandleSeries,
 				);
-				this.model.setDynamicObjects(objectsList);
+				this.model.setDynamicObjects(objects);
 			}),
 		);
 	}
