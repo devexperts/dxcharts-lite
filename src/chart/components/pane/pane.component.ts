@@ -171,7 +171,7 @@ export class PaneComponent extends ChartBaseElement {
 
 		// creating partially resolved constructor except formatter & dataSeriesProvider - bcs it's not possible to provide formatter
 		// before y-extent is created
-		const newYAxisComponent = (
+		const createYAxisComponent = (
 			formatter: (value: number) => string,
 			dataSeriesProvider: () => DataSeriesModel | undefined,
 		) =>
@@ -199,7 +199,7 @@ export class PaneComponent extends ChartBaseElement {
 			this.hitTestController,
 			this.dataSeriesCanvasModel,
 			scaleModel,
-			newYAxisComponent,
+			createYAxisComponent,
 			dragNDrop,
 		);
 		yExtentComponent.addSubscription(unsub);

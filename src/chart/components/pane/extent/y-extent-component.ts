@@ -45,7 +45,7 @@ export class YExtentComponent extends ChartBaseElement {
 		private hitTestController: PaneHitTestController,
 		public dataSeriesCanvasModel: CanvasModel,
 		public readonly scaleModel: ScaleModel,
-		newYAxisComponent: (
+		createYAxisComponent: (
 			formatter: (value: number) => string,
 			dataSeriesProvider: () => DataSeriesModel | undefined,
 		) => YAxisComponent,
@@ -58,7 +58,7 @@ export class YExtentComponent extends ChartBaseElement {
 		super();
 		this.addChildEntity(scaleModel);
 		this.setValueFormatters(createYExtentFormatters(this));
-		this.yAxisComponent = newYAxisComponent(this.valueFormatter.bind(this), () => this.mainDataSeries);
+		this.yAxisComponent = createYAxisComponent(this.valueFormatter.bind(this), () => this.mainDataSeries);
 		this.addChildEntity(this.yAxisComponent);
 	}
 
