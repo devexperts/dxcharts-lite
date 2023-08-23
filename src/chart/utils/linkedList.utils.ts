@@ -7,7 +7,11 @@ export class ListNode<T> {
 		this.next = null;
 	}
 }
-
+/**
+ * Implementation of Linked list data structure.
+ * @param head
+ * @param epsilon
+ */
 export class LinkedList<T> {
 	private head: ListNode<T> | null = null;
 	private length = 0;

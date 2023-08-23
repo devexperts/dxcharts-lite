@@ -31,7 +31,6 @@ export class PaneManager extends ChartBaseElement {
 	public panesChangedSubject: Subject<Record<string, PaneComponent>> = new Subject();
 	public hitTestController: PaneHitTestController;
 	public dataSeriesChangedSubject: Subject<void> = new Subject();
-
 	/**
 	 * Returns order of panes in the chart from top to bottom.
 	 */

@@ -9,24 +9,26 @@ import { VolumesModel } from '../volumes/volumes.model';
 export type PaneId = string;
 
 export interface DynamicObject {
-	drawer: Drawer; // DataSeriesDrawer | DrawingsDrawer | VolumesDrawer
-	model: DataSeriesModel | VolumesModel | unknown; // DataSeriesModel | DrawingModel | VolumesModel
+	readonly drawer: Drawer; // DataSeriesDrawer | DrawingsDrawer | VolumesDrawer
+	readonly model: DataSeriesModel | VolumesModel | unknown; // DataSeriesModel | DrawingModel | VolumesModel
 }
 
 export class DynamicObjectsModel<DynamicObject> extends ChartBaseElement {
 	objects: BehaviorSubject<Record<PaneId, LinkedList<DynamicObject>>[]>;
 	chartComponent: ChartComponent;
-	// objectsMap: Map<DataSeriesModel | unknown, ListNode<T>>;
 
 	constructor(objects: Record<PaneId, LinkedList<DynamicObject>>[], chartComponent: ChartComponent) {
 		super();
 		this.objects = new BehaviorSubject(objects);
 		this.chartComponent = chartComponent;
-		// this.objectsMap = objectsMap;
 	}
 
-	// is needed to add drawings or some other entity which should be a dynamic object but outside of chart-core scope
-	addObject(obj: DynamicObject, paneId: string) {
+	/**
+	 * Adds an object from outside chart-core into model
+	 * @param obj
+	 * @param paneId
+	 */
+	addObject(obj: DynamicObject, paneId: PaneId) {
 		const objects = this._objects;
 		const targetRecord = objects.find(record => Object.keys(record)[0] === paneId);
 		if (targetRecord) {
@@ -39,15 +41,18 @@ export class DynamicObjectsModel<DynamicObject> extends ChartBaseElement {
 		}
 	}
 
-	// is needed to remove drawings or some other entity which should be a dynamic object but outside of chart-core scope
-	removeObject(obj: DynamicObject, paneId: string) {
+	/**
+	 * Removes an object from outside chart-core from model
+	 * @param obj
+	 * @param paneId
+	 */
+	removeObject(obj: DynamicObject, paneId: PaneId) {
 		const objects = this._objects;
 		const targetRecord = objects.find(record => Object.keys(record)[0] === paneId);
 		if (targetRecord) {
 			const targetObj = Object.keys(targetRecord).find(pane => pane === paneId);
 			if (targetObj) {
 				const targetList = targetRecord[targetObj];
-
 				const targetPos = targetList.getNodePosition(new ListNode(obj));
 				targetList.removeAt(targetPos);
 				this.setDynamicObjects(objects);
@@ -55,7 +60,11 @@ export class DynamicObjectsModel<DynamicObject> extends ChartBaseElement {
 		}
 	}
 
-	// being at front means the element should be the last node, because the last canvas element is before the others
+	/**
+	 * Moves the object inside the drawing order so it's being drawn before the other elements
+	 * @param paneId
+	 * @param listNode
+	 */
 	bringToFront(paneId: PaneId, listNode: ListNode<DynamicObject>) {
 		const objects = this._objects;
 		const targetRecord = objects.find(record => Object.keys(record)[0] === paneId);
@@ -63,9 +72,6 @@ export class DynamicObjectsModel<DynamicObject> extends ChartBaseElement {
 			const targetObj = Object.keys(targetRecord).find(pane => pane === paneId);
 			if (targetObj) {
 				const targetList = targetRecord[targetObj];
-				//TODO remove later
-				// const testObj = targetList._head; // remove later
-				//TODO change to listNode later
 				const targetPos = targetList.getNodePosition(listNode);
 				if (targetPos >= 0 && targetPos < targetList.size()) {
 					const nodeToReplace = targetList.removeAt(targetPos);
@@ -79,7 +85,11 @@ export class DynamicObjectsModel<DynamicObject> extends ChartBaseElement {
 		}
 	}
 
-	// being at back means the element should be the first node, because the first canvas element is after the others
+	/**
+	 * Moves the object inside the drawing order so it's being drawn after the other elements
+	 * @param paneId
+	 * @param listNode
+	 */
 	bringToBack(paneId: PaneId, listNode: ListNode<DynamicObject>) {
 		const objects = this._objects;
 		const targetRecord = objects.find(record => Object.keys(record)[0] === paneId);
@@ -100,6 +110,11 @@ export class DynamicObjectsModel<DynamicObject> extends ChartBaseElement {
 		}
 	}
 
+	/**
+	 * Moves the object inside the drawing order so it's being drawn one layer ahead
+	 * @param obj
+	 * @param paneId
+	 */
 	moveForward(paneId: PaneId, listNode: ListNode<DynamicObject>) {
 		const objects = this._objects;
 		const targetRecord = objects.find(record => Object.keys(record)[0] === paneId);
@@ -121,6 +136,11 @@ export class DynamicObjectsModel<DynamicObject> extends ChartBaseElement {
 		}
 	}
 
+	/**
+	 * Moves the object inside the drawing order so it's being drawn one layer closer to the back
+	 * @param obj
+	 * @param paneId
+	 */
 	sendBackward(paneId: PaneId, listNode: ListNode<DynamicObject>) {
 		const objects = this._objects;
 		const targetRecord = objects.find(record => Object.keys(record)[0] === paneId);
@@ -141,11 +161,17 @@ export class DynamicObjectsModel<DynamicObject> extends ChartBaseElement {
 			}
 		}
 	}
-
+	/**
+	 * Getter for the objects
+	 */
 	get _objects() {
 		return this.objects.getValue();
 	}
 
+	/**
+	 * Sets the objects
+	 * @param objects
+	 */
 	setDynamicObjects(objects: Record<PaneId, LinkedList<DynamicObject>>[]) {
 		this.objects.next(objects);
 	}

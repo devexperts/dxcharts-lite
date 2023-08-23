@@ -110,8 +110,6 @@ export class ChartComponent extends ChartBaseElement {
 		this.drawingManager.addDrawerBefore(hTChartDrawer, HIT_TEST_PREFIX + 'DATA_SERIES', 'HIT_TEST_EVENTS');
 		//#endregion
 		//#region data series drawers
-		// this.dataSeriesDrawer = new DataSeriesDrawer(paneManager, canvasModel, this.dataSeriesDrawers);
-		// this.drawingManager.addDrawer(this.dataSeriesDrawer, 'DATA_SERIES');
 		this.registerDefaultDataSeriesDrawers();
 		//#endregion
 		this.backgroundDrawer = new BackgroundDrawer(backgroundCanvasModel, this.config);
