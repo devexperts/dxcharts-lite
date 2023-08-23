@@ -11,7 +11,7 @@ Includes all components' configurations, global configs like dateFormatter, and 
 |`timezone`|Timezone to use on chart X axis labels and any other timestamps. Examples: Africa/Accra, Europe/Moscow, Asia/Tehran.|`string`|
 |`fixedSize`|If set - chart canvas will have fixed size always.|`{ width: number; height: number; }`|
 |`rtl`|Right to left mode. Used in drawings (like text drawing) calculation.|`boolean`|
-|`drawingOrder`|Initial visual order of chart drawers. Reorder to put volumes on top of candles for example.|`("MAIN_BACKGROUND" | "MAIN_CLEAR" | "HIT_TEST_CLEAR" | "YAXIS_CLEAR" | "SERIES_CLEAR" | "OVER_SERIES_CLEAR" | "HIT_TEST_DRAWINGS" | "GRID" | "VOLUMES" | "UNDERLAY_VOLUMES_AREA" | ... 15 more ... | "CROSS_TOOL")[]`|
+|`drawingOrder`|Initial visual order of chart drawers. Reorder to put volumes on top of candles for example.|`("MAIN_BACKGROUND" | "MAIN_CLEAR" | "HIT_TEST_CLEAR" | "YAXIS_CLEAR" | "SERIES_CLEAR" | "OVER_SERIES_CLEAR" | "HIT_TEST_DRAWINGS" | "GRID" | "UNDERLAY_VOLUMES_AREA" | "X_AXIS" | ... 13 more ... | "CROSS_TOOL")[]`|
 |`useUTCTimeOverride`||`boolean`|
 |`animation`||[`AnimationConfig`](#animationconfig)|
 |`devexpertsPromoLink`||`boolean`|
@@ -27,7 +27,7 @@ Other configurations like: inverse, lockRatio etc.
 |`auto`|Auto scale will always fit whole chart series in viewport.|`boolean`|
 |`zoomToCursor`|True - will zoom to cursor on mouse wheel. False - zoom to last candle.|`boolean`|
 |`lockPriceToBarRatio`|Locks the ratio between price/time, so when zooming it will feel like google maps.|`boolean`|
-|`inverse`|Inverses the Y scale vertically. TODO move to components.yAxis.|`boolean`|
+|`inverse`|Inverses the Y scale vertically.|`boolean`|
 |`autoScaleOnCandles`|Do auto scale (even if it's not enabled in config) after instrument change.|`boolean`|
 |`autoScaleDisableOnDrag`|When dragging chart under specific angle - will automatically disable auto-scale.|[`AutoScaleDisableOnDrag`](#autoscaledisableondrag)|
 |`zoomSensitivity`|0..1 ratio of full viewport; 0.5 = middle, 0.75 = 3/4 of viewport|`number`|
@@ -51,7 +51,7 @@ Examples: chart itself, events, x-axis, highlights, cross tool.
 |---|---|---|
 |`chart`||[`ChartConfigComponentsChart`](#chartconfigcomponentschart)|
 |`xAxis`||[`ChartConfigComponentsXAxis`](#chartconfigcomponentsxaxis)|
-|`yAxis`||[`ChartConfigComponentsYAxis`](#chartconfigcomponentsyaxis)|
+|`yAxis`||[`YAxisConfig`](#yaxisconfig)|
 |`grid`||[`GridComponentConfig`](#gridcomponentconfig)|
 |`volumes`||[`ChartConfigComponentsVolumes`](#chartconfigcomponentsvolumes)|
 |`offsets`||[`ChartConfigComponentsOffsets`](#chartconfigcomponentsoffsets)|
@@ -108,7 +108,7 @@ Examples: chart itself, events, x-axis, highlights, cross tool.
 |`fontFamily`||`string`|
 |`fontStyle`||`string`|
 
-### `ChartConfigComponentsYAxis`
+### `YAxisConfig`
 
 
 |Property|Description|Type|
@@ -403,7 +403,6 @@ All colors in chart-core are configured here.
 |`backgroundColor`||`string`|
 |`backgroundGradientTopColor`||`string`|
 |`backgroundGradientBottomColor`||`string`|
-|`axisColor`||`string`|
 |`gridColor`||`string`|
 
 ### `ScatterPlotStyle`

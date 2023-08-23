@@ -43,7 +43,7 @@
 
 			const candles = DXChart.generateCandlesData({ quantity: 1000, withVolume: true });
 
-			chartInstance.chartComponent.setMainSeries({ candles });
+			chart.setData({ candles });
 
 			// Handle options
 			const visibility = document.querySelector('input[name="visible"]');

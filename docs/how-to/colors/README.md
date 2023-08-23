@@ -1,6 +1,6 @@
 # Colors
 
-#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/mpprlk)<!--/CSB_LINK-->
+#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/99gzv8)<!--/CSB_LINK-->
 ## Set colors via config
 
 You can set your own configuration with colors during initialization:

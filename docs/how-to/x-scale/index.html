@@ -28,7 +28,7 @@
         const chartInstance = DXChart.createChart(container);
 
         const candles = DXChart.generateCandlesData({ quantity: 1000, withVolume: true });
-        chartInstance.chartComponent.setMainSeries({ candles });
+        chart.setData({ candles });
 
         const basicScaleBtn = document.querySelector('#basic-scale-btn');
         basicScaleBtn.addEventListener('click', () => chartInstance.chartComponent.resetChartScale());

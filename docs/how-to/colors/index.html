@@ -29,7 +29,7 @@
 		const chartInstance = DXChart.createChart(container);
 
 		const candles = generateCandlesData({ quantity: 1000, withVolume: true });
-		chartInstance.chartComponent.setMainSeries({ candles });
+		chartInstance.setData({ candles });
 
 		chartInstance.watermarkComponent.setWaterMarkData({
 			firstRow: "My Instrument",

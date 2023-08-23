@@ -40,7 +40,7 @@
 
 			React.useEffect(() => {
 				chartInstance &&
-					chartInstance.chartComponent.setMainSeries({
+					chart.setData({
 						candles,
 					});
 			}, [candles, chartInstance]);

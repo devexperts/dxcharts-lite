@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 	const chartInstance = DXChart.createChart(container);
 
 	// Now we can add loaded data
-	chartInstance.chartComponent.setMainSeries({ candles });
+	chart.setData({ candles });
 
 	let ticksTimer;
 	showTicks.addEventListener('change', () => {

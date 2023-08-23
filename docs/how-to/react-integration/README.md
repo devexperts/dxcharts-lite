@@ -1,6 +1,6 @@
 # DXCharts Lite React integration
 
-#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/7htkw5)<!--/CSB_LINK-->
+#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/8tscnv)<!--/CSB_LINK-->
 
 First we need to load candles from somewhere  
 here `generateCandlesData` creates a mock data to show that chart is working  
@@ -36,7 +36,7 @@ When the chart instance is ready we can start rendering using `setMainSeries` me
 ```js
 React.useEffect(() => {
 	chartInstance &&
-		chartInstance.chartComponent.setMainSeries({
+		chart.setData({
 			candles,
 		});
 }, [candles, chartInstance]);

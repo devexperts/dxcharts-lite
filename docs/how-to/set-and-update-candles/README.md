@@ -1,6 +1,6 @@
 # DXCharts data examples
 
-#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/gtg8c3)<!--/CSB_LINK-->
+#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/95mdd5)<!--/CSB_LINK-->
 
 ## 💫 Setting the Main Series
 
@@ -8,7 +8,7 @@ To set the main series of candles on the chart, you can use the `setMainSeries` 
 This method takes an object with a series of candles `CandleSeries`, and renders them on the chart.
 
 ```js
-chartInstance.chartComponent.setMainSeries({
+chart.setData({
 	candles: candlesData,
 	instrument: {
 		symbol: instrumentName,
