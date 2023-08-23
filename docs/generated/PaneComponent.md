@@ -4,10 +4,9 @@
 |Method|Parameters|Returns|Description|
 |---|---|---|---|
 |`doActivate`||`void`|Method that activates the canvas bounds container and recalculates the zoom Y of the scale model.|
-|`createYAxisComponent`|`uuid: string` - The unique identifier of the chart pane.`extentIdx: number` `scaleModel: ScaleModel` - The scale model for the chart.`formatter: (value: number) => string` - The function to format the Y-axis labels.`increment: number` - The increment value for the Y-axis labels.|`ExtentYAxis`|Creates a Y-axis component for the chart.|
-|`createGridComponent`|`uuid: string` - The unique identifier of the pane.`scaleModel: ScaleModel` - The scale model used to calculate the scale of the grid.`yAxisLabelsGenerator: NumericYAxisLabelsGenerator` - The generator used to create the labels for the y-axis.|`GridComponent`|Creates a new GridComponent instance with the provided parameters.|
+|`createGridComponent`|`uuid: string` - The unique identifier of the pane.`scaleModel: ScaleModel` - The scale model used to calculate the scale of the grid.`yAxisLabelsGenerator: NumericYAxisLabelsGenerator` - The generator used to create the labels for the y-axis.`yAxisState: YAxisConfig` |`GridComponent`|Creates a new GridComponent instance with the provided parameters.|
 |`createYPanHandler`|`uuid: string` - The unique identifier of the chart pane.`scaleModel: ScaleModel` - The scale model of the chart.|`[Unsubscriber, DragNDropYComponent]`|Creates a handler for Y-axis panning of the chart.|
-|`addCursors`|`extentIdx: number` |`Unsubscriber`||
+|`addCursors`|`extentIdx: number` `yAxisComponent: YAxisComponent` |`Unsubscriber`||
 |`createExtentComponent`|`options: AtLeastOne<YExtentCreationOptions>` |`YExtentComponent`||
 |`removeExtentComponent`|`extentComponent: YExtentComponent` |`void`||
 |`updateView`||`void`|This method updates the view by calling the doAutoScale method of the scaleModel and firing the Draw event using the eventBus.|

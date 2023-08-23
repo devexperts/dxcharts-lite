@@ -16,7 +16,7 @@
 		const node = document.querySelector('#root');
 		const chartInstance = DXChart.createChart(node);
 		const candles = DXChart.generateCandlesData({ quantity: 1000, withVolume: true });
-		chartInstance.chartComponent.setMainSeries({
+		chart.setData({
 			candles,
 		});
 

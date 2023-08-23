@@ -3,8 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import ChartBootstrap from './chart/bootstrap';
+import { Chart } from './chart/chart';
 import { PartialChartConfig } from './chart/chart.config';
 
 const createChart =
@@ -15,7 +14,7 @@ const createChart =
 	 * @returns {ChartBootstrap} - The chart instance.
 	 */
 	(el: HTMLElement, config: PartialChartConfig = {}) => {
-		const chart = new ChartBootstrap(el, config);
+		const chart = new Chart(el, config);
 		return chart;
 	};
 
@@ -27,8 +26,8 @@ const createChart =
 window['DXChart'] = {
 	// @ts-ignore
 	...window['DXChart'],
-	ChartBootstrap,
+	Chart,
 	createChart,
 };
 
-export { createChart, ChartBootstrap };
+export { createChart, Chart };

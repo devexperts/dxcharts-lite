@@ -1,6 +1,6 @@
 # Y-Axis labels
 
-#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/t6l29c)<!--/CSB_LINK-->
+#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/k4lfxr)<!--/CSB_LINK-->
 
 There are 3 ways to see a label on a scale
 

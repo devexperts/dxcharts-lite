@@ -51,7 +51,7 @@
 		const chartInstance = DXChart.createChart(container);
 
 		const candles = DXChart.generateCandlesData({ quantity: 1000, withVolume: true });
-		chartInstance.chartComponent.setMainSeries({ candles });
+		chartInstance.setData({ candles });
 
 		// Handle type
 		const inputs = Array.from(document.querySelectorAll('input[name="chart-type"]'));

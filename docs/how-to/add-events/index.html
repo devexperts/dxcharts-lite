@@ -31,7 +31,7 @@
 		const chart = DXChart.createChart(container);
 
 		const candles = generateCandlesData({ quantity: 1000, withVolume: true });
-		chart.chartComponent.setMainSeries({ candles });
+		chart.setData({ candles });
 
 		const now = new Date();
 		const setEvents = () => {

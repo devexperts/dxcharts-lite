@@ -22,7 +22,7 @@ container.style.overflow = 'hidden';
 // DXChart init
 const chart: ChartBootstrap = createChart(container);
 const candles = generateCandlesDataTS({ quantity: 1000, withVolume: true });
-chart.chartComponent.setMainSeries({ candles });
+chart.setData({ candles });
 
 // for debugging
 // @ts-ignore

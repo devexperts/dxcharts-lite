@@ -11,13 +11,12 @@ import { CursorHandler } from './canvas/cursor.handler';
 import { createDefaultLayoutTemplate, extractElements } from './canvas/layout-creator';
 import ChartContainer from './chart-container';
 import {
-	BarType,
 	ChartColors,
 	ChartConfigComponentsOffsets,
 	FullChartConfig,
 	GridComponentConfig,
 	PartialChartConfig,
-	mergeWithDefaultConfig,
+	mergeWithDefaultConfig
 } from './chart.config';
 import { ChartBaseModel } from './components/chart/chart-base.model';
 import { ChartComponent } from './components/chart/chart.component';
@@ -33,16 +32,20 @@ import { Highlight } from './components/highlights/highlights.model';
 import { NavigationMapComponent } from './components/navigation_map/navigation-map.component';
 import { ChartPanComponent } from './components/pan/chart-pan.component';
 import { PaneManager } from './components/pane/pane-manager.component';
-import { YExtentFormatters } from './components/pane/pane.component';
+import { PaneComponent } from './components/pane/pane.component';
 import { SnapshotComponent } from './components/snapshot/snapshot.component';
 import { VolumesComponent } from './components/volumes/volumes.component';
 import { WaterMarkComponent } from './components/watermark/water-mark.component';
 import { XAxisComponent } from './components/x_axis/x-axis.component';
+import { LastCandleLabelsProvider } from './components/y_axis/price_labels/last-candle-labels.provider';
+import { LabelsGroups } from './components/y_axis/price_labels/y-axis-labels.model';
+import { YAxisPriceLabelsDrawer } from './components/y_axis/price_labels/y-axis-price-labels.drawer';
 import { YAxisComponent } from './components/y_axis/y-axis.component';
+import { YAxisDrawer } from './components/y_axis/y-axis.drawer';
 import { ClearCanvasDrawer } from './drawers/clear-canvas.drawer';
+import { CompositeDrawer } from './drawers/composite.drawer';
 import { DrawingManager } from './drawers/drawing-manager';
 import EventBus from './events/event-bus';
-import { EVENT_DRAW } from './events/events';
 import { CandleTapHandler } from './inputhandlers/candle-tap.handler';
 import { ChartResizeHandler } from './inputhandlers/chart-resize.handler';
 import { CrossEventProducerComponent } from './inputhandlers/cross-event-producer.component';
@@ -56,14 +59,12 @@ import { TimeZoneModel } from './model/time-zone.model';
 import { clearerSafe } from './utils/function.utils';
 import { merge } from './utils/merge.utils';
 import { DeepPartial } from './utils/object.utils';
-import { LastCandleLabelsProvider } from './components/y_axis/price_labels/last-candle-labels.provider';
-import { LabelsGroups } from './components/y_axis/price_labels/y-axis-labels.model';
-import { YAxisDrawer } from './components/y_axis/y-axis.drawer';
-import { YAxisPriceLabelsDrawer } from './components/y_axis/price_labels/y-axis-price-labels.drawer';
-import { CompositeDrawer } from './drawers/composite.drawer';
 
 export type FitType = 'studies' | 'orders' | 'positions';
 
+/**
+ * @deprecated use {Chart} instead
+ */
 export default class ChartBootstrap implements ChartContainer {
 	// can be used for convenient ID storing
 	// is NOT used inside anyhow
@@ -105,6 +106,8 @@ export default class ChartBootstrap implements ChartContainer {
 	public hoverProducer: HoverProducerComponent;
 	public canvasModels: CanvasModel[] = [];
 	public chartResizeHandler: ChartResizeHandler;
+	public mainPane: PaneComponent;
+	public chartBaseModel: ChartBaseModel<'candle'>;
 
 	public canvasAnimation: CanvasAnimation;
 	constructor(element: HTMLElement, userConfig: PartialChartConfig = {}) {
@@ -244,6 +247,7 @@ export default class ChartBootstrap implements ChartContainer {
 		this.crossEventProducer = new CrossEventProducerComponent(canvasInputListener, canvasBoundsContainer);
 		this.chartComponents.push(this.crossEventProducer);
 		const chartBaseModel = new ChartBaseModel('candle');
+		this.chartBaseModel = chartBaseModel;
 		const chartPanComponent = new ChartPanComponent(
 			eventBus,
 			scaleModel,
@@ -276,6 +280,10 @@ export default class ChartBootstrap implements ChartContainer {
 			yAxisLabelsCanvasModel,
 		);
 		this.paneManager = paneManager;
+
+		const mainPane = this.paneManager.paneComponents[CHART_UUID];
+		this.mainPane = mainPane;
+
 		this.chartComponents.push(paneManager);
 
 		// dynamic objects component
@@ -386,6 +394,7 @@ export default class ChartBootstrap implements ChartContainer {
 		);
 		this.chartComponents.push(this.navigationMapComponent);
 		this.userInputListenerComponents.push(this.navigationMapComponent.navigationMapMoveHandler);
+		
 		// high low component
 		const highLowComponent = new HighLowComponent(
 			config,
@@ -397,7 +406,6 @@ export default class ChartBootstrap implements ChartContainer {
 		this.chartComponents.push(highLowComponent);
 
 		this.initYAxisDrawer(yAxisLabelsCanvasModel);
-		const mainPane = this.paneManager.paneComponents[CHART_UUID];
 
 		this.yAxisComponent = mainPane.mainYExtentComponent.yAxisComponent;
 		// default labels provider
@@ -568,21 +576,6 @@ export default class ChartBootstrap implements ChartContainer {
 	}
 
 	/**
-	 * Sets the right-to-left (RTL) configuration of the component.
-	 *
-	 * @param {boolean} rtl - A boolean value indicating whether the component should be displayed in RTL mode.
-	 * @returns {void}
-	 */
-	setRtl(rtl: boolean) {
-		this.config.rtl = rtl;
-		this.bus.fire(EVENT_DRAW);
-	}
-
-	setChartType(type: BarType): void {
-		this.chartComponent.setChartType(type);
-	}
-
-	/**
 	 * Disables user controls by deactivating all userInputListenerComponents and disabling hitTestCanvasModel.
 	 * @returns {void}
 	 */
@@ -647,24 +640,6 @@ export default class ChartBootstrap implements ChartContainer {
 	}
 
 	/**
-	 * Deactivates the chart by clearing the canvas listeners and disabling user controls.
-	 * This method is a hack and should not be used unless an activation/deactivation cycle is implemented.
-	 * It is implemented to prevent memory leaks in the chart when components are deactivated.
-	 * @returns {void}
-	 * @todo This method should be revised soon.
-	 */
-	deactivate(): void {
-		// Hack method
-		// Try no to use this or clear until activation/deactivating cycle will be implemented
-		// Had to implement this to support components deactivation (remove canvas listeners) just
-		// for prevention of memory leaks in chart.
-		// TODO: SHOULD BE REVISED SOON.
-		this.clearer();
-		this.disableUserControls();
-		this.chartComponents.forEach(component => component.deactivate());
-	}
-
-	/**
 	 * This method triggers the 'draw' event on the 'bus' object.
 	 * @returns {void}
 	 */
@@ -680,24 +655,6 @@ export default class ChartBootstrap implements ChartContainer {
 		return this.config.components && this.config.components.offsets;
 	}
 
-	/**
-	 * Sets the visibility of the volumes separately and updates the yAxis width.
-	 * @param {boolean} separate - A boolean value indicating whether to show the volumes separately or not. Default value is false.
-	 */
-	showSeparateVolumes(separate: boolean = false) {
-		if (this.volumesComponent) {
-			this.volumesComponent.setShowVolumesSeparatly(separate);
-			this.canvasBoundsContainer.updateYAxisWidths();
-		}
-	}
-
-	/**
-	 * Sets the auto scale property of the scale model.
-	 * @param {boolean} auto - A boolean value indicating whether the auto scale is enabled or not. Default value is true.
-	 */
-	setAutoScale(auto: boolean = true) {
-		this.scaleModel.autoScale(auto);
-	}
 
 	/**
 	 * Sets the visibility of the borders of the candles in the chart.
@@ -826,18 +783,6 @@ export default class ChartBootstrap implements ChartContainer {
 	}
 
 	/**
-	 * Contains tear-down logic for chart
-	 * Use when you want to unmount the chart from the host app
-	 */
-	public destroy() {
-		this.bus.setMuted(true);
-		this.chartComponents.forEach(c => c.disable());
-		this.parentElement.childNodes.forEach(n => n.remove());
-		this.parentElement.style.width = '';
-		this.parentElement.style.height = '';
-	}
-
-	/**
 	 * Registers a chart component and includes it in the the chart lifecycle
 	 * @param initComponent - a function for component init
 	 * @param onComponentInit - will be called after component init
@@ -850,16 +795,5 @@ export default class ChartBootstrap implements ChartContainer {
 		this.components.push(component);
 		onComponentInit && onComponentInit(component);
 		component.activate();
-	}
-
-	/**
-	 * Registers number formatters for pane
-	 * @param uuid - pane's id
-	 * @param formatters - object, that contains 3 fileds: 'regular', 'percent', 'logarithmic'.
-	 * Each filed must have it's own formatter.
-	 * If 'percent' and 'logarithmic' formatters did not provided, 'regular' will be applied.
-	 */
-	public registerPaneFormatters(uuid: string, formatters: YExtentFormatters) {
-		this.paneManager.paneComponents[uuid]?.setPaneValueFormatters(formatters);
 	}
 }

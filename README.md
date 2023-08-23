@@ -106,7 +106,7 @@ export const generateMockData = () => {
 		symbol: 'AAPL',
 		priceIncrements: [0.01],
 	};
-	chartInstance.chartComponent.setMainSeries({ candles: mockCandles, instrument: mockInstrument });
+	chart.setData({ candles: mockCandles, instrument: mockInstrument });
 };
 ```
 
@@ -140,7 +140,7 @@ Here is full quick-start code example:
             symbol: 'AAPL',
             priceIncrements: [0.01],
         };
-        chartInstance.chartComponent.setMainSeries({ candles: mockCandles, instrument: mockInstrument });
+        chart.setData({ candles: mockCandles, instrument: mockInstrument });
   </script>
 ```
 

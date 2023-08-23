@@ -26,7 +26,7 @@
 		const chart = DXChart.createChart(container);
 
 		const candles = DXChart.generateCandlesData({ quantity: 1000, withVolume: true });
-		chart.chartComponent.setMainSeries({ candles });
+		chart.setData({ candles });
 
 		const addYScaleBtn = document.querySelector('#add-y-scale');
 		const mergeScalesBtn = document.querySelector('#merge-scales');
