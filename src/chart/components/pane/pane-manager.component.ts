@@ -30,6 +30,8 @@ export class PaneManager extends ChartBaseElement {
 	public paneComponents: Record<string, PaneComponent> = {};
 	public panesChangedSubject: Subject<Record<string, PaneComponent>> = new Subject();
 	public hitTestController: PaneHitTestController;
+	public dataSeriesChangedSubject: Subject<void> = new Subject();
+
 	/**
 	 * Returns order of panes in the chart from top to bottom.
 	 */
@@ -127,7 +129,6 @@ export class PaneManager extends ChartBaseElement {
 		if (this.paneComponents[uuid] !== undefined) {
 			return this.paneComponents[uuid];
 		}
-		// console.log('create pane');
 
 		const paneComponent: PaneComponent = new PaneComponent(
 			this.chartBaseModel,
@@ -145,6 +146,7 @@ export class PaneManager extends ChartBaseElement {
 			this.canvasBoundsContainer,
 			uuid,
 			this.dynamicObjectsCanvasModel,
+			this.dataSeriesChangedSubject,
 			options,
 		);
 
@@ -170,8 +172,6 @@ export class PaneManager extends ChartBaseElement {
 	 * @param uuid
 	 */
 	public removePane(uuid: string) {
-		// console.log('remove pane');
-
 		const pane = this.paneComponents[uuid];
 		if (pane !== undefined) {
 			pane.disable();

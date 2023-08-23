@@ -1,7 +1,7 @@
 import { Drawer, DrawingManager } from '../../drawers/drawing-manager';
 import { CanvasModel } from '../../model/canvas.model';
 import { ChartBaseElement } from '../../model/chart-base-element';
-import { LinkedList, convertArrayToLinkedList } from '../../utils/linkedList.utils';
+import { LinkedList, convertArrayToLinkedList, convertLinkedListToArray } from '../../utils/linkedList.utils';
 import { PaneManager } from '../pane/pane-manager.component';
 import { DynamicObjectsDrawer } from './dynamic-objects.drawer';
 import { DynamicObject, DynamicObjectsModel, PaneId } from './dynamic-objects.model';
@@ -16,6 +16,7 @@ import { VolumesComponent } from '../volumes/volumes.component';
 import { ScaleModel } from '../../model/scale.model';
 import { CandleSeriesModel } from '../../model/candle-series.model';
 import { CHART_UUID } from '../../canvas/canvas-bounds-container';
+import { merge } from 'rxjs';
 
 export class DynamicObjectsComponent extends ChartBaseElement {
 	model: DynamicObjectsModel<DynamicObject>;
@@ -86,6 +87,22 @@ export class DynamicObjectsComponent extends ChartBaseElement {
 					// add volumes as a dynamic object to the separate volume pane
 					if (cc.paneUuid === 'volumes') {
 						innerCCObjects.push({ model: mainCandleSeries, drawer: volumesDrawer });
+						if (this.model) {
+							const additionalObjPane = this.model.objects
+								.getValue()
+								.find(el => Object.keys(el)[0] === cc.paneUuid);
+							if (additionalObjPane) {
+								const additionalObjects: DynamicObject[] = convertLinkedListToArray(
+									additionalObjPane[`${cc.paneUuid}`],
+								).filter(
+									(o: DynamicObject) =>
+										o.drawer !== this.dataSeriesDrawer && o.drawer !== this.volumesDrawer,
+								);
+								const finale = innerCCObjects.concat(additionalObjects);
+								console.log(finale);
+								return convertArrayToLinkedList(finale);
+							}
+						}
 						return convertArrayToLinkedList(innerCCObjects);
 					}
 					cc.dataSeries.forEach((series: DataSeriesModel) => {
@@ -94,6 +111,23 @@ export class DynamicObjectsComponent extends ChartBaseElement {
 					// add volumes as a dynamic object to the chart pane
 					if (cc.paneUuid === CHART_UUID) {
 						innerCCObjects.push({ model: mainCandleSeries, drawer: volumesDrawer });
+					}
+					if (this.model) {
+						const additionalObjPane = this.model.objects
+							.getValue()
+							.find(el => Object.keys(el)[0] === cc.paneUuid);
+						if (additionalObjPane) {
+							const additionalObjects: DynamicObject[] = convertLinkedListToArray(
+								additionalObjPane[`${cc.paneUuid}`],
+							).filter(
+								(o: DynamicObject) =>
+									o.drawer !== this.dataSeriesDrawer && o.drawer !== this.volumesDrawer,
+							);
+							innerCCObjects.concat(additionalObjects);
+							console.log('additional', additionalObjects);
+							const finale = innerCCObjects.concat(additionalObjects);
+							return convertArrayToLinkedList(finale);
+						}
 					}
 					return convertArrayToLinkedList(innerCCObjects);
 				});
@@ -112,13 +146,18 @@ export class DynamicObjectsComponent extends ChartBaseElement {
 
 	protected doActivate() {
 		super.doActivate();
-		this.chartComponent.chartModel.candlesSetSubject.subscribe(() => {
-			const objectsList = this.getObjectsList(
-				this.dataSeriesDrawer,
-				this.volumesDrawer,
-				this.chartComponent.chartModel.mainCandleSeries,
-			);
-			this.model.setDynamicObjects(objectsList);
-		});
+		this.addRxSubscription(
+			merge(
+				this.paneManager.dataSeriesChangedSubject,
+				this.chartComponent.chartModel.candlesSetSubject,
+			).subscribe(() => {
+				const objectsList = this.getObjectsList(
+					this.dataSeriesDrawer,
+					this.volumesDrawer,
+					this.chartComponent.chartModel.mainCandleSeries,
+				);
+				this.model.setDynamicObjects(objectsList);
+			}),
+		);
 	}
 }

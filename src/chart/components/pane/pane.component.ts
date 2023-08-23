@@ -41,6 +41,7 @@ import {
 } from './extent/y-extent-component';
 import { PaneHitTestController } from './pane-hit-test.controller';
 import { YAxisBaseLabelsModel } from '../y_axis/y-axis-base-labels.model';
+import { Subject } from 'rxjs';
 
 // TODO should be replaced with YAxisComponent
 export interface ExtentYAxis {
@@ -87,6 +88,7 @@ export class PaneComponent extends ChartBaseElement {
 		private canvasBoundsContainer: CanvasBoundsContainer,
 		public readonly uuid: string,
 		public readonly dynamicObjectsCanvasModel: CanvasModel,
+		public dataSeriesChangedSubject: Subject<void>,
 		options?: AtLeastOne<YExtentCreationOptions>,
 	) {
 		super();
@@ -269,6 +271,7 @@ export class PaneComponent extends ChartBaseElement {
 			scaleModel,
 			yAxisComp,
 			dragNDrop,
+			this.dataSeriesChangedSubject,
 		);
 
 		yExtentComponent.addSubscription(unsub);
@@ -383,6 +386,7 @@ export class PaneComponent extends ChartBaseElement {
 	public addDataSeries(series: DataSeriesModel): void {
 		this.mainYExtentComponent.addDataSeries(series);
 		this.updateView();
+		this.dataSeriesChangedSubject.next();
 	}
 
 	/**
@@ -394,6 +398,7 @@ export class PaneComponent extends ChartBaseElement {
 	public removeDataSeries(series: DataSeriesModel): void {
 		this.mainYExtentComponent.removeDataSeries(series);
 		this.updateView();
+		this.dataSeriesChangedSubject.next();
 	}
 
 	// TODO hack, remove when each pane will have separate y-axis component
