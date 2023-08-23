@@ -9,8 +9,8 @@ import { VolumesModel } from '../volumes/volumes.model';
 export type PaneId = string;
 
 export interface DynamicObject {
-	readonly drawer: Drawer; // DataSeriesDrawer | DrawingsDrawer | VolumesDrawer
-	readonly model: DataSeriesModel | VolumesModel | unknown; // DataSeriesModel | DrawingModel | VolumesModel
+	readonly drawer: Drawer; // DataSeriesDrawer | VolumesDrawer | DrawingsDrawer
+	readonly model: DataSeriesModel | VolumesModel | unknown; // DataSeriesModel | DrawingsModel | VolumesModel
 }
 
 export class DynamicObjectsModel<DynamicObject> extends ChartBaseElement {
