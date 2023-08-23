@@ -1,4 +1,4 @@
-export function drawRoundedRect(ctx, x, y, width, height, radius = 4, fill = true, stroke = false) {
+function drawRoundedRect(ctx, x, y, width, height, radius = 4, fill = true, stroke = false) {
 	ctx.save();
 	ctx.beginPath();
 	ctx.moveTo(x + radius, y);
@@ -20,7 +20,7 @@ export function drawRoundedRect(ctx, x, y, width, height, radius = 4, fill = tru
 	ctx.restore();
 }
 
-export class CustomCrosstoolDrawer {
+export default class CustomCrosstoolDrawer {
 	constructor(config, canvasBoundsContainer, chartModel, paneManager) {
 		this.config = config;
 		this.canvasBoundsContainer = canvasBoundsContainer;

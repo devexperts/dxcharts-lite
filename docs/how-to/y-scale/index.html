@@ -12,30 +12,31 @@
 	<script src="https://www.unpkg.com/@devexperts/dxcharts-lite@1.0.1/dist/chart/utils/candles-generator.utils.js"
 		type="module"></script>
 </head>
-
 <body>
 	<div class="container">
-		<div class="grid">
-			<div id="chart" class="chart"></div>
-			<div>
-				<label> <input name="visible" type="checkbox" checked /> <small>Is visible</small> </label>
-				<label> <input name="inverse" type="checkbox" /> <small>Inverse</small> </label>
-				<label> <input name="lock" type="checkbox" /> <small>setLockPriceToBarRatio</small> </label>
-				<p>Axis alignment</p>
-				<div class="flex">
-					<label> <input name="align" type="radio" value="right" checked /> <small>Right</small> </label>
-					<label> <input name="align" type="radio" value="left" /><small>Left</small> </label>
+			<div class="settings">
+				<div class="grid">
+					<div>
+						<label> <input name="visible" type="checkbox" checked /> <small>Is visible</small> </label>
+						<label> <input name="inverse" type="checkbox" /> <small>Inverse</small> </label>
+						<label> <input name="lock" type="checkbox" /> <small>setLockPriceToBarRatio</small> </label>
+						<p>Axis alignment</p>
+						<div class="flex">
+							<label> <input name="align" type="radio" value="right" checked /> <small>Right</small> </label>
+							<label> <input name="align" type="radio" value="left" /><small>Left</small> </label>
+						</div>
+						<p>Axis type</p>
+						<div class="flex">
+							<label> <input name="type" type="radio" value="percent" /> <small>Percent</small> </label>
+							<label> <input name="type" type="radio" value="regular" checked /> <small>Regular</small> </label>
+							<label> <input name="type" type="radio" value="logarithmic" /> <small>Logarithmic</small> </label>
+						</div>
+					</div>
 				</div>
-				<p>Axis type</p>
-				<div class="flex">
-					<label> <input name="type" type="radio" value="percent" /> <small>Percent</small> </label>
-					<label> <input name="type" type="radio" value="regular" checked /> <small>Regular</small> </label>
-					<label> <input name="type" type="radio" value="logarithmic" /> <small>Logarithmic</small> </label>
-				</div>
-
-			</div>
 		</div>
-		<script type="module">
+		<div id="chart" class="chart"></div>
+	</div>
+	<script type="module">
 			const container = document.getElementById('chart');
 			const chartInstance = DXChart.createChart(container);
 
@@ -66,7 +67,7 @@
 				input.addEventListener('click', () => chartInstance.yAxisComponent.setAxisType(input.value));
 			});
 
-		</script>
+	</script>
 </body>
 
 </html>

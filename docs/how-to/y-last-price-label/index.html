@@ -6,7 +6,7 @@
 	<meta name="viewport"
 		content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
 	<meta http-equiv="X-UA-Compatible" content="ie=edge" />
-	<title>DXCharts Lite with react example</title>
+	<title>DXCharts Lite with price label</title>
 	<link rel="stylesheet" href="./style.css" />
 	<script src="https://www.unpkg.com/@devexperts/dxcharts-lite@1.0.1/dist/dxchart.min.js"></script>
 	<script src="https://www.unpkg.com/@devexperts/dxcharts-lite@1.0.1/dist/chart/utils/candles-generator.utils.js"
@@ -57,33 +57,35 @@
 
 <body>
 	<div class="chart__container">
-		<div id="root"></div>
-		<form action="" id="form">
-			<div>
-				<select name="pricelabelmode" value="{selectedMode}">
-					<option value="none">none</option>
-					<option value="label">label</option>
-					<option value="line">line</option>
-					<option value="line-label" selected>line-label</option>
-				</select>
-				<small>label type for price label</small>
-			</div>
-			<div>
-				<select name="pricelabelappearance" value="{selectedMode}">
-					<option value="badge" selected>badge</option>
-					<option value="rectangle">rectangle</option>
-					<option value="plain">plain</option>
-				</select>
-				<small>appearance for price label</small>
-			</div>
-			<div>
-				<select name="description" value="{selectedType}">
-					<option value="true" selected>visible</option>
-					<option value="false">hidden</option>
-				</select>
-				<small>description</small>
-			</div>
-		</form>
+		<div class="chart" id="root"></div>
+		<div class="settings">
+			<form action="" id="form">
+				<div>
+					<select name="pricelabelmode" value="{selectedMode}">
+						<option value="none">none</option>
+						<option value="label">label</option>
+						<option value="line">line</option>
+						<option value="line-label" selected>line-label</option>
+					</select>
+					<small>label type for price label</small>
+				</div>
+				<div>
+					<select name="pricelabelappearance" value="{selectedMode}">
+						<option value="badge" selected>badge</option>
+						<option value="rectangle">rectangle</option>
+						<option value="plain">plain</option>
+					</select>
+					<small>appearance for price label</small>
+				</div>
+				<div>
+					<select name="description" value="{selectedType}">
+						<option value="true" selected>visible</option>
+						<option value="false">hidden</option>
+					</select>
+					<small>description</small>
+				</div>
+			</form>
+		</div>
 	</div>
 </body>
 
