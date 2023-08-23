@@ -1,6 +1,6 @@
 # DXCharts Lite React integration
 
-#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/r4pn8x)<!--/CSB_LINK-->
+#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/7htkw5)<!--/CSB_LINK-->
 
 First we need to load candles from somewhere  
 here `generateCandlesData` creates a mock data to show that chart is working  
