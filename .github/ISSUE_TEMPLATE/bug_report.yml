@@ -24,7 +24,13 @@ body:
                 required: true
     - type: markdown
       attributes:
-          description: The more information you fill in, the better we can help you!
+          value: The more information you fill in, the better we can help you!
+    - type: textarea
+      attributes:
+          label: Describe the bug 😯
+          description: Provide a clear and concise description of the challenge you are running into.
+      validations:
+          required: true
     - type: input
       attributes:
           label: Link to minimal reproduction
@@ -34,8 +40,8 @@ body:
 
               Please do not just fill in a random link. The issue will be closed if no valid reproduction is provided.
           placeholder: e.g. https://codesandbox.io/s/...... OR Github Repo
-          validations:
-              required: true
+      validations:
+          required: true
     - type: textarea
       id: steps
       attributes:
@@ -46,28 +52,22 @@ body:
               1. Go to '...'
               2. Click on '....'
               3. See error
-          validations:
-              required: true
-    - type: textarea
-      attributes:
-          label: Describe the bug 😯
-          description: Provide a clear and concise description of the challenge you are running into.
-          validations:
-              required: true
+      validations:
+          required: true
     - type: textarea
       attributes:
           label: Expected behavior 🤔
           description: Describe what should happen.
-          validations:
-              required: true
+      validations:
+          required: true
     - type: textarea
       attributes:
           label: Platform
           value: |
               - OS: [e.g. macOS, Windows, Linux]
               - Browser: [e.g. Chrome, Safari, Firefox]
-          validations:
-              required: true
+      validations:
+          required: true
     - type: textarea
       attributes:
           label: Additional context 🔦
