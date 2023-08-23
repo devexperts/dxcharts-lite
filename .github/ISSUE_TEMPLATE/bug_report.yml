@@ -25,6 +25,12 @@ body:
     - type: markdown
       attributes:
           value: The more information you fill in, the better we can help you!
+    - type: textarea
+      attributes:
+          label: Describe the bug 😯
+          description: Provide a clear and concise description of the challenge you are running into.
+      validations:
+          required: true
     - type: input
       attributes:
           label: Link to minimal reproduction
@@ -46,12 +52,6 @@ body:
               1. Go to '...'
               2. Click on '....'
               3. See error
-      validations:
-          required: true
-    - type: textarea
-      attributes:
-          label: Describe the bug 😯
-          description: Provide a clear and concise description of the challenge you are running into.
       validations:
           required: true
     - type: textarea
