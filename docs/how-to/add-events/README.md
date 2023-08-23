@@ -1,6 +1,6 @@
 # Colors
 
-#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/q4r4f5)<!--/CSB_LINK-->
+#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/8jmdjr)<!--/CSB_LINK-->
 
 # Economic events
 

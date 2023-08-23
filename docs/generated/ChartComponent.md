@@ -11,6 +11,8 @@
 |`registerDefaultDataSeriesDrawers`||`void`|In future this drawers should have same type as main series|
 |`setChartType`|`type: keyof BarTypes` - new type|`void`|Sets the chart type of main candle series.|
 |`resetChartScale`||`void`|Resets chart scale to default according to config.components.chart.defaultZoomCandleWidth.|
+|`setTimestampRange`|`start: number` - The start timestamp of the range.`end: number` - The end timestamp of the range.|`void`|Sets the timestamp range of the chart by setting the x-axis scale.|
+|`setXScale`|`xStart: number` - viewport start in units`xEnd: number` - viewport end in units|`void`|Moves the viewport to exactly xStart..xEnd place.|
 |`setShowWicks`|`isShow: boolean` - A boolean value indicating whether to show or hide the wicks.|`void`|Sets the visibility of the wicks in the chart.|
 |`setMainSeries`|`series: CandleSeries` |`void`|Used to set the main series to chart.|
 |`setSecondarySeries`|`series: CandleSeries` |`CandleSeriesModel`|Adds new secondary chart series.|
@@ -19,6 +21,7 @@
 |`toXFromTimestamp`|`timestamp: number` |`number`|Converts timestamp to chart x coordinate|
 |`toY`|`price: number` |`number`|Converts price to chart y coordinate|
 |`updateAllSeries`|`mainSeries: CandleSeries` `secondarySeries: CandleSeries[]` |`void`|Updates the main and secondary series in one bulk operation. Reindexing and visual rerender happens at the same time.|
+|`removeDataFrom`|`timestamp: number` |`void`|Removes all data points from the main candle series that are newer than the given timestamp. Can be useful for data replay.|
 |`removeSecondarySeries`|`series: CandleSeriesModel` |`void`|Removes chart candles series.|
 |`prependCandles`|`target: Candle[]` - initial candles array`prependUpdate: Candle[]` - additional candles array, which will be added to the target array|`void`|Adds new candles array to the existing one at the start, mostly used in lazy loading|
 |`addLastCandle`|`candle: Candle` - new candle`instrumentSymbol: string` |`void`|Adds new candle to the chart|
@@ -32,3 +35,4 @@
 |`observeChartTypeChanged`||`Observable<keyof BarTypes>`|Returns an Observable that emits the BarType whenever the chart type is changed.|
 |`observeCandlesChanged`||`Observable<void>`|Returns an Observable that emits a void value when the candles in the chart model change. The Observable is obtained by calling the observeCandlesChanged method of the chartModel object.|
 |`observeCandlesUpdated`||`Observable<void>`|Returns an Observable that emits a void value when the candles are updated in the chart model. The Observable is obtained from the candlesUpdatedSubject of the chartModel.|
+|`observeCandlesPrepended`||`Observable<PrependedCandlesData>`|Returns an Observable that emits a void value whenever the candlesPrependSubject is triggered.|

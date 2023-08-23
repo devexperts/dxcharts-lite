@@ -1,6 +1,6 @@
 # Pane & PaneManager
 
-#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/mtssts)<!--/CSB_LINK-->
+#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/fz5q6c)<!--/CSB_LINK-->
 
 By default chart has only one y-axis and any panes are also created with only one y-axis.
 However, you can add as many y-axis as you want.

@@ -11,10 +11,10 @@ Includes all components' configurations, global configs like dateFormatter, and 
 |`timezone`|Timezone to use on chart X axis labels and any other timestamps. Examples: Africa/Accra, Europe/Moscow, Asia/Tehran.|`string`|
 |`fixedSize`|If set - chart canvas will have fixed size always.|`{ width: number; height: number; }`|
 |`rtl`|Right to left mode. Used in drawings (like text drawing) calculation.|`boolean`|
-|`drawingOrder`|Initial visual order of chart drawers. Reorder to put volumes on top of candles for example.|`DrawerType[]`|
+|`drawingOrder`|Initial visual order of chart drawers. Reorder to put volumes on top of candles for example.|`("MAIN_BACKGROUND" | "MAIN_CLEAR" | "HIT_TEST_CLEAR" | "YAXIS_CLEAR" | "SERIES_CLEAR" | "OVER_SERIES_CLEAR" | "HIT_TEST_DRAWINGS" | "GRID" | "VOLUMES" | "UNDERLAY_VOLUMES_AREA" | ... 15 more ... | "CROSS_TOOL")[]`|
 |`useUTCTimeOverride`||`boolean`|
 |`animation`||[`AnimationConfig`](#animationconfig)|
-|`logEvents`||`boolean`|
+|`devexpertsPromoLink`||`boolean`|
 |`shortDays`||`string[]`|
 |`shortMonths`||`string[]`|
 
@@ -118,12 +118,13 @@ Examples: chart itself, events, x-axis, highlights, cross tool.
 |`align`|Align Y axis left or right.|`YAxisAlign`|
 |`labels`|Configures the labels on Y axis.|[`YAxisLabels`](#yaxislabels)|
 |`typeConfig`|Override appearance of different label types. Useful to change all labels of the same type.|`YAxisTypeConfig`|
-|`valueLines`||`number`|
+|`labelHeight`|The height of the single label in pixels. Used during calculation step between labels.
+You can make it smaller to fit more labels on Y axis. Or less to fit less labels.|`number`|
 |`zeroPercentLine`|Always show zero line for percent scale.|`boolean`|
 |`customScale`|Allow to scale chart vertically by dragging Y axis with mouse.|`boolean`|
 |`customScaleDblClick`|Allows to double-click on Y axis to turn on auto-scale.|`boolean`|
-|`width`||`number`|
 |`cursor`||`string`|
+|`resizeDisabledCursor`||`string`|
 |`labelBoxMargin`||`{ top: number; bottom: number; end: number; start: number; }`|
 |`fontSize`||`number`|
 |`fontFamily`||`string`|
@@ -196,7 +197,7 @@ Configures the labels on Y axis.
 |Property|Description|Type|
 |---|---|---|
 |`visible`|Toggle events visibility.|`boolean`|
-|`eventsVisibility`||`Record<EventType, boolean>`|
+|`eventsVisibility`|Toggle specific event type visibility (for example: dividends, splits, earnings).|`Record<EventType, boolean>`|
 |`height`|Height of events area in pixels|`number`|
 |`cursor`|Configure events cursor type.|`string`|
 |`xAxisLabelFormat`|Configure x axis labels|`DateTimeFormatConfig[]`|
@@ -331,8 +332,8 @@ All colors in chart-core are configured here.
 |`secondaryChartTheme`||`SecondaryChartTheme[]`|
 |`waterMarkTheme`||`{ firstRowColor: string; secondRowColor: string; thirdRowColor: string; }`|
 |`highLowTheme`||`{ highColor: string; lowColor: string; }`|
-|`yAxis`||`{ backgroundColor: string; backgroundHoverColor: string; zeroPercentLine: string; labelTextColor: string; labelInvertedTextColor: string; labelBoxColor: string; labelDescriptionFillColor: string; rectLabelTextColor: string; rectLabelInvertedTextColor: string; }`|
-|`xAxis`||`{ backgroundColor: string; labelTextColor: string; labelBoxColor: string; }`|
+|`yAxis`||`{ backgroundColor: string; backgroundHoverColor: string; zeroPercentLine: string; labelTextColor: string; labelInvertedTextColor: string; labelBoxColor: string; rectLabelTextColor: string; rectLabelInvertedTextColor: string; }`|
+|`xAxis`||`{ backgroundColor: string; labelTextColor: string; }`|
 |`crossTool`||`{ lineColor: string; labelBoxColor: string; labelTextColor: string; }`|
 |`events`||`{ earnings: EventColors; dividends: EventColors; splits: EventColors; 'conference-calls': EventColors; }`|
 |`navigationMap`||`{ buttonColor: string; knotColor: string; sliderColor: string; backgroundColor: string; buttonArrowColor: string; knotLineColor: string; knotBorderColor: string; timeLabelsTextColor: string; mapFillColor: string; mapGradientTopColor?: string; mapGradientBottomColor?: string; mapColor: string; }`|
