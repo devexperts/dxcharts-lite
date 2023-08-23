@@ -80,17 +80,6 @@ export class LinkedList<T> {
 		}
 	}
 
-	public search(predicateFunc: (data: T) => boolean): ListNode<T> | null {
-		const checkNext = (node: ListNode<T>): ListNode<T> | null => {
-			if (predicateFunc(node.data)) {
-				return node;
-			}
-			return node.next ? checkNext(node.next) : null;
-		};
-
-		return this.head ? checkNext(this.head) : null;
-	}
-
 	public getNodePosition(node: ListNode<T>) {
 		let index = 0;
 		let tempNode = this._head;
@@ -99,7 +88,7 @@ export class LinkedList<T> {
 			if (tempNode?.data === node.data) {
 				return index;
 			}
-			tempNode = tempNode.next;
+			tempNode = tempNode && tempNode.next;
 			index++;
 		}
 
@@ -115,7 +104,7 @@ export class LinkedList<T> {
 	}
 }
 
-export const convertArrayToLinkedList = <T>(data: Array<T>): LinkedList<T> => {
+export const convertArrayToLinkedList = (data: Array<any>): LinkedList<any> => {
 	const initial = new ListNode(-1);
 	const initialList = new LinkedList();
 	let initialHead = initial;
@@ -128,7 +117,7 @@ export const convertArrayToLinkedList = <T>(data: Array<T>): LinkedList<T> => {
 	return initialList;
 };
 
-export const convertLinkedListToArray = <T>(list: LinkedList<T>): Array<T> => {
+export const convertLinkedListToArray = (list: LinkedList<any>): Array<any> => {
 	const initial = list._head?.data;
 	let temp = list._head;
 

@@ -67,7 +67,7 @@ export class WaterMarkComponent extends ChartBaseElement {
 				this.waterMarkData = this.getWaterMarkData();
 			}),
 		);
-		drawingManager.addDrawerAfter(this.waterMarkDrawer, 'WATERMARK', 'DRAWINGS');
+		drawingManager.addDrawerAfter(this.waterMarkDrawer, 'WATERMARK', 'DYNAMIC_OBJECTS');
 	}
 
 	/**

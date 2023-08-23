@@ -577,7 +577,6 @@ export const getDefaultConfig = (): FullChartConfig => ({
 		'Y_AXIS',
 		'UNDERLAY_VOLUMES_AREA',
 		'DYNAMIC_OBJECTS',
-		'DRAWINGS',
 		'WATERMARK',
 		'N_MAP_CHART',
 		'EVENTS',

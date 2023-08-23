@@ -13,7 +13,6 @@ export class DynamicObjectsDrawer implements Drawer {
 
 	draw() {
 		const objectListsModel = this.dynamicObjectsModel._objects;
-		console.log(objectListsModel);
 		objectListsModel.forEach(record => {
 			Object.values(record).forEach(list => {
 				const paneName = Object.keys(record)[0];
