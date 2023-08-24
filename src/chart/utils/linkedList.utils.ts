@@ -65,15 +65,25 @@ export class LinkedList<T> {
 		}
 	}
 
-	public remove(node: ListNode<T>): ListNode<T> | null {
-		if (node === null) {
-			return null;
-		} else {
-			if (node.next !== null) {
-				node.data = node.next.data;
-				node.next = node.next.next;
+	public removeAt(position: number): ListNode<T> | null {
+		if (position > -1 && position < this.length && this.head) {
+			let current = this.head;
+			let previous: ListNode<T> = current;
+			let index = 0;
+
+			if (position === 0) {
+				this._head = current.next;
+			} else {
+				while (index++ < position && current.next) {
+					previous = current;
+					current = current.next;
+				}
+				previous.next = current.next;
 			}
-			return node;
+			this.length--;
+			return current;
+		} else {
+			return null;
 		}
 	}
 

@@ -9,7 +9,6 @@ export interface ChartElements {
 	backgroundCanvas?: HTMLCanvasElement;
 	mainCanvas?: HTMLCanvasElement;
 	dynamicObjectsCanvas?: HTMLCanvasElement;
-	staticDrawingCanvas?: HTMLCanvasElement;
 	yAxisLabelsCanvas?: HTMLCanvasElement;
 	crossToolCanvas?: HTMLCanvasElement;
 	hitTestCanvas?: HTMLCanvasElement;

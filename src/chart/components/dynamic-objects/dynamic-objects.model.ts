@@ -52,7 +52,8 @@ export class DynamicObjectsModel<DynamicObject> extends ChartBaseElement {
 			if (targetObj) {
 				const targetList = targetRecord[targetObj];
 				const targetNode = new ListNode(obj);
-				targetList.remove(targetNode);
+				const targetPos = targetList.getNodePosition(targetNode);
+				targetList.removeAt(targetPos);
 				this.setDynamicObjects(objects);
 			}
 		}
@@ -72,7 +73,7 @@ export class DynamicObjectsModel<DynamicObject> extends ChartBaseElement {
 				const targetList = targetRecord[targetObj];
 				const targetPos = targetList.getNodePosition(listNode);
 				if (targetPos >= 0 && targetPos < targetList.size()) {
-					const nodeToReplace = targetList.remove(listNode);
+					const nodeToReplace = targetList.removeAt(targetPos);
 					if (nodeToReplace) {
 						targetList.insertAtEnd(nodeToReplace.data);
 					}
@@ -97,7 +98,7 @@ export class DynamicObjectsModel<DynamicObject> extends ChartBaseElement {
 				const targetList = targetRecord[targetObj];
 				const targetPos = targetList.getNodePosition(listNode);
 				if (targetPos > 0 && targetPos <= targetList.size()) {
-					const nodeToReplace = targetList.remove(listNode);
+					const nodeToReplace = targetList.removeAt(targetPos);
 					if (nodeToReplace) {
 						targetList.insertAt(0, nodeToReplace?.data);
 					}
@@ -123,7 +124,7 @@ export class DynamicObjectsModel<DynamicObject> extends ChartBaseElement {
 				const targetList = targetRecord[targetObj];
 				const targetPos = targetList.getNodePosition(listNode);
 				if (targetPos >= 0 && targetPos < targetList.size()) {
-					const nodeToReplace = targetList.remove(listNode);
+					const nodeToReplace = targetList.removeAt(targetPos);
 					if (nodeToReplace) {
 						targetList.insertAt(targetPos + 1, nodeToReplace.data);
 					}
@@ -149,7 +150,7 @@ export class DynamicObjectsModel<DynamicObject> extends ChartBaseElement {
 				const targetList = targetRecord[targetObj];
 				const targetPos = targetList.getNodePosition(listNode);
 				if (targetPos > 0 && targetPos <= targetList.size()) {
-					const nodeToReplace = targetList.remove(listNode);
+					const nodeToReplace = targetList.removeAt(targetPos);
 					if (nodeToReplace) {
 						targetList.insertAt(targetPos - 1, nodeToReplace?.data);
 					}
