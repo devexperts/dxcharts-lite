@@ -87,7 +87,7 @@ export class PaneManager extends ChartBaseElement {
 		});
 		const dragTick = () => {
 			this.canvasBoundsContainer.resizePaneVertically(uuid, this.canvasInputListener.getCurrentPoint().y);
-			this.eventBus.fireDraw([this.mainCanvasModel.canvasId, 'overDataSeriesCanvas']);
+			this.eventBus.fireDraw([this.mainCanvasModel.canvasId, 'dynamicObjectsCanvas']);
 		};
 		const resizerId = CanvasElement.PANE_UUID_RESIZER(uuid);
 		const barResizerComponent = new BarResizerComponent(
@@ -215,6 +215,6 @@ export class PaneManager extends ChartBaseElement {
 	 */
 	public recalculateState() {
 		Object.values(this.paneComponents).forEach(state => state.scaleModel.recalculateZoomY());
-		this.eventBus.fireDraw([this.mainCanvasModel.canvasId, 'overDataSeriesCanvas']);
+		this.eventBus.fireDraw([this.mainCanvasModel.canvasId, 'dynamicObjectsCanvas']);
 	}
 }

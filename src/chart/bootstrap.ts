@@ -56,8 +56,13 @@ import { clearerSafe } from './utils/function.utils';
 import { merge } from './utils/merge.utils';
 import { DeepPartial } from './utils/object.utils';
 import { DynamicObjectsComponent } from './components/dynamic-objects/dynamic-objects.component';
+import { DataSeriesModel } from './model/data-series.model';
+import { VolumesModel } from './components/volumes/volumes.model';
+import { CandleSeriesModel } from './model/candle-series.model';
 
 export type FitType = 'studies' | 'orders' | 'positions';
+
+type DynamicObjectModel = DataSeriesModel | VolumesModel | CandleSeriesModel | unknown;
 
 export default class ChartBootstrap implements ChartContainer {
 	// can be used for convenient ID storing
@@ -91,7 +96,7 @@ export default class ChartBootstrap implements ChartContainer {
 	public canvasBoundsContainer: CanvasBoundsContainer;
 	public canvasInputListener: CanvasInputListenerComponent;
 	public volumesComponent: VolumesComponent;
-	public dynamicObjectsComponent: DynamicObjectsComponent;
+	public dynamicObjectsComponent: DynamicObjectsComponent<DynamicObjectModel>;
 	public highlightsComponent: HighlightsComponent;
 	public chartComponent: ChartComponent;
 	public eventsComponent: EventsComponent;
@@ -156,7 +161,7 @@ export default class ChartBootstrap implements ChartContainer {
 		this.mainCanvasModel = mainCanvasModel;
 		const overSeriesCanvasModel = createCanvasModel(
 			eventBus,
-			elements.overDataSeriesCanvas,
+			elements.dynamicObjectsCanvas,
 			config,
 			drawingManager,
 			this.canvasModels,

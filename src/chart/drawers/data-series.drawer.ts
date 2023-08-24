@@ -8,7 +8,6 @@ import { Bounds } from '../model/bounds.model';
 import { DataSeriesModel, VisualSeriesPoint } from '../model/data-series.model';
 import { CanvasModel } from '../model/canvas.model';
 import { Drawer } from './drawing-manager';
-import { flatMap } from '../utils/array.utils';
 
 export interface ChartDrawerConfig {
 	singleColor?: string;
@@ -45,11 +44,10 @@ export class DataSeriesDrawer implements Drawer {
 		private readonly seriesDrawers: Record<string, SeriesDrawer>,
 	) {}
 
-	draw(model?: DataSeriesModel, paneName?: string) {
+	draw(model?: DataSeriesModel, paneUuid?: string) {
 		const ctx = this.canvasModel.ctx;
-		const pane = flatMap(Object.values(this.paneManager.paneComponents), c => c.yExtentComponents).find(comp => {
-			return comp.paneUuid === paneName;
-		});
+		const pane = paneUuid && this.paneManager.paneComponents[paneUuid];
+
 		if (model) {
 			ctx.save();
 			pane && clipToBounds(ctx, pane.getBounds());

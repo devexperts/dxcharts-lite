@@ -1,16 +1,14 @@
-import { Drawer } from '../../drawers/drawing-manager';
 import { LinkedList, ListNode } from '../../utils/linkedList.utils';
-import { DataSeriesModel } from '../../model/data-series.model';
 import { ChartBaseElement } from '../../model/chart-base-element';
 import { BehaviorSubject } from 'rxjs';
 import { ChartComponent } from '../chart/chart.component';
-import { VolumesModel } from '../volumes/volumes.model';
+import { DynamicModelDrawer } from './dynamic-objects.drawer';
 
 export type PaneId = string;
 
-export interface DynamicObject {
-	readonly drawer: Drawer; // DataSeriesDrawer | DrawingsDrawer | VolumesDrawer
-	readonly model: DataSeriesModel | VolumesModel | unknown; // DataSeriesModel | DrawingModel | VolumesModel
+export interface DynamicObject<T> {
+	readonly drawer: DynamicModelDrawer<T>;
+	readonly model: T; // DataSeriesModel | DrawingModel | VolumesModel
 }
 
 export class DynamicObjectsModel<DynamicObject> extends ChartBaseElement {
@@ -53,8 +51,8 @@ export class DynamicObjectsModel<DynamicObject> extends ChartBaseElement {
 			const targetObj = Object.keys(targetRecord).find(pane => pane === paneId);
 			if (targetObj) {
 				const targetList = targetRecord[targetObj];
-				const targetPos = targetList.getNodePosition(new ListNode(obj));
-				targetList.removeAt(targetPos);
+				const targetNode = new ListNode(obj);
+				targetList.remove(targetNode);
 				this.setDynamicObjects(objects);
 			}
 		}
@@ -74,7 +72,7 @@ export class DynamicObjectsModel<DynamicObject> extends ChartBaseElement {
 				const targetList = targetRecord[targetObj];
 				const targetPos = targetList.getNodePosition(listNode);
 				if (targetPos >= 0 && targetPos < targetList.size()) {
-					const nodeToReplace = targetList.removeAt(targetPos);
+					const nodeToReplace = targetList.remove(listNode);
 					if (nodeToReplace) {
 						targetList.insertAtEnd(nodeToReplace.data);
 					}
@@ -99,7 +97,7 @@ export class DynamicObjectsModel<DynamicObject> extends ChartBaseElement {
 				const targetList = targetRecord[targetObj];
 				const targetPos = targetList.getNodePosition(listNode);
 				if (targetPos > 0 && targetPos <= targetList.size()) {
-					const nodeToReplace = targetList.removeAt(targetPos);
+					const nodeToReplace = targetList.remove(listNode);
 					if (nodeToReplace) {
 						targetList.insertAt(0, nodeToReplace?.data);
 					}
@@ -125,7 +123,7 @@ export class DynamicObjectsModel<DynamicObject> extends ChartBaseElement {
 				const targetList = targetRecord[targetObj];
 				const targetPos = targetList.getNodePosition(listNode);
 				if (targetPos >= 0 && targetPos < targetList.size()) {
-					const nodeToReplace = targetList.removeAt(targetPos);
+					const nodeToReplace = targetList.remove(listNode);
 					if (nodeToReplace) {
 						targetList.insertAt(targetPos + 1, nodeToReplace.data);
 					}
@@ -151,7 +149,7 @@ export class DynamicObjectsModel<DynamicObject> extends ChartBaseElement {
 				const targetList = targetRecord[targetObj];
 				const targetPos = targetList.getNodePosition(listNode);
 				if (targetPos > 0 && targetPos <= targetList.size()) {
-					const nodeToReplace = targetList.removeAt(targetPos);
+					const nodeToReplace = targetList.remove(listNode);
 					if (nodeToReplace) {
 						targetList.insertAt(targetPos - 1, nodeToReplace?.data);
 					}

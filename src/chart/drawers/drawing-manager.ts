@@ -7,7 +7,6 @@ import EventBus from '../events/event-bus';
 import { EVENT_DRAW } from '../events/events';
 import { ChartResizeHandler } from '../inputhandlers/chart-resize.handler';
 import { MIN_SUPPORTED_CANVAS_SIZE } from '../model/canvas.model';
-import { DataSeriesModel } from '../model/data-series.model';
 import { arrayIntersect, reorderArray } from '../utils/array.utils';
 import { StringTMap } from '../utils/object.utils';
 import { animationFrameThrottled } from '../utils/perfomance/request-animation-frame-throttle.utils';
@@ -199,7 +198,7 @@ export class DrawingManager {
 }
 
 export interface Drawer {
-	draw(model?: DataSeriesModel | unknown, paneName?: string): void; // model could be outside of chart-core, for example, DrawingsModel
+	draw(): void; // model could be outside of chart-core, for example, DrawingsModel
 	/**
 	 * Used for optimization when we have to update only the last candle
 	 * Doesn't work for line chart types

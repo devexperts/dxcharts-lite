@@ -9,15 +9,17 @@ export class ListNode<T> {
 }
 /**
  * Implementation of Linked list data structure.
- * @param head
- * @param epsilon
+ * @param _head
+ * @param _tail
  */
 export class LinkedList<T> {
-	private head: ListNode<T> | null = null;
+	private _head: ListNode<T> | null = null;
+	private _tail: ListNode<T> | null = null;
 	private length = 0;
 
-	constructor(head?: ListNode<T>) {
-		this.head = head ?? null;
+	constructor(head?: ListNode<T>, tail?: ListNode<T>) {
+		this._head = head ?? null;
+		this._tail = tail ?? null;
 	}
 
 	public insertAtEnd(data: T): ListNode<T> {
@@ -25,13 +27,14 @@ export class LinkedList<T> {
 		let current: ListNode<T>;
 
 		if (this.head === null) {
-			this.head = node;
+			this._head = node;
 		} else {
 			current = this.head;
 			while (current.next) {
 				current = current.next;
 			}
 			current.next = node;
+			this._tail = node;
 		}
 		this.length++;
 		return node;
@@ -46,7 +49,7 @@ export class LinkedList<T> {
 
 			if (position === 0) {
 				node.next = current;
-				this.head = node;
+				this._head = node;
 			} else {
 				while (index++ < position && current.next) {
 					previous = current;
@@ -62,25 +65,15 @@ export class LinkedList<T> {
 		}
 	}
 
-	public removeAt(position: number): ListNode<T> | null {
-		if (position > -1 && position < this.length && this.head) {
-			let current = this.head;
-			let previous: ListNode<T> = current;
-			let index = 0;
-
-			if (position === 0) {
-				this.head = current.next;
-			} else {
-				while (index++ < position && current.next) {
-					previous = current;
-					current = current.next;
-				}
-				previous.next = current.next;
-			}
-			this.length--;
-			return current;
-		} else {
+	public remove(node: ListNode<T>): ListNode<T> | null {
+		if (node === null) {
 			return null;
+		} else {
+			if (node.next !== null) {
+				node.data = node.next.data;
+				node.next = node.next.next;
+			}
+			return node;
 		}
 	}
 
@@ -103,8 +96,12 @@ export class LinkedList<T> {
 		return this.length;
 	}
 
-	get _head() {
-		return this.head;
+	get head() {
+		return this._head;
+	}
+
+	get tail() {
+		return this._tail;
 	}
 }
 
@@ -122,8 +119,8 @@ export const convertArrayToLinkedList = (data: Array<any>): LinkedList<any> => {
 };
 
 export const convertLinkedListToArray = (list: LinkedList<any>): Array<any> => {
-	const initial = list._head?.data;
-	let temp = list._head;
+	const initial = list.head?.data;
+	let temp = list.head;
 
 	const arr = [initial];
 	while (temp?.next) {

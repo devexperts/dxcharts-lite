@@ -10,12 +10,10 @@ export default (devexpertsPromoLink: boolean) =>
 	'\t\t\t<canvas data-element="snapshotCanvas" style="z-index: 0"></canvas>\n' +
 	'\t\t\t<canvas data-element="backgroundCanvas" style="z-index: 1"></canvas>\n' +
 	'\t\t\t<canvas data-element="mainCanvas" style="z-index: 2"></canvas>\n' +
-	'\t\t\t<canvas data-element="dynamicObjectsCanvas" style="z-index: 5"></canvas>\n' +
-	'\t\t\t<canvas data-element="overDataSeriesCanvas" style="z-index: 6"></canvas>\n' +
-	'\t\t\t<canvas data-element="dynamicDrawingCanvas" style="z-index: 7"></canvas>\n' +
-	'\t\t\t<canvas data-element="yAxisLabelsCanvas" style="z-index: 8"></canvas>\n' +
-	'\t\t\t<canvas data-element="crossToolCanvas" style="z-index: 9"></canvas>\n' +
-	'\t\t\t<canvas data-element="hitTestCanvas" style="z-index: 10"></canvas>\n' +
+	'\t\t\t<canvas data-element="dynamicObjectsCanvas" style="z-index: 2"></canvas>\n' +
+	'\t\t\t<canvas data-element="yAxisLabelsCanvas" style="z-index: 3"></canvas>\n' +
+	'\t\t\t<canvas data-element="crossToolCanvas" style="z-index: 4"></canvas>\n' +
+	'\t\t\t<canvas data-element="hitTestCanvas" style="z-index: 5"></canvas>\n' +
 	`${
 		devexpertsPromoLink
 			? '\t\t\t<p style="position: absolute; visibility: hidden;">If you have any suggestions or are experiencing any issues, please feel free to contact us at <a href="https://devexperts.com/dxcharts/">devexperts.com</a></p>\n'

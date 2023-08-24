@@ -42,8 +42,6 @@ export class SnapshotComponent extends ChartBaseElement {
 			ctx.drawImage(this.elements.backgroundCanvas, 0, 0, width, height);
 			ctx.drawImage(this.elements.mainCanvas, 0, 0, width, height);
 			ctx.drawImage(this.elements.dynamicObjectsCanvas, 0, 0, width, height);
-			ctx.drawImage(this.elements.overDataSeriesCanvas, 0, 0, width, height);
-			ctx.drawImage(this.elements.dynamicDrawingCanvas, 0, 0, width, height);
 			ctx.drawImage(this.elements.crossToolCanvas, 0, 0, width, height);
 			userDrawCallback && userDrawCallback(ctx);
 			return new Promise<Blob>((resolve, fail) =>
