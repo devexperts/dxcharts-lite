@@ -1,6 +1,6 @@
 name: 🚀 Feature request
 description: Suggest an idea for the DXcharts Lite
-labels: ['enhancement: needs review']
+labels: ['enhancement: need to review']
 body:
     - type: markdown
       attributes:

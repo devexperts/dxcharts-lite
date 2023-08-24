@@ -1,6 +1,6 @@
 name: 🐛 Bug Report
 description: Create a bug report for the DXcharts Lite
-labels: ['bug: needs review']
+labels: ['bug: need to review']
 body:
     - type: markdown
       attributes:
