@@ -1,4 +1,4 @@
-export const provider = (chartInstance, group, getName) => ({
+export default (chartInstance, group, getName) => ({
 	getUnorderedLabels: () => {
 		const y = chartInstance.chartModel.toY(chartInstance.chartModel.mainCandleSeries.dataPoints.at(-1).close);
 
