@@ -20,7 +20,7 @@ export type HitTestEvents = 'mousedown' | 'hover' | 'touchstart' | 'dblclick' | 
 type HitTestType = 'DRAWINGS' | 'DATA_SERIES' | 'EVENTS' | 'NEWS';
 
 export const HIT_TEST_ID_RANGE: Record<HitTestType, [number, number]> = {
-	DRAWINGS: [0, 199],
+	DRAWINGS: [1, 199],
 	NEWS: [200, 299],
 	DATA_SERIES: [300, 2999],
 	EVENTS: [3000, 4000],
