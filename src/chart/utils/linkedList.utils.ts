@@ -103,30 +103,12 @@ export class LinkedList<T> {
 	get tail() {
 		return this._tail;
 	}
+
+	*[Symbol.iterator]() {
+		let current = this.head;
+		while (current) {
+			yield current.data;
+			current = current.next;
+		}
+	}
 }
-
-export const convertArrayToLinkedList = (data: Array<any>): LinkedList<any> => {
-	const initial = new ListNode(-1);
-	const initialList = new LinkedList();
-	let initialHead = initial;
-	// eslint-disable-next-line @typescript-eslint/prefer-for-of
-	for (let i = 0; i < data.length; i++) {
-		initialHead.next = new ListNode(data[i]);
-		initialHead = initialHead.next;
-		initialList.insertAtEnd(initialHead.data);
-	}
-	return initialList;
-};
-
-export const convertLinkedListToArray = (list: LinkedList<any>): Array<any> => {
-	const initial = list.head?.data;
-	let temp = list.head;
-
-	const arr = [initial];
-	while (temp?.next) {
-		temp = temp?.next;
-		arr.push(temp?.data);
-	}
-
-	return arr;
-};

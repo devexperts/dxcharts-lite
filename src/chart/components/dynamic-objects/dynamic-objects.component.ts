@@ -1,7 +1,7 @@
 import { Drawer, DrawingManager } from '../../drawers/drawing-manager';
 import { CanvasModel } from '../../model/canvas.model';
 import { ChartBaseElement } from '../../model/chart-base-element';
-import { LinkedList, convertArrayToLinkedList, convertLinkedListToArray } from '../../utils/linkedList.utils';
+import { LinkedList } from '../../utils/linkedList.utils';
 import { PaneManager } from '../pane/pane-manager.component';
 import { DynamicObjectsDrawer } from './dynamic-objects.drawer';
 import { DynamicObject, DynamicObjectsModel, PaneId } from './dynamic-objects.model';
@@ -86,6 +86,7 @@ export class DynamicObjectsComponent<T> extends ChartBaseElement {
 				.filter(innerComp => innerComp.paneUuid === comp.paneUuid)
 				.map(_innerComp => {
 					const compObjects: DynamicObject<T>[] = [];
+					const list: LinkedList<DynamicObject<T>> = new LinkedList();
 					// add volumes as a dynamic object to the separate volume pane
 					if (_innerComp.paneUuid === 'volumes') {
 						// eslint-disable-next-line no-restricted-syntax
@@ -96,9 +97,11 @@ export class DynamicObjectsComponent<T> extends ChartBaseElement {
 								this.model,
 								_innerComp.paneUuid,
 							);
-							return convertArrayToLinkedList(combinedObjects);
+							combinedObjects.forEach(o => list.insertAtEnd(o));
+							return list;
 						}
-						return convertArrayToLinkedList(compObjects);
+						compObjects.forEach(o => list.insertAtEnd(o));
+						return list;
 					}
 
 					_innerComp.dataSeries.forEach(series => {
@@ -116,9 +119,11 @@ export class DynamicObjectsComponent<T> extends ChartBaseElement {
 							this.model,
 							_innerComp.paneUuid,
 						);
-						return convertArrayToLinkedList(combinedObjects);
+						combinedObjects.forEach(o => list.insertAtEnd(o));
+						return list;
 					}
-					return convertArrayToLinkedList(compObjects);
+					compObjects.forEach(o => list.insertAtEnd(o));
+					return list;
 				});
 			return { [comp.paneUuid]: componentPaneObjects[0] };
 		});
@@ -138,7 +143,7 @@ export class DynamicObjectsComponent<T> extends ChartBaseElement {
 	) {
 		const additionalObjPane = model._objects.find(el => Object.keys(el)[0] === paneId);
 		if (additionalObjPane) {
-			const additionalObjects = convertLinkedListToArray(additionalObjPane[`${paneId}`]).filter(
+			const additionalObjects = [...additionalObjPane[`${paneId}`]].filter(
 				o => o.drawer !== this.dataSeriesDrawer && o.drawer !== this.volumesDrawer,
 			);
 			const combined = initObjects.concat(additionalObjects);
