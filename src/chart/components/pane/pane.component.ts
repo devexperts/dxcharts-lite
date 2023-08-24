@@ -22,7 +22,7 @@ import { ChartBaseElement, ChartEntity } from '../../model/chart-base-element';
 import { DataSeriesModel, defaultValueFormatter } from '../../model/data-series.model';
 import { ScaleModel, SyncedByXScaleModel } from '../../model/scale.model';
 import { Unit } from '../../model/scaling/viewport.model';
-import { firstOf, lastOf } from '../../utils/array.utils';
+import { firstOf, flatMap, lastOf } from '../../utils/array.utils';
 import { Unsubscriber } from '../../utils/function.utils';
 import { AtLeastOne, cloneUnsafe } from '../../utils/object.utils';
 import { ChartBaseModel } from '../chart/chart-base.model';
@@ -66,13 +66,13 @@ export class PaneComponent extends ChartBaseElement {
 	}
 
 	get dataSeries() {
-		return this.yExtentComponents.flatMap(c => Array.from(c.dataSeries));
+		return flatMap(this.yExtentComponents, c => Array.from(c.dataSeries));
 	}
 
 	public mainYExtentComponent: YExtentComponent;
 
 	constructor(
-		private chartBaseModel: ChartBaseModel<'candle'>,
+		public chartBaseModel: ChartBaseModel<'candle'>,
 		private hitTestController: PaneHitTestController,
 		private config: FullChartConfig,
 		private mainScaleModel: ScaleModel,
