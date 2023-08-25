@@ -3,7 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { CanvasBoundsContainer } from '../../canvas/canvas-bounds-container';
+import { CHART_UUID, CanvasBoundsContainer } from '../../canvas/canvas-bounds-container';
 import { ChartBaseElement } from '../../model/chart-base-element';
 import { BarType, FullChartColors, FullChartConfig } from '../../chart.config';
 import { CanvasModel } from '../../model/canvas.model';
@@ -17,6 +17,8 @@ import { resolveColorForBar, resolveColorForCandle, resolveColorForLine } from '
 import { VolumesModel } from './volumes.model';
 import { YAxisComponent } from '../y_axis/y-axis.component';
 import { BehaviorSubject } from 'rxjs';
+import { DynamicObjectsComponent } from '../dynamic-objects/dynamic-objects.component';
+import { VolumesDrawer } from './volumes.drawer';
 
 export type VolumeColorResolver = (priceMovement: PriceMovement, colors: FullChartColors) => string;
 
@@ -37,6 +39,7 @@ export class VolumesComponent extends ChartBaseElement {
 		private config: FullChartConfig,
 		paneManager: PaneManager,
 		yAxisComponent: YAxisComponent,
+		dynamicObjectsComponent: DynamicObjectsComponent,
 	) {
 		super();
 		const volumesModel = new VolumesModel(chartComponent, scaleModel);
@@ -44,14 +47,21 @@ export class VolumesComponent extends ChartBaseElement {
 		this.yAxisComponent = yAxisComponent;
 		this.addChildEntity(volumesModel);
 		this.separateVolumes = new SeparateVolumesComponent(
-			canvasModel,
 			chartComponent,
 			drawingManager,
 			config,
 			volumesModel,
-			this.volumesColorByChartTypeMap,
 			paneManager,
 		);
+		const volumesDrawer = new VolumesDrawer(
+			config,
+			this.volumesModel,
+			chartComponent.chartModel,
+			() => (this.config.components.volumes.showSeparately ? this.separateVolumes.scaleModel ?? scaleModel : scaleModel),
+			this.volumesColorByChartTypeMap,
+			() => true,
+		);
+		dynamicObjectsComponent.model.addObject({ drawer: volumesDrawer, model: volumesModel }, CHART_UUID);
 		this.addChildEntity(this.separateVolumes);
 		this.registerDefaultVolumeColorResolvers();
 		this.volumeVisibilityChangedSubject.next(config.components.volumes.visible);
