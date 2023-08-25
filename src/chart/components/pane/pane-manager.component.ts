@@ -25,12 +25,14 @@ import { YExtentCreationOptions, createDefaultYExtentHighLowProvider } from './e
 import { PaneHitTestController } from './pane-hit-test.controller';
 import { PaneComponent } from './pane.component';
 import { Unsubscriber } from '../../utils/function.utils';
+import { DataSeriesModel } from '../../model/data-series.model';
 
 export class PaneManager extends ChartBaseElement {
 	public paneComponents: Record<string, PaneComponent> = {};
 	public panesChangedSubject: Subject<Record<string, PaneComponent>> = new Subject();
 	public hitTestController: PaneHitTestController;
-	public dataSeriesChangedSubject: Subject<void> = new Subject();
+	public dataSeriesAddedSubject: Subject<DataSeriesModel> = new Subject();
+	public dataSeriesRemovedSubject: Subject<DataSeriesModel> = new Subject();
 	/**
 	 * Returns order of panes in the chart from top to bottom.
 	 */
@@ -145,7 +147,8 @@ export class PaneManager extends ChartBaseElement {
 			this.canvasBoundsContainer,
 			uuid,
 			this.dynamicObjectsCanvasModel,
-			this.dataSeriesChangedSubject,
+			this.dataSeriesAddedSubject,
+			this.dataSeriesRemovedSubject,
 			options,
 		);
 

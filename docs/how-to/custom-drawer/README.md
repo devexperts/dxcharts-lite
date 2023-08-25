@@ -15,8 +15,6 @@ Canvases list:
 -   backgroundCanvas
 -   mainCanvas
 -   dynamicObjectsCanvas
--   overDataSeriesCanvas
--   dynamicDrawingCanvas
 -   yAxisLabelsCanvas
 -   crossToolCanvas
 -   hitTestCanvas

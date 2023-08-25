@@ -25,7 +25,7 @@ import { LinearDrawer } from '../../drawers/data-series-drawers/linear.drawer';
 import { PointsDrawer } from '../../drawers/data-series-drawers/points.drawer';
 import { TextDrawer } from '../../drawers/data-series-drawers/text.drawer';
 import { TriangleDrawer } from '../../drawers/data-series-drawers/triangle.drawer';
-import { SeriesDrawer } from '../../drawers/data-series.drawer';
+import { DataSeriesDrawer, SeriesDrawer } from '../../drawers/data-series.drawer';
 import { DrawingManager, HIT_TEST_PREFIX } from '../../drawers/drawing-manager';
 import { HTDataSeriesDrawer } from '../../drawers/ht-data-series.drawer';
 import { CanvasInputListenerComponent } from '../../inputlisteners/canvas-input-listener.component';
@@ -49,6 +49,7 @@ import { deleteCandlesIndex } from './candle.functions';
 import { CandleWidthCalculator, ChartModel, LastCandleLabelHandler, VisualCandleCalculator } from './chart.model';
 import { PrependedCandlesData } from './chart-base.model';
 import { TrendHistogramDrawer } from '../../drawers/data-series-drawers/trend-histogram.drawer';
+import { DynamicObjectsComponent } from '../dynamic-objects/dynamic-objects.component';
 
 /**
  * Represents a financial instrument to be displayed on a chart
@@ -77,7 +78,9 @@ export interface CandleSeries {
 export class ChartComponent extends ChartBaseElement {
 	public readonly baselineModel: BaselineModel;
 	private readonly backgroundDrawer: BackgroundDrawer;
-	private readonly dataSeriesDrawers: Record<DataSeriesType, SeriesDrawer> = {};
+	private readonly _dataSeriesDrawers: Record<DataSeriesType, SeriesDrawer> = {};
+	private dataSeriesDrawer: DataSeriesDrawer;
+
 	constructor(
 		public readonly chartModel: ChartModel,
 		public canvasModel: CanvasModel,
@@ -89,8 +92,9 @@ export class ChartComponent extends ChartBaseElement {
 		private canvasInputListener: CanvasInputListenerComponent,
 		backgroundCanvasModel: CanvasModel,
 		chartPanComponent: ChartPanComponent,
-		paneManager: PaneManager,
+		private paneManager: PaneManager,
 		cursorHandler: CursorHandler,
+		private dynamicObjectsComponent: DynamicObjectsComponent,
 	) {
 		super();
 		this.addChildEntity(this.chartModel);
@@ -106,7 +110,7 @@ export class ChartComponent extends ChartBaseElement {
 		);
 		this.addChildEntity(this.baselineModel);
 		//#region main chart drawers
-		const hTChartDrawer = new HTDataSeriesDrawer(this.dataSeriesDrawers, this.hitTestCanvasModel, paneManager);
+		const hTChartDrawer = new HTDataSeriesDrawer(this._dataSeriesDrawers, this.hitTestCanvasModel, paneManager);
 		this.drawingManager.addDrawerBefore(hTChartDrawer, HIT_TEST_PREFIX + 'DATA_SERIES', 'HIT_TEST_EVENTS');
 		//#endregion
 		//#region data series drawers
@@ -115,6 +119,8 @@ export class ChartComponent extends ChartBaseElement {
 		this.backgroundDrawer = new BackgroundDrawer(backgroundCanvasModel, this.config);
 		drawingManager.addDrawer(this.backgroundDrawer, 'MAIN_BACKGROUND');
 		cursorHandler.setCursorForCanvasEl(CanvasElement.PANE_UUID(CHART_UUID), config.components.chart.cursor);
+
+		this.dataSeriesDrawer = new DataSeriesDrawer(paneManager, this.dataSeriesDrawers);
 	}
 
 	/**
@@ -125,6 +131,24 @@ export class ChartComponent extends ChartBaseElement {
 	 */
 	protected doActivate(): void {
 		super.doActivate();
+		// TODO hack, main data series is created before doActivate, so we need to add it manually
+		this.dynamicObjectsComponent.model.addObject(
+			{ model: this.chartModel.mainCandleSeries, drawer: this.dataSeriesDrawer },
+			this.chartModel.mainCandleSeries.extentComponent.paneUUID,
+		);
+		this.addRxSubscription(
+			this.paneManager.dataSeriesAddedSubject.subscribe(series => {
+				this.dynamicObjectsComponent.model.addObject(
+					{ model: series, drawer: this.dataSeriesDrawer },
+					series.extentComponent.paneUUID,
+				);
+			}),
+		);
+		this.addRxSubscription(
+			this.paneManager.dataSeriesRemovedSubject.subscribe(series => {
+				this.dynamicObjectsComponent.model.removeObject(series, series.extentComponent.paneUUID);
+			}),
+		);
 	}
 
 	/**
@@ -141,11 +165,11 @@ export class ChartComponent extends ChartBaseElement {
 
 	get barTypeValues(): Array<BarType> {
 		// @ts-ignore
-		return keys(this.dataSeriesDrawers);
+		return keys(this._dataSeriesDrawers);
 	}
 
-	get _dataSeriesDrawers() {
-		return this.dataSeriesDrawers;
+	get dataSeriesDrawers() {
+		return this._dataSeriesDrawers;
 	}
 
 	public strToBarType = (str: string): BarType => this.barTypeValues.find(t => t === str) ?? 'candle';
@@ -418,7 +442,7 @@ export class ChartComponent extends ChartBaseElement {
 	 * @returns {SeriesDrawer | undefined} - The SeriesDrawer object corresponding to the provided drawerType or undefined if not found.
 	 */
 	public getDataSeriesDrawer(drawerType: BarType): SeriesDrawer | undefined {
-		return this.dataSeriesDrawers[drawerType];
+		return this._dataSeriesDrawers[drawerType];
 	}
 
 	/**
@@ -427,7 +451,7 @@ export class ChartComponent extends ChartBaseElement {
 	 * @param drawer {ChartTypeDrawer} - an implementation of the drawer
 	 */
 	public registerDataSeriesTypeDrawer(drawerType: DataSeriesType, drawer: SeriesDrawer) {
-		this.dataSeriesDrawers[drawerType] = drawer;
+		this._dataSeriesDrawers[drawerType] = drawer;
 	}
 
 	//#endregion

@@ -1,28 +1,27 @@
-import { DynamicObject, DynamicObjectsModel } from './dynamic-objects.model';
+import { Drawer } from '../../drawers/drawing-manager';
 import { CanvasModel } from '../../model/canvas.model';
+import { DynamicObjectsModel } from './dynamic-objects.model';
 
 export interface DynamicModelDrawer<T> {
-	draw(model: T, paneUUID?: string): void;
+	draw(canvasModel: CanvasModel, model: T, paneUUID?: string): void;
 }
 
-export class DynamicObjectsDrawer<T> implements DynamicModelDrawer<T> {
-	private dynamicObjectsModel: DynamicObjectsModel<DynamicObject<T>>;
+export class DynamicObjectsDrawer implements Drawer {
+	private dynamicObjectsModel: DynamicObjectsModel;
 	private canvasModel: CanvasModel;
-	constructor(dynamicObjectsModel: DynamicObjectsModel<DynamicObject<T>>, canvasModel: CanvasModel) {
+
+	constructor(dynamicObjectsModel: DynamicObjectsModel, canvasModel: CanvasModel) {
 		this.dynamicObjectsModel = dynamicObjectsModel;
 		this.canvasModel = canvasModel;
 	}
 
 	draw() {
-		const objects = this.dynamicObjectsModel._objects;
-		objects.forEach(paneList => {
-			Object.values(paneList).forEach(list => {
-				const paneName = Object.keys(paneList)[0];
-				for (const obj of [...list]) {
-					const { model, drawer } = obj;
-					drawer.draw(model, paneName);
-				}
-			});
+		const objects = this.dynamicObjectsModel.objects;
+		Object.entries(objects).forEach(([paneUUID, list]) => {
+			for (const obj of list) {
+				const { model, drawer } = obj;
+				drawer.draw(this.canvasModel, model, paneUUID);
+			}
 		});
 	}
 

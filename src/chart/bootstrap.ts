@@ -24,6 +24,7 @@ import { ChartComponent } from './components/chart/chart.component';
 import { ChartModel } from './components/chart/chart.model';
 import { CrossToolComponent } from './components/cross_tool/cross-tool.component';
 import { CrossToolType } from './components/cross_tool/cross-tool.model';
+import { DynamicObjectsComponent } from './components/dynamic-objects/dynamic-objects.component';
 import { EventsComponent } from './components/events/events.component';
 import { GridComponent } from './components/grid/grid.component';
 import { HighLowComponent } from './components/high_low/high-low.component';
@@ -55,14 +56,8 @@ import { TimeZoneModel } from './model/time-zone.model';
 import { clearerSafe } from './utils/function.utils';
 import { merge } from './utils/merge.utils';
 import { DeepPartial } from './utils/object.utils';
-import { DynamicObjectsComponent } from './components/dynamic-objects/dynamic-objects.component';
-import { DataSeriesModel } from './model/data-series.model';
-import { VolumesModel } from './components/volumes/volumes.model';
-import { CandleSeriesModel } from './model/candle-series.model';
 
 export type FitType = 'studies' | 'orders' | 'positions';
-
-type DynamicObjectModel = DataSeriesModel | VolumesModel | CandleSeriesModel | unknown;
 
 export default class ChartBootstrap implements ChartContainer {
 	// can be used for convenient ID storing
@@ -96,7 +91,7 @@ export default class ChartBootstrap implements ChartContainer {
 	public canvasBoundsContainer: CanvasBoundsContainer;
 	public canvasInputListener: CanvasInputListenerComponent;
 	public volumesComponent: VolumesComponent;
-	public dynamicObjectsComponent: DynamicObjectsComponent<DynamicObjectModel>;
+	public dynamicObjectsComponent: DynamicObjectsComponent;
 	public highlightsComponent: HighlightsComponent;
 	public chartComponent: ChartComponent;
 	public eventsComponent: EventsComponent;
@@ -290,6 +285,14 @@ export default class ChartBootstrap implements ChartContainer {
 		);
 		this.paneManager = paneManager;
 		this.chartComponents.push(paneManager);
+
+		// dynamic objects component
+		this.dynamicObjectsComponent = new DynamicObjectsComponent(
+			this.dynamicObjectsCanvasModel,
+			drawingManager,
+		);
+		this.chartComponents.push(this.dynamicObjectsComponent);
+
 		this.chartModel = new ChartModel(
 			chartBaseModel,
 			paneManager,
@@ -302,6 +305,7 @@ export default class ChartBootstrap implements ChartContainer {
 			canvasBoundsContainer,
 			chartResizeHandler,
 		);
+
 		//#region main chart component init
 		const chartComponent = new ChartComponent(
 			this.chartModel,
@@ -316,6 +320,7 @@ export default class ChartBootstrap implements ChartContainer {
 			chartPanComponent,
 			paneManager,
 			this.cursorHandler,
+			this.dynamicObjectsComponent,
 		);
 		this.chartComponents.push(chartComponent);
 		this.chartComponent = chartComponent;
@@ -428,19 +433,9 @@ export default class ChartBootstrap implements ChartContainer {
 			config,
 			paneManager,
 			this.yAxisComponent,
+			this.dynamicObjectsComponent,
 		);
 		this.chartComponents.push(this.volumesComponent);
-		// dynamic objects component
-		this.dynamicObjectsComponent = new DynamicObjectsComponent(
-			this.dynamicObjectsCanvasModel,
-			drawingManager,
-			paneManager,
-			chartComponent,
-			config,
-			this.volumesComponent,
-			scaleModel,
-		);
-		this.chartComponents.push(this.dynamicObjectsComponent);
 		// grid component
 		const mainChartGridComponent = new GridComponent(
 			mainCanvasModel,

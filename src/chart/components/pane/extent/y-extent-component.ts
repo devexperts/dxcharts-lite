@@ -39,7 +39,7 @@ export class YExtentComponent extends ChartBaseElement {
 	private mainDataSeries?: DataSeriesModel;
 
 	constructor(
-		public paneUuid: string,
+		public paneUUID: string,
 		public idx: number,
 		public paneComponent: PaneComponent,
 		private chartBaseModel: ChartBaseModel<'candle'>,
@@ -50,7 +50,8 @@ export class YExtentComponent extends ChartBaseElement {
 		// TODO when y-axis component will be refactored this shouldn't be undefined
 		public readonly yAxisComponent: ExtentYAxis | undefined,
 		public readonly dragNDrop: DragNDropYComponent,
-		public dataSeriesChangedSubject: Subject<void> = new Subject(),
+		public seriesAddedSubject: Subject<DataSeriesModel>,
+		public seriesRemovedSubject: Subject<DataSeriesModel>,
 		public dataSeries: Set<DataSeriesModel> = new Set(),
 		public formatters: YExtentFormatters = {
 			regular: defaultValueFormatter,
@@ -77,15 +78,18 @@ export class YExtentComponent extends ChartBaseElement {
 
 	protected doDeactivate(): void {
 		super.doDeactivate();
-		this.dataSeries.forEach(ds => ds.deactivate());
+		this.dataSeries.forEach(ds => {
+			this.seriesRemovedSubject.next(ds);
+			ds.deactivate();
+		});
 	}
 
 	public getYAxisBounds = (): Bounds => {
-		return this.canvasBoundsContainer.getBounds(CanvasElement.PANE_UUID_Y_AXIS(this.paneUuid, this.idx));
+		return this.canvasBoundsContainer.getBounds(CanvasElement.PANE_UUID_Y_AXIS(this.paneUUID, this.idx));
 	};
 
 	public yAxisHT = this.canvasBoundsContainer.getBoundsHitTest(
-		CanvasElement.PANE_UUID_Y_AXIS(this.paneUuid, this.idx),
+		CanvasElement.PANE_UUID_Y_AXIS(this.paneUUID, this.idx),
 	);
 
 	/**
@@ -120,7 +124,7 @@ export class YExtentComponent extends ChartBaseElement {
 			this.mainDataSeries = series;
 		}
 		this.paneComponent.updateView();
-		this.dataSeriesChangedSubject.next();
+		this.seriesAddedSubject.next(series);
 	}
 
 	/**
@@ -132,7 +136,7 @@ export class YExtentComponent extends ChartBaseElement {
 	public removeDataSeries(series: DataSeriesModel): void {
 		this.dataSeries.delete(series);
 		this.paneComponent.updateView();
-		this.dataSeriesChangedSubject.next();
+		this.seriesRemovedSubject.next(series);
 	}
 
 	// TODO hack, remove when each pane will have separate y-axis component

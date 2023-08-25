@@ -88,7 +88,8 @@ export class PaneComponent extends ChartBaseElement {
 		private canvasBoundsContainer: CanvasBoundsContainer,
 		public readonly uuid: string,
 		public readonly dynamicObjectsCanvasModel: CanvasModel,
-		public dataSeriesChangedSubject: Subject<void>,
+		public seriesAddedSubject: Subject<DataSeriesModel>,
+		public seriesRemovedSubject: Subject<DataSeriesModel>,
 		options?: AtLeastOne<YExtentCreationOptions>,
 	) {
 		super();
@@ -271,7 +272,8 @@ export class PaneComponent extends ChartBaseElement {
 			scaleModel,
 			yAxisComp,
 			dragNDrop,
-			this.dataSeriesChangedSubject,
+			this.seriesAddedSubject,
+			this.seriesRemovedSubject,
 		);
 
 		yExtentComponent.addSubscription(unsub);
@@ -386,7 +388,6 @@ export class PaneComponent extends ChartBaseElement {
 	public addDataSeries(series: DataSeriesModel): void {
 		this.mainYExtentComponent.addDataSeries(series);
 		this.updateView();
-		this.dataSeriesChangedSubject.next();
 	}
 
 	/**
@@ -398,7 +399,6 @@ export class PaneComponent extends ChartBaseElement {
 	public removeDataSeries(series: DataSeriesModel): void {
 		this.mainYExtentComponent.removeDataSeries(series);
 		this.updateView();
-		this.dataSeriesChangedSubject.next();
 	}
 
 	// TODO hack, remove when each pane will have separate y-axis component

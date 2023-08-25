@@ -28,7 +28,7 @@ export const validateChartElements = (els: ChartElements): els is ValidatedChart
 	const hitTestCanvasAvailable = els.hitTestCanvas !== null;
 	const chartResizerAvailable = els.chartResizer !== null;
 	const chartContainerAvailable = els.chartContainer !== null;
-	const dataCanvasAvailable = els.dynamicObjectsCanvas !== null;
+	const dynamicObjectsCanvasAvailable = els.dynamicObjectsCanvas !== null;
 	return (
 		canvasAreaAvailable &&
 		snapshotCanvasAvailable &&
@@ -39,6 +39,6 @@ export const validateChartElements = (els: ChartElements): els is ValidatedChart
 		hitTestCanvasAvailable &&
 		chartResizerAvailable &&
 		chartContainerAvailable &&
-		dataCanvasAvailable
+		dynamicObjectsCanvasAvailable
 	);
 };

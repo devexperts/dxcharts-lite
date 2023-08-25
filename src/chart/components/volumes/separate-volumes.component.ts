@@ -3,17 +3,14 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { ChartBaseElement } from '../../model/chart-base-element';
-import { BarType, FullChartConfig } from '../../chart.config';
-import { CanvasModel } from '../../model/canvas.model';
+import { FullChartConfig } from '../../chart.config';
 import { DrawingManager } from '../../drawers/drawing-manager';
+import { ChartBaseElement } from '../../model/chart-base-element';
 import { ScaleModel } from '../../model/scale.model';
 import { Pixel, Unit } from '../../model/scaling/viewport.model';
 import { ChartComponent } from '../chart/chart.component';
 import { createCandlesOffsetProvider } from '../chart/data-series.high-low-provider';
 import { PaneManager } from '../pane/pane-manager.component';
-import { VolumeColorResolver } from './volumes.component';
-import { VolumesDrawer } from './volumes.drawer';
 import { volumeFormatter } from './volumes.formatter';
 import { VolumesModel } from './volumes.model';
 
@@ -21,12 +18,10 @@ export class SeparateVolumesComponent extends ChartBaseElement {
 	static UUID = 'volumes';
 	public scaleModel: ScaleModel | undefined;
 	constructor(
-		private canvasModel: CanvasModel,
 		private chartComponent: ChartComponent,
 		private drawingManager: DrawingManager,
-		private config: FullChartConfig,
+		config: FullChartConfig,
 		private volumesModel: VolumesModel,
-		private readonly volumesColorByChartTypeMap: Partial<Record<BarType, VolumeColorResolver>>,
 		private paneManager: PaneManager,
 	) {
 		super();
@@ -68,17 +63,6 @@ export class SeparateVolumesComponent extends ChartBaseElement {
 			scaleModel.autoScaleModel.setHighLowProvider('volumes', volumesHighLowProvider);
 			scaleModel.doAutoScale(true);
 			this.scaleModel = scaleModel;
-
-			const separateVolumesDrawer = new VolumesDrawer(
-				this.canvasModel,
-				this.config,
-				this.volumesModel,
-				this.chartComponent.chartModel,
-				scaleModel,
-				this.volumesColorByChartTypeMap,
-				() => this.config.components.volumes.showSeparately,
-			);
-			this.drawingManager.addDrawer(separateVolumesDrawer, 'UNDERLAY_VOLUMES_AREA');
 		}
 	}
 
