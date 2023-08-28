@@ -6,7 +6,8 @@
 	<meta name="viewport"
 		content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
 	<meta http-equiv="X-UA-Compatible" content="ie=edge" />
-	<title>DXCharts Lite y-axis labels</title>
+	<title>DXCharts Lite custom y-axis labels</title>
+	<link rel="stylesheet" href="../common-styles.css" />
 	<link rel="stylesheet" href="./style.css" />
 	<script src="https://www.unpkg.com/@devexperts/dxcharts-lite@1.0.1/dist/dxchart.min.js"></script>
 	<script src="https://www.unpkg.com/@devexperts/dxcharts-lite@1.0.1/dist/chart/utils/candles-generator.utils.js"
@@ -33,7 +34,7 @@
 				}),
 				{},
 			);
-			console.log(options);
+
 			chartInstance.yAxisComponent.addSimpleYAxisLabel('custom_label', {
 				y: parseInt(chartInstance.chartModel.toY(options.y)),
 				labelText: options.labelText,
@@ -63,7 +64,8 @@
 
 <body>
 	<div class="chart__container">
-		<div id="root"></div>
+		<div class="chart" id="root"></div>
+		<div class="settings">
 		<form action="" id="form">
 			<label>
 				<input name="y" type="number" value="220" />
@@ -128,6 +130,7 @@
 				</select><small>description</small>
 			</div>
 		</form>
+		</div>
 	</div>
 </body>
 
