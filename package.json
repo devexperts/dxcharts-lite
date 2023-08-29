@@ -14,7 +14,7 @@
     "build:standalone": "webpack --config webpack.build.config.js",
     "//<----prod builds---->": "production builds (no source maps)",
     "build:production": "yarn clean_dist && yarn build:lib:production && yarn build:standalone:production",
-    "build:lib:production": "yarn build:lib && yarn minify:lib && yarn add_disclaimer",
+    "build:lib:production": "yarn build:lib && yarn add_disclaimer",
     "build:standalone:production": "webpack --config webpack.build.config.js --env MODE=production && yarn add_disclaimer",
     "//<----utility builds---->": "build will run on dxcity CI when trying to merge PR builds",
     "build:shadow_merge": "yarn test && yarn build",
