@@ -10,16 +10,23 @@ export class ListNode<T> {
 /**
  * Implementation of Linked list data structure.
  * @param _head
- * @param _tail
  */
 export class LinkedList<T> {
 	private _head: ListNode<T> | null = null;
 	private _tail: ListNode<T> | null = null;
 	private length = 0;
 
-	constructor(head?: ListNode<T>, tail?: ListNode<T>) {
+	constructor(head?: ListNode<T>) {
 		this._head = head ?? null;
-		this._tail = tail ?? null;
+		// init tail
+		if (this.head !== null) {
+			let current: ListNode<T>;
+			current = this.head;
+			while (current.next) {
+				current = current.next;
+			}
+			this._tail = current;
+		}
 	}
 
 	public insertAtEnd(data: T): ListNode<T> {
@@ -34,8 +41,8 @@ export class LinkedList<T> {
 				current = current.next;
 			}
 			current.next = node;
-			this._tail = node;
 		}
+		this._tail = node;
 		this.length++;
 		return node;
 	}
@@ -44,41 +51,56 @@ export class LinkedList<T> {
 		if (position > -1 && position < this.length && this.head) {
 			let current = this.head;
 			let index = 0;
-			let previous = current;
+			let previous = null;
 			const node = new ListNode(data);
+
+			if (position === this.length - 1) {
+				this._tail = node;
+			}
 
 			if (position === 0) {
 				node.next = current;
 				this._head = node;
 			} else {
-				while (index++ < position && current.next) {
+				while (index < position && current.next) {
+					index++;
 					previous = current;
 					current = current.next;
 				}
 				node.next = current;
-				previous.next = node;
+				if (previous) {
+					previous.next = node;
+				}
 			}
 			this.length++;
 			return current;
 		} else {
-			return null;
+			this._head = new ListNode(data);
+			this.length++;
+			return this.head;
 		}
 	}
 
 	public removeAt(position: number): ListNode<T> | null {
 		if (position > -1 && position < this.length && this.head) {
 			let current = this.head;
-			let previous: ListNode<T> = current;
+			let previous = null;
 			let index = 0;
 
 			if (position === 0) {
 				this._head = current.next;
 			} else {
-				while (index++ < position && current.next) {
+				while (index < position && current.next) {
+					index++;
 					previous = current;
 					current = current.next;
 				}
-				previous.next = current.next;
+				if (previous) {
+					previous.next = current.next;
+				}
+				if (position === this.length - 1) {
+					this._tail = current;
+				}
 			}
 			this.length--;
 			return current;
@@ -89,13 +111,13 @@ export class LinkedList<T> {
 
 	public getNodePosition(node: ListNode<T>) {
 		let index = 0;
-		let tempNode = this._head;
+		let current = this.head;
 
 		while (node) {
-			if (tempNode?.data === node.data) {
+			if (current?.data === node.data) {
 				return index;
 			}
-			tempNode = tempNode && tempNode.next;
+			current = current && current.next;
 			index++;
 		}
 

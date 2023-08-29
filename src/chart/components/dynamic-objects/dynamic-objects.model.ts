@@ -12,7 +12,7 @@ export interface DynamicObject<T = unknown> {
 
 export class DynamicObjectsModel extends ChartBaseElement {
 	private _objects: BehaviorSubject<Record<PaneId, LinkedList<DynamicObject>>>;
-	public modelToObjectMap: Map<unknown, DynamicObject> = new Map();
+	private modelToObjectMap: Map<unknown, DynamicObject> = new Map();
 
 	constructor() {
 		super();
@@ -26,9 +26,11 @@ export class DynamicObjectsModel extends ChartBaseElement {
 	 */
 	addObject(obj: DynamicObject, paneId: PaneId) {
 		const objects = this.objects;
-		const targetList = objects[paneId] ?? new LinkedList();
-		objects[paneId] = targetList;
-		targetList.insertAtEnd(obj);
+		const paneList = objects[paneId] ?? new LinkedList();
+		if (!Object.keys(objects).find(pane => pane === paneId)) {
+			objects[paneId] = paneList;
+		}
+		paneList.insertAtEnd(obj);
 		this.modelToObjectMap.set(obj.model, obj);
 		this.setDynamicObjects(objects);
 	}
@@ -40,14 +42,14 @@ export class DynamicObjectsModel extends ChartBaseElement {
 	 */
 	removeObject(model: unknown, paneId: PaneId) {
 		const objects = this.objects;
-		const targetList = objects[paneId];
+		const paneList = objects[paneId];
 		const obj = this.modelToObjectMap.get(model);
-		if (targetList && obj) {
+		if (paneList && obj) {
 			const targetNode = new ListNode(obj);
-			const targetPos = targetList.getNodePosition(targetNode);
-			targetList.removeAt(targetPos);
+			const targetPos = paneList.getNodePosition(targetNode);
+			paneList.removeAt(targetPos);
 			this.modelToObjectMap.delete(model);
-			if (targetList.size() === 0) {
+			if (paneList.size() === 0) {
 				delete objects[paneId];
 			}
 			this.setDynamicObjects(objects);
@@ -116,7 +118,7 @@ export class DynamicObjectsModel extends ChartBaseElement {
 	 * @param obj
 	 * @param paneId
 	 */
-	sendBackward(paneId: PaneId, listNode: ListNode<DynamicObject>) {
+	moveBackwards(paneId: PaneId, listNode: ListNode<DynamicObject>) {
 		const list = this.objects[paneId];
 		if (list) {
 			const targetPos = list.getNodePosition(listNode);

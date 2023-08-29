@@ -272,8 +272,6 @@ export class PaneComponent extends ChartBaseElement {
 			scaleModel,
 			yAxisComp,
 			dragNDrop,
-			this.seriesAddedSubject,
-			this.seriesRemovedSubject,
 		);
 
 		yExtentComponent.addSubscription(unsub);

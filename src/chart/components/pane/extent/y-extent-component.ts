@@ -3,7 +3,6 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { Subject } from 'rxjs';
 import { CanvasBoundsContainer, CanvasElement } from '../../../canvas/canvas-bounds-container';
 import { YAxisWidthContributor } from '../../../canvas/y-axis-bounds.container';
 import { Bounds } from '../../../model/bounds.model';
@@ -50,8 +49,6 @@ export class YExtentComponent extends ChartBaseElement {
 		// TODO when y-axis component will be refactored this shouldn't be undefined
 		public readonly yAxisComponent: ExtentYAxis | undefined,
 		public readonly dragNDrop: DragNDropYComponent,
-		public seriesAddedSubject: Subject<DataSeriesModel>,
-		public seriesRemovedSubject: Subject<DataSeriesModel>,
 		public dataSeries: Set<DataSeriesModel> = new Set(),
 		public formatters: YExtentFormatters = {
 			regular: defaultValueFormatter,
@@ -79,7 +76,7 @@ export class YExtentComponent extends ChartBaseElement {
 	protected doDeactivate(): void {
 		super.doDeactivate();
 		this.dataSeries.forEach(ds => {
-			this.seriesRemovedSubject.next(ds);
+			this.paneComponent.seriesRemovedSubject.next(ds);
 			ds.deactivate();
 		});
 	}
@@ -124,7 +121,7 @@ export class YExtentComponent extends ChartBaseElement {
 			this.mainDataSeries = series;
 		}
 		this.paneComponent.updateView();
-		this.seriesAddedSubject.next(series);
+		this.paneComponent.seriesAddedSubject.next(series);
 	}
 
 	/**
@@ -136,7 +133,7 @@ export class YExtentComponent extends ChartBaseElement {
 	public removeDataSeries(series: DataSeriesModel): void {
 		this.dataSeries.delete(series);
 		this.paneComponent.updateView();
-		this.seriesRemovedSubject.next(series);
+		this.paneComponent.seriesRemovedSubject.next(series);
 	}
 
 	// TODO hack, remove when each pane will have separate y-axis component
