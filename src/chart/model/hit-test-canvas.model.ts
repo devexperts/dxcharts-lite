@@ -17,13 +17,14 @@ const bigPrimeNumber = 317;
 
 export type HitTestEvents = 'mousedown' | 'hover' | 'touchstart' | 'dblclick' | 'contextmenu' | 'zoom' | 'mouseup';
 
-type HitTestType = 'DRAWINGS' | 'DATA_SERIES' | 'EVENTS' | 'NEWS';
+type HitTestType = 'DRAWINGS' | 'DATA_SERIES' | 'EVENTS' | 'NEWS' | 'EXECUTED_ORDERS';
 
 export const HIT_TEST_ID_RANGE: Record<HitTestType, [number, number]> = {
 	DRAWINGS: [1, 199],
 	NEWS: [200, 299],
 	DATA_SERIES: [300, 2999],
 	EVENTS: [3000, 4000],
+	EXECUTED_ORDERS: [4001, 5000],
 };
 
 /** HitTestCanvasModel
