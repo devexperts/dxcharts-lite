@@ -41,6 +41,7 @@ import {
 } from './extent/y-extent-component';
 import { PaneHitTestController } from './pane-hit-test.controller';
 import { YAxisBaseLabelsModel } from '../y_axis/y-axis-base-labels.model';
+import { Subject } from 'rxjs';
 
 // TODO should be replaced with YAxisComponent
 export interface ExtentYAxis {
@@ -86,7 +87,9 @@ export class PaneComponent extends ChartBaseElement {
 		// TODO in future there will be yAxisComponents with getBounds method
 		private canvasBoundsContainer: CanvasBoundsContainer,
 		public readonly uuid: string,
-		public readonly dataSeriesCanvasModel: CanvasModel,
+		public readonly dynamicObjectsCanvasModel: CanvasModel,
+		public seriesAddedSubject: Subject<DataSeriesModel>,
+		public seriesRemovedSubject: Subject<DataSeriesModel>,
 		options?: AtLeastOne<YExtentCreationOptions>,
 	) {
 		super();
@@ -113,7 +116,7 @@ export class PaneComponent extends ChartBaseElement {
 				.pipe(distinctUntilChanged(areBoundsChanged))
 				.subscribe(() => {
 					this.yExtentComponents.forEach(c => c.scaleModel.recalculateZoomY());
-					this.dataSeriesCanvasModel.fireDraw();
+					this.dynamicObjectsCanvasModel.fireDraw();
 				}),
 		);
 	}
@@ -265,7 +268,7 @@ export class PaneComponent extends ChartBaseElement {
 			this.chartBaseModel,
 			this.canvasBoundsContainer,
 			this.hitTestController,
-			this.dataSeriesCanvasModel,
+			this.dynamicObjectsCanvasModel,
 			scaleModel,
 			yAxisComp,
 			dragNDrop,

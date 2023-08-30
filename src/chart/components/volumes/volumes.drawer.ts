@@ -4,34 +4,33 @@
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 import { BarType, FullChartConfig } from '../../chart.config';
-import { CanvasModel } from '../../model/canvas.model';
 import { clipToBounds } from '../../drawers/data-series.drawer';
-import { Drawer } from '../../drawers/drawing-manager';
-import { Pixel, unitToPixels, ViewportModel } from '../../model/scaling/viewport.model';
+import { PriceMovement } from '../../model/candle-series.model';
+import { CanvasModel } from '../../model/canvas.model';
+import { Pixel, ViewportModel, unitToPixels } from '../../model/scaling/viewport.model';
 import VisualCandle from '../../model/visual-candle';
+import { flat } from '../../utils/array.utils';
 import { ceilToDPR, floorToDPR } from '../../utils/device/device-pixel-ratio.utils';
 import { ChartModel } from '../chart/chart.model';
+import { DynamicModelDrawer } from '../dynamic-objects/dynamic-objects.drawer';
 import { resolveColorUsingConfig } from './volume-color-resolvers.functions';
 import { VolumeColorResolver } from './volumes.component';
 import { VolumesModel } from './volumes.model';
-import { PriceMovement } from '../../model/candle-series.model';
-import { flat } from '../../utils/array.utils';
 
 // ratio of CHART bounds height which is for overlay volumes
 const OVERLAY_VOLUME_TOTAL_HEIGHT_DIVISOR = 3;
 
-export class VolumesDrawer implements Drawer {
+export class VolumesDrawer implements DynamicModelDrawer<VolumesModel> {
 	private readonly volumeBarColors: Record<PriceMovement, string> = {
 		down: '#FF00FF',
 		up: '#FF00FF',
 		none: '#FF00FF',
 	};
 	constructor(
-		private canvasModel: CanvasModel,
 		private config: FullChartConfig,
 		private volumesModel: VolumesModel,
 		private chartModel: ChartModel,
-		private viewportModel: ViewportModel,
+		public getViewportModel: () => ViewportModel,
 		private volumesColorByChartTypeMap: Partial<Record<BarType, VolumeColorResolver>>,
 		private drawPredicate: () => boolean,
 	) {}
@@ -55,14 +54,14 @@ export class VolumesDrawer implements Drawer {
 	 * Restores the canvas context.
 	 * @returns {void}
 	 */
-	draw(): void {
+	draw(canvasModel: CanvasModel): void {
 		if (this.config.components.volumes.visible && this.drawPredicate()) {
 			this.calculateColors(this.config.components.chart.type);
-			const ctx = this.canvasModel.ctx;
+			const ctx = canvasModel.ctx;
 			ctx.save();
-			const bounds = this.viewportModel.getBounds();
+			const bounds = this.getViewportModel().getBounds();
 			clipToBounds(ctx, bounds);
-			this.drawVolumes();
+			this.drawVolumes(canvasModel);
 			ctx.restore();
 		}
 	}
@@ -95,7 +94,7 @@ export class VolumesDrawer implements Drawer {
 	 * Otherwise, it will calculate the zoomY based on the volumeMax and the fullVHeight, and draw all the volume bars together.
 	 * @private
 	 */
-	private drawVolumes() {
+	private drawVolumes(canvasModel: CanvasModel) {
 		const volumeMax = this.volumesModel.volumeMax.getValue();
 		if (volumeMax === 0) {
 			return;
@@ -105,26 +104,27 @@ export class VolumesDrawer implements Drawer {
 				// TODO volumes drawer should be a part of data series drawer
 				.getSeriesInViewport(this.chartModel.scaleModel.xStart - 1, this.chartModel.scaleModel.xEnd + 1),
 		);
+		const viewportModel = this.getViewportModel();
 		candles.forEach((vCandle, idx) => {
 			if (vCandle.candle.volume) {
-				const bounds = this.viewportModel.getBounds();
+				const bounds = viewportModel.getBounds();
 				const fullVHeight = bounds.height;
 				const nextX =
 					candles[idx + 1] !== undefined
-						? floorToDPR(this.viewportModel.toX(candles[idx + 1].startUnit))
+						? floorToDPR(viewportModel.toX(candles[idx + 1].startUnit))
 						: undefined;
-				const x = floorToDPR(this.viewportModel.toX(vCandle.startUnit));
+				const x = floorToDPR(viewportModel.toX(vCandle.startUnit));
 				const width =
-					nextX !== undefined ? nextX - x : floorToDPR(unitToPixels(vCandle.width, this.viewportModel.zoomX));
+					nextX !== undefined ? nextX - x : floorToDPR(unitToPixels(vCandle.width, viewportModel.zoomX));
 				if (this.config.components.volumes.showSeparately) {
-					const y = floorToDPR(this.viewportModel.toY(vCandle.candle.volume));
-					const height = floorToDPR(this.viewportModel.toY(0)) - y;
-					this.drawVolume(vCandle, x, y, width, height);
+					const y = floorToDPR(viewportModel.toY(vCandle.candle.volume));
+					const height = floorToDPR(viewportModel.toY(0)) - y;
+					this.drawVolume(canvasModel, vCandle, x, y, width, height);
 				} else {
 					const zoomY = volumeMax / (fullVHeight / OVERLAY_VOLUME_TOTAL_HEIGHT_DIVISOR);
 					const height = Math.max(unitToPixels(vCandle.candle.volume, zoomY), 2);
 					const y = floorToDPR(bounds.y + fullVHeight - height);
-					this.drawVolume(vCandle, x, y, width, height);
+					this.drawVolume(canvasModel, vCandle, x, y, width, height);
 				}
 			}
 		});
@@ -140,8 +140,15 @@ export class VolumesDrawer implements Drawer {
 	 * @param {Pixel} height - The height of the volume bar.
 	 * @returns {void}
 	 */
-	private drawVolume(vCandle: VisualCandle, x: Pixel, y: Pixel, width: Pixel, height: Pixel) {
-		const ctx = this.canvasModel.ctx;
+	private drawVolume(
+		canvasModel: CanvasModel,
+		vCandle: VisualCandle,
+		x: Pixel,
+		y: Pixel,
+		width: Pixel,
+		height: Pixel,
+	) {
+		const ctx = canvasModel.ctx;
 		const yStart = y;
 		const yEnd = y + height;
 		const direction = vCandle.name;
@@ -156,13 +163,5 @@ export class VolumesDrawer implements Drawer {
 		} else {
 			ctx.fillRect(x, y, width, ceilToDPR(height));
 		}
-	}
-	/**
-	 * Returns an array of canvas ids.
-	 *
-	 * @returns {Array<string>} An array containing the canvas id.
-	 */
-	getCanvasIds(): Array<string> {
-		return [this.canvasModel.canvasId];
 	}
 }

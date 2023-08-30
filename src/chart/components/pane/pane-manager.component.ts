@@ -25,11 +25,14 @@ import { YExtentCreationOptions, createDefaultYExtentHighLowProvider } from './e
 import { PaneHitTestController } from './pane-hit-test.controller';
 import { PaneComponent } from './pane.component';
 import { Unsubscriber } from '../../utils/function.utils';
+import { DataSeriesModel } from '../../model/data-series.model';
 
 export class PaneManager extends ChartBaseElement {
 	public paneComponents: Record<string, PaneComponent> = {};
 	public panesChangedSubject: Subject<Record<string, PaneComponent>> = new Subject();
 	public hitTestController: PaneHitTestController;
+	public dataSeriesAddedSubject: Subject<DataSeriesModel> = new Subject();
+	public dataSeriesRemovedSubject: Subject<DataSeriesModel> = new Subject();
 	/**
 	 * Returns order of panes in the chart from top to bottom.
 	 */
@@ -46,14 +49,14 @@ export class PaneManager extends ChartBaseElement {
 		private canvasAnimation: CanvasAnimation,
 		private canvasInputListener: CanvasInputListenerComponent,
 		private drawingManager: DrawingManager,
-		private dataSeriesCanvasModel: CanvasModel,
+		private dynamicObjectsCanvasModel: CanvasModel,
 		private cursorHandler: CursorHandler,
 		private crossEventProducer: CrossEventProducerComponent,
 		public chartPanComponent: ChartPanComponent,
 		private mainCanvasModel: CanvasModel,
 	) {
 		super();
-		this.hitTestController = new PaneHitTestController(this.paneComponents, this.dataSeriesCanvasModel);
+		this.hitTestController = new PaneHitTestController(this.paneComponents, this.dynamicObjectsCanvasModel);
 
 		const mainPane = this.createPane(CHART_UUID, {
 			useDefaultHighLow: false,
@@ -86,7 +89,7 @@ export class PaneManager extends ChartBaseElement {
 		});
 		const dragTick = () => {
 			this.canvasBoundsContainer.resizePaneVertically(uuid, this.canvasInputListener.getCurrentPoint().y);
-			this.eventBus.fireDraw([this.mainCanvasModel.canvasId, 'overDataSeriesCanvas']);
+			this.eventBus.fireDraw([this.mainCanvasModel.canvasId, 'dynamicObjectsCanvas']);
 		};
 		const resizerId = CanvasElement.PANE_UUID_RESIZER(uuid);
 		const barResizerComponent = new BarResizerComponent(
@@ -143,7 +146,9 @@ export class PaneManager extends ChartBaseElement {
 			this.eventBus,
 			this.canvasBoundsContainer,
 			uuid,
-			this.dataSeriesCanvasModel,
+			this.dynamicObjectsCanvasModel,
+			this.dataSeriesAddedSubject,
+			this.dataSeriesRemovedSubject,
 			options,
 		);
 
@@ -213,6 +218,6 @@ export class PaneManager extends ChartBaseElement {
 	 */
 	public recalculateState() {
 		Object.values(this.paneComponents).forEach(state => state.scaleModel.recalculateZoomY());
-		this.eventBus.fireDraw([this.mainCanvasModel.canvasId, 'overDataSeriesCanvas']);
+		this.eventBus.fireDraw([this.mainCanvasModel.canvasId, 'dynamicObjectsCanvas']);
 	}
 }

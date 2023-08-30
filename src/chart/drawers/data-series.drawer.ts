@@ -3,12 +3,11 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
+import { DynamicModelDrawer } from '../components/dynamic-objects/dynamic-objects.drawer';
 import { PaneManager } from '../components/pane/pane-manager.component';
 import { Bounds } from '../model/bounds.model';
-import { DataSeriesModel, VisualSeriesPoint } from '../model/data-series.model';
 import { CanvasModel } from '../model/canvas.model';
-import { Drawer } from './drawing-manager';
-import { flatMap } from '../utils/array.utils';
+import { DataSeriesModel, VisualSeriesPoint } from '../model/data-series.model';
 
 export interface ChartDrawerConfig {
 	singleColor?: string;
@@ -38,21 +37,19 @@ export const transformToTwoDimension = (
  *
  * (may support multiple layers in future)
  */
-export class DataSeriesDrawer implements Drawer {
-	constructor(
-		private paneManager: PaneManager,
-		private canvasModel: CanvasModel,
-		private readonly seriesDrawers: Record<string, SeriesDrawer>,
-	) {}
+export class DataSeriesDrawer implements DynamicModelDrawer<DataSeriesModel> {
+	constructor(private paneManager: PaneManager, private readonly seriesDrawers: Record<string, SeriesDrawer>) {}
 
-	draw() {
-		const ctx = this.canvasModel.ctx;
-		flatMap(Object.values(this.paneManager.paneComponents), c => c.yExtentComponents).forEach(comp => {
+	draw(canvasModel: CanvasModel, model: DataSeriesModel, paneUUID?: string) {
+		const ctx = canvasModel.ctx;
+		const pane = paneUUID && this.paneManager.paneComponents[paneUUID];
+
+		if (model) {
 			ctx.save();
-			clipToBounds(ctx, comp.getBounds());
-			comp.dataSeries.forEach(series => this.drawSeries(ctx, series));
+			pane && clipToBounds(ctx, pane.getBounds());
+			this.drawSeries(ctx, model);
 			ctx.restore();
-		});
+		}
 	}
 
 	public drawSeries(ctx: CanvasRenderingContext2D, series: DataSeriesModel) {
@@ -72,10 +69,6 @@ export class DataSeriesDrawer implements Drawer {
 				console.error(`Data series drawer with type ${paintTool} isn't registered!`);
 			}
 		}
-	}
-
-	getCanvasIds(): Array<string> {
-		return [this.canvasModel.canvasId];
 	}
 }
 

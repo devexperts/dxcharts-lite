@@ -38,13 +38,13 @@ export class YExtentComponent extends ChartBaseElement {
 	private mainDataSeries?: DataSeriesModel;
 
 	constructor(
-		public paneUuid: string,
+		public paneUUID: string,
 		public idx: number,
 		public paneComponent: PaneComponent,
 		private chartBaseModel: ChartBaseModel<'candle'>,
 		private canvasBoundsContainer: CanvasBoundsContainer,
 		private hitTestController: PaneHitTestController,
-		public dataSeriesCanvasModel: CanvasModel,
+		public dynamicObjectsCanvasModel: CanvasModel,
 		public readonly scaleModel: ScaleModel,
 		// TODO when y-axis component will be refactored this shouldn't be undefined
 		public readonly yAxisComponent: ExtentYAxis | undefined,
@@ -75,15 +75,18 @@ export class YExtentComponent extends ChartBaseElement {
 
 	protected doDeactivate(): void {
 		super.doDeactivate();
-		this.dataSeries.forEach(ds => ds.deactivate());
+		this.dataSeries.forEach(ds => {
+			this.paneComponent.seriesRemovedSubject.next(ds);
+			ds.deactivate();
+		});
 	}
 
 	public getYAxisBounds = (): Bounds => {
-		return this.canvasBoundsContainer.getBounds(CanvasElement.PANE_UUID_Y_AXIS(this.paneUuid, this.idx));
+		return this.canvasBoundsContainer.getBounds(CanvasElement.PANE_UUID_Y_AXIS(this.paneUUID, this.idx));
 	};
 
 	public yAxisHT = this.canvasBoundsContainer.getBoundsHitTest(
-		CanvasElement.PANE_UUID_Y_AXIS(this.paneUuid, this.idx),
+		CanvasElement.PANE_UUID_Y_AXIS(this.paneUUID, this.idx),
 	);
 
 	/**
@@ -118,6 +121,7 @@ export class YExtentComponent extends ChartBaseElement {
 			this.mainDataSeries = series;
 		}
 		this.paneComponent.updateView();
+		this.paneComponent.seriesAddedSubject.next(series);
 	}
 
 	/**
@@ -129,6 +133,7 @@ export class YExtentComponent extends ChartBaseElement {
 	public removeDataSeries(series: DataSeriesModel): void {
 		this.dataSeries.delete(series);
 		this.paneComponent.updateView();
+		this.paneComponent.seriesRemovedSubject.next(series);
 	}
 
 	// TODO hack, remove when each pane will have separate y-axis component
