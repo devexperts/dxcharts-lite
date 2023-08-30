@@ -20,7 +20,7 @@ export class SeparateVolumesComponent extends ChartBaseElement {
 	constructor(
 		private chartComponent: ChartComponent,
 		private drawingManager: DrawingManager,
-		config: FullChartConfig,
+		public config: FullChartConfig,
 		private volumesModel: VolumesModel,
 		private paneManager: PaneManager,
 	) {

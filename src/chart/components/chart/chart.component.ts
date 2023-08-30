@@ -79,7 +79,7 @@ export class ChartComponent extends ChartBaseElement {
 	public readonly baselineModel: BaselineModel;
 	private readonly backgroundDrawer: BackgroundDrawer;
 	private readonly _dataSeriesDrawers: Record<DataSeriesType, SeriesDrawer> = {};
-	private dataSeriesDrawer: DataSeriesDrawer;
+	private readonly dataSeriesDrawer: DataSeriesDrawer;
 
 	constructor(
 		public readonly chartModel: ChartModel,
