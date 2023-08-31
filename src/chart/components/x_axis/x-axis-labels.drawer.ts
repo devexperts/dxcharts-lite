@@ -5,7 +5,7 @@
  */
 import { drawXAxisLabel } from './x-axis-draw.functions';
 import { CanvasBoundsContainer, CanvasElement } from '../../canvas/canvas-bounds-container';
-import * as Color from 'color';
+import Color from 'color';
 import { XAxisLabel, XAxisLabelsModel } from './x-axis-labels.model';
 import { CanvasModel } from '../../model/canvas.model';
 import { Drawer } from '../../drawers/drawing-manager';

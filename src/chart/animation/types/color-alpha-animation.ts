@@ -5,7 +5,7 @@
  */
 import { AnimationConfig } from '../canvas-animation';
 import { Animation } from './animation';
-import * as Color from 'color';
+import Color from 'color';
 
 interface CustomColor extends Color {
 	readonly valpha?: number;
