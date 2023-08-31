@@ -9,8 +9,7 @@ import { Bounds } from '../model/bounds.model';
 import { CanvasModel } from '../model/canvas.model';
 import { DataSeriesModel, VisualSeriesPoint } from '../model/data-series.model';
 
-export interface Chart
-  Config {
+export interface ChartDrawerConfig {
 	singleColor?: string;
 	forceBold?: number;
 }
@@ -44,6 +43,7 @@ export class DataSeriesDrawer implements DynamicModelDrawer<DataSeriesModel> {
 	draw(canvasModel: CanvasModel, model: DataSeriesModel, paneUUID?: string) {
 		const ctx = canvasModel.ctx;
 		const pane = paneUUID && this.paneManager.paneComponents[paneUUID];
+
 		if (model) {
 			ctx.save();
 			pane && clipToBounds(ctx, pane.getBounds());

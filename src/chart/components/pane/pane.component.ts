@@ -3,6 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
+import { Subject } from 'rxjs';
 import { distinctUntilChanged } from 'rxjs/operators';
 import { CanvasAnimation } from '../../animation/canvas-animation';
 import {
@@ -39,8 +40,6 @@ import {
 	YExtentCreationOptions,
 } from './extent/y-extent-component';
 import { PaneHitTestController } from './pane-hit-test.controller';
-import { YAxisBaseLabelsModel } from '../y_axis/y-axis-base-labels.model';
-import { Subject } from 'rxjs';
 
 export class PaneComponent extends ChartBaseElement {
 	private _paneOrder = 0;
