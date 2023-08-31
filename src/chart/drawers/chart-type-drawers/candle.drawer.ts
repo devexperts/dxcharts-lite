@@ -146,8 +146,8 @@ export class CandleDrawer implements SeriesDrawer {
 			);
 		} else {
 			// add paddings if exist
-			const wickX = floorToDPR(candleSeries.view.toX(visualCandle.centerUnit));
-			// candles' wick doesn't touch body end, so substract 1
+			const wickX = visualCandle.x(candleSeries.view);
+			// candles' wick doesn't touch body end, so subtract 1
 			// we will rework the drawer in future, so let's keep it this way for now
 			this.drawCandlesWicks(ctx, wickX, lineStart, lineEnd, bodyStart, bodyEnd - 1);
 			const paddingPercent = this.config.candlePaddingPercent;
