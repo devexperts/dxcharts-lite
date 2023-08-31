@@ -14,6 +14,9 @@ interface HTMLImport {
 
 export const isHTMLFile = (filepath: string) => getFileName(filepath)?.includes('html') ?? false;
 
+export const combineRelativeParsedImportToAbsolute = (htmlFile: string, originalFilepath: string) => 
+	path.resolve(htmlFile, `../${originalFilepath}`);
+
 export const parseHTMLImports = (htmlFilepath: string, html: string): HTMLImport[] => {
 	const parsedHTML = parse(html);
 	// get elements that can store links in their attributes
@@ -84,7 +87,9 @@ export const HTMLFilesToCSBPayload = (htmlFiles: string[]): CodeSandboxPayload =
 
 		const htmlContent = getFileContent(htmlFile);
 		const parsedHTMLImports = parseHTMLImports(htmlFile, htmlContent);
-		const csbPayloadFromHTMLImports = filesToCSBPayload(parsedHTMLImports.map(i => i.absoluteFilepath));
+		const csbPayloadFromHTMLImports = filesToCSBPayload(parsedHTMLImports.map(i => 
+			combineRelativeParsedImportToAbsolute(htmlFile, i.originalFilepath)
+		));
 		htmlCSBPayload = concatCSBPayload(htmlCSBPayload, csbPayloadFromHTMLImports);
 
 		const htmlContentWithNewImports = replaceHTMLImports(htmlContent, parsedHTMLImports);

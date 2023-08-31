@@ -22,7 +22,7 @@ import { ChartBaseElement } from '../../model/chart-base-element';
 import { DataSeriesModel } from '../../model/data-series.model';
 import { ScaleModel, SyncedByXScaleModel } from '../../model/scale.model';
 import { Unit } from '../../model/scaling/viewport.model';
-import { firstOf, lastOf } from '../../utils/array.utils';
+import { firstOf, flatMap, lastOf } from '../../utils/array.utils';
 import { Unsubscriber } from '../../utils/function.utils';
 import { AtLeastOne } from '../../utils/object.utils';
 import { ChartBaseModel } from '../chart/chart-base.model';
@@ -39,6 +39,8 @@ import {
 	YExtentCreationOptions,
 } from './extent/y-extent-component';
 import { PaneHitTestController } from './pane-hit-test.controller';
+import { YAxisBaseLabelsModel } from '../y_axis/y-axis-base-labels.model';
+import { Subject } from 'rxjs';
 
 export class PaneComponent extends ChartBaseElement {
 	private _paneOrder = 0;
@@ -54,13 +56,13 @@ export class PaneComponent extends ChartBaseElement {
 	}
 
 	get dataSeries() {
-		return this.yExtentComponents.flatMap(c => Array.from(c.dataSeries));
+		return flatMap(this.yExtentComponents, c => Array.from(c.dataSeries));
 	}
 
 	public mainYExtentComponent: YExtentComponent;
 
 	constructor(
-		private chartBaseModel: ChartBaseModel<'candle'>,
+		public chartBaseModel: ChartBaseModel<'candle'>,
 		private hitTestController: PaneHitTestController,
 		private config: FullChartConfig,
 		private mainScaleModel: ScaleModel,
@@ -73,7 +75,9 @@ export class PaneComponent extends ChartBaseElement {
 		public eventBus: EventBus,
 		private canvasBoundsContainer: CanvasBoundsContainer,
 		public readonly uuid: string,
-		public readonly dataSeriesCanvasModel: CanvasModel,
+		public readonly dynamicObjectsCanvasModel: CanvasModel,
+		public seriesAddedSubject: Subject<DataSeriesModel>,
+		public seriesRemovedSubject: Subject<DataSeriesModel>,
 		options?: AtLeastOne<YExtentCreationOptions>,
 	) {
 		super();
@@ -100,7 +104,7 @@ export class PaneComponent extends ChartBaseElement {
 				.pipe(distinctUntilChanged(areBoundsChanged))
 				.subscribe(() => {
 					this.yExtentComponents.forEach(c => c.scaleModel.recalculateZoomY());
-					this.dataSeriesCanvasModel.fireDraw();
+					this.dynamicObjectsCanvasModel.fireDraw();
 				}),
 		);
 	}
@@ -197,7 +201,7 @@ export class PaneComponent extends ChartBaseElement {
 			this.chartBaseModel,
 			this.canvasBoundsContainer,
 			this.hitTestController,
-			this.dataSeriesCanvasModel,
+			this.dynamicObjectsCanvasModel,
 			scaleModel,
 			createYAxisComponent,
 			dragNDrop,

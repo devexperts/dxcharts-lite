@@ -6,9 +6,9 @@
 	<meta name="viewport"
 		content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
 	<meta http-equiv="X-UA-Compatible" content="ie=edge" />
-	<link rel="stylesheet" href="../../style.css" />
+	<link rel="stylesheet" href="../common-styles.css" />
 	<title>DXCharts Lite Custom data-series drawer</title>
-	<script src="https://webdev.prosp.devexperts.com:8095/dxcharts-lite-cdn/dxchart.min.js"></script>
+	<script src="https://www.unpkg.com/@devexperts/dxcharts-lite@1.0.1/dist/dxchart.min.js"></script>
 </head>
 
 <body>
@@ -17,8 +17,8 @@
 	</div>
 	<div id="chart" class="chart"></div>
 	<script type="module">
-		import { buildLinePath } from 'https://webdev.prosp.devexperts.com:8095/dxcharts-lite-cdn/chart/drawers/data-series-drawers/data-series-drawers.utils.js';
-		import generateCandlesData from 'https://webdev.prosp.devexperts.com:8095/dxcharts-lite-cdn/chart/utils/candles-generator.utils.js';
+		import { buildLinePath } from 'https://www.unpkg.com/@devexperts/dxcharts-lite@1.0.1/dist/chart/drawers/data-series-drawers/data-series-drawers.utils.js';
+		import generateCandlesData from 'https://www.unpkg.com/@devexperts/dxcharts-lite@1.0.1/dist/chart/utils/candles-generator.utils.js';
 		const container = document.getElementById('chart');
 		const chart = DXChart.createChart(container);
 

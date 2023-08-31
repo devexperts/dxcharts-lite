@@ -1,6 +1,6 @@
 {
   "name": "@devexperts/dxcharts-lite",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "DXCharts Lite",
   "author": "Devexperts Solutions IE Limited",
   "license": "MPL 2.0",
@@ -14,7 +14,7 @@
     "build:standalone": "webpack --config webpack.build.config.js",
     "//<----prod builds---->": "production builds (no source maps)",
     "build:production": "yarn clean_dist && yarn build:lib:production && yarn build:standalone:production",
-    "build:lib:production": "yarn build:lib && yarn minify:lib && yarn add_disclaimer",
+    "build:lib:production": "yarn build:lib && yarn add_disclaimer",
     "build:standalone:production": "webpack --config webpack.build.config.js --env MODE=production && yarn add_disclaimer",
     "//<----utility builds---->": "build will run on dxcity CI when trying to merge PR builds",
     "build:shadow_merge": "yarn test && yarn build",
@@ -47,7 +47,7 @@
   },
   "devDependencies": {
     "@types/chai": "^4.3.4",
-    "@types/color": "^3.0.1",
+    "@types/color": "^3.0.3",
     "@types/glob": "^8.0.0",
     "@types/is-glob": "^4.0.2",
     "@types/jest": "^29.2.4",
@@ -87,7 +87,7 @@
     "webpack-dev-server": "^4.15.0"
   },
   "dependencies": {
-    "color": "^3.1.2",
+    "color": "^4.2.3",
     "date-fns": "^2.30.0",
     "date-fns-tz": "^1.3.8",
     "rxjs": "^7.5.7"

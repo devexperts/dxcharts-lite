@@ -23,13 +23,11 @@ const drawerTypes = [
 	'OVER_SERIES_CLEAR',
 	'HIT_TEST_DRAWINGS',
 	'GRID',
-	'VOLUMES',
 	'UNDERLAY_VOLUMES_AREA',
 	'X_AXIS',
 	'Y_AXIS',
 	'HIGH_LOW',
-	'DRAWINGS',
-	'DATA_SERIES',
+	'DYNAMIC_OBJECTS',
 	'N_MAP_CHART',
 	'PL_CHART',
 	'WATERMARK',
@@ -200,7 +198,7 @@ export class DrawingManager {
 }
 
 export interface Drawer {
-	draw(): void;
+	draw(): void; // model could be outside of chart-core, for example, DrawingsModel
 	/**
 	 * Used for optimization when we have to update only the last candle
 	 * Doesn't work for line chart types

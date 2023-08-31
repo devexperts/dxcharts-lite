@@ -13,5 +13,5 @@
 
 .compareSymbol:hover {
 	cursor: pointer;
-	background: url(../images/close.svg) no-repeat center right;
+	background: url(../../images/close.svg) no-repeat center right;
 }

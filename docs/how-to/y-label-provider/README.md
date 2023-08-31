@@ -1,6 +1,6 @@
 # Y-Axis labels
 
-#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/c9m4nh)<!--/CSB_LINK-->
+#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/x57hzy)<!--/CSB_LINK-->
 
 There are 3 ways to see a label on a scale
 
@@ -49,40 +49,6 @@ Appearance type can be changed similarly, using the `changeLabelAppearance` meth
 chartInstance.yAxisComponent.changeLabelAppearance('lastPrice', 'badge');
 ```
 
-### lastPrice
-
-The only label present by default even if not set in the config, can be hidden if necessary
-
-<iframe src="./price_label.html" style="width:100%; border:none; height: 310px" title="DXCharts Lite React integration"></iframe>
-
-## Creating custom labels
-
-The easy way of drawing label is `addSimpleYAxisLabel` method of `yAxisComponent`
-accepting ``LabelGroup` object with 2 required fields:
-
--   y - distance in units from the top of the chart
--   labelText - text on the label
-
-To attach the label to the particular price on the scale one can use `toY` method of `chartModel`
-
-```js
-chartInstance.yAxisComponent.addSimpleYAxisLabel('custom_label', {
-	y: parseInt(chartInstance.chartModel.toY(price)),
-	labelText: options.labelText,
-	//...
-});
-```
-
-and update it every time scale is changed - zoomed or shifted by subscribing to `yChanged` stream
-
-```js
-chartInstance.scaleModel.yChanged.subscribe(/*update callback here*/);
-```
-
-`yChanged` is an Rxjs stream and can be manupulated using rx operators, `throttle` for example
-
-<iframe src="./custom_label.html" style="width:100%; border:none; height: 310px" title="DXCharts Lite React integration"></iframe>
-
 ## Label Provider
 
 Most versatile method to create lable is to register a label provider, using `registerYAxisLabelsProvider`,
@@ -121,4 +87,4 @@ Labels are updated by internal chart events but update also can be forced by cal
 chartInstance.yAxisComponent.updateOrderedLabels();
 ```
 
-<iframe src="./label_provider.html" style="width:100%; border:none; height: 310px" title="DXCharts Lite React integration"></iframe>
+<iframe src="./index.html" style="width:100%; border:none; height: 310px" title="DXCharts Lite Label Provider"></iframe>

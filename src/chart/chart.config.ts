@@ -358,7 +358,6 @@ export const getDefaultConfig = (): FullChartConfig => ({
 			backgroundColor: 'rgba(20,20,19,1)',
 			backgroundGradientTopColor: 'red',
 			backgroundGradientBottomColor: 'blue',
-			axisColor: 'rgba(128,128,128,1)',
 			gridColor: 'rgba(37,37,36,1)',
 		},
 		scatterPlot: { mainColor: 'rgba(255,255,255,1)' },
@@ -576,9 +575,7 @@ export const getDefaultConfig = (): FullChartConfig => ({
 		'X_AXIS',
 		'Y_AXIS',
 		'UNDERLAY_VOLUMES_AREA',
-		'VOLUMES',
-		'DATA_SERIES',
-		'DRAWINGS',
+		'DYNAMIC_OBJECTS',
 		'WATERMARK',
 		'N_MAP_CHART',
 		'EVENTS',
@@ -1383,7 +1380,6 @@ export interface ChartAreaTheme {
 	backgroundColor: string;
 	backgroundGradientTopColor: string;
 	backgroundGradientBottomColor: string;
-	axisColor: string;
 	gridColor: string;
 }
 

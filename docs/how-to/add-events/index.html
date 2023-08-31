@@ -7,23 +7,25 @@
 		content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
 	<meta http-equiv="X-UA-Compatible" content="ie=edge" />
 	<title>DXCharts Lite Events</title>
-	<link rel="stylesheet" href="../../style.css" />
-	<script src="https://webdev.prosp.devexperts.com:8095/dxcharts-lite-cdn/dxchart.min.js"></script>
+	<link rel="stylesheet" href="../common-styles.css" />
+	<script src="https://www.unpkg.com/@devexperts/dxcharts-lite@1.0.1/dist/dxchart.min.js"></script>
 </head>
 
 <body>
 	<div class="container">
-		<h1>DXCharts Lite events example</h1>
-		<button class="btn" type="button" id="set_visible">Set events visible</button>
-		<button class="btn" type="button" id="set_events">Set events</button>
-		<button class="btn" type="button" id="add_handler">Add hover handler with drawer</button>
-		<br />
-		<br />
-		<div id="chart" style="height: 80vh"></div>
+		<div class="settings">
+			<h1>DXCharts Lite events example</h1>
+			<button class="btn" type="button" id="set_visible">Set events visible</button>
+			<button class="btn" type="button" id="set_events">Set events</button>
+			<button class="btn" type="button" id="add_handler">Add hover handler with drawer</button>
+			<br />
+			<br />
+		</div>
+		<div class="chart" id="chart"></div>
 	</div>
 
 	<script type="module">
-		import generateCandlesData from 'https://webdev.prosp.devexperts.com:8095/dxcharts-lite-cdn/chart/utils/candles-generator.utils.js';
+		import generateCandlesData from 'https://www.unpkg.com/@devexperts/dxcharts-lite@1.0.1/dist/chart/utils/candles-generator.utils.js';
 
 		const container = document.getElementById('chart');
 		const chart = DXChart.createChart(container);
@@ -66,10 +68,10 @@
 			chart.drawingManager.addDrawer(
 				{
 					getCanvasIds() {
-						return [chart.dataSeriesCanvasModel.canvasId];
+						return [chart.dynamicObjectsCanvasModel.canvasId];
 					},
 					draw() {
-						const ctx = chart.dataSeriesCanvasModel.ctx;
+						const ctx = chart.dynamicObjectsCanvasModel.ctx;
 						ctx.save();
 						ctx.fillStyle = '#e0134d';
 						ctx.font = '18px Open Sans, sans-serif';

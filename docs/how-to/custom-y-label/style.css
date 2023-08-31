@@ -1,19 +1,7 @@
-html,
-body {
-	height: 100%;
-}
-#root {
-	height: 300px;
-}
-
-body {
-	background: #fff;
-}
-
 .chart__container {
 	display: grid;
 	gap: 20px;
-	grid-template-columns: 1fr 1fr;
+	grid-template-columns: 1fr;
 }
 
 #form {
