@@ -12,6 +12,7 @@ import { Unit, ViewportModel } from '../../model/scaling/viewport.model';
 import { avoidAntialiasing } from '../../utils/canvas/canvas-drawing-functions.utils';
 import { DEFAULT_PRICE_LABEL_PADDING, getLabelYOffset } from '../y_axis/y-axis-labels.drawer';
 import { floor } from '../../utils/math.utils';
+import { floorToDPR } from '../../utils/device/device-pixel-ratio.utils';
 
 export interface GridLine {
 	readonly pos?: number;
@@ -84,7 +85,7 @@ export class GridDrawer implements Drawer {
 			const bounds = this.xBoundsProvider();
 			const boundsEnd = bounds.x + bounds.width;
 			for (const label of xAxisLabels) {
-				const x = floor(this.viewportModel.toX(label.value));
+				const x = floorToDPR(this.viewportModel.toX(label.value));
 				if (x > bounds.x && x < boundsEnd) {
 					ctx.beginPath();
 					ctx.moveTo(x, bounds.y);
