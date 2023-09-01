@@ -33,7 +33,7 @@ export interface YExtentCreationOptions {
 }
 
 export class YExtentComponent extends ChartBaseElement {
-	public yAxisComponent: YAxisComponent;
+	public yAxis: YAxisComponent;
 	public mainDataSeries?: DataSeriesModel;
 
 	constructor(
@@ -58,8 +58,8 @@ export class YExtentComponent extends ChartBaseElement {
 		super();
 		this.addChildEntity(scaleModel);
 		this.setValueFormatters(createYExtentFormatters(this));
-		this.yAxisComponent = createYAxisComponent(this.valueFormatter.bind(this), () => this.mainDataSeries);
-		this.addChildEntity(this.yAxisComponent);
+		this.yAxis = createYAxisComponent(this.valueFormatter.bind(this), () => this.mainDataSeries);
+		this.addChildEntity(this.yAxis);
 	}
 
 	protected doDeactivate(): void {
@@ -134,7 +134,7 @@ export class YExtentComponent extends ChartBaseElement {
 	}
 
 	public valueFormatter = (value: Unit, dataSeries?: DataSeriesModel) => {
-		const formatter = this.formatters[this.yAxisComponent.getAxisType()] ?? this.formatters.regular;
+		const formatter = this.formatters[this.yAxis.getAxisType()] ?? this.formatters.regular;
 		return formatter(value, dataSeries);
 	};
 

@@ -42,7 +42,7 @@ export class DataSeriesDrawer implements DynamicModelDrawer<DataSeriesModel> {
 
 	draw(canvasModel: CanvasModel, model: DataSeriesModel, paneUUID?: string) {
 		const ctx = canvasModel.ctx;
-		const pane = paneUUID && this.paneManager.paneComponents[paneUUID];
+		const pane = paneUUID && this.paneManager.panes[paneUUID];
 
 		if (model) {
 			ctx.save();

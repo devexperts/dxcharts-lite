@@ -33,7 +33,7 @@ export class YAxisPriceLabelsDrawer implements Drawer {
 		this.paneManager.yExtents.forEach(extent => {
 			const yAxisBounds = extent.getYAxisBounds();
 		const paneBounds = this.canvasBoundsContainer.getBounds(CanvasElement.ALL_PANES);
-			const orderedLabels = extent.yAxisComponent.model.fancyLabelsModel.orderedLabels;
+			const orderedLabels = extent.yAxis.model.fancyLabelsModel.orderedLabels;
 		this.drawHighlightedBackgroundBetweenLabels(orderedLabels);
 		orderedLabels.forEach(l => {
 			const bounds = l.bounds ?? yAxisBounds;
@@ -45,13 +45,13 @@ export class YAxisPriceLabelsDrawer implements Drawer {
 					paneBounds,
 					vl,
 					this.canvasBoundsContainer,
-						extent.yAxisComponent.state,
+						extent.yAxis.state,
 					this.yAxisColors,
 				),
 			);
 		});
 		// TODO I added this as a simple mechanism to add custom labels, we need to review it
-			Object.values(extent.yAxisComponent.model.fancyLabelsModel.customLabels).forEach(l =>
+			Object.values(extent.yAxis.model.fancyLabelsModel.customLabels).forEach(l =>
 			drawLabel(
 				ctx,
 				backgroundCtx,
@@ -59,7 +59,7 @@ export class YAxisPriceLabelsDrawer implements Drawer {
 				paneBounds,
 				l,
 				this.canvasBoundsContainer,
-					extent.yAxisComponent.state,
+					extent.yAxis.state,
 				this.yAxisColors,
 			),
 		);

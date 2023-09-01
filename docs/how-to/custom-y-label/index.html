@@ -14,7 +14,7 @@
 		type="module"></script>
 	<script type="module">
 		const node = document.querySelector('#root');
-		const chartInstance = DXChart.createChart(node);
+		const chart = DXChart.createChart(node);
 		const candles = DXChart.generateCandlesData({ quantity: 1000, withVolume: true });
 		chart.setData({
 			candles,
@@ -24,7 +24,7 @@
 		yInput.setAttribute('value', candles.at(-1).close | 0);
 
 		const labelInputs = [].slice.call(document.querySelectorAll('#form input, #form select'));
-		chartInstance.yAxisComponent.changeLabelMode('lastPrice', 'none');
+		chart.yAxis.changeLabelMode('lastPrice', 'none');
 
 		const updateFromInputs = () => {
 			const options = labelInputs.reduce(
@@ -35,8 +35,8 @@
 				{},
 			);
 
-			chartInstance.yAxisComponent.addSimpleYAxisLabel('custom_label', {
-				y: parseInt(chartInstance.chartModel.toY(options.y)),
+			chart.yAxis.addSimpleYAxisLabel('custom_label', {
+				y: parseInt(chart.chartModel.toY(options.y)),
 				labelText: options.labelText,
 				bgColor: options.bgColor,
 				labelType: options.labelType,
@@ -49,7 +49,7 @@
 				paddingBottom: parseInt(options.vPadding, 10),
 			});
 
-			chartInstance.yAxisComponent.changeLabelsDescriptionVisibility(options.description === 'true');
+			chart.yAxis.changeLabelsDescriptionVisibility(options.description === 'true');
 		};
 
 		labelInputs.forEach(input => {
@@ -57,7 +57,7 @@
 			input.addEventListener('keyup', updateFromInputs);
 		});
 
-		chartInstance.scaleModel.yChanged.subscribe(updateFromInputs);
+		chart.scaleModel.yChanged.subscribe(updateFromInputs);
 		setTimeout(updateFromInputs, 100);
 	</script>
 </head>

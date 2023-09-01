@@ -94,7 +94,7 @@ export class ChartComponent extends ChartBaseElement {
 		chartPanComponent: ChartPanComponent,
 		private paneManager: PaneManager,
 		cursorHandler: CursorHandler,
-		private dynamicObjectsComponent: DynamicObjectsComponent,
+		private dynamicObjects: DynamicObjectsComponent,
 	) {
 		super();
 		this.addChildEntity(this.chartModel);
@@ -132,13 +132,13 @@ export class ChartComponent extends ChartBaseElement {
 	protected doActivate(): void {
 		super.doActivate();
 		// TODO hack, main data series is created before doActivate, so we need to add it manually
-		this.dynamicObjectsComponent.model.addObject(
+		this.dynamicObjects.model.addObject(
 			{ model: this.chartModel.mainCandleSeries, drawer: this.dataSeriesDrawer },
 			this.chartModel.mainCandleSeries.extentComponent.paneUUID,
 		);
 		this.addRxSubscription(
 			this.paneManager.dataSeriesAddedSubject.subscribe(series => {
-				this.dynamicObjectsComponent.model.addObject(
+				this.dynamicObjects.model.addObject(
 					{ model: series, drawer: this.dataSeriesDrawer },
 					series.extentComponent.paneUUID,
 				);
@@ -146,7 +146,7 @@ export class ChartComponent extends ChartBaseElement {
 		);
 		this.addRxSubscription(
 			this.paneManager.dataSeriesRemovedSubject.subscribe(series => {
-				this.dynamicObjectsComponent.model.removeObject(series, series.extentComponent.paneUUID);
+				this.dynamicObjects.model.removeObject(series, series.extentComponent.paneUUID);
 			}),
 		);
 	}

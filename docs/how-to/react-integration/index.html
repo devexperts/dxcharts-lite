@@ -28,7 +28,7 @@
 
 		const App = props => {
 			const [candles, setCandles] = React.useState([]);
-			const [chartInstance, setChartInstance] = React.useState(null);
+			const [chart, setChart] = React.useState(null);
 
 			React.useEffect(() => {
 				setTimeout(() => {
@@ -36,14 +36,14 @@
 				}, 1000); // simulating load from network
 			}, []);
 
-			const setRef = React.useCallback(node => node && setChartInstance(DXChart.createChart(node)), []);
+			const setRef = React.useCallback(node => node && setChart(DXChart.createChart(node)), []);
 
 			React.useEffect(() => {
-				chartInstance &&
+				chart &&
 					chart.setData({
 						candles,
 					});
-			}, [candles, chartInstance]);
+			}, [candles, chart]);
 
 			if (candles.length === 0) {
 				return React.createElement('div', { className: 'chart__loading' }, ['...loading']);

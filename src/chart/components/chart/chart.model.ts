@@ -92,7 +92,7 @@ export class ChartModel extends ChartBaseElement {
 		this.secondaryChartColors = new SecondaryChartColorsPool(this.config);
 		const candleSeries = new MainCandleSeriesModel(
 			this.chartBaseModel,
-			this.paneManager.paneComponents[CHART_UUID].mainYExtentComponent,
+			this.paneManager.panes[CHART_UUID].mainYExtentComponent,
 			this.paneManager.hitTestController.getNewDataSeriesHitTestId(),
 			this.bus,
 			this.scaleModel,
@@ -114,7 +114,7 @@ export class ChartModel extends ChartBaseElement {
 		);
 		this.basicScaleViewportTransformer = createBasicScaleViewportTransformer(scaleModel);
 		this.timeFrameViewportTransformer = createTimeFrameViewportTransformer(scaleModel, this);
-		this.pane = this.paneManager.paneComponents[CHART_UUID];
+		this.pane = this.paneManager.panes[CHART_UUID];
 	}
 
 	get candlesUpdatedSubject() {
@@ -401,7 +401,7 @@ export class ChartModel extends ChartBaseElement {
 	 * @param startTimestamp
 	 */
 	public removeDataFrom(startTimestamp: Timestamp) {
-		Object.values(this.paneManager.paneComponents).forEach(pane => {
+		Object.values(this.paneManager.panes).forEach(pane => {
 			pane.dataSeries.forEach(series => {
 				const searchResult = binarySearch(series.dataPoints, startTimestamp, p => p.timestamp);
 				const index = searchResult.exact ? searchResult.index : searchResult.index + 1;
@@ -434,7 +434,7 @@ export class ChartModel extends ChartBaseElement {
 	 */
 	private createCandleSeriesModel(instrument: ChartInstrument, colors?: CandleSeriesColors): CandleSeriesModel {
 		const candleSeries = new CandleSeriesModel(
-			this.paneManager.paneComponents[CHART_UUID].mainYExtentComponent,
+			this.paneManager.panes[CHART_UUID].mainYExtentComponent,
 			this.paneManager.hitTestController.getNewDataSeriesHitTestId(),
 			this.bus,
 			this.scaleModel,
@@ -457,7 +457,7 @@ export class ChartModel extends ChartBaseElement {
 		this.secondaryChartColors.addColorToPool(series.instrument.symbol);
 		this.candleSeries = this.candleSeries.filter(s => s !== series);
 		series.deactivate();
-		this.paneManager.paneComponents[CHART_UUID].removeDataSeries(series);
+		this.paneManager.panes[CHART_UUID].removeDataSeries(series);
 		this.scaleModel.doAutoScale();
 		return series.colors;
 	}

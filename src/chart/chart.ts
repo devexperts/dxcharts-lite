@@ -7,6 +7,16 @@ import { PaneComponent, YExtentFormatters } from './components/pane/pane.compone
  * New shiny chart wrapper
  */
 export class Chart extends ChartBootstrap {
+	public yAxis = this.yAxisComponent;
+	public xAxis = this.xAxisComponent;
+	public watermark = this.watermarkComponent;
+	public highlights = this.highlightsComponent;
+	public events = this.eventsComponent;
+	public snapshot = this.snapshotComponent;
+	public crosshair = this.crossToolComponent;
+	public navigationMap = this.navigationMapComponent;
+	public volumes = this.volumesComponent;
+
 	constructor(element: HTMLElement, config: PartialChartConfig = {}) {
 		super(element, config);
 	}
@@ -19,7 +29,7 @@ export class Chart extends ChartBootstrap {
 	 * If 'percent' and 'logarithmic' formatters did not provided, 'regular' will be applied.
 	 */
 	public registerPaneFormatters(uuid: string, formatters: YExtentFormatters) {
-		this.paneManager.paneComponents[uuid]?.setPaneValueFormatters(formatters);
+		this.paneManager.panes[uuid]?.setPaneValueFormatters(formatters);
 	}
 
 	/**
@@ -39,8 +49,8 @@ export class Chart extends ChartBootstrap {
 	 * @param {boolean} separate - A boolean value indicating whether to show the volumes separately or not. Default value is false.
 	 */
 	public showSeparateVolumes(separate: boolean = false) {
-		if (this.volumesComponent) {
-			this.volumesComponent.setShowVolumesSeparatly(separate);
+		if (this.volumes) {
+			this.volumes.setShowVolumesSeparatly(separate);
 			this.canvasBoundsContainer.updateYAxisWidths();
 		}
 	}
@@ -92,7 +102,7 @@ export class Chart extends ChartBootstrap {
 		this.chartComponent.setChartType(type);
 	}
 
-    public createPane(): PaneComponent {
-        return this.paneManager.createPane();
-    }
+	public createPane(): PaneComponent {
+		return this.paneManager.createPane();
+	}
 }

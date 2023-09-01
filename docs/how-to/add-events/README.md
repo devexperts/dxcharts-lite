@@ -1,6 +1,6 @@
 # Colors
 
-#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/zv8qfd)<!--/CSB_LINK-->
+#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/xyhfwh)<!--/CSB_LINK-->
 
 # Economic events
 
@@ -16,15 +16,15 @@ Events are presented on X axis timeline, the supported events are:
 # Events in Chart-Core
 
 You can display different events on the chart using chart-core API.
-There is a separate component `EventsComponent` available from `chartInstance`.
+There is a separate component `EventsComponent` available from `chart`.
 
 ## Adding Events
 
-Use `chartInstance.eventsComponent.setEvents` to set events to chart
+Use `chart.events.setEvents` to set events to chart
 
 ```
 const now = new Date();
-chart.eventsComponent.setEvents([
+chart.events.setEvents([
 	{
 		type: 'earnings',
 		timestamp: now.setHours(now.getHours() - 10),
@@ -50,18 +50,18 @@ chart.eventsComponent.setEvents([
 
 ## Visibility
 
-Use `chartInstance.eventsComponent.setVisible` to change visibility
+Use `chart.events.setVisible` to change visibility
 ```
-chartInstance.eventsComponent.setVisible(true);
+chart.events.setVisible(true);
 ```
 
 ## Interaction
 
-You can subscribe to **hovering** by `chartInstance.eventsComponent.observeEventHovered` and start listening to hover events on "events"
+You can subscribe to **hovering** by `chart.events.observeEventHovered` and start listening to hover events on "events"
 
 ```
 let hoveredEvent: EventWithId | null = null;
-chartInstance.eventsComponent.observeEventHovered().subscribe(event => {
+chart.events.observeEventHovered().subscribe(event => {
 	hoveredEvent = event;
 });
 ```
