@@ -35,7 +35,7 @@ export interface YExtentCreationOptions {
 }
 
 export class YExtentComponent extends ChartBaseElement {
-	private mainDataSeries?: DataSeriesModel;
+	public mainDataSeries?: DataSeriesModel;
 
 	constructor(
 		public paneUUID: string,
