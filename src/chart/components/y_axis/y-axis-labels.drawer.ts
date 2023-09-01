@@ -3,7 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { ChartConfigComponentsYAxis, FullChartColors, getFontFromConfig } from '../../chart.config';
+import { YAxisConfig, FullChartColors, getFontFromConfig } from '../../chart.config';
 import { redrawBackgroundArea } from '../../drawers/chart-background.drawer';
 import { Bounds } from '../../model/bounds.model';
 import { drawPriceLabel, drawRoundedRect } from '../../utils/canvas/canvas-drawing-functions.utils';
@@ -52,7 +52,7 @@ export function drawBadgeLabel(
 	text: string,
 	centralY: number,
 	config: YAxisLabelDrawConfig,
-	yAxisState: ChartConfigComponentsYAxis,
+	yAxisState: YAxisConfig,
 	yAxisColors: FullChartColors['yAxis'],
 	drawOutside: boolean = false,
 ): void {
@@ -128,7 +128,7 @@ export function drawRectLabel(
 	text: string,
 	centralY: number,
 	config: YAxisLabelDrawConfig,
-	yAxisState: ChartConfigComponentsYAxis,
+	yAxisState: YAxisConfig,
 	yAxisColors: FullChartColors['yAxis'],
 	drawOutside: boolean = false,
 ) {
@@ -197,7 +197,7 @@ export function drawPlainLabel(
 	text: string,
 	centralY: number,
 	config: YAxisLabelDrawConfig,
-	yAxisState: ChartConfigComponentsYAxis,
+	yAxisState: YAxisConfig,
 	yAxisColors: FullChartColors['yAxis'],
 	drawOutside: boolean = false,
 	backgroundCtx?: CanvasRenderingContext2D,

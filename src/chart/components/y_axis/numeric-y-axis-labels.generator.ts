@@ -3,11 +3,11 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { ChartModel } from '../chart/chart.model';
-import { PriceIncrementsUtils } from '../../utils/price-increments.utils';
-import { NumericAxisLabelsGenerator, PriceAxisType } from '../labels_generator/numeric-axis-labels.generator';
+import { DataSeriesModel } from '../../model/data-series.model';
 import { ViewportModel } from '../../model/scaling/viewport.model';
 import { lastOf } from '../../utils/array.utils';
+import { precisionsToIncrement } from '../../utils/price-increments.utils';
+import { NumericAxisLabelsGenerator, PriceAxisType } from '../labels_generator/numeric-axis-labels.generator';
 
 /**
  * Y axis labels generator for prices. Respects price increment from instrument.
@@ -15,11 +15,10 @@ import { lastOf } from '../../utils/array.utils';
 export class NumericYAxisLabelsGenerator extends NumericAxisLabelsGenerator {
 	constructor(
 		increment: number | null,
-		private chartModel: ChartModel | undefined,
+		private dataSeriesProvider: () => DataSeriesModel | undefined,
 		viewportModel: ViewportModel,
 		valueFormatter: (value: number) => string,
 		axisTypeProvider: () => PriceAxisType = () => 'regular',
-		baseLineProvider = () => 1,
 		singleLabelHeightPixels: number = 23,
 	) {
 		super(
@@ -29,7 +28,7 @@ export class NumericYAxisLabelsGenerator extends NumericAxisLabelsGenerator {
 			valueFormatter,
 			false,
 			axisTypeProvider,
-			baseLineProvider,
+			() => dataSeriesProvider()?.getBaseline() ?? 1,
 			undefined,
 			singleLabelHeightPixels,
 		);
@@ -48,12 +47,11 @@ export class NumericYAxisLabelsGenerator extends NumericAxisLabelsGenerator {
 	 * @returns {number} - The calculated increment.
 	 */
 	protected calculateIncrement(valueLength: number): number {
-		const instrument = this.chartModel?.mainCandleSeries.instrument;
-		// increment from instrument
-		if (this.chartModel && instrument && Array.isArray(instrument.priceIncrements)) {
-			const lastCandle = lastOf(this.chartModel.getCandles());
-			const priceIncrementBasis = lastCandle && lastCandle.close ? lastCandle.close : 0;
-			const increment = PriceIncrementsUtils.getPriceIncrement(priceIncrementBasis, instrument.priceIncrements);
+		const dataSeries = this.dataSeriesProvider();
+		if (dataSeries) {
+			const lastCandle = lastOf(dataSeries.dataPoints);
+			const priceIncrementBasis = lastCandle?.close ?? 0;
+			const increment = precisionsToIncrement(priceIncrementBasis, dataSeries.pricePrecisions);
 			return this.adjustIncrementOnAxisType(increment);
 		}
 		// auto-generated increment

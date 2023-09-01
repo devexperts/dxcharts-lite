@@ -36,9 +36,9 @@ export const createPercentFormatter =
 		let valueUnit = value;
 		const series = dataSeries ?? mainDataSeries;
 		if (series !== undefined) {
-			valueUnit = unitToPercent(value, series.getBaseLine());
+			valueUnit = unitToPercent(value, series.getBaseline());
 		}
-		// always apply default precesion for percent
+		// always apply default precision for percent
 		const formatted = valueUnit.toFixed(PriceIncrementsUtils.DEFAULT_PRECISION).replace('-', '−') + ' %';
 		return formatted === '−0.00 %' ? '0.00 %' : formatted;
 	};

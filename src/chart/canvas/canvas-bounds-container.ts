@@ -242,7 +242,7 @@ export class CanvasBoundsContainer {
 		canvas.y = 0;
 		canvas.width = canvasW;
 		canvas.height = canvasH;
-		const yAxisWidths = this.getYAxisWidth();
+		const yAxisWidths = this.yAxisWidths;
 		const nMap = this.getNavMapBounds(canvas);
 		const xAxis = this.getXAxisBounds(nMap, canvas);
 		const chartHeight = canvasH - xAxis.height - nMap.height;
@@ -493,19 +493,6 @@ export class CanvasBoundsContainer {
 	public setPanesOrder(panesOrder: string[]): void {
 		this.panesOrder = panesOrder;
 		this.recalculateBounds();
-	}
-
-	/**
-	 * Returns the widths of the Y axis if it is visible, otherwise returns [0].
-	 * @returns {number} The width of the Y axis.
-	 */
-	private getYAxisWidth(): YAxisWidths {
-		return this.config.components.yAxis.visible
-			? this.yAxisWidths
-			: {
-					right: [0],
-					left: [0],
-			  };
 	}
 
 	/**

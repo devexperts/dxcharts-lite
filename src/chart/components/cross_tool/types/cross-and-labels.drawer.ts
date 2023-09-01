@@ -158,7 +158,7 @@ export class CrossAndLabelsDrawerType implements CrossToolTypeDrawer {
 						paddingEnd: yLabelPadding?.end,
 						paddingTop: yLabelPadding?.top,
 					},
-					extent.yAxisComponent?.state ?? this.config.components.yAxis,
+					extent.yAxisComponent.state,
 					this.config.colors.yAxis,
 					true,
 				);

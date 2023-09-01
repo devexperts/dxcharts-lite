@@ -5,7 +5,7 @@
  */
 import { Observable, Subject } from 'rxjs';
 import { Percent, Pixel, Unit, logValueToUnit, percentToUnit, calcLogValue } from '../../model/scaling/viewport.model';
-import { AnimationFrameCache } from '../../utils/perfomance/animation-frame-cache.utils';
+import { AnimationFrameCache } from '../../utils/performance/animation-frame-cache.utils';
 import { identity } from '../../utils/function.utils';
 import { MathUtils } from '../../utils/math.utils';
 import { PriceIncrementsUtils } from '../../utils/price-increments.utils';

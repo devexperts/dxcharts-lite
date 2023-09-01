@@ -11,7 +11,7 @@ import { CanvasModel, initCanvasWithConfig } from './canvas.model';
 import { DrawingManager } from '../drawers/drawing-manager';
 import EventBus from '../events/event-bus';
 import { CanvasInputListenerComponent, Point } from '../inputlisteners/canvas-input-listener.component';
-import { animationFrameId } from '../utils/perfomance/request-animation-frame-throttle.utils';
+import { animationFrameId } from '../utils/performance/request-animation-frame-throttle.utils';
 
 const bigPrimeNumber = 317;
 

@@ -3,14 +3,15 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { ChartConfigComponentsYAxis, FullChartConfig, YAxisAlign, getFontFromConfig } from '../../chart.config';
-import { CanvasModel } from '../../model/canvas.model';
-import { NumericAxisLabel } from '../labels_generator/numeric-axis-labels.generator';
-import { Drawer } from '../../drawers/drawing-manager';
-import { calculateSymbolHeight, calculateTextWidth } from '../../utils/canvas/canvas-font-measure-tool.utils';
-import { Unit, ViewportModel } from '../../model/scaling/viewport.model';
+import { FullChartConfig, YAxisAlign, getFontFromConfig } from '../../chart.config';
 import { clipToBounds } from '../../drawers/data-series.drawer';
-import { Bounds, BoundsProvider } from '../../model/bounds.model';
+import { Drawer } from '../../drawers/drawing-manager';
+import { Bounds } from '../../model/bounds.model';
+import { CanvasModel } from '../../model/canvas.model';
+import { Unit } from '../../model/scaling/viewport.model';
+import { calculateSymbolHeight, calculateTextWidth } from '../../utils/canvas/canvas-font-measure-tool.utils';
+import { PaneManager } from '../pane/pane-manager.component';
+import { YAxisComponent } from './y-axis.component';
 
 export interface YAxisLabel {
 	readonly text: string;
@@ -29,12 +30,8 @@ export interface YAxisAnimationParameters {
 export class YAxisDrawer implements Drawer {
 	constructor(
 		private fullConfig: FullChartConfig,
-		private yAxisState: ChartConfigComponentsYAxis,
 		private canvasModel: CanvasModel,
-		private labelsProvider: () => Array<NumericAxisLabel>,
-		private axisBounds: BoundsProvider,
-		private drawPredicate: () => boolean = () => true,
-		private toY: ViewportModel['toY'],
+		private paneManager: PaneManager,
 	) {}
 
 	/**
@@ -46,25 +43,28 @@ export class YAxisDrawer implements Drawer {
 	 * @function
 	 */
 	draw() {
-		if (this.drawPredicate()) {
-			const labels = this.labelsProvider();
+		this.paneManager.yExtents.forEach(extent => {
+			const yAxisComponent: YAxisComponent = extent.yAxisComponent;
+			if (yAxisComponent.state.visible) {
+				const labels = yAxisComponent.model.baseLabelsModel.labels;
 
-			const bounds: Bounds = this.axisBounds();
+				const bounds: Bounds = yAxisComponent.getBounds();
 			const ctx = this.canvasModel.ctx;
 
 			// draw axis background rect animation
 			ctx.fillStyle = this.getBackgroundColor();
 			ctx.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
 
-			const font = getFontFromConfig(this.yAxisState);
+				const font = getFontFromConfig(yAxisComponent.state);
 			const fontHeight = calculateSymbolHeight(font, ctx);
 
 			const textColor = this.getLabelTextColor();
 			ctx.save();
 			clipToBounds(ctx, bounds);
-			this.drawLabels(ctx, labels, bounds, fontHeight, font, textColor);
+				this.drawLabels(ctx, labels, bounds, fontHeight, font, textColor, yAxisComponent);
 			ctx.restore();
 		}
+		});
 	}
 
 	/**
@@ -83,6 +83,7 @@ export class YAxisDrawer implements Drawer {
 		fontHeight: number,
 		font: string,
 		labelTextColor: string,
+		yAxisComponent: YAxisComponent,
 	) {
 		ctx.fillStyle = labelTextColor;
 		ctx.font = font;
@@ -91,7 +92,7 @@ export class YAxisDrawer implements Drawer {
 		const topY = axisBounds.y + textHeight;
 		const bottomY = axisBounds.y + axisBounds.height - textHeight;
 		labels.forEach(label => {
-			const y = this.toY(label.value);
+			const y = yAxisComponent.scaleModel.toY(label.value);
 			if (y > topY && y < bottomY) {
 				drawSimpleLabel(
 					ctx,
@@ -100,8 +101,8 @@ export class YAxisDrawer implements Drawer {
 					y,
 					fontHeight,
 					font,
-					this.yAxisState.labelBoxMargin.end,
-					this.yAxisState.align,
+					yAxisComponent.state.labelBoxMargin.end,
+					yAxisComponent.state.align,
 				);
 			}
 		});

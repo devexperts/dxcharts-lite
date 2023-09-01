@@ -4,7 +4,6 @@
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 import { CanvasBoundsContainer, CanvasElement } from '../../../canvas/canvas-bounds-container';
-import { YAxisWidthContributor } from '../../../canvas/y-axis-bounds.container';
 import { Bounds } from '../../../model/bounds.model';
 import { CanvasModel } from '../../../model/canvas.model';
 import { ChartBaseElement } from '../../../model/chart-base-element';
@@ -16,25 +15,25 @@ import {
 } from '../../../model/data-series.model';
 import { ScaleModel } from '../../../model/scale.model';
 import { HighLowProvider, mergeHighLow } from '../../../model/scaling/auto-scale.model';
-import { Unit } from '../../../model/scaling/viewport.model';
+import { Pixel, Price, Unit } from '../../../model/scaling/viewport.model';
 import { ChartBaseModel } from '../../chart/chart-base.model';
 import { createYExtentFormatters } from '../../chart/price.formatter';
 import { DragNDropYComponent } from '../../dran-n-drop_helper/drag-n-drop-y.component';
-import { PriceAxisType } from '../../labels_generator/numeric-axis-labels.generator';
+import { YAxisComponent } from '../../y_axis/y-axis.component';
 import { PaneHitTestController } from '../pane-hit-test.controller';
-import { ExtentYAxis, PaneComponent, YExtentFormatters } from '../pane.component';
+import { PaneComponent, YExtentFormatters } from '../pane.component';
 
 export interface YExtentCreationOptions {
 	scaleModel: ScaleModel;
 	order: number;
 	useDefaultHighLow: boolean;
-	useDefaultYAxis: boolean;
 	cursor: string;
 	paneFormatters: YExtentFormatters;
 	increment: number | null;
 }
 
 export class YExtentComponent extends ChartBaseElement {
+	public yAxisComponent: YAxisComponent;
 	public mainDataSeries?: DataSeriesModel;
 
 	constructor(
@@ -46,8 +45,10 @@ export class YExtentComponent extends ChartBaseElement {
 		private hitTestController: PaneHitTestController,
 		public dynamicObjectsCanvasModel: CanvasModel,
 		public readonly scaleModel: ScaleModel,
-		// TODO when y-axis component will be refactored this shouldn't be undefined
-		public readonly yAxisComponent: ExtentYAxis | undefined,
+		createYAxisComponent: (
+			formatter: (value: number) => string,
+			dataSeriesProvider: () => DataSeriesModel | undefined,
+		) => YAxisComponent,
 		public readonly dragNDrop: DragNDropYComponent,
 		public dataSeries: Set<DataSeriesModel> = new Set(),
 		public formatters: YExtentFormatters = {
@@ -56,21 +57,9 @@ export class YExtentComponent extends ChartBaseElement {
 	) {
 		super();
 		this.addChildEntity(scaleModel);
-		if (yAxisComponent !== undefined) {
-			this.addChildEntity(yAxisComponent.yAxisScaleHandler);
-			this.addSubscription(yAxisComponent.unsub);
-			const contributor: YAxisWidthContributor = {
-				getLargestLabel: () => yAxisComponent.labelsGenerator.getLargestLabel() ?? '',
-				getYAxisIndex: () => idx,
-				getYAxisAlign: () => yAxisComponent.state.align,
-				getPaneUUID: () => paneComponent.uuid,
-			};
-			this.canvasBoundsContainer.yAxisBoundsContainer.registerYAxisWidthContributor(contributor);
-			this.addSubscription(() =>
-				this.canvasBoundsContainer.yAxisBoundsContainer.removeYAxisWidthContributor(contributor),
-			);
-		}
 		this.setValueFormatters(createYExtentFormatters(this));
+		this.yAxisComponent = createYAxisComponent(this.valueFormatter.bind(this), () => this.mainDataSeries);
+		this.addChildEntity(this.yAxisComponent);
 	}
 
 	protected doDeactivate(): void {
@@ -95,6 +84,10 @@ export class YExtentComponent extends ChartBaseElement {
 	 */
 	public getBounds(): Bounds {
 		return this.scaleModel.getBounds();
+	}
+
+	public getBaseline() {
+		return this.mainDataSeries?.getBaseline() ?? 1;
 	}
 
 	private toVisualPoints = (points: DataSeriesPoint[]): VisualSeriesPoint[] =>
@@ -124,6 +117,10 @@ export class YExtentComponent extends ChartBaseElement {
 		this.paneComponent.seriesAddedSubject.next(series);
 	}
 
+	toY = (value: Price): Pixel => {
+		return this.mainDataSeries?.view.toY(value) ?? 1;
+	};
+
 	/**
 	 * Removes a data series from the chart.
 	 *
@@ -136,19 +133,8 @@ export class YExtentComponent extends ChartBaseElement {
 		this.paneComponent.seriesRemovedSubject.next(series);
 	}
 
-	// TODO hack, remove when each pane will have separate y-axis component
-	/**
-	 * Returns the type of the y-axis component for the current pane.
-	 *
-	 * @returns {PriceAxisType} The 'regular' type of the y-axis component for the current pane.
-	 *
-	 */
-	public getAxisType(): PriceAxisType {
-		return 'regular';
-	}
-
 	public valueFormatter = (value: Unit, dataSeries?: DataSeriesModel) => {
-		const formatter = this.formatters[this.getAxisType()] ?? this.formatters.regular;
+		const formatter = this.formatters[this.yAxisComponent.getAxisType()] ?? this.formatters.regular;
 		return formatter(value, dataSeries);
 	};
 

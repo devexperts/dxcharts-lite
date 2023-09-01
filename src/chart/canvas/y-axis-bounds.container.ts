@@ -3,14 +3,14 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { FullChartConfig, YAxisAlign, getFontFromConfig } from '../chart.config';
+import { YAxisConfig, FullChartConfig, getFontFromConfig } from '../chart.config';
 import { CanvasModel } from '../model/canvas.model';
 import { calculateTextWidth } from '../utils/canvas/canvas-font-measure-tool.utils';
 
 export interface YAxisWidthContributor {
 	getLargestLabel: () => string;
 	getYAxisIndex: () => number;
-	getYAxisAlign: () => YAxisAlign;
+	getYAxisState: () => YAxisConfig;
 	getPaneUUID: () => string;
 }
 
@@ -70,14 +70,14 @@ export class YAxisBoundsContainer {
 		this.extentsOrder.clear();
 		const left: number[] = [];
 		const right: number[] = [];
-		const margin =
-			this.config.components.yAxis.labelBoxMargin.start + this.config.components.yAxis.labelBoxMargin.end;
 		this.yAxisWidthContributors.forEach(c => {
+			const state = c.getYAxisState();
+			const margin = state.labelBoxMargin.start + state.labelBoxMargin.end;
 			const width = this.getTextWidth(c.getLargestLabel()) + margin;
 			const idx = c.getYAxisIndex();
 			const uuid = c.getPaneUUID();
 			const extentOrder = this.extentsOrder.get(uuid) ?? { left: [], right: [] };
-			if (c.getYAxisAlign() === 'left') {
+			if (state.align === 'left') {
 				const i = extentOrder.left.length;
 				left[i] = Math.max(left[i] ?? 0, width);
 				extentOrder.left.push(idx);

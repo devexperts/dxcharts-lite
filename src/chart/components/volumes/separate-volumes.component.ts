@@ -6,17 +6,17 @@
 import { FullChartConfig } from '../../chart.config';
 import { DrawingManager } from '../../drawers/drawing-manager';
 import { ChartBaseElement } from '../../model/chart-base-element';
-import { ScaleModel } from '../../model/scale.model';
 import { Pixel, Unit } from '../../model/scaling/viewport.model';
 import { ChartComponent } from '../chart/chart.component';
 import { createCandlesOffsetProvider } from '../chart/data-series.high-low-provider';
 import { PaneManager } from '../pane/pane-manager.component';
+import { PaneComponent } from '../pane/pane.component';
 import { volumeFormatter } from './volumes.formatter';
 import { VolumesModel } from './volumes.model';
 
 export class SeparateVolumesComponent extends ChartBaseElement {
 	static UUID = 'volumes';
-	public scaleModel: ScaleModel | undefined;
+	public pane: PaneComponent | undefined;
 	constructor(
 		private chartComponent: ChartComponent,
 		private drawingManager: DrawingManager,
@@ -34,10 +34,10 @@ export class SeparateVolumesComponent extends ChartBaseElement {
 		super.doActivate();
 		this.addRxSubscription(
 			this.chartComponent.chartModel.candlesUpdatedSubject.subscribe(
-				() => !this.scaleModel?.isViewportValid() && this.scaleModel?.doAutoScale(true),
+				() => !this.pane?.scaleModel.isViewportValid() && this.pane?.scaleModel.doAutoScale(true),
 			),
 		);
-		this.addRxSubscription(this.volumesModel.volumeMax.subscribe(() => this.scaleModel?.doAutoScale()));
+		this.addRxSubscription(this.volumesModel.volumeMax.subscribe(() => this.pane?.scaleModel.doAutoScale()));
 	}
 
 	/**
@@ -55,6 +55,8 @@ export class SeparateVolumesComponent extends ChartBaseElement {
 				useDefaultHighLow: false,
 				increment: 1,
 			});
+			this.pane = volumePane;
+			volumePane.mainYExtentComponent.yAxisComponent.setAxisType('regular');
 			const { scaleModel } = volumePane;
 			const volumesHighLowProvider = createCandlesOffsetProvider(
 				() => ({ top: 10, bottom: 0, left: 0, right: 0, visible: true }),
@@ -62,7 +64,6 @@ export class SeparateVolumesComponent extends ChartBaseElement {
 			);
 			scaleModel.autoScaleModel.setHighLowProvider('volumes', volumesHighLowProvider);
 			scaleModel.doAutoScale(true);
-			this.scaleModel = scaleModel;
 		}
 	}
 
@@ -71,7 +72,7 @@ export class SeparateVolumesComponent extends ChartBaseElement {
 	 */
 	deactiveSeparateVolumes() {
 		this.paneManager.removePane(SeparateVolumesComponent.UUID);
-		delete this.scaleModel;
+		delete this.pane;
 		this.drawingManager.removeDrawerByName('UNDERLAY_VOLUMES_AREA');
 	}
 
@@ -81,6 +82,6 @@ export class SeparateVolumesComponent extends ChartBaseElement {
 	 * @returns {Unit} - The corresponding data value.
 	 */
 	public fromY(y: Pixel): Unit {
-		return this.scaleModel?.fromY(y) ?? 0;
+		return this.pane?.scaleModel.fromY(y) ?? 0;
 	}
 }

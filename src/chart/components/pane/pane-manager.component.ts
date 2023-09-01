@@ -21,10 +21,15 @@ import { ChartBaseModel } from '../chart/chart-base.model';
 import { createHighLowOffsetCalculator } from '../chart/data-series.high-low-provider';
 import { ChartPanComponent } from '../pan/chart-pan.component';
 import { BarResizerComponent } from '../resizer/bar-resizer.component';
-import { YExtentCreationOptions, createDefaultYExtentHighLowProvider } from './extent/y-extent-component';
+import {
+	YExtentComponent,
+	YExtentCreationOptions,
+	createDefaultYExtentHighLowProvider,
+} from './extent/y-extent-component';
 import { PaneHitTestController } from './pane-hit-test.controller';
 import { PaneComponent } from './pane.component';
 import { Unsubscriber } from '../../utils/function.utils';
+import { flatMap } from '../../utils/array.utils';
 import { DataSeriesModel } from '../../model/data-series.model';
 
 export class PaneManager extends ChartBaseElement {
@@ -41,6 +46,7 @@ export class PaneManager extends ChartBaseElement {
 	}
 	constructor(
 		private chartBaseModel: ChartBaseModel<'candle'>,
+		private dynamicObjectsCanvasModel: CanvasModel,
 		private userInputListenerComponents: ChartEntity[],
 		private eventBus: EventBus,
 		private mainScaleModel: ScaleModel,
@@ -49,11 +55,11 @@ export class PaneManager extends ChartBaseElement {
 		private canvasAnimation: CanvasAnimation,
 		private canvasInputListener: CanvasInputListenerComponent,
 		private drawingManager: DrawingManager,
-		private dynamicObjectsCanvasModel: CanvasModel,
 		private cursorHandler: CursorHandler,
 		private crossEventProducer: CrossEventProducerComponent,
 		public chartPanComponent: ChartPanComponent,
 		private mainCanvasModel: CanvasModel,
+		private yAxisLabelsCanvasModel: CanvasModel,
 	) {
 		super();
 		this.hitTestController = new PaneHitTestController(this.paneComponents, this.dynamicObjectsCanvasModel);
@@ -61,7 +67,6 @@ export class PaneManager extends ChartBaseElement {
 		const mainPane = this.createPane(CHART_UUID, {
 			useDefaultHighLow: false,
 			scaleModel: this.mainScaleModel,
-			useDefaultYAxis: false,
 		});
 		mainPane.mainYExtentComponent.scaleModel.autoScaleModel.setHighLowProvider(
 			'series',
@@ -109,6 +114,10 @@ export class PaneManager extends ChartBaseElement {
 		return barResizerComponent;
 	}
 
+	get yExtents(): YExtentComponent[] {
+		return flatMap(Object.values(this.paneComponents), c => c.yExtentComponents);
+	}
+
 	/**
 	 * Returns the pane component that contains the given point.
 	 * @param {Point} point - The point to check.
@@ -133,20 +142,20 @@ export class PaneManager extends ChartBaseElement {
 
 		const paneComponent: PaneComponent = new PaneComponent(
 			this.chartBaseModel,
+			this.mainCanvasModel,
+			this.yAxisLabelsCanvasModel,
+			this.dynamicObjectsCanvasModel,
 			this.hitTestController,
 			this.config,
 			this.mainScaleModel,
 			this.drawingManager,
 			this.chartPanComponent,
-			this.mainCanvasModel,
 			this.canvasInputListener,
-			this.userInputListenerComponents,
 			this.canvasAnimation,
 			this.cursorHandler,
 			this.eventBus,
 			this.canvasBoundsContainer,
 			uuid,
-			this.dynamicObjectsCanvasModel,
 			this.dataSeriesAddedSubject,
 			this.dataSeriesRemovedSubject,
 			options,

@@ -874,7 +874,7 @@ export interface ChartScale {
 	 */
 	lockPriceToBarRatio: boolean;
 	/**
-	 * Inverses the Y scale vertically. TODO move to components.yAxis.
+	 * Inverses the Y scale vertically.
 	 */
 	inverse: boolean;
 	/**
@@ -914,7 +914,7 @@ export interface AutoScaleDisableOnDrag {
 export interface ChartComponents {
 	chart: ChartConfigComponentsChart;
 	xAxis: ChartConfigComponentsXAxis;
-	yAxis: ChartConfigComponentsYAxis;
+	yAxis: YAxisConfig;
 	grid: GridComponentConfig;
 	volumes: ChartConfigComponentsVolumes;
 	offsets: ChartConfigComponentsOffsets;
@@ -1021,7 +1021,7 @@ export interface ChartConfigComponentsXAxis {
 
 export type YAxisAlign = 'left' | 'right';
 
-export interface ChartConfigComponentsYAxis {
+export interface YAxisConfig {
 	visible: boolean;
 	/**
 	 * Type of Y axis. Currently supported 'regular', 'percent', 'logarithmic'.
@@ -1469,4 +1469,4 @@ export interface ChartConfigComponentsEventsIcons {
 
 export type CursorType = string;
 
-export const getFontFromConfig = (config: ChartConfigComponentsYAxis) => `${config.fontSize}px ${config.fontFamily}`;
+export const getFontFromConfig = (config: YAxisConfig) => `${config.fontSize}px ${config.fontFamily}`;

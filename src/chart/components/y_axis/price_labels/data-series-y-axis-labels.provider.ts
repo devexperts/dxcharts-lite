@@ -3,7 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { ChartConfigComponentsYAxis } from '../../../chart.config';
+import { YAxisConfig } from '../../../chart.config';
 import { BoundsProvider } from '../../../model/bounds.model';
 import { DEFAULT_DATA_SERIES_PAINT_CONFIG, DataSeriesConfig } from '../../../model/data-series.config';
 import { DataSeriesModel } from '../../../model/data-series.model';
@@ -16,7 +16,7 @@ export class DataSeriesYAxisLabelsProvider implements YAxisLabelsProvider {
 		private series: DataSeriesModel,
 		private config: DataSeriesConfig,
 		public yAxisBoundsProvider: BoundsProvider,
-		public axisState?: ChartConfigComponentsYAxis,
+		public axisState?: YAxisConfig,
 	) {}
 
 	/**

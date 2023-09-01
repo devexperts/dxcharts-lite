@@ -3,91 +3,80 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { merge } from 'rxjs';
 import { CanvasBoundsContainer } from '../../canvas/canvas-bounds-container';
-import { FullChartConfig } from '../../chart.config';
+import { YAxisWidthContributor } from '../../canvas/y-axis-bounds.container';
+import { YAxisConfig } from '../../chart.config';
 import EventBus from '../../events/event-bus';
 import { CanvasModel } from '../../model/canvas.model';
 import { ChartBaseElement } from '../../model/chart-base-element';
+import { DataSeriesModel } from '../../model/data-series.model';
 import { ScaleModel } from '../../model/scale.model';
-import { ChartModel } from '../chart/chart.model';
-import { PaneComponent } from '../pane/pane.component';
 import { NumericYAxisLabelsGenerator } from './numeric-y-axis-labels.generator';
-import { YAxisLabelsModel } from './price_labels/y-axis-labels.model';
+import { FancyYAxisLabelsModel } from './price_labels/y-axis-labels.model';
 import { YAxisBaseLabelsModel } from './y-axis-base-labels.model';
 
 export class YAxisModel extends ChartBaseElement {
-	yAxisLabelsGenerator: NumericYAxisLabelsGenerator;
-	yAxisBaseLabelsModel: YAxisBaseLabelsModel;
-	yAxisLabelsModel: YAxisLabelsModel;
+	labelsGenerator: NumericYAxisLabelsGenerator;
+	baseLabelsModel: YAxisBaseLabelsModel;
+	fancyLabelsModel: FancyYAxisLabelsModel;
 
 	constructor(
-		paneComponent: PaneComponent,
+		private paneUUID: string,
 		eventBus: EventBus,
-		private config: FullChartConfig,
+		private state: YAxisConfig,
 		private canvasBoundsContainer: CanvasBoundsContainer,
-		private canvasModel: CanvasModel,
-		private chartModel: ChartModel,
+		canvasModel: CanvasModel,
 		scaleModel: ScaleModel,
+		valueFormatter: (value: number) => string,
+		dataSeriesProvider: () => DataSeriesModel | undefined,
+		extentIdx: number,
 	) {
 		super();
-		// TODO rework, make formatter library instead of taking chartModel one
-		const formatter = paneComponent.valueFormatter;
-		this.yAxisLabelsGenerator = new NumericYAxisLabelsGenerator(
+		this.labelsGenerator = new NumericYAxisLabelsGenerator(
 			null,
-			chartModel,
+			dataSeriesProvider,
 			scaleModel,
-			formatter,
-			() => this.config.components.yAxis.type,
-			() => this.chartModel.getBaseLine(),
-			config.components.yAxis.labelHeight,
+			valueFormatter,
+			() => this.state.type,
+			state.labelHeight,
 		);
-		this.yAxisBaseLabelsModel = new YAxisBaseLabelsModel(
+		this.baseLabelsModel = new YAxisBaseLabelsModel(
 			scaleModel,
-			this.yAxisLabelsGenerator,
+			this.labelsGenerator,
 			this.canvasBoundsContainer,
+			paneUUID,
+			extentIdx,
 		);
-		this.addChildEntity(this.yAxisBaseLabelsModel);
-		this.yAxisLabelsModel = new YAxisLabelsModel(
+		this.addChildEntity(this.baseLabelsModel);
+		this.fancyLabelsModel = new FancyYAxisLabelsModel(
 			eventBus,
-			this.chartModel,
-			this.canvasBoundsContainer,
-			this.config,
+			scaleModel,
+			canvasBoundsContainer,
+			state,
 			canvasModel,
+			paneUUID,
 			() => this.canvasBoundsContainer.updateYAxisWidths(),
 		);
-		this.addChildEntity(this.yAxisLabelsModel);
-		this.canvasBoundsContainer.yAxisBoundsContainer.registerYAxisWidthContributor({
+		this.addChildEntity(this.fancyLabelsModel);
+	}
+
+	protected doActivate(): void {
+		const contributor: YAxisWidthContributor = {
 			getLargestLabel: () =>
-				(this.yAxisLabelsGenerator.labelsCache.getLastCachedValue() ?? [])
+				(this.labelsGenerator.labelsCache.getLastCachedValue() ?? [])
 					.map(label => label.text)
-					.concat(this.yAxisLabelsModel.orderedLabels.flatMap(l => l.labels).map(l => l.labelText))
+					.concat(this.fancyLabelsModel.orderedLabels.flatMap(l => l.labels).map(l => l.labelText))
 					.reduce(
 						(maxLengthText, label) => (label.length > maxLengthText.length ? label : maxLengthText),
 						'',
 					),
 			getYAxisIndex: () => 0,
-			getYAxisAlign: () => this.config.components.yAxis.align,
-			getPaneUUID: () => paneComponent.uuid,
-		});
-	}
-
-	/**
-	 * This method is used to activate the chart and auto-adjust the width of the Y axis depending on data.
-	 * It subscribes to the candlesSetSubject and invalidates the labelsCache of yAxisLabelsGenerator, updates the labels of yAxisLabelsModel and yAxisBaseLabelsModel, and fires the draw event of canvasModel.
-	 * @protected
-	 * @returns {void}
-	 */
-	protected doActivate(): void {
-		super.doActivate();
-		// auto-adjust width of Y axis depending on data
-		this.addRxSubscription(
-			merge(this.chartModel.candlesSetSubject).subscribe(() => {
-				this.yAxisLabelsGenerator.labelsCache.invalidate();
-				this.yAxisLabelsModel.updateLabels();
-				this.yAxisBaseLabelsModel.updateLabels();
-				this.canvasModel.fireDraw();
-			}),
+			getYAxisState: () => this.state,
+			getPaneUUID: () => this.paneUUID,
+		};
+		this.canvasBoundsContainer.yAxisBoundsContainer.registerYAxisWidthContributor(contributor);
+		this.addSubscription(() =>
+			this.canvasBoundsContainer.yAxisBoundsContainer.removeYAxisWidthContributor(contributor),
 		);
 	}
 }

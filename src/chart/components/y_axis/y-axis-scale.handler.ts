@@ -5,7 +5,7 @@
  */
 import { Subject } from 'rxjs';
 import { CanvasBoundsContainer, CanvasElement, HitBoundsTest } from '../../canvas/canvas-bounds-container';
-import { ChartConfigComponentsYAxis } from '../../chart.config';
+import { YAxisConfig } from '../../chart.config';
 import EventBus from '../../events/event-bus';
 import { ChartBaseElement } from '../../model/chart-base-element';
 import { CanvasInputListenerComponent } from '../../inputlisteners/canvas-input-listener.component';
@@ -31,7 +31,7 @@ export class YAxisScaleHandler extends ChartBaseElement {
 
 	constructor(
 		private bus: EventBus,
-		config: ChartConfigComponentsYAxis,
+		config: YAxisConfig,
 		chartPanComponent: ChartPanComponent,
 		private viewportModel: ViewportModel,
 		canvasInputListener: CanvasInputListenerComponent,

@@ -3,6 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
+import { lastOf } from './array.utils';
 import { floor, MathUtils } from './math.utils';
 
 export class PriceIncrementsUtils {
@@ -137,4 +138,11 @@ export class PriceIncrementsUtils {
 	public static validatePriceIncrementsOrPrecisions(data: number[]) {
 		return !(data.length === 0 || !Array.isArray(data) || data.findIndex((i: number) => i !== 0) === -1);
 	}
+}
+
+
+// TODO review dxFeed precision format
+export const precisionsToIncrement = (price: number, precisions: number[]) => {
+	const precision = lastOf(precisions) ?? 1;
+	return Math.pow(10, -precision);
 }

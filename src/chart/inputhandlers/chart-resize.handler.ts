@@ -9,7 +9,7 @@ import { CanvasModel } from '../model/canvas.model';
 import EventBus from '../events/event-bus';
 import { EVENT_DRAW, EVENT_RESIZED } from '../events/events';
 import { uuid } from '../utils/uuid.utils';
-import { animationFrameThrottledPrior } from '../utils/perfomance/request-animation-frame-throttle.utils';
+import { animationFrameThrottledPrior } from '../utils/performance/request-animation-frame-throttle.utils';
 
 export type PickedDOMRect = Pick<DOMRect, 'x' | 'y' | 'width' | 'height'>;
 

@@ -3,6 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
+import { Subject } from 'rxjs';
 import { distinctUntilChanged } from 'rxjs/operators';
 import { CanvasAnimation } from '../../animation/canvas-animation';
 import {
@@ -12,19 +13,19 @@ import {
 	HitBoundsTest,
 } from '../../canvas/canvas-bounds-container';
 import { CursorHandler } from '../../canvas/cursor.handler';
-import { ChartConfigComponentsYAxis, FullChartConfig } from '../../chart.config';
+import { FullChartConfig, YAxisConfig } from '../../chart.config';
 import { DrawingManager } from '../../drawers/drawing-manager';
 import EventBus from '../../events/event-bus';
 import { CanvasInputListenerComponent } from '../../inputlisteners/canvas-input-listener.component';
 import { Bounds } from '../../model/bounds.model';
 import { CanvasModel } from '../../model/canvas.model';
-import { ChartBaseElement, ChartEntity } from '../../model/chart-base-element';
-import { DataSeriesModel, defaultValueFormatter } from '../../model/data-series.model';
+import { ChartBaseElement } from '../../model/chart-base-element';
+import { DataSeriesModel } from '../../model/data-series.model';
 import { ScaleModel, SyncedByXScaleModel } from '../../model/scale.model';
 import { Unit } from '../../model/scaling/viewport.model';
 import { firstOf, flatMap, lastOf } from '../../utils/array.utils';
 import { Unsubscriber } from '../../utils/function.utils';
-import { AtLeastOne, cloneUnsafe } from '../../utils/object.utils';
+import { AtLeastOne } from '../../utils/object.utils';
 import { ChartBaseModel } from '../chart/chart-base.model';
 import { createCandlesOffsetProvider } from '../chart/data-series.high-low-provider';
 import { DragNDropYComponent } from '../dran-n-drop_helper/drag-n-drop-y.component';
@@ -32,25 +33,13 @@ import { GridComponent } from '../grid/grid.component';
 import { PriceAxisType } from '../labels_generator/numeric-axis-labels.generator';
 import { ChartPanComponent } from '../pan/chart-pan.component';
 import { NumericYAxisLabelsGenerator } from '../y_axis/numeric-y-axis-labels.generator';
-import { YAxisScaleHandler } from '../y_axis/y-axis-scale.handler';
-import { YAxisDrawer } from '../y_axis/y-axis.drawer';
+import { YAxisComponent } from '../y_axis/y-axis.component';
 import {
 	createDefaultYExtentHighLowProvider,
 	YExtentComponent,
 	YExtentCreationOptions,
 } from './extent/y-extent-component';
 import { PaneHitTestController } from './pane-hit-test.controller';
-import { YAxisBaseLabelsModel } from '../y_axis/y-axis-base-labels.model';
-import { Subject } from 'rxjs';
-
-// TODO should be replaced with YAxisComponent
-export interface ExtentYAxis {
-	labelsGenerator: NumericYAxisLabelsGenerator;
-	drawer: YAxisDrawer;
-	yAxisScaleHandler: YAxisScaleHandler;
-	state: ChartConfigComponentsYAxis;
-	unsub: Unsubscriber;
-}
 
 export class PaneComponent extends ChartBaseElement {
 	private _paneOrder = 0;
@@ -73,21 +62,20 @@ export class PaneComponent extends ChartBaseElement {
 
 	constructor(
 		public chartBaseModel: ChartBaseModel<'candle'>,
+		private mainCanvasModel: CanvasModel,
+		private yAxisLabelsCanvasModel: CanvasModel,
+		public readonly dynamicObjectsCanvasModel: CanvasModel,
 		private hitTestController: PaneHitTestController,
 		private config: FullChartConfig,
 		private mainScaleModel: ScaleModel,
 		private drawingManager: DrawingManager,
 		private chartPanComponent: ChartPanComponent,
-		private mainCanvasModel: CanvasModel,
 		private canvasInputListener: CanvasInputListenerComponent,
-		private userInputListenerComponents: ChartEntity[],
 		private canvasAnimation: CanvasAnimation,
 		private cursorHandler: CursorHandler,
 		public eventBus: EventBus,
-		// TODO in future there will be yAxisComponents with getBounds method
 		private canvasBoundsContainer: CanvasBoundsContainer,
 		public readonly uuid: string,
-		public readonly dynamicObjectsCanvasModel: CanvasModel,
 		public seriesAddedSubject: Subject<DataSeriesModel>,
 		public seriesRemovedSubject: Subject<DataSeriesModel>,
 		options?: AtLeastOne<YExtentCreationOptions>,
@@ -122,73 +110,6 @@ export class PaneComponent extends ChartBaseElement {
 	}
 
 	/**
-	 * Creates a Y-axis component for the chart.
-	 * @private
-	 * @param {string} uuid - The unique identifier of the chart pane.
-	 * @param {ScaleModel} scaleModel - The scale model for the chart.
-	 * @param {(value: number) => string} formatter - The function to format the Y-axis labels.
-	 * @param {Unsubscriber[]} subs - The array of unsubscriber functions.
-	 * @param {number | null} increment - The increment value for the Y-axis labels.
-	 * @returns {[NumericYAxisLabelsGenerator, YAxisDrawer, YAxisScaleHandler]} - An array containing the Y-axis labels generator, Y-axis drawer, and Y-axis scale handler.
-	 */
-	private createYAxisComponent(
-		uuid: string,
-		extentIdx: number,
-		scaleModel: ScaleModel,
-		formatter: (value: number) => string,
-		increment: number | null,
-	): ExtentYAxis {
-		// todo hack until each pane has its own y-axis
-		const yAxisState = cloneUnsafe(this.config.components.yAxis);
-		const labelsGenerator = new NumericYAxisLabelsGenerator(
-			increment,
-			undefined,
-			scaleModel,
-			formatter,
-			() => 'regular',
-			() => 1,
-			yAxisState.labelHeight,
-		);
-		const canvasEl = CanvasElement.PANE_UUID_Y_AXIS(uuid, extentIdx);
-		const drawer = new YAxisDrawer(
-			this.config,
-			yAxisState,
-			this.mainCanvasModel,
-			() => labelsGenerator.generateNumericLabels(),
-			() => this.canvasBoundsContainer.getBounds(canvasEl),
-			() => this.config.components.yAxis.visible,
-			scaleModel.toY.bind(scaleModel),
-		);
-		this.drawingManager.addDrawerAfter(drawer, canvasEl, 'Y_AXIS');
-
-		yAxisState.type = 'regular';
-		const yAxisScaleHandler = new YAxisScaleHandler(
-			this.eventBus,
-			yAxisState,
-			this.chartPanComponent,
-			scaleModel,
-			this.canvasInputListener,
-			this.canvasBoundsContainer,
-			this.canvasBoundsContainer.getBoundsHitTest(canvasEl),
-			auto => scaleModel.autoScale(auto),
-		);
-		const yAxisBaseLabelsModel = new YAxisBaseLabelsModel(scaleModel, labelsGenerator, this.canvasBoundsContainer);
-		yAxisBaseLabelsModel.activate();
-		this.userInputListenerComponents.push(yAxisScaleHandler);
-		return {
-			labelsGenerator,
-			drawer,
-			yAxisScaleHandler,
-			// TODO replace with separate y-axis component after y-axis refactor
-			state: this.config.components.yAxis,
-			unsub: () => {
-				this.drawingManager.removeDrawerByName(canvasEl);
-				yAxisBaseLabelsModel.disable();
-			},
-		};
-	}
-
-	/**
 	 * Creates a new GridComponent instance with the provided parameters.
 	 * @param {string} uuid - The unique identifier of the pane.
 	 * @param {ScaleModel} scaleModel - The scale model used to calculate the scale of the grid.
@@ -199,11 +120,13 @@ export class PaneComponent extends ChartBaseElement {
 		uuid: string,
 		scaleModel: ScaleModel,
 		yAxisLabelsGenerator: NumericYAxisLabelsGenerator,
+		yAxisState: YAxisConfig,
 	) {
 		const gridComponent = new GridComponent(
 			this.mainCanvasModel,
 			scaleModel,
 			this.config,
+			yAxisState,
 			`PANE_${uuid}_grid_drawer`,
 			this.drawingManager,
 			() => this.canvasBoundsContainer.getBounds(CanvasElement.PANE_UUID(uuid)),
@@ -235,9 +158,9 @@ export class PaneComponent extends ChartBaseElement {
 		];
 	}
 
-	private addCursors(extentIdx: number): Unsubscriber {
+	private addCursors(extentIdx: number, yAxisComponent: YAxisComponent): Unsubscriber {
 		const paneYAxis = CanvasElement.PANE_UUID_Y_AXIS(this.uuid, extentIdx);
-		this.cursorHandler.setCursorForCanvasEl(paneYAxis, this.config.components.yAxis.cursor);
+		this.cursorHandler.setCursorForCanvasEl(paneYAxis, yAxisComponent.state.cursor);
 		return () => this.cursorHandler.removeCursorForCanvasEl(paneYAxis);
 	}
 
@@ -248,19 +171,29 @@ export class PaneComponent extends ChartBaseElement {
 			options?.scaleModel ??
 			new SyncedByXScaleModel(this.mainScaleModel, this.config, getBounds, this.canvasAnimation);
 
-		// in future there should real YAxisComponent
-		const yAxisComp =
-			options?.useDefaultYAxis ?? true
-				? this.createYAxisComponent(
-						this.uuid,
-						extentIdx,
-						scaleModel,
-						options?.paneFormatters?.regular ?? defaultValueFormatter,
-						options?.increment ?? null,
-				  )
-				: undefined;
-
 		const [unsub, dragNDrop] = this.createYPanHandler(this.uuid, scaleModel);
+
+		// creating partially resolved constructor except formatter & dataSeriesProvider - bcs it's not possible to provide formatter
+		// before y-extent is created
+		const createYAxisComponent = (
+			formatter: (value: number) => string,
+			dataSeriesProvider: () => DataSeriesModel | undefined,
+		) =>
+			new YAxisComponent(
+				this.eventBus,
+				this.config,
+				this.yAxisLabelsCanvasModel,
+				scaleModel,
+				this.canvasInputListener,
+				this.canvasBoundsContainer,
+				this.chartPanComponent,
+				this.cursorHandler,
+				formatter,
+				dataSeriesProvider,
+				this.uuid,
+				extentIdx,
+			);
+
 		const yExtentComponent = new YExtentComponent(
 			this.uuid,
 			extentIdx,
@@ -270,12 +203,11 @@ export class PaneComponent extends ChartBaseElement {
 			this.hitTestController,
 			this.dynamicObjectsCanvasModel,
 			scaleModel,
-			yAxisComp,
+			createYAxisComponent,
 			dragNDrop,
 		);
-
 		yExtentComponent.addSubscription(unsub);
-		yExtentComponent.addSubscription(this.addCursors(extentIdx));
+		yExtentComponent.addSubscription(this.addCursors(extentIdx, yExtentComponent.yAxisComponent));
 
 		options?.paneFormatters && yExtentComponent.setValueFormatters(options.paneFormatters);
 
@@ -290,10 +222,14 @@ export class PaneComponent extends ChartBaseElement {
 			);
 		}
 
-		if (yAxisComp) {
-			const gridComponent = this.createGridComponent(this.uuid, scaleModel, yAxisComp.labelsGenerator);
-			yExtentComponent.addChildEntity(gridComponent);
-		}
+		const gridComponent = this.createGridComponent(
+			this.uuid,
+			scaleModel,
+			yExtentComponent.yAxisComponent.model.labelsGenerator,
+			yExtentComponent.yAxisComponent.state,
+		);
+		yExtentComponent.addChildEntity(gridComponent);
+
 		yExtentComponent.activate();
 		this.yExtentComponents.push(yExtentComponent);
 		this.canvasBoundsContainer.updateYAxisWidths();
@@ -315,7 +251,7 @@ export class PaneComponent extends ChartBaseElement {
 	public updateView() {
 		this.yExtentComponents.forEach(c => {
 			c.scaleModel.doAutoScale();
-			c.yAxisComponent?.labelsGenerator.generateNumericLabels();
+			c.yAxisComponent.model.labelsGenerator.generateNumericLabels();
 		});
 		this.canvasBoundsContainer.updateYAxisWidths();
 		this.eventBus.fireDraw();

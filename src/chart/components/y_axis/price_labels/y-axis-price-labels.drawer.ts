@@ -9,32 +9,32 @@ import {
 	CHART_UUID,
 	limitYToBounds,
 } from '../../../canvas/canvas-bounds-container';
-import { ChartConfigComponentsYAxis, FullChartColors } from '../../../chart.config';
+import { FullChartColors } from '../../../chart.config';
 import { Drawer } from '../../../drawers/drawing-manager';
 import { CanvasModel } from '../../../model/canvas.model';
 import { fillRect } from '../../../utils/canvas/canvas-drawing-functions.utils';
+import { PaneManager } from '../../pane/pane-manager.component';
 import { drawLabel } from './price-label.drawer';
 import { LabelGroup, VisualYAxisLabel } from './y-axis-labels.model';
 
 export class YAxisPriceLabelsDrawer implements Drawer {
 	constructor(
-		private labelsProvider: () => LabelGroup[],
 		private yAxisLabelsCanvasModel: CanvasModel,
 		private backgroundCanvasModel: CanvasModel,
-		private yAxisState: ChartConfigComponentsYAxis,
 		private canvasBoundsContainer: CanvasBoundsContainer,
 		private yAxisColors: FullChartColors['yAxis'],
-		private readonly customLabels: Record<string, VisualYAxisLabel>,
+		private paneManager: PaneManager,
 	) {}
 
 	draw() {
 		const ctx = this.yAxisLabelsCanvasModel.ctx;
 		const backgroundCtx = this.backgroundCanvasModel.ctx;
 
-		const yAxisBounds = this.canvasBoundsContainer.getBounds(CanvasElement.PANE_UUID_Y_AXIS(CHART_UUID));
+		this.paneManager.yExtents.forEach(extent => {
+			const yAxisBounds = extent.getYAxisBounds();
 		const paneBounds = this.canvasBoundsContainer.getBounds(CanvasElement.ALL_PANES);
-		this.drawHighlightedBackgroundBetweenLabels();
-		const orderedLabels = this.labelsProvider();
+			const orderedLabels = extent.yAxisComponent.model.fancyLabelsModel.orderedLabels;
+		this.drawHighlightedBackgroundBetweenLabels(orderedLabels);
 		orderedLabels.forEach(l => {
 			const bounds = l.bounds ?? yAxisBounds;
 			l.labels.forEach(vl =>
@@ -45,13 +45,13 @@ export class YAxisPriceLabelsDrawer implements Drawer {
 					paneBounds,
 					vl,
 					this.canvasBoundsContainer,
-					l.axisState ?? this.yAxisState,
+						extent.yAxisComponent.state,
 					this.yAxisColors,
 				),
 			);
 		});
 		// TODO I added this as a simple mechanism to add custom labels, we need to review it
-		Object.values(this.customLabels).forEach(l =>
+			Object.values(extent.yAxisComponent.model.fancyLabelsModel.customLabels).forEach(l =>
 			drawLabel(
 				ctx,
 				backgroundCtx,
@@ -59,18 +59,18 @@ export class YAxisPriceLabelsDrawer implements Drawer {
 				paneBounds,
 				l,
 				this.canvasBoundsContainer,
-				this.yAxisState,
+					extent.yAxisComponent.state,
 				this.yAxisColors,
 			),
 		);
+		});
 	}
 
 	// this is a very simple solution which matches 2 labels with same "subGroupId"
 	// in future we may want to change it, but for now it's enough
 	// and I guess it used only for drawings
-	drawHighlightedBackgroundBetweenLabels() {
+	drawHighlightedBackgroundBetweenLabels(orderedLabels: LabelGroup[]) {
 		const ctx = this.yAxisLabelsCanvasModel.ctx;
-		const orderedLabels = this.labelsProvider();
 		const map: Record<string, VisualYAxisLabel[]> = {};
 		orderedLabels.forEach(group => {
 			group.labels.forEach(label => {
