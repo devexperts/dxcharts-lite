@@ -207,7 +207,7 @@ export class PaneComponent extends ChartBaseElement {
 			dragNDrop,
 		);
 		yExtentComponent.addSubscription(unsub);
-		yExtentComponent.addSubscription(this.addCursors(extentIdx, yExtentComponent.yAxisComponent));
+		yExtentComponent.addSubscription(this.addCursors(extentIdx, yExtentComponent.yAxis));
 
 		options?.paneFormatters && yExtentComponent.setValueFormatters(options.paneFormatters);
 
@@ -225,8 +225,8 @@ export class PaneComponent extends ChartBaseElement {
 		const gridComponent = this.createGridComponent(
 			this.uuid,
 			scaleModel,
-			yExtentComponent.yAxisComponent.model.labelsGenerator,
-			yExtentComponent.yAxisComponent.state,
+			yExtentComponent.yAxis.model.labelsGenerator,
+			yExtentComponent.yAxis.state,
 		);
 		yExtentComponent.addChildEntity(gridComponent);
 
@@ -251,7 +251,7 @@ export class PaneComponent extends ChartBaseElement {
 	public updateView() {
 		this.yExtentComponents.forEach(c => {
 			c.scaleModel.doAutoScale();
-			c.yAxisComponent.model.labelsGenerator.generateNumericLabels();
+			c.yAxis.model.labelsGenerator.generateNumericLabels();
 		});
 		this.canvasBoundsContainer.updateYAxisWidths();
 		this.eventBus.fireDraw();

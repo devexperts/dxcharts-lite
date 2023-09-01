@@ -47,7 +47,7 @@ export class SeparateVolumesComponent extends ChartBaseElement {
 	 * A new VolumesDrawer is created and added to the drawing manager with the specified parameters.
 	 */
 	activateSeparateVolumes() {
-		if (this.paneManager.paneComponents[SeparateVolumesComponent.UUID] === undefined) {
+		if (this.paneManager.panes[SeparateVolumesComponent.UUID] === undefined) {
 			const volumePane = this.paneManager.createPane(SeparateVolumesComponent.UUID, {
 				paneFormatters: {
 					regular: volumeFormatter,
@@ -56,7 +56,7 @@ export class SeparateVolumesComponent extends ChartBaseElement {
 				increment: 1,
 			});
 			this.pane = volumePane;
-			volumePane.mainYExtentComponent.yAxisComponent.setAxisType('regular');
+			volumePane.mainYExtentComponent.yAxis.setAxisType('regular');
 			const { scaleModel } = volumePane;
 			const volumesHighLowProvider = createCandlesOffsetProvider(
 				() => ({ top: 10, bottom: 0, left: 0, right: 0, visible: true }),

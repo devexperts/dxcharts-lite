@@ -1,11 +1,11 @@
 # Y-Axis labels
 
-#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/k4lfxr)<!--/CSB_LINK-->
+#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/zs2d66)<!--/CSB_LINK-->
 
 There are 3 ways to see a label on a scale
 
 -   show the only predefined label, `lastPrice`, denoting a closing price on a latest candle
--   create a custom label using `addSimpleYAxisLabel` method on the `yAxisComponent`
+-   create a custom label using `addSimpleYAxisLabel` method on the `yAxis`
 -   create and register a label provider
 
 Each label may have an optional field `description` but they all can be either visible or hidden at the same time depending on flag `descriptions` in config
@@ -34,19 +34,19 @@ const config = {
 	},
 };
 //...
-chartInstance = DXChart.createChart(node, config);
+chart = DXChart.createChart(node, config);
 ```
 
 Mode can also be changed later, using the `changeLabelMode` method
 
 ```js
-chartInstance.yAxisComponent.changeLabelMode('lastPrice', 'line-label');
+chart.yAxis.changeLabelMode('lastPrice', 'line-label');
 ```
 
 Appearance type can be changed similarly, using the `changeLabelAppearance` method
 
 ```js
-chartInstance.yAxisComponent.changeLabelAppearance('lastPrice', 'badge');
+chart.yAxis.changeLabelAppearance('lastPrice', 'badge');
 ```
 
 ### lastPrice

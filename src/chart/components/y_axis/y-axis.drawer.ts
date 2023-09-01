@@ -44,7 +44,7 @@ export class YAxisDrawer implements Drawer {
 	 */
 	draw() {
 		this.paneManager.yExtents.forEach(extent => {
-			const yAxisComponent: YAxisComponent = extent.yAxisComponent;
+			const yAxisComponent: YAxisComponent = extent.yAxis;
 			if (yAxisComponent.state.visible) {
 				const labels = yAxisComponent.model.baseLabelsModel.labels;
 

@@ -20,13 +20,13 @@
 		const config = { components: { crossTool: { type: 'none' } } };
 
 		const node = document.querySelector('#root');
-		const chartInstance = DXChart.createChart(node, config);
+		const chart = DXChart.createChart(node, config);
 		const candles = DXChart.generateCandlesData({ quantity: 1000, withVolume: true });
 		chart.setData({
 			candles,
 		});
 
-		chartInstance.yAxisComponent.changeLabelMode('lastPrice', 'none');
+		chart.yAxis.changeLabelMode('lastPrice', 'none');
 		const labelInputs = [].slice.call(document.querySelectorAll('#label_options input, #label_options select'));
 
 		const labelText = document.querySelector('[name="labelText"]');
@@ -35,26 +35,26 @@
 		};
 		labelText.addEventListener('keyup', e => {
 			getName.name = labelText.value;
-			chartInstance.yAxisComponent.updateOrderedLabels();
+			chart.yAxis.updateOrderedLabels();
 		});
 
 		const description = document.querySelector('[name="description"]');
 		description.addEventListener('change', e => {
-			chartInstance.yAxisComponent.changeLabelsDescriptionVisibility(e.target.value === 'true');
+			chart.yAxis.changeLabelsDescriptionVisibility(e.target.value === 'true');
 		});
 
-		chartInstance.yAxisComponent.registerYAxisLabelsProvider(
-			dynamicProvider(chartInstance, 'GROUP2', getName),
+		chart.yAxis.registerYAxisLabelsProvider(
+			dynamicProvider(chart, 'GROUP2', getName),
 			'GROUP2',
 			`cool_label3`,
 		);
 
-		chartInstance.yAxisComponent.registerYAxisLabelsProvider(
+		chart.yAxis.registerYAxisLabelsProvider(
 			provider(100, 'static_lbl1', 'GROUP1'),
 			'GROUP1',
 			`static_lbl1`,
 		);
-		chartInstance.yAxisComponent.registerYAxisLabelsProvider(
+		chart.yAxis.registerYAxisLabelsProvider(
 			provider(200, 'static_lbl2', 'GROUP2'),
 			'GROUP2',
 			`static_lbl2`,

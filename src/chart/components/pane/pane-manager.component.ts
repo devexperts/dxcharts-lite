@@ -33,7 +33,7 @@ import { flatMap } from '../../utils/array.utils';
 import { DataSeriesModel } from '../../model/data-series.model';
 
 export class PaneManager extends ChartBaseElement {
-	public paneComponents: Record<string, PaneComponent> = {};
+	public panes: Record<string, PaneComponent> = {};
 	public panesChangedSubject: Subject<Record<string, PaneComponent>> = new Subject();
 	public hitTestController: PaneHitTestController;
 	public dataSeriesAddedSubject: Subject<DataSeriesModel> = new Subject();
@@ -62,7 +62,7 @@ export class PaneManager extends ChartBaseElement {
 		private yAxisLabelsCanvasModel: CanvasModel,
 	) {
 		super();
-		this.hitTestController = new PaneHitTestController(this.paneComponents, this.dynamicObjectsCanvasModel);
+		this.hitTestController = new PaneHitTestController(this.panes, this.dynamicObjectsCanvasModel);
 
 		const mainPane = this.createPane(CHART_UUID, {
 			useDefaultHighLow: false,
@@ -115,7 +115,7 @@ export class PaneManager extends ChartBaseElement {
 	}
 
 	get yExtents(): YExtentComponent[] {
-		return flatMap(Object.values(this.paneComponents), c => c.yExtentComponents);
+		return flatMap(Object.values(this.panes), c => c.yExtentComponents);
 	}
 
 	/**
@@ -124,7 +124,7 @@ export class PaneManager extends ChartBaseElement {
 	 * @returns {PaneComponent | undefined} - The pane component that contains the point or undefined if no pane contains it.
 	 */
 	public getPaneIfHit(point: Point): PaneComponent | undefined {
-		const panes = Object.values(this.paneComponents);
+		const panes = Object.values(this.panes);
 		return panes.find(p =>
 			this.canvasBoundsContainer.getBoundsHitTest(CanvasElement.PANE_UUID(p.uuid))(point.x, point.y),
 		);
@@ -136,8 +136,8 @@ export class PaneManager extends ChartBaseElement {
 	 * @returns
 	 */
 	public createPane(uuid = generateUuid(), options?: AtLeastOne<YExtentCreationOptions>): PaneComponent {
-		if (this.paneComponents[uuid] !== undefined) {
-			return this.paneComponents[uuid];
+		if (this.panes[uuid] !== undefined) {
+			return this.panes[uuid];
 		}
 
 		const paneComponent: PaneComponent = new PaneComponent(
@@ -170,11 +170,11 @@ export class PaneManager extends ChartBaseElement {
 		paneComponent.addSubscription(this.addCursors(uuid));
 		paneComponent.addSubscription(this.crossEventProducer.subscribeMouseOverHT(uuid, paneComponent.ht));
 
-		this.paneComponents[uuid] = paneComponent;
+		this.panes[uuid] = paneComponent;
 		paneComponent.activate();
 		this.recalculateState();
 		paneComponent.mainYExtentComponent.scaleModel.autoScale(true);
-		this.panesChangedSubject.next(this.paneComponents);
+		this.panesChangedSubject.next(this.panes);
 		return paneComponent;
 	}
 
@@ -183,13 +183,13 @@ export class PaneManager extends ChartBaseElement {
 	 * @param uuid
 	 */
 	public removePane(uuid: string) {
-		const pane = this.paneComponents[uuid];
+		const pane = this.panes[uuid];
 		if (pane !== undefined) {
 			pane.disable();
 			pane.yExtentComponents.forEach(yExtentComponent => yExtentComponent.disable());
-			delete this.paneComponents[uuid];
+			delete this.panes[uuid];
 			this.recalculateState();
-			this.panesChangedSubject.next(this.paneComponents);
+			this.panesChangedSubject.next(this.panes);
 		}
 	}
 
@@ -226,7 +226,7 @@ export class PaneManager extends ChartBaseElement {
 	 * @returns {void}
 	 */
 	public recalculateState() {
-		Object.values(this.paneComponents).forEach(state => state.scaleModel.recalculateZoomY());
+		Object.values(this.panes).forEach(state => state.scaleModel.recalculateZoomY());
 		this.eventBus.fireDraw([this.mainCanvasModel.canvasId, 'dynamicObjectsCanvas']);
 	}
 }

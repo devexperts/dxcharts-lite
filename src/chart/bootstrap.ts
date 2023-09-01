@@ -75,10 +75,25 @@ export default class ChartBootstrap implements ChartContainer {
 	public elements: ValidatedChartElements;
 	components: Array<any> = [];
 	public chartComponents: Array<ChartEntity> = [];
+	/**
+	 * @deprecated use {xAxis} instead
+	 */
 	public xAxisComponent: XAxisComponent;
+	/**
+	 * @deprecated use {yAxis} instead
+	 */
 	public yAxisComponent: YAxisComponent;
+	/**
+	 * @deprecated use {watermark} instead
+	 */
 	public watermarkComponent: WaterMarkComponent;
+	/**
+	 * @deprecated use {snapshot} instead
+	 */
 	public snapshotComponent: SnapshotComponent;
+	/**
+	 * @deprecated use {navigationMap} instead
+	 */
 	public navigationMapComponent: NavigationMapComponent;
 	// components list which listen for mouse and keyboard
 	userInputListenerComponents: Array<ChartEntity> = [];
@@ -95,11 +110,23 @@ export default class ChartBootstrap implements ChartContainer {
 	public hitTestCanvasModel: HitTestCanvasModel;
 	public canvasBoundsContainer: CanvasBoundsContainer;
 	public canvasInputListener: CanvasInputListenerComponent;
+	/**
+	 * @deprecated use {volumes} instead
+	 */
 	public volumesComponent: VolumesComponent;
-	public dynamicObjectsComponent: DynamicObjectsComponent;
+	public dynamicObjects: DynamicObjectsComponent;
+	/**
+	 * @deprecated use {highlights} instead
+	 */
 	public highlightsComponent: HighlightsComponent;
 	public chartComponent: ChartComponent;
+	/**
+	 * @deprecated use {events} instead
+	 */
 	public eventsComponent: EventsComponent;
+	/**
+	 * @deprecated use {crosshair} instead
+	 */
 	public crossToolComponent: CrossToolComponent;
 	public chartPanComponent: ChartPanComponent;
 	public paneManager: PaneManager;
@@ -281,14 +308,14 @@ export default class ChartBootstrap implements ChartContainer {
 		);
 		this.paneManager = paneManager;
 
-		const mainPane = this.paneManager.paneComponents[CHART_UUID];
+		const mainPane = this.paneManager.panes[CHART_UUID];
 		this.mainPane = mainPane;
 
 		this.chartComponents.push(paneManager);
 
 		// dynamic objects component
-		this.dynamicObjectsComponent = new DynamicObjectsComponent(this.dynamicObjectsCanvasModel, drawingManager);
-		this.chartComponents.push(this.dynamicObjectsComponent);
+		this.dynamicObjects = new DynamicObjectsComponent(this.dynamicObjectsCanvasModel, drawingManager);
+		this.chartComponents.push(this.dynamicObjects);
 
 		this.chartModel = new ChartModel(
 			chartBaseModel,
@@ -317,7 +344,7 @@ export default class ChartBootstrap implements ChartContainer {
 			chartPanComponent,
 			paneManager,
 			this.cursorHandler,
-			this.dynamicObjectsComponent,
+			this.dynamicObjects,
 		);
 		this.chartComponents.push(chartComponent);
 		this.chartComponent = chartComponent;
@@ -407,7 +434,7 @@ export default class ChartBootstrap implements ChartContainer {
 
 		this.initYAxisDrawer(yAxisLabelsCanvasModel);
 
-		this.yAxisComponent = mainPane.mainYExtentComponent.yAxisComponent;
+		this.yAxisComponent = mainPane.mainYExtentComponent.yAxis;
 		// default labels provider
 		const lastCandleLabelsProvider = new LastCandleLabelsProvider(
 			this.chartModel,
@@ -425,7 +452,7 @@ export default class ChartBootstrap implements ChartContainer {
 			drawingManager,
 			config,
 			paneManager,
-			this.dynamicObjectsComponent,
+			this.dynamicObjects,
 		);
 		this.chartComponents.push(this.volumesComponent);
 		// grid component

@@ -39,7 +39,7 @@
 	</div>
 	<script type="module">
 			const container = document.getElementById('chart');
-			const chartInstance = DXChart.createChart(container);
+			const chart = DXChart.createChart(container);
 
 			const candles = DXChart.generateCandlesData({ quantity: 1000, withVolume: true });
 
@@ -47,25 +47,25 @@
 
 			// Handle options
 			const visibility = document.querySelector('input[name="visible"]');
-			visibility.addEventListener('click', () => chartInstance.yAxisComponent.setVisible(visibility.checked));
+			visibility.addEventListener('click', () => chart.yAxis.setVisible(visibility.checked));
 
 			const inverse = document.querySelector('input[name="inverse"]');
 			inverse.addEventListener('click', () => {
-				chartInstance.yAxisComponent.togglePriceScaleInverse(inverse.checked);
-				chartInstance.redraw();
+				chart.yAxis.togglePriceScaleInverse(inverse.checked);
+				chart.redraw();
 			});
 
 			const lock = document.querySelector('input[name="lock"]');
-			lock.addEventListener('click', () => chartInstance.yAxisComponent.setLockPriceToBarRatio(lock.checked));
+			lock.addEventListener('click', () => chart.yAxis.setLockPriceToBarRatio(lock.checked));
 
 			const align = [].slice.call(document.querySelectorAll('input[name="align"]'));
 			align.forEach(input => {
-				input.addEventListener('click', () => chartInstance.yAxisComponent.setYAxisAlign(input.value));
+				input.addEventListener('click', () => chart.yAxis.setYAxisAlign(input.value));
 			});
 
 			const type = [].slice.call(document.querySelectorAll('input[name="type"]'));
 			type.forEach(input => {
-				input.addEventListener('click', () => chartInstance.yAxisComponent.setAxisType(input.value));
+				input.addEventListener('click', () => chart.yAxis.setAxisType(input.value));
 			});
 
 	</script>

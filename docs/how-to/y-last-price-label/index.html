@@ -30,28 +30,28 @@
 		};
 
 		const node = document.querySelector('#root');
-		const chartInstance = DXChart.createChart(node, config);
+		const chart = DXChart.createChart(node, config);
 		const candles = DXChart.generateCandlesData({ quantity: 1000, withVolume: true });
 
 		chart.setData({
 			candles,
 		});
 
-		chartInstance.chartModel.mainCandleSeries.instrument = { symbol: 'GGLMZN' };
+		chart.chartModel.mainCandleSeries.instrument = { symbol: 'GGLMZN' };
 
 		const priceLabelMode = document.querySelector('[name="pricelabelmode"]');
 		priceLabelMode.addEventListener('change', e => {
-			chartInstance.yAxisComponent.changeLabelMode('lastPrice', e.target.value);
+			chart.yAxis.changeLabelMode('lastPrice', e.target.value);
 		});
 
 		const priceLabelAppearance = document.querySelector('[name="pricelabelappearance"]');
 		priceLabelAppearance.addEventListener('change', e => {
-			chartInstance.yAxisComponent.changeLabelAppearance('lastPrice', e.target.value);
+			chart.yAxis.changeLabelAppearance('lastPrice', e.target.value);
 		});
 
 		const description = document.querySelector('[name="description"]');
 		description.addEventListener('change', e => {
-			chartInstance.yAxisComponent.changeLabelsDescriptionVisibility(e.target.value === 'true');
+			chart.yAxis.changeLabelsDescriptionVisibility(e.target.value === 'true');
 		});
 	</script>
 </head>

@@ -1,6 +1,6 @@
 # Custom data series drawer
 
-#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/3yvrcp)<!--/CSB_LINK-->
+#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/s5y7tc)<!--/CSB_LINK-->
 
 ## Creating new drawer for data series
 
@@ -63,7 +63,7 @@ Also, if you want to customize color of label you need to register label color r
 ```js
 // label color logic can be very dynamic, so we can't use simple color config
 // instead you can provide resolver function which returns color for the label
-chart.yAxisComponent.registerLabelColorResolver('TREND', () => {
+chart.yAxis.registerLabelColorResolver('TREND', () => {
 	if (candles[candles.length - 1].close > candles[candles.length - 2].close) {
 		return 'green';
 	} else {

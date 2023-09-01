@@ -26,17 +26,17 @@
 		import generateCandlesData from 'https://www.unpkg.com/@devexperts/dxcharts-lite@1.0.1/dist/chart/utils/candles-generator.utils.js';
 
 		const container = document.getElementById('chart');
-		const chartInstance = DXChart.createChart(container);
+		const chart = DXChart.createChart(container);
 
 		const candles = generateCandlesData({ quantity: 1000, withVolume: true });
-		chartInstance.setData({ candles });
+		chart.setData({ candles });
 
-		chartInstance.watermarkComponent.setWaterMarkData({
+		chart.watermark.setWaterMarkData({
 			firstRow: "My Instrument",
 			secondRow: "Some description",
 			thirdRow: "Some very useful message",
 		});
-		chartInstance.watermarkComponent.setWaterMarkVisible(true);
+		chart.watermark.setWaterMarkVisible(true);
 
 		const colorsConfig1 = {
 			xAxis: {
@@ -240,13 +240,13 @@
 		}
 
 		const theme1Btn = document.querySelector('#theme_1');
-		theme1Btn.addEventListener('click', () => chartInstance.setColors(colorsConfig1));
+		theme1Btn.addEventListener('click', () => chart.setColors(colorsConfig1));
 
 		const theme2Btn = document.querySelector('#theme_2');
-		theme2Btn.addEventListener('click', () => chartInstance.setColors(colorsConfig2));
+		theme2Btn.addEventListener('click', () => chart.setColors(colorsConfig2));
 
 		const theme3Btn = document.querySelector('#theme_3');
-		theme3Btn.addEventListener('click', () => chartInstance.setColors(colorsConfig3));
+		theme3Btn.addEventListener('click', () => chart.setColors(colorsConfig3));
 	</script>
 </body>
 

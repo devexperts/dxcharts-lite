@@ -35,7 +35,7 @@
 
 		const now = new Date();
 		const setEvents = () => {
-			chart.eventsComponent.setEvents([
+			chart.events.setEvents([
 				{
 					type: 'earnings',
 					timestamp: now.setHours(now.getHours() - 10),
@@ -60,7 +60,7 @@
 		};
 
 		const setVisible = () => {
-			chart.eventsComponent.setVisible(true);
+			chart.events.setVisible(true);
 		};
 
 		const addHandler = () => {
@@ -83,7 +83,7 @@
 				},
 				'DRAWER_NAME',
 			);
-			chart.eventsComponent.observeEventHovered().subscribe(event => {
+			chart.events.observeEventHovered().subscribe(event => {
 				hoveredEvent = event;
 			});
 		};

@@ -1,6 +1,6 @@
 # Y-Axis
 
-#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/sv68zs)<!--/CSB_LINK-->
+#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/qqkc44)<!--/CSB_LINK-->
 
 Scale presentation can be controlled using following API
 
@@ -9,7 +9,7 @@ Scale presentation can be controlled using following API
 Hides the axis, does not change the width, just hides prices
 
 ```js
-chartInstance.yAxisComponent.setVisible(true))
+chart.yAxis.setVisible(true))
 ```
 
 ## Inversion
@@ -17,8 +17,8 @@ chartInstance.yAxisComponent.setVisible(true))
 Reverts the axis and candles top to bottom
 
 ```js
-chartInstance.yAxisComponent.togglePriceScaleInverse(true);
-chartInstance.redraw();
+chart.yAxis.togglePriceScaleInverse(true);
+chart.redraw();
 ```
 
 ## setLockPriceToBarRatio
@@ -27,7 +27,7 @@ Keeps the ratio between `y` and `x` axes constant on zoom
 wont work on percent or logarithmic scale
 
 ```js
-chartInstance.yAxisComponent.setLockPriceToBarRatio(true);
+chart.yAxis.setLockPriceToBarRatio(true);
 ```
 
 ## Axis alignment
@@ -35,7 +35,7 @@ chartInstance.yAxisComponent.setLockPriceToBarRatio(true);
 Defines the axis' placement, to the `left` or `right` of the candles
 
 ```js
-chartInstance.yAxisComponent.setYAxisAlign('right' /*'left'*/);
+chart.yAxis.setYAxisAlign('right' /*'left'*/);
 ```
 
 ## Axis type
@@ -48,7 +48,7 @@ There are 3 different modes of scaling
     chart is not manually scalable in percentage mode, only shift on the x-axis is allowed
 
 ```js
-chartInstance.yAxisComponent.setAxisType('regular' /*'logarithmic' 'percent'*/);
+chart.yAxis.setAxisType('regular' /*'logarithmic' 'percent'*/);
 ```
 
 <iframe src="./index.html" style="width:100%; border:none; height: 310px" title="DXCharts Lite React integration"></iframe>

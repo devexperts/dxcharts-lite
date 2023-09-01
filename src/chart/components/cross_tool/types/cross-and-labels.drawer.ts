@@ -51,7 +51,7 @@ export class CrossAndLabelsDrawerType implements CrossToolTypeDrawer {
 		const yAxisLeftPadding = padding?.start ?? 0;
 		// we want to draw hover even if y coordinate is beyond chart
 		// Example: snap option is turned on, and chart is scrolled down, so it's not visible
-		const paneHT = this.paneManager.paneComponents[hover.paneId]?.ht;
+		const paneHT = this.paneManager.panes[hover.paneId]?.ht;
 		if (allPanesHT(hover.x, allPanes.y)) {
 			const horizontalLineCoords: Coordinates = {
 				start: [allPanes.x, hover.y],
@@ -134,7 +134,7 @@ export class CrossAndLabelsDrawerType implements CrossToolTypeDrawer {
 		const crossToolColors = this.config.colors.crossTool;
 		// Y axis label different for main chart pane and the rest panes
 		if (this.config.components.yAxis.visible) {
-			const pane = this.paneManager.paneComponents[point.paneId];
+			const pane = this.paneManager.panes[point.paneId];
 			const y = point.y;
 			if (!pane) {
 				return;
@@ -158,7 +158,7 @@ export class CrossAndLabelsDrawerType implements CrossToolTypeDrawer {
 						paddingEnd: yLabelPadding?.end,
 						paddingTop: yLabelPadding?.top,
 					},
-					extent.yAxisComponent.state,
+					extent.yAxis.state,
 					this.config.colors.yAxis,
 					true,
 				);

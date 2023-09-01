@@ -130,14 +130,14 @@ export class DataSeriesModel<
 		this.view = new DataSeriesView(
 			this,
 			this.scaleModel,
-			() => this.extentComponent.yAxisComponent.getAxisType(),
+			() => this.extentComponent.yAxis.getAxisType(),
 			this.getBaseline,
 		);
 		this.yAxisLabelProvider = new DataSeriesYAxisLabelsProvider(
 			this,
 			this.config,
 			extentComponent.getYAxisBounds,
-			extentComponent.yAxisComponent?.state,
+			extentComponent.yAxis?.state,
 		);
 		this.highLowProvider = createDataSeriesModelHighLowProvider(this);
 		extentComponent.addDataSeries(this);
@@ -185,11 +185,11 @@ export class DataSeriesModel<
 		this.view = new DataSeriesView(
 			this,
 			this.scaleModel,
-			() => this.extentComponent.yAxisComponent.getAxisType(),
+			() => this.extentComponent.yAxis.getAxisType(),
 			this.getBaseline,
 		);
 		this.yAxisLabelProvider.yAxisBoundsProvider = extent.getYAxisBounds;
-		this.yAxisLabelProvider.axisState = extent.yAxisComponent?.state;
+		this.yAxisLabelProvider.axisState = extent.yAxis?.state;
 		// shut down old subscriptions
 		this.deactivate();
 		// and apply new ones (with updated scaleModel)

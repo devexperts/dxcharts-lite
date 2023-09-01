@@ -1,6 +1,6 @@
 # Y-Axis labels
 
-#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/qhylg8)<!--/CSB_LINK-->
+#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/mg7s2s)<!--/CSB_LINK-->
 
 There are 3 ways to see a label on a scale
 
@@ -34,19 +34,19 @@ const config = {
 	},
 };
 //...
-chartInstance = DXChart.createChart(node, config);
+chart = DXChart.createChart(node, config);
 ```
 
 Mode can also be changed later, using the `changeLabelMode` method
 
 ```js
-chartInstance.yAxisComponent.changeLabelMode('lastPrice', 'line-label');
+chart.yAxis.changeLabelMode('lastPrice', 'line-label');
 ```
 
 Appearance type can be changed similarly, using the `changeLabelAppearance` method
 
 ```js
-chartInstance.yAxisComponent.changeLabelAppearance('lastPrice', 'badge');
+chart.yAxis.changeLabelAppearance('lastPrice', 'badge');
 ```
 
 ## Label Provider
@@ -55,7 +55,7 @@ Most versatile method to create lable is to register a label provider, using `re
 that is how label price is implemented internally
 
 ```js
-chartInstance.yAxisComponent.registerYAxisLabelsProvider(provider, group, id);
+chart.yAxis.registerYAxisLabelsProvider(provider, group, id);
 ```
 
 -   `provider` is in essence any object containg `getUnorderedLabels` field that returns an array of `LabelGroup`
@@ -84,7 +84,7 @@ provider = {
 Labels are updated by internal chart events but update also can be forced by calling `updateOrderedLabels` method
 
 ```js
-chartInstance.yAxisComponent.updateOrderedLabels();
+chart.yAxis.updateOrderedLabels();
 ```
 
 <iframe src="./index.html" style="width:100%; border:none; height: 310px" title="DXCharts Lite Label Provider"></iframe>
