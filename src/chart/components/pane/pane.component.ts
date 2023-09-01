@@ -63,6 +63,7 @@ export class PaneComponent extends ChartBaseElement {
 	constructor(
 		public chartBaseModel: ChartBaseModel<'candle'>,
 		private mainCanvasModel: CanvasModel,
+		private yAxisLabelsCanvasModel: CanvasModel,
 		public readonly dynamicObjectsCanvasModel: CanvasModel,
 		private hitTestController: PaneHitTestController,
 		private config: FullChartConfig,
@@ -181,7 +182,7 @@ export class PaneComponent extends ChartBaseElement {
 			new YAxisComponent(
 				this.eventBus,
 				this.config,
-				this.mainCanvasModel,
+				this.yAxisLabelsCanvasModel,
 				scaleModel,
 				this.canvasInputListener,
 				this.canvasBoundsContainer,

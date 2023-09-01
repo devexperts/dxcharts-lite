@@ -273,6 +273,7 @@ export default class ChartBootstrap implements ChartContainer {
 			this.crossEventProducer,
 			chartPanComponent,
 			mainCanvasModel,
+			yAxisLabelsCanvasModel,
 		);
 		this.paneManager = paneManager;
 		this.chartComponents.push(paneManager);

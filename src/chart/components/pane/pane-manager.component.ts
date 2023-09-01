@@ -59,6 +59,7 @@ export class PaneManager extends ChartBaseElement {
 		private crossEventProducer: CrossEventProducerComponent,
 		public chartPanComponent: ChartPanComponent,
 		private mainCanvasModel: CanvasModel,
+		private yAxisLabelsCanvasModel: CanvasModel,
 	) {
 		super();
 		this.hitTestController = new PaneHitTestController(this.paneComponents, this.dynamicObjectsCanvasModel);
@@ -142,6 +143,7 @@ export class PaneManager extends ChartBaseElement {
 		const paneComponent: PaneComponent = new PaneComponent(
 			this.chartBaseModel,
 			this.mainCanvasModel,
+			this.yAxisLabelsCanvasModel,
 			this.dynamicObjectsCanvasModel,
 			this.hitTestController,
 			this.config,
