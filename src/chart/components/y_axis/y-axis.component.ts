@@ -8,6 +8,8 @@ import { CanvasBoundsContainer, CanvasElement } from '../../canvas/canvas-bounds
 import { CursorHandler } from '../../canvas/cursor.handler';
 import { YAxisWidthContributor } from '../../canvas/y-axis-bounds.container';
 import {
+	BarType,
+	FullChartColors,
 	FullChartConfig,
 	YAxisAlign,
 	YAxisConfig,
@@ -17,22 +19,28 @@ import {
 } from '../../chart.config';
 import EventBus from '../../events/event-bus';
 import { CanvasInputListenerComponent } from '../../inputlisteners/canvas-input-listener.component';
+import { PriceMovement } from '../../model/candle-series.model';
 import { CanvasModel } from '../../model/canvas.model';
 import { ChartBaseElement } from '../../model/chart-base-element';
+import { DataSeriesType } from '../../model/data-series.config';
 import { DataSeriesModel } from '../../model/data-series.model';
 import { ScaleModel } from '../../model/scale.model';
 import { cloneUnsafe } from '../../utils/object.utils';
 import { uuid } from '../../utils/uuid.utils';
 import { PriceAxisType } from '../labels_generator/numeric-axis-labels.generator';
 import { ChartPanComponent } from '../pan/chart-pan.component';
+import { resolveColorForArea, resolveColorForBar, resolveColorForBaseLine, resolveColorForCandle, resolveColorForHistogram, resolveColorForLine, resolveColorForScatterPlot, resolveColorForTrendAndHollow, resolveDefaultColorForLabel } from './label-color.functions';
 import { LabelsGroups, VisualYAxisLabel, YAxisLabelsProvider } from './price_labels/y-axis-labels.model';
 import { YAxisScaleHandler } from './y-axis-scale.handler';
 import { YAxisModel } from './y-axis.model';
+
+export type LabelColorResolver = (priceMovement: PriceMovement, colors: FullChartColors) => string;
 
 /**
  * Y axis component. Contains all Y axis related logic.
  */
 export class YAxisComponent extends ChartBaseElement {
+	private labelsColorByChartTypeMap: Partial<Record<DataSeriesType, LabelColorResolver>> = {};
 	public yAxisScaleHandler: YAxisScaleHandler;
 	public model: YAxisModel;
 	public axisTypeSetSubject: Subject<PriceAxisType> = new Subject<PriceAxisType>();
@@ -42,7 +50,7 @@ export class YAxisComponent extends ChartBaseElement {
 		private eventBus: EventBus,
 		config: FullChartConfig,
 		private canvasModel: CanvasModel,
-		private scaleModel: ScaleModel,
+		public scaleModel: ScaleModel,
 		canvasInputListeners: CanvasInputListenerComponent,
 		private canvasBoundsContainer: CanvasBoundsContainer,
 		chartPanComponent: ChartPanComponent,
@@ -82,6 +90,26 @@ export class YAxisComponent extends ChartBaseElement {
 		);
 		this.addChildEntity(this.model);
 		this.updateCursor();
+		this.registerDefaultLabelColorResolvers();
+	}
+
+	/**
+	 * Registers default label color resolvers for different chart types.
+	 * @private
+	 * @function
+	 * @name registerDefaultLabelColorResolver
+	 * @returns {void}
+	 */
+	private registerDefaultLabelColorResolvers() {
+		this.registerLabelColorResolver('candle', resolveColorForCandle);
+		this.registerLabelColorResolver('bar', resolveColorForBar);
+		this.registerLabelColorResolver('line', resolveColorForLine);
+		this.registerLabelColorResolver('area', resolveColorForArea);
+		this.registerLabelColorResolver('scatterPlot', resolveColorForScatterPlot);
+		this.registerLabelColorResolver('histogram', resolveColorForHistogram);
+		this.registerLabelColorResolver('baseline', resolveColorForBaseLine);
+		this.registerLabelColorResolver('trend', resolveColorForTrendAndHollow);
+		this.registerLabelColorResolver('hollow', resolveColorForTrendAndHollow);
 	}
 
 	protected doActivate() {
@@ -111,6 +139,27 @@ export class YAxisComponent extends ChartBaseElement {
 	 */
 	public updateOrderedLabels(adjustYAxisWidth = false) {
 		this.model.fancyLabelsModel.updateLabels(adjustYAxisWidth);
+	}
+
+	/**
+	 * Registers a label color resolver for a specific chart type.
+	 *
+	 * @param {BarType} chartType - The type of chart for which the label color resolver is being registered.
+	 * @param {LabelColorResolver} resolver - The function that will be used to resolve the color of the labels for the specified chart type.
+	 * @returns {void}
+	 */
+	public registerLabelColorResolver(chartType: BarType, resolver: LabelColorResolver) {
+		this.labelsColorByChartTypeMap[chartType] = resolver;
+	}
+
+	/**
+	 * Returns a function that resolves the color for a label based on the type of data series.
+	 * @param {DataSeriesType} candlesType - The type of data series.
+	 * @returns {Function} - A function that resolves the color for a label.
+	 * If there is no color mapping for the given data series type, it returns the default color resolver function.
+	 */
+	public getLabelsColorResolver(candlesType: DataSeriesType) {
+		return this.labelsColorByChartTypeMap[candlesType] ?? resolveDefaultColorForLabel;
 	}
 
 	//#region public methods

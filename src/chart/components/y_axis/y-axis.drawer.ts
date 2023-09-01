@@ -10,7 +10,6 @@ import { Bounds } from '../../model/bounds.model';
 import { CanvasModel } from '../../model/canvas.model';
 import { Unit } from '../../model/scaling/viewport.model';
 import { calculateSymbolHeight, calculateTextWidth } from '../../utils/canvas/canvas-font-measure-tool.utils';
-import { YExtentComponent } from '../pane/extent/y-extent-component';
 import { PaneManager } from '../pane/pane-manager.component';
 import { YAxisComponent } from './y-axis.component';
 
@@ -50,21 +49,21 @@ export class YAxisDrawer implements Drawer {
 				const labels = yAxisComponent.model.baseLabelsModel.labels;
 
 				const bounds: Bounds = yAxisComponent.getBounds();
-				const ctx = this.canvasModel.ctx;
+			const ctx = this.canvasModel.ctx;
 
-				// draw axis background rect animation
-				ctx.fillStyle = this.getBackgroundColor();
-				ctx.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
+			// draw axis background rect animation
+			ctx.fillStyle = this.getBackgroundColor();
+			ctx.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
 
 				const font = getFontFromConfig(yAxisComponent.state);
-				const fontHeight = calculateSymbolHeight(font, ctx);
+			const fontHeight = calculateSymbolHeight(font, ctx);
 
-				const textColor = this.getLabelTextColor();
-				ctx.save();
-				clipToBounds(ctx, bounds);
-				this.drawLabels(ctx, labels, bounds, fontHeight, font, textColor, extent);
-				ctx.restore();
-			}
+			const textColor = this.getLabelTextColor();
+			ctx.save();
+			clipToBounds(ctx, bounds);
+				this.drawLabels(ctx, labels, bounds, fontHeight, font, textColor, yAxisComponent);
+			ctx.restore();
+		}
 		});
 	}
 
@@ -84,7 +83,7 @@ export class YAxisDrawer implements Drawer {
 		fontHeight: number,
 		font: string,
 		labelTextColor: string,
-		extentComponent: YExtentComponent,
+		yAxisComponent: YAxisComponent,
 	) {
 		ctx.fillStyle = labelTextColor;
 		ctx.font = font;
@@ -93,7 +92,7 @@ export class YAxisDrawer implements Drawer {
 		const topY = axisBounds.y + textHeight;
 		const bottomY = axisBounds.y + axisBounds.height - textHeight;
 		labels.forEach(label => {
-			const y = extentComponent.scaleModel.toY(label.value);
+			const y = yAxisComponent.scaleModel.toY(label.value);
 			if (y > topY && y < bottomY) {
 				drawSimpleLabel(
 					ctx,
@@ -102,8 +101,8 @@ export class YAxisDrawer implements Drawer {
 					y,
 					fontHeight,
 					font,
-					extentComponent.yAxisComponent.state.labelBoxMargin.end,
-					extentComponent.yAxisComponent.state.align,
+					yAxisComponent.state.labelBoxMargin.end,
+					yAxisComponent.state.align,
 				);
 			}
 		});

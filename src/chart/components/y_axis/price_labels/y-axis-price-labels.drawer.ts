@@ -32,37 +32,37 @@ export class YAxisPriceLabelsDrawer implements Drawer {
 
 		this.paneManager.yExtents.forEach(extent => {
 			const yAxisBounds = extent.getYAxisBounds();
-			const paneBounds = this.canvasBoundsContainer.getBounds(CanvasElement.ALL_PANES);
+		const paneBounds = this.canvasBoundsContainer.getBounds(CanvasElement.ALL_PANES);
 			const orderedLabels = extent.yAxisComponent.model.fancyLabelsModel.orderedLabels;
-			this.drawHighlightedBackgroundBetweenLabels(orderedLabels);
-			orderedLabels.forEach(l => {
-				const bounds = l.bounds ?? yAxisBounds;
-				l.labels.forEach(vl =>
-					drawLabel(
-						ctx,
-						backgroundCtx,
-						bounds,
-						paneBounds,
-						vl,
-						this.canvasBoundsContainer,
-						extent.yAxisComponent.state,
-						this.yAxisColors,
-					),
-				);
-			});
-			// TODO I added this as a simple mechanism to add custom labels, we need to review it
-			Object.values(extent.yAxisComponent.model.fancyLabelsModel.customLabels).forEach(l =>
+		this.drawHighlightedBackgroundBetweenLabels(orderedLabels);
+		orderedLabels.forEach(l => {
+			const bounds = l.bounds ?? yAxisBounds;
+			l.labels.forEach(vl =>
 				drawLabel(
 					ctx,
 					backgroundCtx,
-					yAxisBounds,
+					bounds,
 					paneBounds,
-					l,
+					vl,
 					this.canvasBoundsContainer,
-					extent.yAxisComponent.state,
+						extent.yAxisComponent.state,
 					this.yAxisColors,
 				),
 			);
+		});
+		// TODO I added this as a simple mechanism to add custom labels, we need to review it
+			Object.values(extent.yAxisComponent.model.fancyLabelsModel.customLabels).forEach(l =>
+			drawLabel(
+				ctx,
+				backgroundCtx,
+				yAxisBounds,
+				paneBounds,
+				l,
+				this.canvasBoundsContainer,
+					extent.yAxisComponent.state,
+				this.yAxisColors,
+			),
+		);
 		});
 	}
 

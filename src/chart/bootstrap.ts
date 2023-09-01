@@ -56,9 +56,11 @@ import { TimeZoneModel } from './model/time-zone.model';
 import { clearerSafe } from './utils/function.utils';
 import { merge } from './utils/merge.utils';
 import { DeepPartial } from './utils/object.utils';
-import { YAxisGlobalComponent } from './components/y_axis/y-axis-global.component';
 import { LastCandleLabelsProvider } from './components/y_axis/price_labels/last-candle-labels.provider';
 import { LabelsGroups } from './components/y_axis/price_labels/y-axis-labels.model';
+import { YAxisDrawer } from './components/y_axis/y-axis.drawer';
+import { YAxisPriceLabelsDrawer } from './components/y_axis/price_labels/y-axis-price-labels.drawer';
+import { CompositeDrawer } from './drawers/composite.drawer';
 
 export type FitType = 'studies' | 'orders' | 'positions';
 
@@ -89,7 +91,6 @@ export default class ChartBootstrap implements ChartContainer {
 	public backgroundCanvasModel: CanvasModel;
 	public mainCanvasModel: CanvasModel;
 	public dynamicObjectsCanvasModel: CanvasModel;
-	public overSeriesCanvasModel: CanvasModel;
 	public hitTestCanvasModel: HitTestCanvasModel;
 	public canvasBoundsContainer: CanvasBoundsContainer;
 	public canvasInputListener: CanvasInputListenerComponent;
@@ -104,13 +105,10 @@ export default class ChartBootstrap implements ChartContainer {
 	public hoverProducer: HoverProducerComponent;
 	public canvasModels: CanvasModel[] = [];
 	public chartResizeHandler: ChartResizeHandler;
-	public yAxisGlobalComponent: YAxisGlobalComponent;
 
 	public canvasAnimation: CanvasAnimation;
 	constructor(element: HTMLElement, userConfig: PartialChartConfig = {}) {
 		this.parentElement = element;
-
-		// @ts-ignore
 		// eslint-disable-next-line no-restricted-syntax
 		const config = userConfig as FullChartConfig;
 		mergeWithDefaultConfig(config);
@@ -158,17 +156,6 @@ export default class ChartBootstrap implements ChartContainer {
 			this.canvasModels,
 		);
 		this.mainCanvasModel = mainCanvasModel;
-		const overSeriesCanvasModel = createCanvasModel(
-			eventBus,
-			elements.dynamicObjectsCanvas,
-			config,
-			drawingManager,
-			this.canvasModels,
-			elements.chartResizer,
-		);
-		this.overSeriesCanvasModel = overSeriesCanvasModel;
-		const overSeriesCanvasClearDrawer = new ClearCanvasDrawer(overSeriesCanvasModel);
-		drawingManager.addDrawer(overSeriesCanvasClearDrawer, 'OVER_SERIES_CLEAR');
 		this.dynamicObjectsCanvasModel = createCanvasModel(
 			eventBus,
 			elements.dynamicObjectsCanvas,
@@ -273,6 +260,7 @@ export default class ChartBootstrap implements ChartContainer {
 
 		const paneManager = new PaneManager(
 			chartBaseModel,
+			this.dynamicObjectsCanvasModel,
 			this.userInputListenerComponents,
 			eventBus,
 			scaleModel,
@@ -281,7 +269,6 @@ export default class ChartBootstrap implements ChartContainer {
 			canvasAnimation,
 			canvasInputListener,
 			drawingManager,
-			this.dynamicObjectsCanvasModel,
 			this.cursorHandler,
 			this.crossEventProducer,
 			chartPanComponent,
@@ -291,10 +278,7 @@ export default class ChartBootstrap implements ChartContainer {
 		this.chartComponents.push(paneManager);
 
 		// dynamic objects component
-		this.dynamicObjectsComponent = new DynamicObjectsComponent(
-			this.dynamicObjectsCanvasModel,
-			drawingManager,
-		);
+		this.dynamicObjectsComponent = new DynamicObjectsComponent(this.dynamicObjectsCanvasModel, drawingManager);
 		this.chartComponents.push(this.dynamicObjectsComponent);
 
 		this.chartModel = new ChartModel(
@@ -361,7 +345,7 @@ export default class ChartBootstrap implements ChartContainer {
 			eventBus,
 			config,
 			canvasBoundsContainer,
-			overSeriesCanvasModel,
+			this.dynamicObjectsCanvasModel,
 			drawingManager,
 		);
 		this.chartComponents.push(this.watermarkComponent);
@@ -411,27 +395,17 @@ export default class ChartBootstrap implements ChartContainer {
 		);
 		this.chartComponents.push(highLowComponent);
 
-		this.yAxisGlobalComponent = new YAxisGlobalComponent(
-			this.config,
-			drawingManager,
-			mainCanvasModel,
-			backgroundCanvasModel,
-			yAxisLabelsCanvasModel,
-			canvasBoundsContainer,
-			paneManager,
-		);
+		this.initYAxisDrawer(yAxisLabelsCanvasModel);
+		const mainPane = this.paneManager.paneComponents[CHART_UUID];
 
+		this.yAxisComponent = mainPane.mainYExtentComponent.yAxisComponent;
 		// default labels provider
 		const lastCandleLabelsProvider = new LastCandleLabelsProvider(
 			this.chartModel,
 			this.config,
 			this.chartModel.lastCandleLabelsByChartType,
-			this.yAxisGlobalComponent.getLabelsColorResolver.bind(this.yAxisGlobalComponent),
+			this.yAxisComponent.getLabelsColorResolver.bind(this.yAxisComponent),
 		);
-
-		const mainPane = this.paneManager.paneComponents[CHART_UUID];
-
-		this.yAxisComponent = mainPane.mainYExtentComponent.yAxisComponent;
 		this.yAxisComponent.registerYAxisLabelsProvider(lastCandleLabelsProvider, LabelsGroups.MAIN);
 
 		this.volumesComponent = new VolumesComponent(
@@ -501,7 +475,7 @@ export default class ChartBootstrap implements ChartContainer {
 		// events
 		const eventsComponent = new EventsComponent(
 			config,
-			overSeriesCanvasModel,
+			this.dynamicObjectsCanvasModel,
 			hitTestCanvasModel,
 			chartModel,
 			canvasBoundsContainer,
@@ -520,6 +494,26 @@ export default class ChartBootstrap implements ChartContainer {
 		drawingManager.reorderDrawers(config.drawingOrder);
 
 		this.clearer = clearerSafe(this.components);
+	}
+
+	private initYAxisDrawer(yAxisLabelsCanvasModel: CanvasModel) {
+		const yAxisCompositeDrawer = new CompositeDrawer();
+		const clearYAxis = new ClearCanvasDrawer(yAxisLabelsCanvasModel);
+		yAxisCompositeDrawer.addDrawer(clearYAxis, 'YAXIS_CLEAR');
+
+		this.drawingManager.addDrawer(yAxisCompositeDrawer, 'Y_AXIS');
+
+		const yAxisDrawer = new YAxisDrawer(this.config, yAxisLabelsCanvasModel, this.paneManager);
+		yAxisCompositeDrawer.addDrawer(yAxisDrawer);
+
+		const yAxisLabelsDrawer = new YAxisPriceLabelsDrawer(
+			yAxisLabelsCanvasModel,
+			this.backgroundCanvasModel,
+			this.canvasBoundsContainer,
+			this.config.colors.yAxis,
+			this.paneManager,
+		);
+		yAxisCompositeDrawer.addDrawer(yAxisLabelsDrawer);
 	}
 
 	// TODO remove chartModel dependency, put period to global config somewhere

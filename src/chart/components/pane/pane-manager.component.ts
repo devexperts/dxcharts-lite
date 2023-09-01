@@ -46,6 +46,7 @@ export class PaneManager extends ChartBaseElement {
 	}
 	constructor(
 		private chartBaseModel: ChartBaseModel<'candle'>,
+		private dynamicObjectsCanvasModel: CanvasModel,
 		private userInputListenerComponents: ChartEntity[],
 		private eventBus: EventBus,
 		private mainScaleModel: ScaleModel,
@@ -54,7 +55,6 @@ export class PaneManager extends ChartBaseElement {
 		private canvasAnimation: CanvasAnimation,
 		private canvasInputListener: CanvasInputListenerComponent,
 		private drawingManager: DrawingManager,
-		private dynamicObjectsCanvasModel: CanvasModel,
 		private cursorHandler: CursorHandler,
 		private crossEventProducer: CrossEventProducerComponent,
 		public chartPanComponent: ChartPanComponent,
@@ -141,19 +141,19 @@ export class PaneManager extends ChartBaseElement {
 
 		const paneComponent: PaneComponent = new PaneComponent(
 			this.chartBaseModel,
+			this.mainCanvasModel,
+			this.dynamicObjectsCanvasModel,
 			this.hitTestController,
 			this.config,
 			this.mainScaleModel,
 			this.drawingManager,
 			this.chartPanComponent,
-			this.mainCanvasModel,
 			this.canvasInputListener,
 			this.canvasAnimation,
 			this.cursorHandler,
 			this.eventBus,
 			this.canvasBoundsContainer,
 			uuid,
-			this.dynamicObjectsCanvasModel,
 			this.dataSeriesAddedSubject,
 			this.dataSeriesRemovedSubject,
 			options,
