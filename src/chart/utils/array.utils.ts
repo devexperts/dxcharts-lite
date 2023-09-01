@@ -118,10 +118,10 @@ export const uniqueArray = <T extends string | number>(arr: T[]): T[] => {
 	return arr.filter(item => (hashTable[item] ? false : (hashTable[item] = true)));
 };
 
-export const groupBy = <T, KT extends T[keyof T] extends string | number ? T[keyof T] : never>(
+export const groupBy = <T, K extends keyof T, KV extends T[K] extends string | number ? T[K] : never>(
 	array: Array<T>,
-	key: keyof T,
-): Record<KT, Array<T>> => {
+	key: K,
+): Record<KV, Array<T>> => {
 	return array.reduce((result, currentValue) => {
 		// If an array already present for key, push it to the array. Else create an array and push the object
 		(result[currentValue[key]] = result[currentValue[key]] || []).push(currentValue);
