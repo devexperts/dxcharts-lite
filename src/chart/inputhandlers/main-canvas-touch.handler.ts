@@ -14,7 +14,7 @@ export class MainCanvasTouchHandler extends ChartBaseElement {
 	// 2 candles indexes touched by 2 fingers when pinching
 	private touchedCandleIndexes: [number, number] = [0, 0];
 	constructor(
-		private scaleModel: ScaleModel,
+		private scale: ScaleModel,
 		private canvasInputListeners: CanvasInputListenerComponent,
 		private mainCanvasParent: Element,
 	) {
@@ -44,7 +44,7 @@ export class MainCanvasTouchHandler extends ChartBaseElement {
 		if (e.touches.length === 2) {
 			// @ts-ignore
 			// TODO rework this
-			this.touchedCandleIndexes = this.getXPositions(e).map(x => this.scaleModel.fromX(x));
+			this.touchedCandleIndexes = this.getXPositions(e).map(x => this.scale.fromX(x));
 		}
 	}
 
@@ -93,7 +93,7 @@ export class MainCanvasTouchHandler extends ChartBaseElement {
 		const last =
 			first +
 			((candleIndexes[0] - candleIndexes[1]) / (touchPositions[0] - touchPositions[1])) *
-				this.scaleModel.getBounds().width;
-		this.scaleModel.setXScale(first, last);
+				this.scale.getBounds().width;
+		this.scale.setXScale(first, last);
 	}
 }

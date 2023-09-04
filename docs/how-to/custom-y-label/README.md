@@ -70,7 +70,7 @@ chart.yAxis.addSimpleYAxisLabel('custom_label', {
 and update it every time scale is changed - zoomed or shifted by subscribing to `yChanged` stream
 
 ```js
-chartInstance.scaleModel.yChanged.subscribe(/*update callback here*/);
+chartInstance.scale.yChanged.subscribe(/*update callback here*/);
 ```
 
 `yChanged` is an Rxjs stream and can be manupulated using rx operators, `throttle` for example

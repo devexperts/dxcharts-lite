@@ -66,7 +66,7 @@ export class CandleSeriesModel extends DataSeriesModel<Candle, VisualCandle> {
 		extentComponent: YExtentComponent,
 		id: number,
 		private eventBus: EventBus,
-		scaleModel: ScaleModel,
+		scale: ScaleModel,
 		instrument: ChartInstrument,
 		private readonly candlesTransformersByChartType: Partial<Record<DataSeriesType, VisualCandleCalculator>>,
 		private readonly candleWidthByChartType: Partial<Record<DataSeriesType, CandleWidthCalculator>>,
@@ -76,7 +76,7 @@ export class CandleSeriesModel extends DataSeriesModel<Candle, VisualCandle> {
 		this._instrument = instrument;
 		this.instrument = instrument;
 		this.highLowProvider = createCandleSeriesHighLowProvider(this);
-		this.scaleModel = scaleModel;
+		this.scale = scale;
 		this.name = instrument.symbol;
 	}
 
@@ -84,11 +84,11 @@ export class CandleSeriesModel extends DataSeriesModel<Candle, VisualCandle> {
 	 * Recalculates data viewport indexes based on xStart and xEnd parameters or values from scaleModel.
 	 * Calls superclass method for calculation, recalculates zipped high/low data points, and fires draw event.
 	 *
-	 * @param {number} [xStart=this.scaleModel.xStart] - Start index of visible data range.
-	 * @param {number} [xEnd=this.scaleModel.xEnd] - End index of visible data range.
+	 * @param {number} [xStart=this.scale.xStart] - Start index of visible data range.
+	 * @param {number} [xEnd=this.scale.xEnd] - End index of visible data range.
 	 * @returns {void}
 	 */
-	recalculateDataViewportIndexes(xStart = this.scaleModel.xStart, xEnd = this.scaleModel.xEnd) {
+	recalculateDataViewportIndexes(xStart = this.scale.xStart, xEnd = this.scale.xEnd) {
 		super.recalculateDataViewportIndexes(xStart, xEnd);
 		this.recalculateZippedHighLow();
 		this.eventBus.fireDraw();

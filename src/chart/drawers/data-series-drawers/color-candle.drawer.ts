@@ -30,11 +30,11 @@ export class ColorCandleDrawer implements SeriesDrawer {
 				const visualCandle = this.chartModel.getVisualCandle(round(p.centerUnit));
 				const value = p.close;
 				if (visualCandle && value === 1) {
-					const zoomX = this.chartModel.scaleModel.zoomX;
+					const zoomX = this.chartModel.scale.zoomX;
 					const width = floorToDPR(unitToPixels(visualCandle.width, zoomX));
-					const bodyH = floorToDPR(visualCandle.bodyHeight(this.chartModel.scaleModel));
-					const baseX = visualCandle.xCenter(this.chartModel.scaleModel) - width / 2;
-					const bodyStart = visualCandle.yBodyStart(this.chartModel.scaleModel);
+					const bodyH = floorToDPR(visualCandle.bodyHeight(this.chartModel.scale));
+					const baseX = visualCandle.xCenter(this.chartModel.scale) - width / 2;
+					const bodyStart = visualCandle.yBodyStart(this.chartModel.scale);
 					const paddingPercent = this.chartModel.config.components.chart.candlePaddingPercent;
 					const paddingWidthOffset = floorToDPR((width * paddingPercent) / 2);
 					const paddingBaseX = baseX + paddingWidthOffset;

@@ -70,7 +70,7 @@ export class DataSeriesModel<
 	public hovered = false;
 	public yAxisLabelProvider: DataSeriesYAxisLabelsProvider;
 	public readonly config: DataSeriesConfig;
-	public scaleModel: ScaleModel;
+	public scale: ScaleModel;
 	public view: DataSeriesView;
 	protected _dataPoints: D[][] = [];
 	public pricePrecisions = [2];
@@ -126,10 +126,10 @@ export class DataSeriesModel<
 	) {
 		super();
 		this.config = merge(_config, DEFAULT_DATA_SERIES_CONFIG);
-		this.scaleModel = extentComponent.scaleModel;
+		this.scale = extentComponent.scale;
 		this.view = new DataSeriesView(
 			this,
-			this.scaleModel,
+			this.scale,
 			() => this.extentComponent.yAxis.getAxisType(),
 			this.getBaseline,
 		);
@@ -145,8 +145,8 @@ export class DataSeriesModel<
 	}
 
 	protected doActivate(): void {
-		this.addRxSubscription(this.scaleModel.xChanged.subscribe(() => this.recalculateDataViewportIndexes()));
-		this.addRxSubscription(this.scaleModel.scaleInversedSubject.subscribe(() => this.recalculateVisualPoints()));
+		this.addRxSubscription(this.scale.xChanged.subscribe(() => this.recalculateDataViewportIndexes()));
+		this.addRxSubscription(this.scale.scaleInversedSubject.subscribe(() => this.recalculateVisualPoints()));
 	}
 
 	/**
@@ -181,10 +181,10 @@ export class DataSeriesModel<
 	public moveToExtent(extent: YExtentComponent) {
 		this.extentComponent.removeDataSeries(this);
 		this.extentComponent = extent;
-		this.scaleModel = extent.scaleModel;
+		this.scale = extent.scale;
 		this.view = new DataSeriesView(
 			this,
-			this.scaleModel,
+			this.scale,
 			() => this.extentComponent.yAxis.getAxisType(),
 			this.getBaseline,
 		);
@@ -228,10 +228,10 @@ export class DataSeriesModel<
 	 * Recalculates the indexes of the start and end points of the data viewport,
 	 * based on the current xStart and xEnd values of the scale model, or on the given xStart and xEnd parameters.
 	 *
-	 * @param {number} [xStart=this.scaleModel.xStart] - The start value of the viewport on the x-axis. Defaults to the current xStart value of the scale model.
-	 * @param {number} [xEnd=this.scaleModel.xEnd] - The end value of the viewport on the x-axis. Defaults to the current xEnd value of the scale model.
+	 * @param {number} [xStart=this.scale.xStart] - The start value of the viewport on the x-axis. Defaults to the current xStart value of the scale model.
+	 * @param {number} [xEnd=this.scale.xEnd] - The end value of the viewport on the x-axis. Defaults to the current xEnd value of the scale model.
 	 */
-	public recalculateDataViewportIndexes(xStart = this.scaleModel.xStart, xEnd = this.scaleModel.xEnd) {
+	public recalculateDataViewportIndexes(xStart = this.scale.xStart, xEnd = this.scale.xEnd) {
 		const { dataIdxStart, dataIdxEnd } = this.calculateDataViewportIndexes(xStart, xEnd);
 		this.dataIdxStart = dataIdxStart;
 		this.dataIdxEnd = dataIdxEnd;
@@ -307,7 +307,7 @@ export class DataSeriesModel<
 	 */
 	public getLastVisualSeriesPoint = (): V | undefined => {
 		const points = this.visualPoints;
-		const endIdx = binarySearch(points, this.scaleModel.xEnd, i => i.centerUnit).index;
+		const endIdx = binarySearch(points, this.scale.xEnd, i => i.centerUnit).index;
 		return points[endIdx];
 	};
 

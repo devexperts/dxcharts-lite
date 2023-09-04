@@ -24,7 +24,7 @@ class PercentScaleAnimationHandler {
 	private targetBaseline?: number;
 	private prevAnimationId = '';
 
-	constructor(private scaleModel: ScaleModel, private dataSeries: DataSeriesModel) {}
+	constructor(private scale: ScaleModel, private dataSeries: DataSeriesModel) {}
 
 	/**
 	 * This logic calculates correct baseline helping avoid shaking during zoom animation
@@ -32,7 +32,7 @@ class PercentScaleAnimationHandler {
 	 * @returns
 	 */
 	public getBaselineForPercent(getBaseline: (idx?: Index) => Unit) {
-		const animation = this.scaleModel.currentAnimation;
+		const animation = this.scale.currentAnimation;
 		let baseline: number;
 		if (animation?.animationInProgress) {
 			if (animation.id !== this.prevAnimationId) {
@@ -73,11 +73,11 @@ export class DataSeriesView implements Viewable {
 
 	constructor(
 		private dataSeries: DataSeriesModel,
-		private scaleModel: ScaleModel,
+		private scale: ScaleModel,
 		private getAxisType: () => PriceAxisType,
 		private getBaseline: (idx?: Index) => Unit,
 	) {
-		this.percentAnimationHandler = new PercentScaleAnimationHandler(this.scaleModel, this.dataSeries);
+		this.percentAnimationHandler = new PercentScaleAnimationHandler(this.scale, this.dataSeries);
 	}
 
 	/**
@@ -86,7 +86,7 @@ export class DataSeriesView implements Viewable {
 	 * @returns - The converted value in y-pixel coordinate.
 	 */
 	toY = (value: Price): Pixel => {
-		return this.scaleModel.toY(this.toAxisUnits(value));
+		return this.scale.toY(this.toAxisUnits(value));
 	};
 
 	/**
@@ -112,21 +112,21 @@ export class DataSeriesView implements Viewable {
 	 * @param unit - The unit to be converted to x-pixel coordinate.
 	 * @returns - The converted value in x-pixel coordinate.
 	 */
-	toX = (unit: Unit): Pixel => this.scaleModel.toX(unit);
+	toX = (unit: Unit): Pixel => this.scale.toX(unit);
 
-	xPixels = (unit: Unit): Pixel => this.scaleModel.xPixels(unit);
+	xPixels = (unit: Unit): Pixel => this.scale.xPixels(unit);
 	/**
 	 * Pay attention! This method doesn't convert price to pixels, it converts only current axis UNITs!
 	 * @param unit
 	 */
-	yPixels = (unit: Unit): Pixel => this.scaleModel.yPixels(unit);
+	yPixels = (unit: Unit): Pixel => this.scale.yPixels(unit);
 
 	/**
 	 * Converts "y" in pixels to price
 	 * @param y - source value in pixels
 	 */
 	priceFromY(y: Pixel): Price {
-		const unit = this.scaleModel.fromY(y);
+		const unit = this.scale.fromY(y);
 		return this.fromAxisUnits(unit);
 	}
 

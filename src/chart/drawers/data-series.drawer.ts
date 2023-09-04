@@ -58,8 +58,8 @@ export class DataSeriesDrawer implements DynamicModelDrawer<DataSeriesModel> {
 			const drawer = this.seriesDrawers[paintTool];
 			if (drawer) {
 				const viewportSeries = series.getSeriesInViewport(
-					series.scaleModel.xStart - 1,
-					series.scaleModel.xEnd + 1,
+					series.scale.xStart - 1,
+					series.scale.xEnd + 1,
 				);
 				if (viewportSeries && viewportSeries.length >= 1) {
 					// +- 1 to correctly draw points which are partly inside bounds

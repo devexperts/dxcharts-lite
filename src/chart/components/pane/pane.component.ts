@@ -22,7 +22,7 @@ import { CanvasModel } from '../../model/canvas.model';
 import { ChartBaseElement } from '../../model/chart-base-element';
 import { DataSeriesModel } from '../../model/data-series.model';
 import { ScaleModel, SyncedByXScaleModel } from '../../model/scale.model';
-import { Unit } from '../../model/scaling/viewport.model';
+import { Pixel, Price, Unit } from '../../model/scaling/viewport.model';
 import { firstOf, flatMap, lastOf } from '../../utils/array.utils';
 import { Unsubscriber } from '../../utils/function.utils';
 import { AtLeastOne } from '../../utils/object.utils';
@@ -50,15 +50,19 @@ export class PaneComponent extends ChartBaseElement {
 
 	public yExtentComponents: YExtentComponent[] = [];
 
-	get scaleModel() {
-		return this.mainYExtentComponent.scaleModel;
+	get scale() {
+		return this.mainExtent.scale;
+	}
+
+	get yAxis() {
+		return this.mainExtent.yAxis;
 	}
 
 	get dataSeries() {
 		return flatMap(this.yExtentComponents, c => Array.from(c.dataSeries));
 	}
 
-	public mainYExtentComponent: YExtentComponent;
+	public mainExtent: YExtentComponent;
 
 	constructor(
 		public chartBaseModel: ChartBaseModel<'candle'>,
@@ -67,7 +71,7 @@ export class PaneComponent extends ChartBaseElement {
 		public readonly dynamicObjectsCanvasModel: CanvasModel,
 		private hitTestController: PaneHitTestController,
 		private config: FullChartConfig,
-		private mainScaleModel: ScaleModel,
+		private mainScale: ScaleModel,
 		private drawingManager: DrawingManager,
 		private chartPanComponent: ChartPanComponent,
 		private canvasInputListener: CanvasInputListenerComponent,
@@ -82,7 +86,7 @@ export class PaneComponent extends ChartBaseElement {
 	) {
 		super();
 		const yExtentComponent = this.createExtentComponent(options);
-		this.mainYExtentComponent = yExtentComponent;
+		this.mainExtent = yExtentComponent;
 		this.ht = this.canvasBoundsContainer.getBoundsHitTest(CanvasElement.PANE_UUID(uuid), {
 			// this is needed to reduce cross event fire zone, so cross event won't be fired when hover resizer
 			// maybe we need to rework it, this isn't perfect - top and bottom panes will have small no-hover area
@@ -103,10 +107,14 @@ export class PaneComponent extends ChartBaseElement {
 				.observeBoundsChanged(CanvasElement.PANE_UUID(this.uuid))
 				.pipe(distinctUntilChanged(areBoundsChanged))
 				.subscribe(() => {
-					this.yExtentComponents.forEach(c => c.scaleModel.recalculateZoomY());
+					this.yExtentComponents.forEach(c => c.scale.recalculateZoomY());
 					this.dynamicObjectsCanvasModel.fireDraw();
 				}),
 		);
+	}
+
+	public toY(price: Price): Pixel {
+		return this.mainExtent.mainDataSeries?.view.toY(price) ?? this.scale.toY(price);
 	}
 
 	/**
@@ -118,13 +126,13 @@ export class PaneComponent extends ChartBaseElement {
 	 */
 	private createGridComponent(
 		uuid: string,
-		scaleModel: ScaleModel,
+		scale: ScaleModel,
 		yAxisLabelsGenerator: NumericYAxisLabelsGenerator,
 		yAxisState: YAxisConfig,
 	) {
 		const gridComponent = new GridComponent(
 			this.mainCanvasModel,
-			scaleModel,
+			scale,
 			this.config,
 			yAxisState,
 			`PANE_${uuid}_grid_drawer`,
@@ -144,9 +152,9 @@ export class PaneComponent extends ChartBaseElement {
 	 * @param {ScaleModel} scaleModel - The scale model of the chart.
 	 * @returns {Unsubscriber}
 	 */
-	private createYPanHandler(uuid: string, scaleModel: ScaleModel): [Unsubscriber, DragNDropYComponent] {
+	private createYPanHandler(uuid: string, scale: ScaleModel): [Unsubscriber, DragNDropYComponent] {
 		const dragNDropComponent = this.chartPanComponent.chartAreaPanHandler.registerChartYPanHandler(
-			scaleModel,
+			scale,
 			this.canvasBoundsContainer.getBoundsHitTest(CanvasElement.PANE_UUID(uuid)),
 		);
 		return [
@@ -168,8 +176,8 @@ export class PaneComponent extends ChartBaseElement {
 		const extentIdx = this.yExtentComponents.length;
 		const getBounds = () => this.canvasBoundsContainer.getBounds(CanvasElement.PANE_UUID(this.uuid));
 		const scaleModel =
-			options?.scaleModel ??
-			new SyncedByXScaleModel(this.mainScaleModel, this.config, getBounds, this.canvasAnimation);
+			options?.scale ??
+			new SyncedByXScaleModel(this.mainScale, this.config, getBounds, this.canvasAnimation);
 
 		const [unsub, dragNDrop] = this.createYPanHandler(this.uuid, scaleModel);
 
@@ -250,7 +258,7 @@ export class PaneComponent extends ChartBaseElement {
 	 */
 	public updateView() {
 		this.yExtentComponents.forEach(c => {
-			c.scaleModel.doAutoScale();
+			c.scale.doAutoScale();
 			c.yAxis.model.labelsGenerator.generateNumericLabels();
 		});
 		this.canvasBoundsContainer.updateYAxisWidths();
@@ -263,11 +271,11 @@ export class PaneComponent extends ChartBaseElement {
 	public mergeYExtents() {
 		for (let i = 1; i < this.yExtentComponents.length; i++) {
 			const extent = this.yExtentComponents[i];
-			extent.dataSeries.forEach(s => s.moveToExtent(this.mainYExtentComponent));
+			extent.dataSeries.forEach(s => s.moveToExtent(this.mainExtent));
 			extent.disable();
 		}
 		this.canvasBoundsContainer.updateYAxisWidths();
-		this.yExtentComponents = [this.mainYExtentComponent];
+		this.yExtentComponents = [this.mainExtent];
 	}
 
 	public getYAxisBounds = (): Bounds => {
@@ -278,7 +286,7 @@ export class PaneComponent extends ChartBaseElement {
 	 * Returns the bounds of the pane component.
 	 */
 	public getBounds(): Bounds {
-		return this.mainYExtentComponent.getBounds();
+		return this.mainExtent.getBounds();
 	}
 
 	/**
@@ -311,7 +319,7 @@ export class PaneComponent extends ChartBaseElement {
 	 * @returns {DataSeriesModel} - The newly created DataSeriesModel object.
 	 */
 	public createDataSeries(): DataSeriesModel {
-		return this.mainYExtentComponent?.createDataSeries();
+		return this.mainExtent?.createDataSeries();
 	}
 
 	/**
@@ -320,7 +328,7 @@ export class PaneComponent extends ChartBaseElement {
 	 * @returns {void}
 	 */
 	public addDataSeries(series: DataSeriesModel): void {
-		this.mainYExtentComponent.addDataSeries(series);
+		this.mainExtent.addDataSeries(series);
 		this.updateView();
 	}
 
@@ -331,7 +339,7 @@ export class PaneComponent extends ChartBaseElement {
 	 * @returns {void}
 	 */
 	public removeDataSeries(series: DataSeriesModel): void {
-		this.mainYExtentComponent.removeDataSeries(series);
+		this.mainExtent.removeDataSeries(series);
 		this.updateView();
 	}
 
@@ -382,11 +390,11 @@ export class PaneComponent extends ChartBaseElement {
 	}
 
 	public valueFormatter = (value: Unit, dataSeries?: DataSeriesModel) => {
-		return this.mainYExtentComponent.valueFormatter(value, dataSeries);
+		return this.mainExtent.valueFormatter(value, dataSeries);
 	};
 
 	get regularFormatter() {
-		return this.mainYExtentComponent.formatters.regular;
+		return this.mainExtent.formatters.regular;
 	}
 
 	/**
@@ -394,7 +402,7 @@ export class PaneComponent extends ChartBaseElement {
 	 * @param {YExtentFormatters} formatters - The pane value formatters to be set.
 	 */
 	setPaneValueFormatters(formatters: YExtentFormatters) {
-		this.mainYExtentComponent.setValueFormatters(formatters);
+		this.mainExtent.setValueFormatters(formatters);
 	}
 
 	/**
@@ -403,7 +411,7 @@ export class PaneComponent extends ChartBaseElement {
 	 * @returns {number} - The regular value.
 	 */
 	regularValueFromY(y: number) {
-		return this.mainYExtentComponent.regularValueFromY(y);
+		return this.mainExtent.regularValueFromY(y);
 	}
 }
 

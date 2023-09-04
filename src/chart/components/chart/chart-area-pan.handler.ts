@@ -57,7 +57,7 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 	constructor(
 		private bus: EventBus,
 		private config: FullChartConfig,
-		private scaleModel: ScaleModel,
+		private scale: ScaleModel,
 		private mainCanvasParent: Element,
 		private canvasInputListener: CanvasInputListenerComponent,
 		private canvasBoundsContainer: CanvasBoundsContainer,
@@ -66,7 +66,7 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 	) {
 		super();
 		this.touchHandler = new MainCanvasTouchHandler(
-			this.scaleModel,
+			this.scale,
 			this.canvasInputListener,
 			this.mainCanvasParent,
 		);
@@ -114,9 +114,9 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 			// 0..0.5 - zoom to left side
 			// 0.5..1 - zoom to right side
 			const viewportPercent = zoomCanvasOffset / canvasW;
-			this.scaleModel.zoomXToPercent(viewportPercent, zoomIn, false, zoomSensitivity);
+			this.scale.zoomXToPercent(viewportPercent, zoomIn, false, zoomSensitivity);
 		} else {
-			this.scaleModel.zoomXToEnd(zoomIn, zoomSensitivity);
+			this.scale.zoomXToEnd(zoomIn, zoomSensitivity);
 		}
 		this.bus.fireDraw();
 	};
@@ -156,8 +156,8 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 					deltaY += e.deltaY * -direction;
 
 					if (deltaX !== 0 && Math.abs(deltaX) > Math.abs(deltaY)) {
-						const unitsDelta = pixelsToUnits(deltaX, this.scaleModel.zoomX);
-						this.scaleModel.moveXStart(this.scaleModel.xStart - unitsDelta);
+						const unitsDelta = pixelsToUnits(deltaX, this.scale.zoomX);
+						this.scale.moveXStart(this.scale.xStart - unitsDelta);
 					} else if (deltaY !== 0 && Math.abs(deltaY) > Math.abs(deltaX)) {
 						this.zoomXHandler(e);
 					}
@@ -184,29 +184,29 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 	 * @param {HitBoundsTest} hitTest - The hit test of the pane.
 	 * @returns {DragNDropYComponent} - The drag and drop component for panning the chart along the Y-axis.
 	 */
-	public registerChartYPanHandler(scaleModel: ScaleModel, hitTest: HitBoundsTest) {
+	public registerChartYPanHandler(scale: ScaleModel, hitTest: HitBoundsTest) {
 		// we can have multiple extents which can have different yStarts, so we need to store last yStart for each extent
-		let lastYStart = scaleModel.yStart;
+		let lastYStart = scale.yStart;
 		// disable all pan handlers when hover data series
 		const onYDragStart = () => {
 			this.canvasAnimation.forceStopAnimation(VIEWPORT_ANIMATION_ID);
 			this.currentPoint = { x: 0, y: 0 };
-			lastYStart = scaleModel.yStart;
+			lastYStart = scale.yStart;
 		};
 
 		const onYDragTick = (dragInfo: DragInfo) => {
 			const { delta: absoluteDelta } = dragInfo;
 			this.currentPoint.y = absoluteDelta;
-			if (scaleModel.state.auto) {
-				if (shouldDisableAutoScale(this.currentPoint, scaleModel.state.autoScaleDisableOnDrag)) {
-					scaleModel.autoScale(false);
+			if (scale.state.auto) {
+				if (shouldDisableAutoScale(this.currentPoint, scale.state.autoScaleDisableOnDrag)) {
+					scale.autoScale(false);
 				}
 			} else {
 				const unitsDelta = pixelsToUnits(
-					scaleModel.state.inverse ? -absoluteDelta : absoluteDelta,
-					scaleModel.zoomY,
+					scale.state.inverse ? -absoluteDelta : absoluteDelta,
+					scale.zoomY,
 				);
-				scaleModel.moveYStart(lastYStart + unitsDelta);
+				scale.moveYStart(lastYStart + unitsDelta);
 			}
 		};
 
@@ -229,14 +229,14 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 	private onXDragStart = () => {
 		this.canvasAnimation.forceStopAnimation(VIEWPORT_ANIMATION_ID);
 		this.xDraggedCandlesDelta = 0;
-		this.lastXStart = this.scaleModel.xStart;
+		this.lastXStart = this.scale.xStart;
 	};
 
 	private onXDragTick = (dragInfo: DragInfo) => {
 		const { delta: absoluteXDelta } = dragInfo;
 		this.currentPoint.x = absoluteXDelta;
-		const unitsDelta = pixelsToUnits(absoluteXDelta, this.scaleModel.zoomX);
-		this.scaleModel.moveXStart(this.lastXStart - unitsDelta);
+		const unitsDelta = pixelsToUnits(absoluteXDelta, this.scale.zoomX);
+		this.scale.moveXStart(this.lastXStart - unitsDelta);
 		this.bus.fireDraw();
 	};
 }

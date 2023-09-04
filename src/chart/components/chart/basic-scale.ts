@@ -13,17 +13,17 @@ import { ChartModel } from './chart.model';
  * @param scaleModel
  * @doc-tags scaling,viewport
  */
-export const createBasicScaleViewportTransformer = (scaleModel: ScaleModel) => (visualCandleSource: VisualCandle[]) => {
+export const createBasicScaleViewportTransformer = (scale: ScaleModel) => (visualCandleSource: VisualCandle[]) => {
 	if (visualCandleSource.length !== 0) {
 		const vCandles = visualCandleSource.slice(
-			Math.max(visualCandleSource.length - scaleModel.state.defaultViewportItems, 0),
+			Math.max(visualCandleSource.length - scale.state.defaultViewportItems, 0),
 		);
 		const startCandle = vCandles[0];
 		const endCandle = vCandles[vCandles.length - 1];
-		scaleModel.setXScale(startCandle.startUnit, endCandle.startUnit + endCandle.width + scaleModel.offsets.right);
-		scaleModel.doAutoScale(true);
-		scaleModel.recalculateZoomXYRatio();
-		scaleModel.fireChanged();
+		scale.setXScale(startCandle.startUnit, endCandle.startUnit + endCandle.width + scale.offsets.right);
+		scale.doAutoScale(true);
+		scale.recalculateZoomXYRatio();
+		scale.fireChanged();
 	}
 };
 
@@ -34,7 +34,7 @@ export const createBasicScaleViewportTransformer = (scaleModel: ScaleModel) => (
  * @param canvasAnimationContainer
  */
 export const createTimeFrameViewportTransformer =
-	(scaleModel: ScaleModel, chartModel: ChartModel) =>
+	(scale: ScaleModel, chartModel: ChartModel) =>
 	(timeframe: [Timestamp, Timestamp], zoomIn: boolean | null = null) => {
 		const [firstTimestamp, lastTimestamp] = timeframe;
 		const xStart = chartModel.candleFromTimestamp(firstTimestamp).startUnit;
@@ -42,5 +42,5 @@ export const createTimeFrameViewportTransformer =
 		const additionalAnimationWidth = zoomIn === null ? 0 : chartModel.mainCandleSeries.meanCandleWidth * 2;
 		const animationEffectXStart = zoomIn ? xStart - additionalAnimationWidth : xStart + additionalAnimationWidth;
 		const animationEffectXEnd = zoomIn ? xEnd + additionalAnimationWidth : xEnd - additionalAnimationWidth;
-		scaleModel.setXScale(animationEffectXStart, animationEffectXEnd);
+		scale.setXScale(animationEffectXStart, animationEffectXEnd);
 	};

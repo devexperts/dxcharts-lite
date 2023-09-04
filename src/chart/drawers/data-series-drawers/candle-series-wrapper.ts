@@ -59,7 +59,7 @@ export class CandleSeriesWrapper implements SeriesDrawer {
 		// if (!studySeries.overlaying) {
 		ctx.restore();
 		ctx.save();
-		clipToBounds(ctx, model.scaleModel.getBounds());
+		clipToBounds(ctx, model.scale.getBounds());
 		// }
 	}
 }

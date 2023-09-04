@@ -31,7 +31,7 @@ export class VolumesComponent extends ChartBaseElement {
 	constructor(
 		private canvasModel: CanvasModel,
 		chartComponent: ChartComponent,
-		scaleModel: ScaleModel,
+		scale: ScaleModel,
 		private canvasBoundsContainer: CanvasBoundsContainer,
 		drawingManager: DrawingManager,
 		private config: FullChartConfig,
@@ -39,7 +39,7 @@ export class VolumesComponent extends ChartBaseElement {
 		dynamicObjectsComponent: DynamicObjectsComponent,
 	) {
 		super();
-		const volumesModel = new VolumesModel(chartComponent, scaleModel);
+		const volumesModel = new VolumesModel(chartComponent, scale);
 		this.volumesModel = volumesModel;
 		this.addChildEntity(volumesModel);
 		this.separateVolumes = new SeparateVolumesComponent(
@@ -53,7 +53,7 @@ export class VolumesComponent extends ChartBaseElement {
 			config,
 			this.volumesModel,
 			chartComponent.chartModel,
-			() => (this.config.components.volumes.showSeparately ? this.separateVolumes.pane?.scaleModel ?? scaleModel : scaleModel),
+			() => (this.config.components.volumes.showSeparately ? this.separateVolumes.pane?.scale ?? scale : scale),
 			this.volumesColorByChartTypeMap,
 			() => true,
 		);

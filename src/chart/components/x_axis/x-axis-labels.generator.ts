@@ -86,7 +86,7 @@ export class XAxisTimeLabelsGenerator implements XAxisLabelsGenerator {
 		private eventBus: EventBus,
 		private config: FullChartConfig,
 		private chartModel: ChartModel,
-		private scaleModel: ScaleModel,
+		private scale: ScaleModel,
 		private timeZoneModel: TimeZoneModel,
 		private canvasModel: CanvasModel,
 	) {
@@ -354,11 +354,11 @@ export class XAxisTimeLabelsGenerator implements XAxisLabelsGenerator {
 			return Math.max(item.length, max);
 		}, 1);
 		const maxLabelWidth = fontSize * maxFormatLength;
-		const meanCandleWidthPx = unitToPixels(this.chartModel.mainCandleSeries.meanCandleWidth, this.scaleModel.zoomX);
+		const meanCandleWidthPx = unitToPixels(this.chartModel.mainCandleSeries.meanCandleWidth, this.scale.zoomX);
 
 		const coverUpLevel = Math.round(maxLabelWidth / meanCandleWidthPx);
 
-		// for some reason sometimes `this.scaleModel.zoomX` is negative so we dont want to update labels
+		// for some reason sometimes `this.scale.zoomX` is negative so we dont want to update labels
 		if (coverUpLevel < 0 && !isFinite(meanCandleWidthPx)) {
 			return;
 		}
@@ -406,7 +406,7 @@ export class XAxisTimeLabelsGenerator implements XAxisLabelsGenerator {
 				this.config,
 				label,
 				nextLabel,
-				this.scaleModel,
+				this.scale,
 				30,
 			);
 			if (overlappingCondition) {

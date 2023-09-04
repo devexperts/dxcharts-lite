@@ -73,7 +73,7 @@ export class FancyYAxisLabelsModel extends ChartBaseElement {
 
 	constructor(
 		public eventBus: EventBus,
-		private scaleModel: ScaleModel,
+		private scale: ScaleModel,
 		private canvasBoundsContainer: CanvasBoundsContainer,
 		private state: YAxisConfig,
 		private canvasModel: CanvasModel,
@@ -91,7 +91,7 @@ export class FancyYAxisLabelsModel extends ChartBaseElement {
 	 * - canvasBoundsContainer.observeBoundsChanged(CanvasElement.CHART)
 	 * - chartModel.nextCandleTimeStampSubject
 	 * - canvasBoundsContainer.barResizerChangedSubject
-	 * - chartModel.scaleModel.changed
+	 * - chartModel.scale.changed
 	 * When any of these observables emit a new value, the updateLabels() method is called.
 	 * @protected
 	 */
@@ -101,7 +101,7 @@ export class FancyYAxisLabelsModel extends ChartBaseElement {
 			merge(
 				this.canvasBoundsContainer.observeBoundsChanged(CanvasElement.PANE_UUID(this.paneUUID)),
 				this.canvasBoundsContainer.barResizerChangedSubject,
-				this.scaleModel.changed,
+				this.scale.changed,
 			).subscribe(() => {
 				this.updateLabels();
 			}),

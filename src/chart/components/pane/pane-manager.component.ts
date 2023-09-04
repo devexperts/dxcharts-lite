@@ -49,7 +49,7 @@ export class PaneManager extends ChartBaseElement {
 		private dynamicObjectsCanvasModel: CanvasModel,
 		private userInputListenerComponents: ChartEntity[],
 		private eventBus: EventBus,
-		private mainScaleModel: ScaleModel,
+		private mainScale: ScaleModel,
 		private canvasBoundsContainer: CanvasBoundsContainer,
 		private config: FullChartConfig,
 		private canvasAnimation: CanvasAnimation,
@@ -66,15 +66,15 @@ export class PaneManager extends ChartBaseElement {
 
 		const mainPane = this.createPane(CHART_UUID, {
 			useDefaultHighLow: false,
-			scaleModel: this.mainScaleModel,
+			scale: this.mainScale,
 		});
-		mainPane.mainYExtentComponent.scaleModel.autoScaleModel.setHighLowProvider(
+		mainPane.mainExtent.scale.autoScaleModel.setHighLowProvider(
 			'series',
-			createDefaultYExtentHighLowProvider(mainPane.mainYExtentComponent),
+			createDefaultYExtentHighLowProvider(mainPane.mainExtent),
 		);
-		mainScaleModel.autoScaleModel.setHighLowPostProcessor(
+		mainScale.autoScaleModel.setHighLowPostProcessor(
 			'offsets',
-			createHighLowOffsetCalculator(() => this.mainScaleModel.getOffsets()),
+			createHighLowOffsetCalculator(() => this.mainScale.getOffsets()),
 		);
 	}
 
@@ -147,7 +147,7 @@ export class PaneManager extends ChartBaseElement {
 			this.dynamicObjectsCanvasModel,
 			this.hitTestController,
 			this.config,
-			this.mainScaleModel,
+			this.mainScale,
 			this.drawingManager,
 			this.chartPanComponent,
 			this.canvasInputListener,
@@ -173,7 +173,7 @@ export class PaneManager extends ChartBaseElement {
 		this.panes[uuid] = paneComponent;
 		paneComponent.activate();
 		this.recalculateState();
-		paneComponent.mainYExtentComponent.scaleModel.autoScale(true);
+		paneComponent.mainExtent.scale.autoScale(true);
 		this.panesChangedSubject.next(this.panes);
 		return paneComponent;
 	}
@@ -226,7 +226,7 @@ export class PaneManager extends ChartBaseElement {
 	 * @returns {void}
 	 */
 	public recalculateState() {
-		Object.values(this.panes).forEach(state => state.scaleModel.recalculateZoomY());
+		Object.values(this.panes).forEach(state => state.scale.recalculateZoomY());
 		this.eventBus.fireDraw([this.mainCanvasModel.canvasId, 'dynamicObjectsCanvas']);
 	}
 }

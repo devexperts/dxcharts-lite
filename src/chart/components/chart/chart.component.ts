@@ -85,7 +85,7 @@ export class ChartComponent extends ChartBaseElement {
 		public readonly chartModel: ChartModel,
 		public canvasModel: CanvasModel,
 		private config: FullChartConfig,
-		private scaleModel: ScaleModel,
+		private scale: ScaleModel,
 		private canvasBoundsContainer: CanvasBoundsContainer,
 		private drawingManager: DrawingManager,
 		private hitTestCanvasModel: HitTestCanvasModel,
@@ -274,7 +274,7 @@ export class ChartComponent extends ChartBaseElement {
 	 * @param xEnd - viewport end in units
 	 */
 	public setXScale(xStart: Unit, xEnd: Unit) {
-		return this.scaleModel.setXScale(xStart, xEnd);
+		return this.scale.setXScale(xStart, xEnd);
 	}
 
 	/**
@@ -354,7 +354,7 @@ export class ChartComponent extends ChartBaseElement {
 	 */
 	public toXFromTimestamp(timestamp: number): number {
 		const xCandle = this.chartModel.candleFromTimestamp(timestamp);
-		return xCandle.xCenter(this.chartModel.scaleModel);
+		return xCandle.xCenter(this.chartModel.scale);
 	}
 
 	/**
@@ -466,7 +466,7 @@ export class ChartComponent extends ChartBaseElement {
 			!PriceIncrementsUtils.validatePriceIncrementsOrPrecisions(instrument.priceIncrements)
 		) {
 			instrument.priceIncrements = [
-				PriceIncrementsUtils.autoDetectIncrementOfValueRange(this.scaleModel.yEnd - this.scaleModel.yStart),
+				PriceIncrementsUtils.autoDetectIncrementOfValueRange(this.scale.yEnd - this.scale.yStart),
 			];
 		}
 	}

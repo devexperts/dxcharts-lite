@@ -21,14 +21,14 @@ export class VolumesModel extends ChartBaseElement {
 		calculateHighLow: () => ({ high: this.volumeMax.getValue(), low: 0 }),
 		isHighLowActive: () => true,
 	};
-	constructor(private chartComponent: ChartComponent, private scaleModel: ScaleModel) {
+	constructor(private chartComponent: ChartComponent, private scale: ScaleModel) {
 		super();
 	}
 
 	protected doActivate() {
 		super.doActivate();
 		this.addRxSubscription(
-			merge(this.chartComponent.chartModel.observeCandlesChanged(), this.scaleModel.xChanged).subscribe(() =>
+			merge(this.chartComponent.chartModel.observeCandlesChanged(), this.scale.xChanged).subscribe(() =>
 				this.updateVolumeMax(),
 			),
 		);

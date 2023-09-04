@@ -18,7 +18,7 @@ export class ChartPanComponent extends ChartBaseElement {
 	public chartAreaPanHandler: ChartAreaPanHandler;
 	constructor(
 		private eventBus: EventBus,
-		private mainScaleModel: ScaleModel,
+		private mainScale: ScaleModel,
 		private canvasBoundsContainer: CanvasBoundsContainer,
 		private config: FullChartConfig,
 		private canvasAnimation: CanvasAnimation,
@@ -30,7 +30,7 @@ export class ChartPanComponent extends ChartBaseElement {
 		this.chartAreaPanHandler = new ChartAreaPanHandler(
 			this.eventBus,
 			this.config,
-			this.mainScaleModel,
+			this.mainScale,
 			this.mainCanvasParent,
 			this.canvasInputListener,
 			this.canvasBoundsContainer,

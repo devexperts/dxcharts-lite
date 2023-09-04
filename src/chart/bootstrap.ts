@@ -99,8 +99,14 @@ export default class ChartBootstrap implements ChartContainer {
 	userInputListenerComponents: Array<ChartEntity> = [];
 	public drawingManager: DrawingManager;
 	public crossEventProducer: CrossEventProducerComponent;
+	/**
+	 * @deprecated use {cursors} instead
+	 */
 	public cursorHandler: CursorHandler;
 	clearer: () => void;
+	/**
+	 * @deprecated use {scale} instead
+	 */
 	public scaleModel: ScaleModel;
 	public timeZoneModel: TimeZoneModel;
 	chartModel: ChartModel;
@@ -119,6 +125,9 @@ export default class ChartBootstrap implements ChartContainer {
 	 * @deprecated use {highlights} instead
 	 */
 	public highlightsComponent: HighlightsComponent;
+	/**
+	 * @deprecated use {data} instead
+	 */
 	public chartComponent: ChartComponent;
 	/**
 	 * @deprecated use {events} instead
@@ -128,6 +137,9 @@ export default class ChartBootstrap implements ChartContainer {
 	 * @deprecated use {crosshair} instead
 	 */
 	public crossToolComponent: CrossToolComponent;
+	/**
+	 * @deprecated use {panning} instead
+	 */
 	public chartPanComponent: ChartPanComponent;
 	public paneManager: PaneManager;
 	public hoverProducer: HoverProducerComponent;
@@ -434,7 +446,7 @@ export default class ChartBootstrap implements ChartContainer {
 
 		this.initYAxisDrawer(yAxisLabelsCanvasModel);
 
-		this.yAxisComponent = mainPane.mainYExtentComponent.yAxis;
+		this.yAxisComponent = mainPane.mainExtent.yAxis;
 		// default labels provider
 		const lastCandleLabelsProvider = new LastCandleLabelsProvider(
 			this.chartModel,
@@ -467,7 +479,7 @@ export default class ChartBootstrap implements ChartContainer {
 			() => this.canvasBoundsContainer.getBounds(CanvasElement.PANE_UUID(CHART_UUID)),
 			() => this.xAxisComponent.xAxisLabelsGenerator.labels,
 			() => this.yAxisComponent.model.baseLabelsModel.labels,
-			() => mainPane.mainYExtentComponent.toY(mainPane.mainYExtentComponent.getBaseline()),
+			() => mainPane.mainExtent.toY(mainPane.mainExtent.getBaseline()),
 			() => config.components.grid.visible,
 		);
 		this.chartComponents.push(mainChartGridComponent);

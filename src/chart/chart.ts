@@ -16,6 +16,10 @@ export class Chart extends ChartBootstrap {
 	public crosshair = this.crossToolComponent;
 	public navigationMap = this.navigationMapComponent;
 	public volumes = this.volumesComponent;
+	public cursors = this.cursorHandler;
+	public data = this.chartComponent;
+	public scale = this.scaleModel;
+	public panning = this.chartPanComponent;
 
 	constructor(element: HTMLElement, config: PartialChartConfig = {}) {
 		super(element, config);
@@ -84,7 +88,7 @@ export class Chart extends ChartBootstrap {
 	 * @param {boolean} auto - A boolean value indicating whether the auto scale is enabled or not. Default value is true.
 	 */
 	public setAutoScale(auto: boolean = true) {
-		this.scaleModel.autoScale(auto);
+		this.scale.autoScale(auto);
 	}
 
 	/**
