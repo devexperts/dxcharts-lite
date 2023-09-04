@@ -34,6 +34,7 @@ import { DataSeriesModel } from '../../model/data-series.model';
 
 export class PaneManager extends ChartBaseElement {
 	public panes: Record<string, PaneComponent> = {};
+	public paneRemovedSubject: Subject<PaneComponent> = new Subject();
 	public panesChangedSubject: Subject<Record<string, PaneComponent>> = new Subject();
 	public hitTestController: PaneHitTestController;
 	public dataSeriesAddedSubject: Subject<DataSeriesModel> = new Subject();
@@ -185,11 +186,11 @@ export class PaneManager extends ChartBaseElement {
 	public removePane(uuid: string) {
 		const pane = this.panes[uuid];
 		if (pane !== undefined) {
+			this.paneRemovedSubject.next(pane);
 			pane.disable();
 			pane.yExtentComponents.forEach(yExtentComponent => yExtentComponent.disable());
 			delete this.panes[uuid];
 			this.recalculateState();
-			this.panesChangedSubject.next(this.panes);
 		}
 	}
 
