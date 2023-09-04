@@ -43,7 +43,7 @@ export class XAxisComponent extends ChartBaseElement {
 		private config: FullChartConfig,
 		public canvasModel: CanvasModel,
 		public chartComponent: ChartComponent,
-		private scaleModel: ScaleModel,
+		private scale: ScaleModel,
 		canvasBoundsContainer: CanvasBoundsContainer,
 		canvasInputListener: CanvasInputListenerComponent,
 		private chartResizeHandler: ChartResizeHandler,
@@ -58,7 +58,7 @@ export class XAxisComponent extends ChartBaseElement {
 			eventBus,
 			config,
 			chartComponent.chartModel,
-			scaleModel,
+			scale,
 			timeZoneModel,
 			this.canvasModel,
 		);
@@ -71,7 +71,7 @@ export class XAxisComponent extends ChartBaseElement {
 		this.xAxisDrawer = new XAxisTimeLabelsDrawer(
 			config,
 			canvasModel,
-			scaleModel,
+			scale,
 			canvasBoundsContainer,
 			() => this.xAxisLabelsGenerator.labels,
 			() => config.components.xAxis.visible,
@@ -87,7 +87,7 @@ export class XAxisComponent extends ChartBaseElement {
 		xAxisCompositeDrawer.addDrawer(this.xAxisLabelsDrawer);
 
 		this.xAxisScaleHandler = new XAxisScaleHandler(
-			scaleModel,
+			scale,
 			canvasInputListener,
 			canvasBoundsContainer,
 			chartPanComponent,
@@ -138,7 +138,7 @@ export class XAxisComponent extends ChartBaseElement {
 		);
 
 		this.addRxSubscription(
-			merge(this.scaleModel.xChanged, this.chartResizeHandler.canvasResized)
+			merge(this.scale.xChanged, this.chartResizeHandler.canvasResized)
 				.pipe(throttleTime(50, undefined, { trailing: true, leading: true }))
 				.subscribe(() => {
 					this.xAxisLabelsGenerator.recalculateLabels();

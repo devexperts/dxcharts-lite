@@ -22,7 +22,7 @@ export class HistogramDrawer implements SeriesDrawer {
 		if (model instanceof CandleSeriesModel) {
 			// @ts-ignore
 			const visualCandles: VisualCandle[] = points.flat();
-			const bounds = model.scaleModel.getBounds();
+			const bounds = model.scale.getBounds();
 			const bottomY = bounds.y + bounds.height;
 			for (const visualCandle of visualCandles) {
 				ctx.beginPath();

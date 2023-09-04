@@ -57,7 +57,7 @@
 			input.addEventListener('keyup', updateFromInputs);
 		});
 
-		chart.scaleModel.yChanged.subscribe(updateFromInputs);
+		chart.scale.yChanged.subscribe(updateFromInputs);
 		setTimeout(updateFromInputs, 100);
 	</script>
 </head>

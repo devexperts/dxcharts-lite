@@ -102,7 +102,7 @@ export class VolumesDrawer implements DynamicModelDrawer<VolumesModel> {
 		const candles = flat(
 			this.chartModel.mainCandleSeries
 				// TODO volumes drawer should be a part of data series drawer
-				.getSeriesInViewport(this.chartModel.scaleModel.xStart - 1, this.chartModel.scaleModel.xEnd + 1),
+				.getSeriesInViewport(this.chartModel.scale.xStart - 1, this.chartModel.scale.xEnd + 1),
 		);
 		const viewportModel = this.getViewportModel();
 		candles.forEach((vCandle, idx) => {

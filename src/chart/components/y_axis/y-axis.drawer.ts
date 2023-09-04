@@ -83,7 +83,7 @@ export class YAxisDrawer implements Drawer {
 		fontHeight: number,
 		font: string,
 		labelTextColor: string,
-		yAxisComponent: YAxisComponent,
+		yAxis: YAxisComponent,
 	) {
 		ctx.fillStyle = labelTextColor;
 		ctx.font = font;
@@ -92,7 +92,7 @@ export class YAxisDrawer implements Drawer {
 		const topY = axisBounds.y + textHeight;
 		const bottomY = axisBounds.y + axisBounds.height - textHeight;
 		labels.forEach(label => {
-			const y = yAxisComponent.scaleModel.toY(label.value);
+			const y = yAxis.scale.toY(label.value);
 			if (y > topY && y < bottomY) {
 				drawSimpleLabel(
 					ctx,
@@ -101,8 +101,8 @@ export class YAxisDrawer implements Drawer {
 					y,
 					fontHeight,
 					font,
-					yAxisComponent.state.labelBoxMargin.end,
-					yAxisComponent.state.align,
+					yAxis.state.labelBoxMargin.end,
+					yAxis.state.align,
 				);
 			}
 		});

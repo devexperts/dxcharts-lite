@@ -41,7 +41,7 @@ export class HTDataSeriesDrawer implements Drawer {
 				// +- 1 to correctly draw points which are partly inside bounds
 				drawer.draw(
 					ctx,
-					series.getSeriesInViewport(series.scaleModel.xStart - 1, series.scaleModel.xEnd + 1),
+					series.getSeriesInViewport(series.scale.xStart - 1, series.scale.xEnd + 1),
 					series,
 					drawConfig,
 				);

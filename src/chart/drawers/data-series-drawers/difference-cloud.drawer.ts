@@ -49,13 +49,13 @@ export class DifferenceCloudDrawer implements SeriesDrawer {
 					const mainSeries = model;
 
 					const allPointsMain = mainSeries.getSeriesInViewport(
-						mainSeries.scaleModel.xStart - 1,
-						mainSeries.scaleModel.xEnd + 1,
+						mainSeries.scale.xStart - 1,
+						mainSeries.scale.xEnd + 1,
 					);
 
 					const allPointsLinked = linkedSeries.getSeriesInViewport(
-						linkedSeries.scaleModel.xStart - 1,
-						linkedSeries.scaleModel.xEnd + 1,
+						linkedSeries.scale.xStart - 1,
+						linkedSeries.scale.xEnd + 1,
 					);
 
 					allPointsMain.forEach((points, idx) => {

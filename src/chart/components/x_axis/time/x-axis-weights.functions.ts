@@ -167,13 +167,13 @@ export const overlappingPredicate = (
 	config: FullChartConfig,
 	label: NumericAxisLabel,
 	nextLabel: NumericAxisLabel,
-	scaleModel: ScaleModel,
+	scale: ScaleModel,
 	overlapingDistance: number,
 ): boolean => {
 	const font = XAxisTimeLabelsDrawer.getFontFromConfig(config);
 	const currentLabelTextWidth = calculateTextWidth(label.text, ctx, font);
 	const nextLabelTextWidth = calculateTextWidth(nextLabel.text, ctx, font);
-	const curPx = scaleModel.toX(label.value) + currentLabelTextWidth / 2;
-	const nextPx = scaleModel.toX(nextLabel.value) - nextLabelTextWidth / 2;
+	const curPx = scale.toX(label.value) + currentLabelTextWidth / 2;
+	const nextPx = scale.toX(nextLabel.value) - nextLabelTextWidth / 2;
 	return nextPx - curPx < overlapingDistance;
 };

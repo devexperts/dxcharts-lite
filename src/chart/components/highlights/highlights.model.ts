@@ -47,7 +47,7 @@ export class HighlightsModel extends ChartBaseElement {
 	 */
 	activate() {
 		this.addRxSubscription(
-			this.chartModel.scaleModel.xChanged.subscribe(
+			this.chartModel.scale.xChanged.subscribe(
 				() => this.highlights.length && this.recalculateVisualHighlights(),
 			),
 		);

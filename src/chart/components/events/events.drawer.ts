@@ -107,7 +107,7 @@ export class EventsDrawer implements Drawer {
 		this.model.events
 			.filter(e => this.config.components.events.eventsVisibility[e.type])
 			.forEach(event => {
-				const x = this.chartModel.candleFromTimestamp(event.timestamp).xCenter(this.chartModel.scaleModel);
+				const x = this.chartModel.candleFromTimestamp(event.timestamp).xCenter(this.chartModel.scale);
 				if (x > chartBounds.x && x < chartBounds.x + chartBounds.width) {
 					const color = this.config.colors.events[event.type].color;
 					ctx.strokeStyle = color;

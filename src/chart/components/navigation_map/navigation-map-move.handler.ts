@@ -24,7 +24,7 @@ export class NavigationMapMoveHandler extends ChartBaseElement {
 	constructor(
 		private bus: EventBus,
 		private chartModel: ChartModel,
-		private scaleModel: ScaleModel,
+		private scale: ScaleModel,
 		private canvasInputListeners: CanvasInputListenerComponent,
 		private canvasBoundsContainer: CanvasBoundsContainer,
 		private chartPanComponent: ChartPanComponent,
@@ -85,27 +85,27 @@ export class NavigationMapMoveHandler extends ChartBaseElement {
 		const btnLeftHitTest = this.canvasBoundsContainer.getBoundsHitTest(CanvasElement.N_MAP_BTN_L);
 		this.addRxSubscription(
 			this.canvasInputListeners.observeClick(btnLeftHitTest).subscribe(() => {
-				this.scaleModel.moveXStart(this.scaleModel.xStart - 1);
+				this.scale.moveXStart(this.scale.xStart - 1);
 			}),
 		);
 		this.addRxSubscription(
 			this.canvasInputListeners.observeTouchStart(btnLeftHitTest).subscribe(() => {
-				this.scaleModel.moveXStart(this.scaleModel.xStart - 1);
+				this.scale.moveXStart(this.scale.xStart - 1);
 			}),
 		);
 		const btnRightHitTest = this.canvasBoundsContainer.getBoundsHitTest(CanvasElement.N_MAP_BTN_R);
 		this.addRxSubscription(
 			this.canvasInputListeners.observeClick(btnRightHitTest).subscribe(() => {
-				this.scaleModel.moveXStart(this.scaleModel.xStart + 1);
+				this.scale.moveXStart(this.scale.xStart + 1);
 			}),
 		);
 		this.addRxSubscription(
 			this.canvasInputListeners.observeTouchStart(btnRightHitTest).subscribe(() => {
-				this.scaleModel.moveXStart(this.scaleModel.xStart + 1);
+				this.scale.moveXStart(this.scale.xStart + 1);
 			}),
 		);
 		this.addRxSubscription(
-			this.scaleModel.xChanged.subscribe(() => {
+			this.scale.xChanged.subscribe(() => {
 				const candleSeries = this.chartModel.mainCandleSeries;
 				this.canvasBoundsContainer.leftRatio = candleSeries.dataIdxStart / (candleSeries.dataPoints.length - 1);
 				this.canvasBoundsContainer.rightRatio = candleSeries.dataIdxEnd / (candleSeries.dataPoints.length - 1);
@@ -127,9 +127,9 @@ export class NavigationMapMoveHandler extends ChartBaseElement {
 		const knotsWindowWidth = chart.width;
 		const moveLeftRatio = (this.leftKnotDragStartXRelative + xDelta) / knotsWindowWidth;
 		this.canvasBoundsContainer.leftRatio = moveLeftRatio;
-		this.scaleModel.setXScale(
+		this.scale.setXScale(
 			Math.round(this.chartModel.mainCandleSeries.dataPoints.length * this.canvasBoundsContainer.leftRatio),
-			this.scaleModel.xEnd,
+			this.scale.xEnd,
 		);
 	};
 
@@ -144,8 +144,8 @@ export class NavigationMapMoveHandler extends ChartBaseElement {
 		const nMapChartWidth = nMapChart.width;
 		const moveRightRatio = (this.rightKnotDragStartXRelative + xDelta) / nMapChartWidth;
 		this.canvasBoundsContainer.rightRatio = moveRightRatio;
-		this.scaleModel.setXScale(
-			this.scaleModel.xStart,
+		this.scale.setXScale(
+			this.scale.xStart,
 			Math.round(this.chartModel.mainCandleSeries.dataPoints.length * this.canvasBoundsContainer.rightRatio),
 		);
 	};
@@ -161,7 +161,7 @@ export class NavigationMapMoveHandler extends ChartBaseElement {
 			this.chartModel.mainCandleSeries.meanCandleWidth /
 			(navMap.width / this.chartModel.mainCandleSeries.dataPoints.length);
 		const step = (this.lastMousePosition - absoluteXDelta) * moveMultiplier;
-		this.scaleModel.moveXStart(this.scaleModel.xStart - step);
+		this.scale.moveXStart(this.scale.xStart - step);
 		this.lastMousePosition = absoluteXDelta;
 	};
 }

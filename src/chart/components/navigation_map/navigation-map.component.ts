@@ -55,7 +55,7 @@ export class NavigationMapComponent extends ChartBaseElement {
 		this.navigationMapMoveHandler = new NavigationMapMoveHandler(
 			this.eventBus,
 			this.chartModel,
-			this.chartModel.scaleModel,
+			this.chartModel.scale,
 			this.canvasInputListeners,
 			this.canvasBoundsContainer,
 			this.chartPanComponent,
@@ -96,11 +96,11 @@ export class NavigationMapComponent extends ChartBaseElement {
 			merge(
 				this.chartModel.observeCandlesChanged(),
 				this.canvasBoundsContainer.observeBoundsChanged(CanvasElement.N_MAP),
-				this.chartModel.scaleModel.xChanged.pipe(
+				this.chartModel.scale.xChanged.pipe(
 					pairwise(),
 					filter(([prevScale, curScale]) => {
 						// TODO rework
-						const itemsCount = 0; //this.chartModel.scaleModel.getItemsCount();
+						const itemsCount = 0; //this.chartModel.scale.getItemsCount();
 						const prev = prevScale.start < 0 || prevScale.end > itemsCount;
 						const cur = curScale.start < 0 || curScale.end > itemsCount;
 						// trigger recalculation visual candles for nav map if previous viewport had

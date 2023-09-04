@@ -33,8 +33,8 @@
 				const startCandle = series[0];
 				// to get actual coordinates for canvas we need to use scaleModel,
 				// since actual coordinates in pixels depends on current zoom level and viewport (scale)
-				const [x1, y1] = [startCandle.x(chart.scaleModel), startCandle.y(chart.scaleModel)];
-				const [x2, y2] = [lastCandle.x(chart.scaleModel), lastCandle.y(chart.scaleModel)];
+				const [x1, y1] = [startCandle.x(chart.scale), startCandle.y(chart.scale)];
+				const [x2, y2] = [lastCandle.x(chart.scale), lastCandle.y(chart.scale)];
 				// below we do some manipulations which modifies ctx state, so we need to save it and restore after drawing
 				ctx.save();
 				const bounds = chart.canvasBoundsContainer.getBounds('PANE_CHART');

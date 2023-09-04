@@ -24,7 +24,7 @@ import { PaneHitTestController } from '../pane-hit-test.controller';
 import { PaneComponent, YExtentFormatters } from '../pane.component';
 
 export interface YExtentCreationOptions {
-	scaleModel: ScaleModel;
+	scale: ScaleModel;
 	order: number;
 	useDefaultHighLow: boolean;
 	cursor: string;
@@ -44,7 +44,7 @@ export class YExtentComponent extends ChartBaseElement {
 		private canvasBoundsContainer: CanvasBoundsContainer,
 		private hitTestController: PaneHitTestController,
 		public dynamicObjectsCanvasModel: CanvasModel,
-		public readonly scaleModel: ScaleModel,
+		public readonly scale: ScaleModel,
 		createYAxisComponent: (
 			formatter: (value: number) => string,
 			dataSeriesProvider: () => DataSeriesModel | undefined,
@@ -56,7 +56,7 @@ export class YExtentComponent extends ChartBaseElement {
 		},
 	) {
 		super();
-		this.addChildEntity(scaleModel);
+		this.addChildEntity(scale);
 		this.setValueFormatters(createYExtentFormatters(this));
 		this.yAxis = createYAxisComponent(this.valueFormatter.bind(this), () => this.mainDataSeries);
 		this.addChildEntity(this.yAxis);
@@ -83,7 +83,7 @@ export class YExtentComponent extends ChartBaseElement {
 	 * @returns {Bounds} The bounds of the scale model.
 	 */
 	public getBounds(): Bounds {
-		return this.scaleModel.getBounds();
+		return this.scale.getBounds();
 	}
 
 	public getBaseline() {
@@ -156,7 +156,7 @@ export class YExtentComponent extends ChartBaseElement {
 	 * @returns {number} - The regular value.
 	 */
 	regularValueFromY(y: number) {
-		return this.mainDataSeries?.view.priceFromY(y) ?? this.scaleModel.fromY(y);
+		return this.mainDataSeries?.view.priceFromY(y) ?? this.scale.fromY(y);
 	}
 }
 

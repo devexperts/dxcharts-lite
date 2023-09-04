@@ -42,7 +42,7 @@ export class HighlightsDrawer implements Drawer {
 			const ctx = this.canvasModel.ctx;
 			const highlights = this.highlightsModel.getVisualHighlights();
 			const highlightsExist = this.highlightsModel.getHighlights().length;
-			if (highlightsExist && candles.length !== 0 && this.chartModel.scaleModel.isScaleReady()) {
+			if (highlightsExist && candles.length !== 0 && this.chartModel.scale.isScaleReady()) {
 				const chartBounds = this.canvasBoundsContainer.getBounds(CanvasElement.ALL_PANES);
 				ctx.save();
 				//clip rect to throw away everything that doesn't fit chart bounds
@@ -69,11 +69,11 @@ export class HighlightsDrawer implements Drawer {
 						ctx.strokeStyle = strokeStyle;
 						items.forEach(item => {
 							const fromXCandle = this.chartModel.candleFromTimestamp(item.from);
-							const fromXCandleWidth = unitToPixels(fromXCandle.width, this.chartModel.scaleModel.zoomX);
-							const fromX = fromXCandle.xStart(this.chartModel.scaleModel);
+							const fromXCandleWidth = unitToPixels(fromXCandle.width, this.chartModel.scale.zoomX);
+							const fromX = fromXCandle.xStart(this.chartModel.scale);
 							const toXCandle = this.chartModel.candleFromTimestamp(item.to);
-							const toXCandleWidth = unitToPixels(toXCandle.width, this.chartModel.scaleModel.zoomX);
-							const toX = toXCandle.xStart(this.chartModel.scaleModel) + toXCandleWidth;
+							const toXCandleWidth = unitToPixels(toXCandle.width, this.chartModel.scale.zoomX);
+							const toX = toXCandle.xStart(this.chartModel.scale) + toXCandleWidth;
 							// draw highlight' borders
 							if (item.border) {
 								this.drawBorders(

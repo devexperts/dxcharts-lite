@@ -26,7 +26,7 @@ export class YAxisModel extends ChartBaseElement {
 		private state: YAxisConfig,
 		private canvasBoundsContainer: CanvasBoundsContainer,
 		canvasModel: CanvasModel,
-		scaleModel: ScaleModel,
+		scale: ScaleModel,
 		valueFormatter: (value: number) => string,
 		dataSeriesProvider: () => DataSeriesModel | undefined,
 		extentIdx: number,
@@ -35,13 +35,13 @@ export class YAxisModel extends ChartBaseElement {
 		this.labelsGenerator = new NumericYAxisLabelsGenerator(
 			null,
 			dataSeriesProvider,
-			scaleModel,
+			scale,
 			valueFormatter,
 			() => this.state.type,
 			state.labelHeight,
 		);
 		this.baseLabelsModel = new YAxisBaseLabelsModel(
-			scaleModel,
+			scale,
 			this.labelsGenerator,
 			this.canvasBoundsContainer,
 			paneUUID,
@@ -50,7 +50,7 @@ export class YAxisModel extends ChartBaseElement {
 		this.addChildEntity(this.baseLabelsModel);
 		this.fancyLabelsModel = new FancyYAxisLabelsModel(
 			eventBus,
-			scaleModel,
+			scale,
 			canvasBoundsContainer,
 			state,
 			canvasModel,

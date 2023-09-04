@@ -81,7 +81,7 @@ export class ChartModel extends ChartBaseElement {
 		public bus: EventBus,
 		private canvasModel: CanvasModel,
 		public config: FullChartConfig,
-		public scaleModel: ScaleModel,
+		public scale: ScaleModel,
 		public formatterFactory: (format: string) => (timestamp: number) => string,
 		public mainCanvasParent: Element,
 		private canvasBoundsContainer: CanvasBoundsContainer,
@@ -92,10 +92,10 @@ export class ChartModel extends ChartBaseElement {
 		this.secondaryChartColors = new SecondaryChartColorsPool(this.config);
 		const candleSeries = new MainCandleSeriesModel(
 			this.chartBaseModel,
-			this.paneManager.panes[CHART_UUID].mainYExtentComponent,
+			this.paneManager.panes[CHART_UUID].mainExtent,
 			this.paneManager.hitTestController.getNewDataSeriesHitTestId(),
 			this.bus,
-			this.scaleModel,
+			this.scale,
 			new ChartInstrument(),
 			this.candlesTransformersByChartType,
 			this.candleWidthByChartType,
@@ -104,16 +104,16 @@ export class ChartModel extends ChartBaseElement {
 		candleSeries.config.type = this.config.components.chart.type;
 		this.candleSeries.push(candleSeries);
 
-		scaleModel.addXConstraint((_, state) =>
+		scale.addXConstraint((_, state) =>
 			candleEdgesConstrait(
 				state,
 				this.mainCandleSeries.visualPoints,
 				this.config.components.chart.minCandlesOffset,
-				scaleModel.getBounds(),
+				scale.getBounds(),
 			),
 		);
-		this.basicScaleViewportTransformer = createBasicScaleViewportTransformer(scaleModel);
-		this.timeFrameViewportTransformer = createTimeFrameViewportTransformer(scaleModel, this);
+		this.basicScaleViewportTransformer = createBasicScaleViewportTransformer(scale);
+		this.timeFrameViewportTransformer = createTimeFrameViewportTransformer(scale, this);
 		this.pane = this.paneManager.panes[CHART_UUID];
 	}
 
@@ -162,7 +162,7 @@ export class ChartModel extends ChartBaseElement {
 			const nextYAxisWidth = this.getEffectiveYAxisWidth();
 
 			if (this.prevChartWidth === 0) {
-				this.scaleModel.isViewportValid() ? this.scaleModel.recalculateZoom() : this.doBasicScale();
+				this.scale.isViewportValid() ? this.scale.recalculateZoom() : this.doBasicScale();
 				this.prevChartWidth = nextChartWidth;
 				this.prevYWidth = nextYAxisWidth;
 				return;
@@ -171,10 +171,10 @@ export class ChartModel extends ChartBaseElement {
 			// YAxis width changed, so chart width will be changed too, but we need adjust scale to right/left
 			if (nextYAxisWidth !== this.prevYWidth) {
 				if (this.config.scale.keepZoomXOnYAxisChange) {
-					const unitDiff = pixelsToUnits(nextYAxisWidth - this.prevYWidth, this.scaleModel.zoomX);
-					this.scaleModel.setXScale(this.scaleModel.xStart, this.scaleModel.xEnd - unitDiff);
+					const unitDiff = pixelsToUnits(nextYAxisWidth - this.prevYWidth, this.scale.zoomX);
+					this.scale.setXScale(this.scale.xStart, this.scale.xEnd - unitDiff);
 				} else {
-					this.scaleModel.recalculateZoomX();
+					this.scale.recalculateZoomX();
 				}
 				this.prevYWidth = nextYAxisWidth;
 				this.prevChartWidth = nextChartWidth;
@@ -182,10 +182,10 @@ export class ChartModel extends ChartBaseElement {
 			}
 
 			// YAxis has the same width, so keep the same candle width on chart resize
-			const unitDiff = pixelsToUnits(nextChartWidth - this.prevChartWidth, this.scaleModel.zoomX);
-			this.scaleModel.setXScale(this.scaleModel.xStart - unitDiff, this.scaleModel.xEnd);
+			const unitDiff = pixelsToUnits(nextChartWidth - this.prevChartWidth, this.scale.zoomX);
+			this.scale.setXScale(this.scale.xStart - unitDiff, this.scale.xEnd);
 			// height also could be changed - we need correct zoomY
-			this.scaleModel.recalculateZoomY();
+			this.scale.recalculateZoomY();
 			this.prevYWidth = nextYAxisWidth;
 			this.prevChartWidth = nextChartWidth;
 		}
@@ -247,7 +247,7 @@ export class ChartModel extends ChartBaseElement {
 		candleSeriesModel.dataPoints = secondaryCandles;
 		if (recalculateAndUpdate) {
 			// calculate X and Y bounds
-			this.scaleModel.doAutoScale();
+			this.scale.doAutoScale();
 			// now the visual candles
 			candleSeriesModel.recalculateVisualPoints();
 			this.candlesSetSubject.next();
@@ -285,7 +285,7 @@ export class ChartModel extends ChartBaseElement {
 		});
 		this.chartBaseModel.recalculatePeriod();
 		this.autoScaleOnCandles();
-		this.scaleModel.doAutoScale();
+		this.scale.doAutoScale();
 		this.candlesSetSubject.next();
 		this.bus.fireDraw([this.canvasModel.canvasId]);
 	}
@@ -298,9 +298,9 @@ export class ChartModel extends ChartBaseElement {
 	 * @returns {void}
 	 */
 	autoScaleOnCandles() {
-		if (this.scaleModel.state.autoScaleOnCandles) {
+		if (this.scale.state.autoScaleOnCandles) {
 			this.doBasicScale();
-			this.scaleModel.autoScale(true);
+			this.scale.autoScale(true);
 		}
 	}
 
@@ -319,8 +319,8 @@ export class ChartModel extends ChartBaseElement {
 	 */
 	doPreviousTimeFrameScale(zoomIn: boolean | null = null) {
 		this.timeFrameViewportTransformer(this.lastTimeFrame, zoomIn);
-		if (this.scaleModel.state.autoScaleOnCandles) {
-			this.scaleModel.doAutoScale(true);
+		if (this.scale.state.autoScaleOnCandles) {
+			this.scale.doAutoScale(true);
 		}
 		this.bus.fireDraw();
 	}
@@ -333,8 +333,8 @@ export class ChartModel extends ChartBaseElement {
 		const visualCandles = this.mainCandleSeries.visualPoints;
 		if (visualCandles.length !== 0) {
 			this.lastTimeFrame = [
-				this.candleFromX(this.scaleModel.toX(this.scaleModel.xStart), true).timestamp,
-				this.candleFromX(this.scaleModel.toX(this.scaleModel.xEnd), true).timestamp,
+				this.candleFromX(this.scale.toX(this.scale.xStart), true).timestamp,
+				this.candleFromX(this.scale.toX(this.scale.xEnd), true).timestamp,
 			];
 		}
 	}
@@ -384,7 +384,7 @@ export class ChartModel extends ChartBaseElement {
 		const prependedCandlesWidth = this.chartBaseModel.mainVisualPoints
 			.slice(0, updateResult.prepended)
 			.reduce((acc, cur) => acc + cur.width, 0);
-		this.scaleModel.moveXStart(this.scaleModel.xStart + prependedCandlesWidth);
+		this.scale.moveXStart(this.scale.xStart + prependedCandlesWidth);
 		this.candlesPrependSubject.next({
 			prependedCandlesWidth,
 			preparedCandles,
@@ -434,10 +434,10 @@ export class ChartModel extends ChartBaseElement {
 	 */
 	private createCandleSeriesModel(instrument: ChartInstrument, colors?: CandleSeriesColors): CandleSeriesModel {
 		const candleSeries = new CandleSeriesModel(
-			this.paneManager.panes[CHART_UUID].mainYExtentComponent,
+			this.paneManager.panes[CHART_UUID].mainExtent,
 			this.paneManager.hitTestController.getNewDataSeriesHitTestId(),
 			this.bus,
-			this.scaleModel,
+			this.scale,
 			instrument,
 			this.candlesTransformersByChartType,
 			this.candleWidthByChartType,
@@ -458,7 +458,7 @@ export class ChartModel extends ChartBaseElement {
 		this.candleSeries = this.candleSeries.filter(s => s !== series);
 		series.deactivate();
 		this.paneManager.panes[CHART_UUID].removeDataSeries(series);
-		this.scaleModel.doAutoScale();
+		this.scale.doAutoScale();
 		return series.colors;
 	}
 
@@ -522,7 +522,7 @@ export class ChartModel extends ChartBaseElement {
 	 * @returns {void}
 	 */
 	public setAutoScale(auto: boolean): void {
-		this.scaleModel.autoScale(auto);
+		this.scale.autoScale(auto);
 	}
 
 	/**
@@ -564,11 +564,11 @@ export class ChartModel extends ChartBaseElement {
 	 * @returns {void}
 	 */
 	setOffsets(offsets: Partial<ChartConfigComponentsOffsets>) {
-		this.scaleModel.updateOffsets(offsets);
+		this.scale.updateOffsets(offsets);
 		const lastIdx = this.getCandlesCountWithRightOffset();
 		const visualCandles = this.mainCandleSeries.visualPoints;
 		if (this.hasCandles() && lastIdx >= visualCandles.length) {
-			this.scaleModel.setXScale(this.scaleModel.xStart, this.candleFromIdx(lastIdx).startUnit);
+			this.scale.setXScale(this.scale.xStart, this.candleFromIdx(lastIdx).startUnit);
 		}
 		this.offsetsChanged.next();
 		this.bus.fireDraw();
@@ -579,7 +579,7 @@ export class ChartModel extends ChartBaseElement {
 	 * @returns {ChartConfigComponentsOffsets} The offsets of the chart components.
 	 */
 	getOffsets(): ChartConfigComponentsOffsets {
-		return this.scaleModel.getOffsets();
+		return this.scale.getOffsets();
 	}
 
 	/**
@@ -587,7 +587,7 @@ export class ChartModel extends ChartBaseElement {
 	 * @param y - source value in pixels
 	 */
 	fromY(y: Pixel): Unit {
-		return this.scaleModel.fromY(y);
+		return this.scale.fromY(y);
 	}
 
 	/**
@@ -605,7 +605,7 @@ export class ChartModel extends ChartBaseElement {
 	 * @param x - source value in pixels
 	 */
 	fromX(x: Pixel): Timestamp {
-		return this.scaleModel.fromX(x);
+		return this.scale.fromX(x);
 	}
 
 	toY = (value: Price): Pixel => {
@@ -619,7 +619,7 @@ export class ChartModel extends ChartBaseElement {
 	toX(idx: Index): Pixel {
 		const visualCandle = this.candleFromIdx(idx);
 		// lineX is the middle of candle - it's correct
-		return this.scaleModel.toX(visualCandle.centerUnit);
+		return this.scale.toX(visualCandle.centerUnit);
 	}
 	
 	/**
@@ -631,7 +631,7 @@ export class ChartModel extends ChartBaseElement {
 		extrapolate: boolean = false,
 		selectedCandleSeries: CandleSeriesModel = this.mainCandleSeries,
 	): Candle {
-		const unit = this.scaleModel.fromX(x);
+		const unit = this.scale.fromX(x);
 		return this.candleFromUnit(unit, extrapolate, selectedCandleSeries);
 	}
 
@@ -772,7 +772,7 @@ export class ChartModel extends ChartBaseElement {
 		if (dataBased) {
 			return this.candleFromIdx(this.getFirstIdx()).candle.timestamp;
 		} else {
-			return this.candleFromUnit(this.scaleModel.xStart, true).timestamp;
+			return this.candleFromUnit(this.scale.xStart, true).timestamp;
 		}
 	}
 
@@ -785,7 +785,7 @@ export class ChartModel extends ChartBaseElement {
 		if (dataBased) {
 			return this.candleFromIdx(this.getLastIdx()).candle.timestamp;
 		} else {
-			return this.candleFromUnit(this.scaleModel.xEnd, true).timestamp;
+			return this.candleFromUnit(this.scale.xEnd, true).timestamp;
 		}
 	}
 
@@ -799,7 +799,7 @@ export class ChartModel extends ChartBaseElement {
 		const startUnit = this.candleFromTimestamp(start).startUnit;
 		const endCandle = this.candleFromTimestamp(end);
 		const endUnit = endCandle.startUnit + endCandle.width;
-		return this.scaleModel.setXScale(startUnit, endUnit);
+		return this.scale.setXScale(startUnit, endUnit);
 	}
 
 	/**
@@ -951,7 +951,7 @@ export class ChartModel extends ChartBaseElement {
 				if (isNewCandle && lastCandle && isMainSymbol && isInView) {
 					const widthCalculator =
 						this.candleWidthByChartType[this.config.components.chart.type] ?? calculateCandleWidth;
-					this.scaleModel.moveXStart(this.scaleModel.xStart + widthCalculator(lastCandle));
+					this.scale.moveXStart(this.scale.xStart + widthCalculator(lastCandle));
 				}
 			});
 
@@ -968,7 +968,7 @@ export class ChartModel extends ChartBaseElement {
 				series.recalculateVisualPoints();
 			}
 		});
-		this.scaleModel.doAutoScale();
+		this.scale.doAutoScale();
 		this.candlesUpdatedSubject.next();
 	}
 

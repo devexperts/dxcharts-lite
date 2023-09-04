@@ -34,10 +34,10 @@ export class SeparateVolumesComponent extends ChartBaseElement {
 		super.doActivate();
 		this.addRxSubscription(
 			this.chartComponent.chartModel.candlesUpdatedSubject.subscribe(
-				() => !this.pane?.scaleModel.isViewportValid() && this.pane?.scaleModel.doAutoScale(true),
+				() => !this.pane?.scale.isViewportValid() && this.pane?.scale.doAutoScale(true),
 			),
 		);
-		this.addRxSubscription(this.volumesModel.volumeMax.subscribe(() => this.pane?.scaleModel.doAutoScale()));
+		this.addRxSubscription(this.volumesModel.volumeMax.subscribe(() => this.pane?.scale.doAutoScale()));
 	}
 
 	/**
@@ -56,8 +56,8 @@ export class SeparateVolumesComponent extends ChartBaseElement {
 				increment: 1,
 			});
 			this.pane = volumePane;
-			volumePane.mainYExtentComponent.yAxis.setAxisType('regular');
-			const { scaleModel } = volumePane;
+			volumePane.mainExtent.yAxis.setAxisType('regular');
+			const { scale: scaleModel } = volumePane;
 			const volumesHighLowProvider = createCandlesOffsetProvider(
 				() => ({ top: 10, bottom: 0, left: 0, right: 0, visible: true }),
 				this.volumesModel.highLowProvider,
@@ -82,6 +82,6 @@ export class SeparateVolumesComponent extends ChartBaseElement {
 	 * @returns {Unit} - The corresponding data value.
 	 */
 	public fromY(y: Pixel): Unit {
-		return this.pane?.scaleModel.fromY(y) ?? 0;
+		return this.pane?.scale.fromY(y) ?? 0;
 	}
 }

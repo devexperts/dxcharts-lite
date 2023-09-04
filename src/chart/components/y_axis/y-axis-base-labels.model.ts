@@ -20,7 +20,7 @@ export class YAxisBaseLabelsModel extends ChartBaseElement {
 	private animFrameId = `anim_cache_${uuid()}`;
 
 	constructor(
-		private scaleModel: ScaleModel,
+		private scale: ScaleModel,
 		private labelsGenerator: NumericAxisLabelsGenerator,
 		private canvasBoundsContainer: CanvasBoundsContainer,
 		private paneUUID: string,
@@ -31,7 +31,7 @@ export class YAxisBaseLabelsModel extends ChartBaseElement {
 
 	/**
 	 * This method is used to activate the component. It calls the parent's doActivate method and subscribes to the merge of two observables:
-	 * - this.scaleModel.yChanged
+	 * - this.scale.yChanged
 	 * - this.canvasBoundsContainer.observeBoundsChanged
 	 * The merge of these two observables is used to update the labels of the component when either the y-axis scale model changes or the canvas bounds change.
 	 * If the height of the canvas bounds changes by more than 1.5 times the previous height, the labels cache is invalidated and the previous y-axis height is updated.
@@ -40,7 +40,7 @@ export class YAxisBaseLabelsModel extends ChartBaseElement {
 		super.doActivate();
 		this.addRxSubscription(
 			merge(
-				this.scaleModel.yChanged,
+				this.scale.yChanged,
 				this.canvasBoundsContainer
 					.observeBoundsChanged(CanvasElement.PANE_UUID_Y_AXIS(this.paneUUID, this.extentIdx))
 					.pipe(

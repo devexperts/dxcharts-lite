@@ -39,8 +39,8 @@ export class EventsHitTestDrawer implements Drawer {
 			const prevEvent = this.model.events[idx - 1];
 			const prevX =
 				prevEvent &&
-				this.chartModel.candleFromTimestamp(prevEvent.timestamp).xCenter(this.chartModel.scaleModel);
-			const x = this.chartModel.candleFromTimestamp(event.timestamp).xCenter(this.chartModel.scaleModel);
+				this.chartModel.candleFromTimestamp(prevEvent.timestamp).xCenter(this.chartModel.scale);
+			const x = this.chartModel.candleFromTimestamp(event.timestamp).xCenter(this.chartModel.scale);
 			if (x > bounds.x && x < bounds.x + bounds.width) {
 				const color = this.config.colors.events[event.type].color;
 				ctx.strokeStyle = color;

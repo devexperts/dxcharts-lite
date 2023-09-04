@@ -50,11 +50,11 @@ export class YAxisComponent extends ChartBaseElement {
 		private eventBus: EventBus,
 		config: FullChartConfig,
 		private canvasModel: CanvasModel,
-		public scaleModel: ScaleModel,
+		public scale: ScaleModel,
 		canvasInputListeners: CanvasInputListenerComponent,
 		private canvasBoundsContainer: CanvasBoundsContainer,
 		chartPanComponent: ChartPanComponent,
-		private cursorHandler: CursorHandler,
+		private cursors: CursorHandler,
 		valueFormatter: (value: number) => string,
 		dataSeriesProvider: () => DataSeriesModel | undefined,
 		public paneUUID: string,
@@ -68,11 +68,11 @@ export class YAxisComponent extends ChartBaseElement {
 			eventBus,
 			this.state,
 			chartPanComponent,
-			scaleModel,
+			scale,
 			canvasInputListeners,
 			canvasBoundsContainer,
 			canvasBoundsContainer.getBoundsHitTest(CanvasElement.PANE_UUID_Y_AXIS(paneUUID, extentIdx)),
-			auto => scaleModel.autoScale(auto),
+			auto => scale.autoScale(auto),
 		);
 		this.addChildEntity(this.yAxisScaleHandler);
 		//#endregion
@@ -83,7 +83,7 @@ export class YAxisComponent extends ChartBaseElement {
 			this.state,
 			canvasBoundsContainer,
 			canvasModel,
-			scaleModel,
+			scale,
 			valueFormatter,
 			dataSeriesProvider,
 			extentIdx,
@@ -114,20 +114,20 @@ export class YAxisComponent extends ChartBaseElement {
 
 	protected doActivate() {
 		this.addRxSubscription(
-			this.scaleModel.beforeStartAnimationSubject.subscribe(
-				() => this.state.type === 'percent' && this.scaleModel.haltAnimation(),
+			this.scale.beforeStartAnimationSubject.subscribe(
+				() => this.state.type === 'percent' && this.scale.haltAnimation(),
 			),
 		);
 	}
 
 	private updateCursor() {
 		if (this.state.type === 'percent') {
-			this.cursorHandler.setCursorForCanvasEl(
+			this.cursors.setCursorForCanvasEl(
 				CanvasElement.PANE_UUID_Y_AXIS(this.paneUUID, this.extentIdx),
 				this.state.resizeDisabledCursor,
 			);
 		} else {
-			this.cursorHandler.setCursorForCanvasEl(
+			this.cursors.setCursorForCanvasEl(
 				CanvasElement.PANE_UUID_Y_AXIS(this.paneUUID, this.extentIdx),
 				this.state.cursor,
 			);
@@ -231,7 +231,7 @@ export class YAxisComponent extends ChartBaseElement {
 		if (type !== this.state.type) {
 			this.state.type = type;
 			this.axisTypeSetSubject.next(type);
-			this.scaleModel.autoScale(true);
+			this.scale.autoScale(true);
 			this.model.fancyLabelsModel.updateLabels(true);
 			this.updateCursor();
 		}
@@ -266,7 +266,7 @@ export class YAxisComponent extends ChartBaseElement {
 	 * Controls lockPriceToBarRatio of the y-axis
 	 */
 	public setLockPriceToBarRatio(value: boolean = false) {
-		this.scaleModel.setLockPriceToBarRatio(value);
+		this.scale.setLockPriceToBarRatio(value);
 	}
 
 	/**
@@ -295,9 +295,9 @@ export class YAxisComponent extends ChartBaseElement {
 	 * @param inverse - true or false
 	 */
 	public togglePriceScaleInverse(inverse: boolean): void {
-		this.scaleModel.state.inverse = inverse;
-		this.scaleModel.inverseY = inverse;
-		this.scaleModel.scaleInversedSubject.next(inverse);
+		this.scale.state.inverse = inverse;
+		this.scale.inverseY = inverse;
+		this.scale.scaleInversedSubject.next(inverse);
 	}
 
 	/**

@@ -64,7 +64,7 @@ export class HoverProducerComponent extends ChartBaseElement {
 	xFormatter: DateTimeFormatter = () => '';
 	constructor(
 		private crossEventProducer: CrossEventProducerComponent,
-		private scaleModel: ScaleModel,
+		private scale: ScaleModel,
 		private config: FullChartConfig,
 		private chartModel: ChartModel,
 		private canvasInputListener: CanvasInputListenerComponent,
@@ -120,7 +120,7 @@ export class HoverProducerComponent extends ChartBaseElement {
 				}
 			}),
 		);
-		this.addRxSubscription(this.scaleModel.xChanged.subscribe(() => this.fireLastCross()));
+		this.addRxSubscription(this.scale.xChanged.subscribe(() => this.fireLastCross()));
 		this.addRxSubscription(
 			this.canvasInputListener.observeTouchStart().subscribe(event => {
 				const x = event.touches[0].clientX;
@@ -177,8 +177,8 @@ export class HoverProducerComponent extends ChartBaseElement {
 	 * @returns {Hover | undefined} - The created hover object or undefined if the input is invalid.
 	 */
 	private createHoverFromCandle(candle: VisualCandle): Hover | undefined {
-		const x = candle.xCenter(this.chartModel.scaleModel);
-		const y = this.chartModel.scaleModel.toY(candle.close);
+		const x = candle.xCenter(this.scale);
+		const y = this.scale.toY(candle.close);
 		return this.createHover(x, y, CHART_UUID);
 	}
 

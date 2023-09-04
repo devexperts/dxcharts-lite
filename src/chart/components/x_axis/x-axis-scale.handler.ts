@@ -23,7 +23,7 @@ export class XAxisScaleHandler extends ChartBaseElement {
 	lastXPxWidth: Pixel = 0;
 
 	constructor(
-		private scaleModel: ScaleModel,
+		private scale: ScaleModel,
 		private canvasInputListener: CanvasInputListenerComponent,
 		private canvasBoundsContainer: CanvasBoundsContainer,
 		private chartPanComponent: ChartPanComponent,
@@ -71,8 +71,8 @@ export class XAxisScaleHandler extends ChartBaseElement {
 	}
 
 	private onXDragStart = () => {
-		this.lastXStart = this.scaleModel.xStart;
-		this.lastXWidth = this.scaleModel.xEnd - this.scaleModel.xStart;
+		this.lastXStart = this.scale.xStart;
+		this.lastXWidth = this.scale.xEnd - this.scale.xStart;
 		const bounds = this.canvasBoundsContainer.getBounds(CanvasElement.X_AXIS);
 		this.lastXPxWidth = bounds.width - this.canvasInputListener.currentPoint.x;
 	};
@@ -87,6 +87,6 @@ export class XAxisScaleHandler extends ChartBaseElement {
 		const xZoomMult = this.lastXPxWidth / newPxWidth;
 		const newWidth = this.lastXWidth * xZoomMult;
 		const newXStart = this.lastXStart + (this.lastXWidth - newWidth);
-		this.scaleModel.setXScale(newXStart, this.scaleModel.xEnd);
+		this.scale.setXScale(newXStart, this.scale.xEnd);
 	};
 }
