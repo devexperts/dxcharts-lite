@@ -57,7 +57,7 @@ export class WaterMarkComponent extends ChartBaseElement {
 		this.addRxSubscription(
 			merge(
 				canvasBoundsContainer.observeBoundsChanged(CanvasElement.PANE_UUID(CHART_UUID)),
-				this.paneManager.panesChangedSubject,
+				this.paneManager.paneAddedSubject,
 			).subscribe((bounds: Bounds) => {
 				this.waterMarkConfig = this.recalculateTextSize(bounds.width, bounds.height);
 			}),
