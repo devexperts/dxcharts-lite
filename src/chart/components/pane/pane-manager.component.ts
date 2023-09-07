@@ -35,7 +35,7 @@ import { DataSeriesModel } from '../../model/data-series.model';
 export class PaneManager extends ChartBaseElement {
 	public panes: Record<string, PaneComponent> = {};
 	public paneRemovedSubject: Subject<PaneComponent> = new Subject();
-	public panesChangedSubject: Subject<Record<string, PaneComponent>> = new Subject();
+	public paneAddedSubject: Subject<Record<string, PaneComponent>> = new Subject();
 	public hitTestController: PaneHitTestController;
 	public dataSeriesAddedSubject: Subject<DataSeriesModel> = new Subject();
 	public dataSeriesRemovedSubject: Subject<DataSeriesModel> = new Subject();
@@ -175,7 +175,7 @@ export class PaneManager extends ChartBaseElement {
 		paneComponent.activate();
 		this.recalculateState();
 		paneComponent.mainExtent.scale.autoScale(true);
-		this.panesChangedSubject.next(this.panes);
+		this.paneAddedSubject.next(this.panes);
 		return paneComponent;
 	}
 
