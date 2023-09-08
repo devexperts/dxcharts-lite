@@ -85,7 +85,7 @@ export class ScaleModel extends ViewportModel {
 
 	/**
 	 * The method adds a new "constraint" to the existing list of x-axis constraints for charting.
-	 * The "constrait" is expected to be an object containing information about the constraints, such as the minimum and maximum values for the x-axis.
+	 * The "constraint" is expected to be an object containing information about the constraints, such as the minimum and maximum values for the x-axis.
 	 * @param constraint
 	 */
 	addXConstraint(constraint: Constraints) {
@@ -158,7 +158,7 @@ export class ScaleModel extends ViewportModel {
 			lockedYEndViewportCalculator(constrainedState, this.zoomXYRatio);
 		}
 		if (this.state.auto) {
-			this.autoScaleModel.setAutoAndRecalculateState(constrainedState, true);
+			this.autoScaleModel.doAutoYScale(constrainedState);
 		}
 
 		if (forceNoAnimation) {
@@ -180,15 +180,15 @@ export class ScaleModel extends ViewportModel {
 		const initialState = this.export();
 		super.setXScale(xStart, xEnd, false);
 		const state = this.export();
-		const constraitedState = this.scalePostProcessor(initialState, state);
+		const constrainedState = this.scalePostProcessor(initialState, state);
 		if (this.state.lockPriceToBarRatio) {
-			lockedYEndViewportCalculator(constraitedState, this.zoomXYRatio);
+			lockedYEndViewportCalculator(constrainedState, this.zoomXYRatio);
 		}
 		if (this.state.auto) {
-			this.autoScaleModel.setAutoAndRecalculateState(constraitedState, true);
+			this.autoScaleModel.doAutoYScale(constrainedState);
 		}
 
-		this.apply(constraitedState);
+		this.apply(constrainedState);
 	}
 
 	/**
@@ -202,12 +202,12 @@ export class ScaleModel extends ViewportModel {
 		// always stop the animations
 		this.haltAnimation();
 		moveXStart(state, xStart);
-		// there we need only candles constrait
-		const constraitedState = this.scalePostProcessor(initialStateCopy, state);
+		// there we need only candles constraint
+		const constrainedState = this.scalePostProcessor(initialStateCopy, state);
 		if (this.state.auto) {
-			this.autoScaleModel.setAutoAndRecalculateState(constraitedState, true);
+			this.autoScaleModel.doAutoYScale(constrainedState);
 		}
-		this.apply(constraitedState);
+		this.apply(constrainedState);
 	}
 
 	private scalePostProcessor = (initialState: ViewportModelState, state: ViewportModelState) => {
@@ -240,7 +240,7 @@ export class ScaleModel extends ViewportModel {
 		// dont auto-scale if animation, otherwise - forced or config
 		if ((!this.isViewportAnimationInProgress() && this.state.auto) || forceApply) {
 			const state = this.export();
-			this.autoScaleModel.setAutoAndRecalculateState(state, true);
+			this.autoScaleModel.doAutoYScale(state);
 			if (!compareStates(state, this.export())) {
 				this.apply(state);
 			}
