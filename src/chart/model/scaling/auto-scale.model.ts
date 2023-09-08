@@ -32,12 +32,10 @@ type HighLowPostProcessor = (highLow: HighLow) => HighLow;
  * @doc-tags auto-scale,viewport,scaling
  */
 export class AutoScaleViewportSubModel {
-	// local state, used for pane X dragging
-	auto: boolean = true;
 	// providers of high-low extrems for viewport calculation
 	highLowProviders: Record<string, HighLowProvider>;
 	// post processors can apply some changes to high low before applying it
-	highLowPostPorcessor: Record<string, HighLowPostProcessor> = {};
+	highLowPostProcessor: Record<string, HighLowPostProcessor> = {};
 
 	constructor(private delegate: ViewportModel, highLowProviders?: Record<string, HighLowProvider>) {
 		this.highLowProviders = highLowProviders ?? {};
@@ -68,25 +66,21 @@ export class AutoScaleViewportSubModel {
 	 * @returns {void}
 	 */
 	setHighLowPostProcessor(name: string, processor: HighLowPostProcessor) {
-		this.highLowPostPorcessor[name] = processor;
+		this.highLowPostProcessor[name] = processor;
 	}
 
 	/**
 	 * Sets the auto and recalculates the state of the viewport model.
 	 * @param {ViewportModelState} state - The state of the viewport model.
-	 * @param {boolean} auto - The auto value to set.
 	 * @returns {void}
 	 */
-	setAutoAndRecalculateState(state: ViewportModelState, auto: boolean) {
-		this.auto = auto;
-		if (auto) {
-			autoScaleYViewportTransformer(
-				this.delegate,
-				state,
-				Object.values(this.highLowProviders),
-				Object.values(this.highLowPostPorcessor),
-			);
-		}
+	doAutoYScale(state: ViewportModelState) {
+		autoScaleYViewportTransformer(
+			this.delegate,
+			state,
+			Object.values(this.highLowProviders),
+			Object.values(this.highLowPostProcessor),
+		);
 	}
 }
 
