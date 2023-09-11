@@ -40,19 +40,19 @@
 			const chart = DXChart.createChart(node, config);
 			const candles = generateCandlesData({ quantity: 1000, withVolume: true });
 
-			chart.setData({
-				candles,
-			});
+			chart.setData({ candles });
 
 			chart.chartModel.mainCandleSeries.instrument = { symbol: 'GGLMZN' };
 
 			const priceLabelMode = document.querySelector('[name="pricelabelmode"]');
 			priceLabelMode.addEventListener('change', e => {
+				console.log(e.target.value)
 				chart.yAxis.changeLabelMode('lastPrice', e.target.value);
 			});
 
 			const priceLabelAppearance = document.querySelector('[name="pricelabelappearance"]');
 			priceLabelAppearance.addEventListener('change', e => {
+				console.log(e.target.value)
 				chart.yAxis.changeLabelAppearance('lastPrice', e.target.value);
 			});
 

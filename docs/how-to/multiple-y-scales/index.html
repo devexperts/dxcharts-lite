@@ -41,7 +41,7 @@
 				const pane = chart.paneManager.panes.CHART;
 				const newExtent = pane.createExtentComponent();
 				const dataSeries = newExtent.createDataSeries();
-				dataSeries.dataPoints = DXChart.generateCandlesData({ quantity: 1000 });
+				dataSeries.dataPoints = generateCandlesData({ quantity: 1000 });
 				// updateView is necessary to recalculate internal state after the data were set
 				pane.updateView();
 			});
