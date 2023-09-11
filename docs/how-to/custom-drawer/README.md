@@ -35,9 +35,9 @@ You can define drawing order for the same canvas, for example you want to add yo
 chart.drawingManager.addDrawer(drawer, 'newDrawerName');
 
 // However, there are two special methods which allow you to add drawer before or after specific drawer
-chart.drawingManager.addDrawerAfter(drawer, 'newDrawerName', 'DATA_SERIES');
+chart.drawingManager.addDrawerAfter(drawer, 'newDrawerName', 'DYNAMIC_OBJECTS');
 // or
-chart.drawingManager.addDrawerBefore(drawer, 'newDrawerName', 'DATA_SERIES');
+chart.drawingManager.addDrawerBefore(drawer, 'newDrawerName', 'DYNAMIC_OBJECTS');
 ```
 
 List of default drawer types:
@@ -57,8 +57,7 @@ List of default drawer types:
 	'X_AXIS',
 	'Y_AXIS',
 	'HIGH_LOW',
-	'DRAWINGS',
-	'DATA_SERIES',
+	'DYNAMIC_OBJECTS',
 	'N_MAP_CHART',
 	'PL_CHART',
 	'WATERMARK',

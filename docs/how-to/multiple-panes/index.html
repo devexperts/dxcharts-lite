@@ -41,7 +41,7 @@
 			const movePaneDownBtn = document.querySelector('#move-down-btn');
 
 			const updateMoveBtnState = () => {
-				const pane = chart.paneManager.paneComponents['CHART'];
+				const pane = chart.paneManager.panes['CHART'];
 				movePaneUpBtn.disabled = !pane.canMoveUp();
 				movePaneDownBtn.disabled = !pane.canMoveDown();
 			};
@@ -54,20 +54,20 @@
 			const addDataSeriesBtn = document.querySelector('#add-series-btn');
 			addDataSeriesBtn.addEventListener('click', () => {
 				const paneUuid = chart.paneManager.panesOrder.at(-1);
-				const pane = chart.paneManager.paneComponents[paneUuid];
+				const pane = chart.paneManager.panes[paneUuid];
 				const dataSeries = pane.createDataSeries();
 				const data = DXChart.generateCandlesData({ quantity: 1000, withVolume: true });
 				dataSeries.setDataPoints(data);
 			});
 
 			movePaneUpBtn.addEventListener('click', () => {
-				const pane = chart.paneManager.paneComponents['CHART'];
+				const pane = chart.paneManager.panes['CHART'];
 				pane.moveUp();
 				updateMoveBtnState();
 			});
 
 			movePaneDownBtn.addEventListener('click', () => {
-				const pane = chart.paneManager.paneComponents['CHART'];
+				const pane = chart.paneManager.panes['CHART'];
 				pane.moveDown();
 				updateMoveBtnState();
 			});
