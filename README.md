@@ -118,11 +118,11 @@ Here is full quick-start code example:
 ```markup
 <html>
     <head>
-        <script src="https://www.unpkg.com/@devexperts/dxcharts-lite@2.0.0/dist/dxchart.min.js"></script>
+        <script src="https://www.unpkg.com/@devexperts/dxcharts-lite@2.0.1/dist/dxchart.min.js"></script>
         <script type="importmap">
         {
           "imports": {
-            "@devexperts/dxcharts-lite/": "https://www.unpkg.com/@devexperts/dxcharts-lite@2.0.0/"
+            "@devexperts/dxcharts-lite/": "https://www.unpkg.com/@devexperts/dxcharts-lite@2.0.1/"
           }
         }
         </script>
