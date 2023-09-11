@@ -3,7 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { FullChartConfig } from '../../../chart.config';
+import { FullChartConfig, YAxisConfig } from '../../../chart.config';
 import { CandleSeriesModel } from '../../../model/candle-series.model';
 import { DataSeriesType } from '../../../model/data-series.config';
 import { ChartModel, LastCandleLabelHandler } from '../../chart/chart.model';
@@ -17,7 +17,8 @@ import { LabelColorResolver } from '../y-axis.component';
 export class LastCandleLabelsProvider implements YAxisLabelsProvider {
 	constructor(
 		private chartModel: ChartModel,
-		private config: FullChartConfig,
+		private fullConfig: FullChartConfig,
+		private yAxisConfig: YAxisConfig,
 		private lastCandleLabelsByChartType: Partial<Record<DataSeriesType, LastCandleLabelHandler>>,
 		private resolveLabelColorFn: (chartType: DataSeriesType) => LabelColorResolver,
 	) {}
@@ -28,7 +29,7 @@ export class LastCandleLabelsProvider implements YAxisLabelsProvider {
 	 */
 	public getUnorderedLabels(): LabelGroup[] {
 		const collectedLabels: LabelGroup[] = [];
-		const visible = this.config.components.yAxis.labels.settings.lastPrice.mode !== 'none';
+		const visible = this.yAxisConfig.labels.settings.lastPrice.mode !== 'none';
 		if (visible) {
 			// main candle series
 			const yAxisVisualLabel = this.getYAxisVisualLabel(this.chartModel.mainCandleSeries);
@@ -41,7 +42,7 @@ export class LastCandleLabelsProvider implements YAxisLabelsProvider {
 			if (mainCandleSeriesVisualLabel) {
 				const mainCandleSeriesLabels: LabelGroup = { labels: [mainCandleSeriesVisualLabel] };
 
-				const handler = this.lastCandleLabelsByChartType[this.config.components.chart.type];
+				const handler = this.lastCandleLabelsByChartType[this.fullConfig.components.chart.type];
 				handler?.(mainCandleSeriesLabels, this.chartModel.mainCandleSeries);
 				collectedLabels.push(mainCandleSeriesLabels);
 			}
@@ -81,8 +82,8 @@ export class LastCandleLabelsProvider implements YAxisLabelsProvider {
 		if (lastCandle) {
 			const y = series.view.toY(lastCandle.close);
 			if (isFinite(y)) {
-				const mode = this.config.components.yAxis.labels.settings.lastPrice.mode;
-				const appearanceType = this.config.components.yAxis.labels.settings.lastPrice.type;
+				const mode = this.yAxisConfig.labels.settings.lastPrice.mode;
+				const appearanceType = this.yAxisConfig.labels.settings.lastPrice.type;
 
 				return {
 					y,

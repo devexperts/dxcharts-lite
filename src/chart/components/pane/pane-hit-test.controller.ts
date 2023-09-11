@@ -12,7 +12,7 @@ import { PaneComponent } from './pane.component';
 export class PaneHitTestController implements HitTestSubscriber<DataSeriesModel> {
 	// used in hit test for creating series
 	private dataSeriesIdCounter: number = HIT_TEST_ID_RANGE.DATA_SERIES[0];
-	constructor(private readonly paneComponents: Record<string, PaneComponent>, private canvasModel: CanvasModel) {}
+	constructor(private readonly panes: Record<string, PaneComponent>, private canvasModel: CanvasModel) {}
 	public getNewDataSeriesHitTestId = (): number => {
 		return this.dataSeriesIdCounter++;
 	};
@@ -26,7 +26,7 @@ export class PaneHitTestController implements HitTestSubscriber<DataSeriesModel>
 	}
 	get allDataSeries(): DataSeriesModel[] {
 		return flatMap(
-			flatMap(Object.values(this.paneComponents), c => c.yExtentComponents),
+			flatMap(Object.values(this.panes), c => c.yExtentComponents),
 			p => Array.from(p.dataSeries),
 		);
 	}
@@ -61,11 +61,11 @@ export class PaneHitTestController implements HitTestSubscriber<DataSeriesModel>
 	}
 
 	handleYExtentDragStart(model: DataSeriesModel<DataSeriesPoint, VisualSeriesPoint>) {
-		Object.values(this.paneComponents).forEach(p => p.yExtentComponents.forEach(y => y.dragNDrop.deactivate()));
+		Object.values(this.panes).forEach(p => p.yExtentComponents.forEach(y => y.dragNDrop.deactivate()));
 		model.extentComponent.dragNDrop.activate();
 	}
 
 	handleYExtentDragEnd() {
-		Object.values(this.paneComponents).forEach(p => p.yExtentComponents.forEach(y => y.dragNDrop.activate()));
+		Object.values(this.panes).forEach(p => p.yExtentComponents.forEach(y => y.dragNDrop.activate()));
 	}
 }

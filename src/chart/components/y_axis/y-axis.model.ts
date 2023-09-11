@@ -29,7 +29,7 @@ export class YAxisModel extends ChartBaseElement {
 		scale: ScaleModel,
 		valueFormatter: (value: number) => string,
 		dataSeriesProvider: () => DataSeriesModel | undefined,
-		extentIdx: number,
+		private extentIdx: number,
 	) {
 		super();
 		this.labelsGenerator = new NumericYAxisLabelsGenerator(
@@ -70,7 +70,7 @@ export class YAxisModel extends ChartBaseElement {
 						(maxLengthText, label) => (label.length > maxLengthText.length ? label : maxLengthText),
 						'',
 					),
-			getYAxisIndex: () => 0,
+			getYAxisIndex: () => this.extentIdx,
 			getYAxisState: () => this.state,
 			getPaneUUID: () => this.paneUUID,
 		};
