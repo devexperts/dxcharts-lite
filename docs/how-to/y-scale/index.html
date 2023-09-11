@@ -1,20 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-	<meta charset="UTF-8" />
-	<meta name="viewport"
-		content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
-	<meta http-equiv="X-UA-Compatible" content="ie=edge" />
-	<title>DXCharts Lite Y-Axis example</title>
-	<link rel="stylesheet" href="../common-styles.css" />
-	<link rel="stylesheet" href="./style.css">
-	<script src="https://www.unpkg.com/@devexperts/dxcharts-lite@1.0.1/dist/dxchart.min.js"></script>
-	<script src="https://www.unpkg.com/@devexperts/dxcharts-lite@1.0.1/dist/chart/utils/candles-generator.utils.js"
-		type="module"></script>
-</head>
-<body>
-	<div class="container">
+	<head>
+		<meta charset="UTF-8" />
+		<meta
+			name="viewport"
+			content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
+		<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+		<title>DXCharts Lite Y-Axis example</title>
+		<link rel="stylesheet" href="../common-styles.css" />
+		<link rel="stylesheet" href="./style.css" />
+		<script src="https://www.unpkg.com/@devexperts/dxcharts-lite@2.0.0/dist/dxchart.min.js"></script>
+		<script type="importmap">
+			{
+				"imports": {
+					"@devexperts/dxcharts-lite/": "https://www.unpkg.com/@devexperts/dxcharts-lite@2.0.0/"
+				}
+			}
+		</script>
+	</head>
+	<body>
+		<div class="container">
 			<div class="settings">
 				<div class="grid">
 					<div>
@@ -23,25 +28,32 @@
 						<label> <input name="lock" type="checkbox" /> <small>setLockPriceToBarRatio</small> </label>
 						<p>Axis alignment</p>
 						<div class="flex">
-							<label> <input name="align" type="radio" value="right" checked /> <small>Right</small> </label>
+							<label>
+								<input name="align" type="radio" value="right" checked /> <small>Right</small>
+							</label>
 							<label> <input name="align" type="radio" value="left" /><small>Left</small> </label>
 						</div>
 						<p>Axis type</p>
 						<div class="flex">
 							<label> <input name="type" type="radio" value="percent" /> <small>Percent</small> </label>
-							<label> <input name="type" type="radio" value="regular" checked /> <small>Regular</small> </label>
-							<label> <input name="type" type="radio" value="logarithmic" /> <small>Logarithmic</small> </label>
+							<label>
+								<input name="type" type="radio" value="regular" checked /> <small>Regular</small>
+							</label>
+							<label>
+								<input name="type" type="radio" value="logarithmic" /> <small>Logarithmic</small>
+							</label>
 						</div>
 					</div>
 				</div>
+			</div>
+			<div id="chart" class="chart"></div>
 		</div>
-		<div id="chart" class="chart"></div>
-	</div>
-	<script type="module">
+		<script type="module">
+			import generateCandlesData from '@devexperts/dxcharts-lite/dist/chart/utils/candles-generator.utils';
 			const container = document.getElementById('chart');
 			const chart = DXChart.createChart(container);
 
-			const candles = DXChart.generateCandlesData({ quantity: 1000, withVolume: true });
+			const candles = generateCandlesData({ quantity: 1000, withVolume: true });
 
 			chart.setData({ candles });
 
@@ -67,8 +79,6 @@
 			type.forEach(input => {
 				input.addEventListener('click', () => chart.yAxis.setAxisType(input.value));
 			});
-
-	</script>
-</body>
-
+		</script>
+	</body>
 </html>

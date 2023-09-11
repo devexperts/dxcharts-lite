@@ -1,64 +1,52 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta
+			name="viewport"
+			content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
+		<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+		<title>DXCharts Lite chart types</title>
+		<link rel="stylesheet" href="../common-styles.css" />
+		<script src="https://www.unpkg.com/@devexperts/dxcharts-lite@2.0.0/dist/dxchart.min.js"></script>
+		<script type="importmap">
+			{
+				"imports": {
+					"@devexperts/dxcharts-lite/": "https://www.unpkg.com/@devexperts/dxcharts-lite@2.0.0/"
+				}
+			}
+		</script>
+	</head>
 
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport"
-		content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-	<meta http-equiv="X-UA-Compatible" content="ie=edge">
-	<title>DXCharts Lite chart types</title>
-	<link rel="stylesheet" href="../common-styles.css" />
-	<script src="https://www.unpkg.com/@devexperts/dxcharts-lite@1.0.1/dist/dxchart.min.js"></script>
-	<script src="https://www.unpkg.com/@devexperts/dxcharts-lite@1.0.1/dist/chart/utils/candles-generator.utils.js"
-		type="module"></script>
-</head>
+	<body>
+		<div class="settings">
+			<h1>DXCharts Lite chart types example</h1>
+			<label> <input name="chart-type" type="radio" value="candle" checked /> Candle </label>
+			<label> <input name="chart-type" type="radio" value="bar" /> Bar </label>
+			<label> <input name="chart-type" type="radio" value="line" /> Line </label>
+			<label> <input name="chart-type" type="radio" value="area" /> Area </label>
+			<label> <input name="chart-type" type="radio" value="scatterPlot" /> ScatterPlot </label>
+			<label> <input name="chart-type" type="radio" value="hollow" /> Hollow </label>
+			<label> <input name="chart-type" type="radio" value="histogram" /> Histogram </label>
+			<label> <input name="chart-type" type="radio" value="baseline" /> Baseline </label>
+			<label> <input name="chart-type" type="radio" value="trend" /> Trend </label>
+		</div>
 
-<body>
-	<div class="settings">
-		<h1>DXCharts Lite chart types example</h1>
-		<label>
-			<input name="chart-type" type="radio" value="candle" checked /> Candle
-		</label>
-		<label>
-			<input name="chart-type" type="radio" value="bar" /> Bar
-		</label>
-		<label>
-			<input name="chart-type" type="radio" value="line" /> Line
-		</label>
-		<label>
-			<input name="chart-type" type="radio" value="area" /> Area
-		</label>
-		<label>
-			<input name="chart-type" type="radio" value="scatterPlot" /> ScatterPlot
-		</label>
-		<label>
-			<input name="chart-type" type="radio" value="hollow" /> Hollow
-		</label>
-		<label>
-			<input name="chart-type" type="radio" value="histogram" /> Histogram
-		</label>
-		<label>
-			<input name="chart-type" type="radio" value="baseline" /> Baseline
-		</label>
-		<label>
-			<input name="chart-type" type="radio" value="trend" /> Trend
-		</label>
-	</div>
+		<div id="dxcharts_lite" class="chart"></div>
+		<script type="module">
+			import generateCandlesData from '@devexperts/dxcharts-lite/dist/chart/utils/candles-generator.utils';
+			
+			const container = document.getElementById('dxcharts_lite');
+			const chartInstance = DXChart.createChart(container);
 
-	<div id="dxcharts_lite" class="chart"></div>
-	<script type="module">
-		const container = document.getElementById('dxcharts_lite');
-		const chartInstance = DXChart.createChart(container);
+			const candles = generateCandlesData({ quantity: 1000, withVolume: true });
+			chartInstance.setData({ candles });
 
-		const candles = DXChart.generateCandlesData({ quantity: 1000, withVolume: true });
-		chartInstance.setData({ candles });
-
-		// Handle type
-		const inputs = Array.from(document.querySelectorAll('input[name="chart-type"]'));
-		inputs.forEach(input => {
-			input.addEventListener('click', () => chartInstance.chartComponent.setChartType(input.value));
-		});
-	</script>
-</body>
-
+			// Handle type
+			const inputs = Array.from(document.querySelectorAll('input[name="chart-type"]'));
+			inputs.forEach(input => {
+				input.addEventListener('click', () => chartInstance.chartComponent.setChartType(input.value));
+			});
+		</script>
+	</body>
 </html>
