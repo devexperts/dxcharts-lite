@@ -16,7 +16,7 @@ import {
 	FullChartConfig,
 	GridComponentConfig,
 	PartialChartConfig,
-	mergeWithDefaultConfig
+	mergeWithDefaultConfig,
 } from './chart.config';
 import { ChartBaseModel } from './components/chart/chart-base.model';
 import { ChartComponent } from './components/chart/chart.component';
@@ -433,7 +433,7 @@ export default class ChartBootstrap implements ChartContainer {
 		);
 		this.chartComponents.push(this.navigationMapComponent);
 		this.userInputListenerComponents.push(this.navigationMapComponent.navigationMapMoveHandler);
-		
+
 		// high low component
 		const highLowComponent = new HighLowComponent(
 			config,
@@ -451,6 +451,7 @@ export default class ChartBootstrap implements ChartContainer {
 		const lastCandleLabelsProvider = new LastCandleLabelsProvider(
 			this.chartModel,
 			this.config,
+			mainPane.mainExtent.yAxis.state,
 			this.chartModel.lastCandleLabelsByChartType,
 			this.yAxisComponent.getLabelsColorResolver.bind(this.yAxisComponent),
 		);
@@ -693,7 +694,6 @@ export default class ChartBootstrap implements ChartContainer {
 	getOffsets(): ChartConfigComponentsOffsets {
 		return this.config.components && this.config.components.offsets;
 	}
-
 
 	/**
 	 * Sets the visibility of the borders of the candles in the chart.
