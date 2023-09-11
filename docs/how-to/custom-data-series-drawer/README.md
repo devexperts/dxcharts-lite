@@ -1,6 +1,6 @@
 # Custom data series drawer
 
-#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/s5y7tc)<!--/CSB_LINK-->
+#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/hls8ns)<!--/CSB_LINK-->
 
 ## Creating new drawer for data series
 
@@ -42,17 +42,17 @@ const myDrawer = {
 After that, you need to register it in the chart component:
 
 ```js
-chart.chartComponent.registerDataSeriesTypeDrawer('TREND', myDrawer);
+chart.data.registerDataSeriesTypeDrawer('TREND', myDrawer);
 ```
 
 Now you can use it for data series:
 
 ```js
 // set type for main data series
-chart.chartComponent.setChartType('TREND');
+chart.data.setChartType('TREND');
 
 // setType for any data series
-const dataSeries = chart.paneManager.paneComponents['CHART'].createDataSeries();
+const dataSeries = chart.paneManager.panes['CHART'].createDataSeries();
 //... set your data to dataSeries
 // and then you can select your drawer type
 dataSeries.setType('TREND');

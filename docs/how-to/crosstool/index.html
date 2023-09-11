@@ -1,117 +1,121 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport"
-		content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-	<meta http-equiv="X-UA-Compatible" content="ie=edge">
-	<title>DXCharts Lite Crosstool</title>
-	<link rel="stylesheet" href="../common-styles.css" />
-	<script src="https://www.unpkg.com/@devexperts/dxcharts-lite@1.0.1/dist/dxchart.min.js"></script>
-	<script src="https://www.unpkg.com/@devexperts/dxcharts-lite@1.0.1/dist/chart/utils/candles-generator.utils.js"
-		type="module"></script>
-	<script src="./drawer.js"></script>
-</head>
-
-<body>
-	<div class="container">
-		<div class="settings">
-			<h1>Crosstool example</h1>
-			<button class="btn" type="button" id="crosstool-onoff-btn">Enable crosstool</button>
-			<button class="btn" type="button" id="crosstool-magnet-btn">Enable magnet mode</button>
-		</div>
-		<div id="chart_1" style="height: 49vh"></div>
-	</div>
-	<div style="height: 2vh"></div>
-	<div class="container">
-		<div class="settings">
-			<h1>Custom Crosstool example</h1>
-		</div>
-		<div id="chart_2" style="height: 49vh"></div>
-	</div>
-	<script type="module">
-		import CustomCrosstoolDrawer from './drawer.js';
-
-		// first chart with default crosstool
-		const container_1 = document.getElementById('chart_1');
-		const chartInstance_1 = DXChart.createChart(container_1, {
-			components: {
-				crossTool: {
-					type: "none",
-					xAxisLabelFormat: [{ format: 'dd.MM HH:mm' }],
-					xLabel: {
-						padding: {
-							top: 4,
-							bottom: 4,
-							right: 8,
-							left: 8,
-						},
-						margin: {
-							top: 0,
-						},
-					},
+	<head>
+		<meta charset="UTF-8" />
+		<meta
+			name="viewport"
+			content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
+		<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+		<title>DXCharts Lite Crosstool</title>
+		<link rel="stylesheet" href="../common-styles.css" />
+		<script src="https://www.unpkg.com/@devexperts/dxcharts-lite@2.0.0/dist/dxchart.min.js"></script>
+		<script type="importmap">
+			{
+				"imports": {
+					"@devexperts/dxcharts-lite/": "https://www.unpkg.com/@devexperts/dxcharts-lite@2.0.0/"
 				}
 			}
-		});
+		</script>
+		<script src="./drawer.js"></script>
+	</head>
 
-		const candles = DXChart.generateCandlesData({ quantity: 1000 });
-		chartInstance_1.setData({ candles });
+	<body>
+		<div class="container">
+			<div class="settings">
+				<h1>Crosstool example</h1>
+				<button class="btn" type="button" id="crosstool-onoff-btn">Enable crosstool</button>
+				<button class="btn" type="button" id="crosstool-magnet-btn">Enable magnet mode</button>
+			</div>
+			<div id="chart_1" style="height: 49vh"></div>
+		</div>
+		<div style="height: 2vh"></div>
+		<div class="container">
+			<div class="settings">
+				<h1>Custom Crosstool example</h1>
+			</div>
+			<div id="chart_2" style="height: 49vh"></div>
+		</div>
+		<script type="module">
+			import generateCandlesData from '@devexperts/dxcharts-lite/dist/chart/utils/candles-generator.utils';
+			import CustomCrosstoolDrawer from './drawer.js';
 
-		let magnet = false;
-		const crosstoolMagnetBtn = document.querySelector('#crosstool-magnet-btn');
-		crosstoolMagnetBtn.addEventListener('click', () => {
-			magnet = !magnet;
-			chartInstance_1.crossToolComponent.setMagnetTarget(magnet ? 'OHLC' : 'none');
-			crosstoolMagnetBtn.textContent = magnet ? "Disable magnet mode" : "Enable magnet mode";
-		});
-
-		let visible = false;
-		const crosstoolOnOffBtn = document.querySelector('#crosstool-onoff-btn');
-		crosstoolOnOffBtn.addEventListener('click', () => {
-			visible = !visible;
-			chartInstance_1.crossToolComponent.setVisible(visible);
-			crosstoolOnOffBtn.textContent = visible ? "Disable crosstool" : "Enable crosstool";
-		});
-
-		// second chart with custom crosstool
-		const container_2 = document.getElementById('chart_2');
-		const chartInstance_2 = DXChart.createChart(container_2, {
-			components: {
-				crossTool: {
-					type: "none",
-					xAxisLabelFormat: [{ format: 'dd.MM HH:mm' }],
-					xLabel: {
-						padding: {
-							top: 4,
-							bottom: 4,
-							right: 8,
-							left: 8,
-						},
-						margin: {
-							top: 0,
+			// first chart with default crosstool
+			const container_1 = document.getElementById('chart_1');
+			const chart = DXChart.createChart(container_1, {
+				components: {
+					crossTool: {
+						type: 'none',
+						xAxisLabelFormat: [{ format: 'dd.MM HH:mm' }],
+						xLabel: {
+							padding: {
+								top: 4,
+								bottom: 4,
+								right: 8,
+								left: 8,
+							},
+							margin: {
+								top: 0,
+							},
 						},
 					},
-					magnetTarget: 'C',
-					visible: false,
-					type: 'cross-and-labels',
-				}
-			}
-		});
+				},
+			});
 
-		chartInstance_2.chartComponent.setMainSeries({ candles });
+			const candles = generateCandlesData({ quantity: 1000 });
+			chart.setData({ candles });
 
-		chartInstance_2.crossToolComponent.registerCrossToolTypeDrawer(
-			'cross-and-labels',
-			new CustomCrosstoolDrawer(
-				chartInstance_2.config,
-				chartInstance_2.canvasBoundsContainer,
-				chartInstance_2.chartModel,
-				chartInstance_2.paneManager,
-			),
-		);
+			let magnet = false;
+			const crosshairMagnetBtn = document.querySelector('#crosstool-magnet-btn');
+			crosshairMagnetBtn.addEventListener('click', () => {
+				magnet = !magnet;
+				chart.crossToolComponent.setMagnetTarget(magnet ? 'OHLC' : 'none');
+				crosshairMagnetBtn.textContent = magnet ? 'Disable magnet mode' : 'Enable magnet mode';
+			});
 
-	</script>
-</body>
+			let visible = false;
+			const crosshairOnOffBtn = document.querySelector('#crosstool-onoff-btn');
+			crosshairOnOffBtn.addEventListener('click', () => {
+				visible = !visible;
+				chart.crossToolComponent.setVisible(visible);
+				crosshairOnOffBtn.textContent = visible ? 'Disable crosstool' : 'Enable crosstool';
+			});
 
+			// second chart with custom crosstool
+			const container_2 = document.getElementById('chart_2');
+			const chart2 = DXChart.createChart(container_2, {
+				components: {
+					crossTool: {
+						type: 'none',
+						xAxisLabelFormat: [{ format: 'dd.MM HH:mm' }],
+						xLabel: {
+							padding: {
+								top: 4,
+								bottom: 4,
+								right: 8,
+								left: 8,
+							},
+							margin: {
+								top: 0,
+							},
+						},
+						magnetTarget: 'C',
+						visible: false,
+						type: 'cross-and-labels',
+					},
+				},
+			});
+
+			chart2.chartComponent.setMainSeries({ candles });
+
+			chart2.crossToolComponent.registerCrossToolTypeDrawer(
+				'cross-and-labels',
+				new CustomCrosstoolDrawer(
+					chart2.config,
+					chart2.canvasBoundsContainer,
+					chart2.chartModel,
+					chart2.paneManager,
+				),
+			);
+		</script>
+	</body>
 </html>

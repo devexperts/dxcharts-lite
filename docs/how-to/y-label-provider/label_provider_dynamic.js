@@ -1,6 +1,6 @@
-export default (chartInstance, group, getName) => ({
+export default (chart, group, getName) => ({
 	getUnorderedLabels: () => {
-		const y = chartInstance.chartModel.toY(chartInstance.chartModel.mainCandleSeries.dataPoints.at(-1).close);
+		const y = chart.chartModel.toY(chart.chartModel.mainCandleSeries.dataPoints.at(-1).close);
 
 		return [
 			{

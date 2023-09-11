@@ -1,49 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-	<meta charset="UTF-8" />
-	<meta name="viewport"
-		content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
-	<meta http-equiv="X-UA-Compatible" content="ie=edge" />
-	<title>DXCharts Lite Multiple Panes</title>
-	<link rel="stylesheet" href="../common-styles.css" />
-	<script src="https://www.unpkg.com/@devexperts/dxcharts-lite@1.0.1/dist/dxchart.min.js"></script>
-	<script src="https://www.unpkg.com/@devexperts/dxcharts-lite@1.0.1/dist/chart/utils/candles-generator.utils.js"
-		type="module">
+	<head>
+		<meta charset="UTF-8" />
+		<meta
+			name="viewport"
+			content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
+		<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+		<title>DXCharts Lite Multiple Panes</title>
+		<link rel="stylesheet" href="../common-styles.css" />
+		<script src="https://www.unpkg.com/@devexperts/dxcharts-lite@2.0.0/dist/dxchart.min.js"></script>
+		<script type="importmap">
+			{
+				"imports": {
+					"@devexperts/dxcharts-lite/": "https://www.unpkg.com/@devexperts/dxcharts-lite@2.0.0/"
+				}
+			}
 		</script>
-</head>
+	</head>
 
-<body>
-	<div class="settings">
-		<h1>DXcharts Lite Multiple Y-Scales</h1>
-		<button class="btn" type="button" id="add-y-scale">Add y-scale (extent)</button>
-		<button class="btn" type="button" id="merge-scales">Merge extents into one</button>
-	</div>
-	<div id="chart" class="chart"></div>
-	<script type="module">
-		const container = document.getElementById('chart');
-		const chart = DXChart.createChart(container);
+	<body>
+		<div class="settings">
+			<h1>DXcharts Lite Multiple Y-Scales</h1>
+			<button class="btn" type="button" id="add-y-scale">Add y-scale (extent)</button>
+			<button class="btn" type="button" id="merge-scales">Merge extents into one</button>
+		</div>
+		<div id="chart" class="chart"></div>
+		<script type="module">
+			import generateCandlesData from '@devexperts/dxcharts-lite/dist/chart/utils/candles-generator.utils';
 
-		const candles = DXChart.generateCandlesData({ quantity: 1000, withVolume: true });
-		chart.setData({ candles });
+			const container = document.getElementById('chart');
+			const chart = DXChart.createChart(container);
 
-		const addYScaleBtn = document.querySelector('#add-y-scale');
-		const mergeScalesBtn = document.querySelector('#merge-scales');
+			const candles = generateCandlesData({ quantity: 1000, withVolume: true });
+			chart.setData({ candles });
 
-		addYScaleBtn.addEventListener('click', () => {
-			const pane = chart.paneManager.paneComponents.CHART;
-			const newExtent = pane.createExtentComponent();
-			const dataSeries = newExtent.createDataSeries();
-			dataSeries.dataPoints = DXChart.generateCandlesData({ quantity: 1000 });
-			// updateView is necessary to recalculate internal state after the data were set
-			pane.updateView();
-		});
+			const addYScaleBtn = document.querySelector('#add-y-scale');
+			const mergeScalesBtn = document.querySelector('#merge-scales');
 
-		mergeScalesBtn.addEventListener('click', () => {
-			chart.paneManager.paneComponents.CHART.mergeYExtents();
-		});
-	</script>
-</body>
+			addYScaleBtn.addEventListener('click', () => {
+				const pane = chart.paneManager.panes.CHART;
+				const newExtent = pane.createExtentComponent();
+				const dataSeries = newExtent.createDataSeries();
+				dataSeries.dataPoints = DXChart.generateCandlesData({ quantity: 1000 });
+				// updateView is necessary to recalculate internal state after the data were set
+				pane.updateView();
+			});
 
+			mergeScalesBtn.addEventListener('click', () => {
+				chart.paneManager.panes.CHART.mergeYExtents();
+			});
+		</script>
+	</body>
 </html>

@@ -1,17 +1,17 @@
 # Crosstool
 
-#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/s4h9nk)<!--/CSB_LINK-->
+#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/xlx7ld)<!--/CSB_LINK-->
 
-## Set crosstool type
+## Set crosshair type
 
-You can enable/disable crosstool by setting type:
+You can enable/disable crosshair by setting type:
 
 -   `cross-and-labels` - both the crosshair and X/Y labels
 -   `only-labels` - only the X/Y label
--   `none` - crosstool is not visible
+-   `none` - crosshair is not visible
 
 ```js
-chartInstance.crossToolComponent.setType('cross-and-labels');
+chart.crosshair.setType('cross-and-labels');
 ```
 
 ## Set crosstool X axis formatting
@@ -28,12 +28,12 @@ Sets magnet target for cross tool. Supported only for `cross-and-labels` type.
 Default magnet target is none.
 
 ```js
-chartInstance.crossToolComponent.setMagnetTarget('OHLC');
+chart.crosshair.setMagnetTarget('OHLC');
 ```
 
 ## Paddings for labels
 
-Also you can set paddings for crosstool labels via config:
+Also you can set paddings for crosshair labels via config:
 
 ```js
 xLabel: {

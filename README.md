@@ -23,7 +23,7 @@
     <img src="https://img.shields.io/static/v1?label=PRs&message=Welcome&color=blue" alt="PRs: Welcome" />
   </a>&nbsp;
   <a href="https://devexperts.com/dxcharts-demo/?lang=en">
-    <img src="https://img.shields.io/static/v1?label=Latest%20version&message=1.0.0&color=blue" alt="Version" />
+    <img src="https://img.shields.io/static/v1?label=Latest%20version&message=2.0.0&color=blue" alt="Version" />
   </a>
 </p>
 
@@ -97,16 +97,11 @@ Now you should have empty chart on screen.
 
 Let's pass in some data i.e. `Candles`. You can use bundled function to generate some mock data.
 Import `generateCandlesData` and call it to generate candles.
-Also, you would need `Instrument` object - it is required to show instrument description on chart and show correct price precisions on Y axis.
 
 ```js
 export const generateMockData = () => {
-	const mockCandles = generateCandlesData();
-	const mockInstrument = {
-		symbol: 'AAPL',
-		priceIncrements: [0.01],
-	};
-	chart.setData({ candles: mockCandles, instrument: mockInstrument });
+	const candles = generateCandlesData();
+	chart.setData({ candles });
 };
 ```
 
@@ -123,25 +118,29 @@ Here is full quick-start code example:
 ```markup
 <html>
     <head>
-        <script src="https://www.unpkg.com/@devexperts/dxcharts-lite@1.0.1/dist/dxchart.min.js"></script>
+        <script src="https://www.unpkg.com/@devexperts/dxcharts-lite@2.0.0/dist/dxchart.min.js"></script>
+        <script type="importmap">
+        {
+          "imports": {
+            "@devexperts/dxcharts-lite/": "https://www.unpkg.com/@devexperts/dxcharts-lite@2.0.0/"
+          }
+        }
+        </script>
     </head>
     <body>
         <div id="chart_container"></div>
     </body>
     <script type="module">
-        import generateCandlesData from 'https://www.unpkg.com/@devexperts/dxcharts-lite@1.0.1/dist/chart/utils/candles-generator.utils.js';
+        import generateCandlesData from '@devexperts/dxcharts-lite/dist/chart/utils/candles-generator.utils';
 
         // create chart instance, pass parent container as 1st argument
         const container = document.getElementById("chart_container");
-        const chartInstance = DXChart.createChart(container);
+        const chart = DXChart.createChart(container);
         // create and set candles data
-        const mockCandles = generateCandlesData();
-        const mockInstrument = {
-            symbol: 'AAPL',
-            priceIncrements: [0.01],
-        };
-        chart.setData({ candles: mockCandles, instrument: mockInstrument });
-  </script>
+        const candles = generateCandlesData();
+        chart.setData({ candles });
+    </script>
+</html>
 ```
 
 ## Configuration
