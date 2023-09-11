@@ -1,6 +1,6 @@
 # X-Axis
 
-#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/c84zlj)<!--/CSB_LINK-->
+#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/rk2nln)<!--/CSB_LINK-->
 
 ## Reset scale
 

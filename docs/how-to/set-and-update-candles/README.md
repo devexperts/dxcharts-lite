@@ -1,6 +1,6 @@
 # DXCharts data examples
 
-#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/m4wphn)<!--/CSB_LINK-->
+#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/zskz5r)<!--/CSB_LINK-->
 
 ## 💫 Setting the Main Series
 

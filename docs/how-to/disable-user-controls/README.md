@@ -1,6 +1,6 @@
 # Disable user controls
 
-#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/66579p)<!--/CSB_LINK-->
+#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/vg2klf)<!--/CSB_LINK-->
 
 If you want to display a chart, but do not want it to be interactive, you can disable the ability for the user to interact with the chart by calling the function below
 
