@@ -43,6 +43,7 @@ import { PaneManager } from '../pane/pane-manager.component';
 import {
 	defaultCandleTransformer,
 	hollowCandleTransformer,
+	lineCandleTransformer,
 	trendCandleTransformer,
 } from './candle-transformer.functions';
 import { deleteCandlesIndex } from './candle.functions';
@@ -161,7 +162,7 @@ export class ChartComponent extends ChartBaseElement {
 		this.registerCandlesTransformer('candle', defaultCandleTransformer);
 		this.registerCandlesTransformer('trend', trendCandleTransformer);
 		this.registerCandlesTransformer('hollow', hollowCandleTransformer);
-		this.registerCandlesTransformer('line', trendCandleTransformer);
+		this.registerCandlesTransformer('line', lineCandleTransformer);
 	}
 
 	get barTypeValues(): Array<BarType> {
