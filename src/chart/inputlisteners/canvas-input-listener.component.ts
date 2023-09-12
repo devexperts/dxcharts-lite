@@ -50,7 +50,7 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 	private clickSubject = new Subject<Point>();
 	private clickDocumentSubject = new Subject<Event>();
 	private dbClickSubject = new Subject<Point>();
-	private dbTouchSubject = new Subject<Point>();
+	private dbTapSubject = new Subject<Point>();
 	private mouseDownSubject = new Subject<Point>();
 	private mouseUpSubject = new Subject<Point>();
 	private mouseUpDocumentSubject = new Subject<Point>();
@@ -232,7 +232,7 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 				let timeoutId: number | null = null;
 				return () => {
 					if (timeoutId) {
-						this.dbTouchSubject.next(this.currentPoint);
+						this.dbTapSubject.next(this.currentPoint);
 						clearTimeout(timeoutId);
 						timeoutId = null;
 					} else {
@@ -616,12 +616,12 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 	}
 
 	/**
-	 * Returns an Observable that emits a Point object when a double touch event occurs within the bounds of the current point.
+	 * Returns an Observable that emits a Point object when a double tap event occurs within the bounds of the current point.
 	 * @param {HitBoundsTest} [hitBoundsTest=() => true] - A function that tests if the double click event occurred within the bounds of the current point.
-	 * @returns {Observable<Point>} An Observable that emits a Point object when a double touch event occurs within the bounds of the current point.
+	 * @returns {Observable<Point>} An Observable that emits a Point object when a double tap event occurs within the bounds of the current point.
 	 */
-	public observeDbTouch(hitBoundsTest: HitBoundsTest = () => true): Observable<Point> {
-		return this.dbTouchSubject
+	public observeDbTap(hitBoundsTest: HitBoundsTest = () => true): Observable<Point> {
+		return this.dbTapSubject
 			.asObservable()
 			.pipe(filter(() => hitBoundsTest(this.currentPoint.x, this.currentPoint.y)));
 	}
