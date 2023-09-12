@@ -51,6 +51,8 @@ export const trendCandleTransformer: VisualCandleCalculator = (candle, { x, widt
 		candle.close > candle.open,
 	);
 
+export const lineCandleTransformer = trendCandleTransformer;
+
 export const getCandleIsActive = (candle: Candle, activeCandle?: Candle): boolean => {
 	const isActive = activeCandle && activeCandle.idx === candle.idx;
 	return isActive ?? false;
