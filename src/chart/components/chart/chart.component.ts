@@ -161,6 +161,7 @@ export class ChartComponent extends ChartBaseElement {
 		this.registerCandlesTransformer('candle', defaultCandleTransformer);
 		this.registerCandlesTransformer('trend', trendCandleTransformer);
 		this.registerCandlesTransformer('hollow', hollowCandleTransformer);
+		this.registerCandlesTransformer('line', trendCandleTransformer);
 	}
 
 	get barTypeValues(): Array<BarType> {
