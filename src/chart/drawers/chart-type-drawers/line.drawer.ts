@@ -9,6 +9,7 @@ import VisualCandle from '../../model/visual-candle';
 import { ChartDrawerConfig, SeriesDrawer, setLineWidth } from '../data-series.drawer';
 import { DataSeriesModel, VisualSeriesPoint } from '../../model/data-series.model';
 import { flat } from '../../utils/array.utils';
+import { nameDirection } from '../../model/candle.model';
 
 export class LineDrawer implements SeriesDrawer {
 	constructor(private config: ChartConfigComponentsChart) {}
@@ -33,7 +34,7 @@ export class LineDrawer implements SeriesDrawer {
 			for (let i = 1; i < visualCandles.length; i++) {
 				const prev = visualCandles[i - 1];
 				const vc = visualCandles[i];
-				const direction = vc.name;
+				const direction = nameDirection(prev.close, vc.close);
 				if (!drawerConfig.singleColor) {
 					ctx.strokeStyle = lineTheme[`${direction}Color`];
 				}
