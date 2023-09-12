@@ -115,31 +115,31 @@ Now you should see chart just like image below:
 
 Here is full quick-start code example:
 
-```markup
+```html
 <html>
-    <head>
-        <script src="https://www.unpkg.com/@devexperts/dxcharts-lite@2.0.1/dist/dxchart.min.js"></script>
-        <script type="importmap">
-        {
-          "imports": {
-            "@devexperts/dxcharts-lite/": "https://www.unpkg.com/@devexperts/dxcharts-lite@2.0.1/"
-          }
-        }
-        </script>
-    </head>
-    <body>
-        <div id="chart_container"></div>
-    </body>
-    <script type="module">
-        import generateCandlesData from '@devexperts/dxcharts-lite/dist/chart/utils/candles-generator.utils';
+	<head>
+		<script src="https://www.unpkg.com/@devexperts/dxcharts-lite@2.0.1/dist/dxchart.min.js"></script>
+		<script type="importmap">
+			{
+				"imports": {
+					"@devexperts/dxcharts-lite/": "https://www.unpkg.com/@devexperts/dxcharts-lite@2.0.1/"
+				}
+			}
+		</script>
+	</head>
+	<body>
+		<div id="chart_container"></div>
+	</body>
+	<script type="module">
+		import generateCandlesData from '@devexperts/dxcharts-lite/dist/chart/utils/candles-generator.utils';
 
-        // create chart instance, pass parent container as 1st argument
-        const container = document.getElementById("chart_container");
-        const chart = DXChart.createChart(container);
-        // create and set candles data
-        const candles = generateCandlesData();
-        chart.setData({ candles });
-    </script>
+		// create chart instance, pass parent container as 1st argument
+		const container = document.getElementById('chart_container');
+		const chart = DXChart.createChart(container);
+		// create and set candles data
+		const candles = generateCandlesData();
+		chart.setData({ candles });
+	</script>
 </html>
 ```
 
