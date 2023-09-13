@@ -251,7 +251,7 @@ export class ChartModel extends ChartBaseElement {
 			// now the visual candles
 			candleSeriesModel.recalculateVisualPoints();
 			this.candlesSetSubject.next();
-			this.bus.fireDraw([this.canvasModel.canvasId]);
+			this.canvasModel.fireDraw();
 		}
 		return candleSeriesModel;
 	}
@@ -287,7 +287,7 @@ export class ChartModel extends ChartBaseElement {
 		this.autoScaleOnCandles();
 		this.scale.doAutoScale();
 		this.candlesSetSubject.next();
-		this.bus.fireDraw([this.canvasModel.canvasId]);
+		this.canvasModel.fireDraw();
 	}
 
 	/**
@@ -511,7 +511,6 @@ export class ChartModel extends ChartBaseElement {
 		if (seriesToUpdate) {
 			seriesToUpdate.config.type = chartType;
 			seriesToUpdate.updateCandleSeriesColors(candleSeriesConfig);
-			this.bus.fireDraw([this.canvasModel.canvasId]);
 		}
 		this.bus.fireDraw([this.canvasModel.canvasId]);
 	}
@@ -680,8 +679,13 @@ export class ChartModel extends ChartBaseElement {
 	 * For given timestamp finds the closest candle in dataset.
 	 * @param timestamp
 	 */
-	public candleFromTimestamp(timestamp: Timestamp, shouldExtrapolate: boolean = true): VisualCandle {
-		return this.chartBaseModel.dataFromTimestamp(timestamp, shouldExtrapolate);
+	public candleFromTimestamp(
+		timestamp: Timestamp,
+		extrapolate: boolean = true,
+		selectedCandleSeries: CandleSeriesModel = this.mainCandleSeries,
+	): VisualCandle {
+		const dataPointsSource = selectedCandleSeries.dataPoints;
+		return this.chartBaseModel.dataFromTimestamp(timestamp, extrapolate, dataPointsSource);
 	}
 
 	/**
@@ -963,7 +967,7 @@ export class ChartModel extends ChartBaseElement {
 				// can apply some optimization
 				// series.recalculateOnlyLastVisualCandle();
 				// TODO apply optimization
-				this.bus.fireDraw([this.canvasModel.canvasId]);
+				this.canvasModel.fireDraw();
 			} else {
 				series.recalculateVisualPoints();
 			}
@@ -1077,6 +1081,27 @@ export class ChartModel extends ChartBaseElement {
 	 */
 	public updateLastCandle(candle: Candle, instrumentSymbol: string = this.mainCandleSeries.instrument.symbol): void {
 		this.updateCandles([candle], instrumentSymbol);
+	}
+
+	/**
+	 * Remove candle by idx and recaculate indexes
+	 * @param candle - new candle
+	 * @param instrument - name of the instrument to update
+	 */
+	public removeCandleByIdx(idx: number, instrumentSymbol: string = this.mainCandleSeries.instrument.symbol) {
+		const seriesList = this.findSeriesBySymbol(instrumentSymbol);
+		if (seriesList.length === 0) {
+			console.warn("removeCandle by id failed. Can't find series", instrumentSymbol);
+			return;
+		}
+		seriesList.forEach(series => {
+			series.dataPoints = series.dataPoints.slice(0, idx).concat(series.dataPoints.slice(idx + 1));
+			reindexCandles(series.dataPoints);
+			series.recalculateVisualPoints();
+		});
+		this.candlesRemovedSubject.next();
+		this.candlesUpdatedSubject.next();
+		this.canvasModel.fireDraw();
 	}
 }
 

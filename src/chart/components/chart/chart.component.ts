@@ -413,6 +413,15 @@ export class ChartComponent extends ChartBaseElement {
 	}
 
 	/**
+	 * Remove candle by idx and recaculate indexes
+	 * @param idx - candle index
+	 * @param instrument - name of the instrument to update
+	 */
+	public removeCandleByIdx(idx: number, instrumentSymbol?: string) {
+		this.chartModel.removeCandleByIdx(idx, instrumentSymbol);
+	}
+
+	/**
 	 * Updates last candle value
 	 * @param candle - updated candle
 	 * @param instrument - name of the instrument to update
