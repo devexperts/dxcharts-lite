@@ -99,5 +99,6 @@
   "files": [
     "dist/*"
   ],
+  "keywords": ["financial-charting-library", "chart", "typescript", "canvas"],
   "packageManager": "yarn@3.5.1"
 }
