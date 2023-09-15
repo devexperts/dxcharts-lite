@@ -20,6 +20,8 @@ export class Chart extends ChartBootstrap {
 	public data = this.chartComponent;
 	public scale = this.scaleModel;
 	public panning = this.chartPanComponent;
+	public bounds = this.canvasBoundsContainer;
+	public hover = this.hoverProducer;
 
 	constructor(element: HTMLElement, config: PartialChartConfig = {}) {
 		super(element, config);
@@ -55,7 +57,7 @@ export class Chart extends ChartBootstrap {
 	public showSeparateVolumes(separate: boolean = false) {
 		if (this.volumes) {
 			this.volumes.setShowVolumesSeparatly(separate);
-			this.canvasBoundsContainer.updateYAxisWidths();
+			this.bounds.updateYAxisWidths();
 		}
 	}
 

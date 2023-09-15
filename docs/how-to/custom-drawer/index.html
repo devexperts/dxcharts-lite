@@ -44,7 +44,7 @@
 					const [x2, y2] = [lastCandle.x(chart.scale), lastCandle.y(chart.scale)];
 					// below we do some manipulations which modifies ctx state, so we need to save it and restore after drawing
 					ctx.save();
-					const bounds = chart.canvasBoundsContainer.getBounds('PANE_CHART');
+					const bounds = chart.bounds.getBounds('PANE_CHART');
 					// clip drawing bounds to chart pane, so it will not be drawn outside of chart pane (on y-axis, for example)
 					clipToBounds(ctx, bounds);
 
