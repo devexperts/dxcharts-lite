@@ -9,7 +9,6 @@ import { CHART_UUID, CanvasBoundsContainer, CanvasElement } from './canvas/canva
 import { ValidatedChartElements } from './canvas/chart-elements';
 import { CursorHandler } from './canvas/cursor.handler';
 import { createDefaultLayoutTemplate, extractElements } from './canvas/layout-creator';
-import ChartContainer from './chart-container';
 import {
 	ChartColors,
 	ChartConfigComponentsOffsets,
@@ -65,7 +64,7 @@ export type FitType = 'studies' | 'orders' | 'positions';
 /**
  * @deprecated use {Chart} instead
  */
-export default class ChartBootstrap implements ChartContainer {
+export default class ChartBootstrap {
 	// can be used for convenient ID storing
 	// is NOT used inside anyhow
 	public id: string;
@@ -114,6 +113,9 @@ export default class ChartBootstrap implements ChartContainer {
 	public mainCanvasModel: CanvasModel;
 	public dynamicObjectsCanvasModel: CanvasModel;
 	public hitTestCanvasModel: HitTestCanvasModel;
+	/**
+	 * @deprecated use {canvas} instead
+	 */
 	public canvasBoundsContainer: CanvasBoundsContainer;
 	public canvasInputListener: CanvasInputListenerComponent;
 	/**
@@ -142,6 +144,9 @@ export default class ChartBootstrap implements ChartContainer {
 	 */
 	public chartPanComponent: ChartPanComponent;
 	public paneManager: PaneManager;
+	/**
+	 * @deprecated use {hover} instead
+	 */
 	public hoverProducer: HoverProducerComponent;
 	public canvasModels: CanvasModel[] = [];
 	public chartResizeHandler: ChartResizeHandler;
