@@ -23,7 +23,7 @@
     <img src="https://img.shields.io/static/v1?label=PRs&message=Welcome&color=blue" alt="PRs: Welcome" />
   </a>&nbsp;
   <a href="https://devexperts.com/dxcharts-demo/?lang=en">
-    <img src="https://img.shields.io/static/v1?label=Latest%20version&message=2.0.0&color=blue" alt="Version" />
+    <img src="https://img.shields.io/static/v1?label=Latest%20version&message=2.0.2&color=blue" alt="Version" />
   </a>
 </p>
 
