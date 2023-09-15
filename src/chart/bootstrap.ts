@@ -114,7 +114,7 @@ export default class ChartBootstrap {
 	public dynamicObjectsCanvasModel: CanvasModel;
 	public hitTestCanvasModel: HitTestCanvasModel;
 	/**
-	 * @deprecated use {canvas} instead
+	 * @deprecated use {bounds} instead
 	 */
 	public canvasBoundsContainer: CanvasBoundsContainer;
 	public canvasInputListener: CanvasInputListenerComponent;
