@@ -4,15 +4,18 @@ import { LinkedList, ListNode } from '../../utils/linkedList.utils';
 import { DynamicModelDrawer } from './dynamic-objects.drawer';
 
 export type PaneId = string;
+type DynamicObjectId = string | number;
 
 export interface DynamicObject<T = unknown> {
+	readonly id: DynamicObjectId;
 	readonly drawer: DynamicModelDrawer<T>;
-	readonly model: T;
+	readonly paneId: PaneId;
+	readonly model?: T;
 }
 
 export class DynamicObjectsModel extends ChartBaseElement {
 	private _objects: BehaviorSubject<Record<PaneId, LinkedList<DynamicObject>>>;
-	private modelToObjectMap: Map<unknown, DynamicObject> = new Map();
+	private modelIdToObjectMap: Map<DynamicObjectId, DynamicObject> = new Map();
 
 	constructor() {
 		super();
@@ -20,18 +23,41 @@ export class DynamicObjectsModel extends ChartBaseElement {
 	}
 
 	/**
+	 * @returns the `DynamicObject` itself and pane `LinkedList` where the object is stored.
+	 *
+	 */
+	private getObjectInfoById(id: DynamicObjectId): [DynamicObject, LinkedList<DynamicObject>] | undefined {
+		const obj = this.modelIdToObjectMap.get(id);
+
+		if (!obj) {
+			return undefined;
+		}
+
+		const paneId = obj.paneId;
+		const objects = this.objects;
+		const paneList = objects[paneId];
+
+		if (!paneList) {
+			return undefined;
+		}
+
+		return [obj, paneList];
+	}
+
+	/**
 	 * Adds an object from outside chart-core into model
 	 * @param obj
 	 * @param paneId
 	 */
-	addObject(obj: DynamicObject, paneId: PaneId) {
+	addObject(obj: DynamicObject) {
+		const paneId = obj.paneId;
 		const objects = this.objects;
 		const paneList = objects[paneId] ?? new LinkedList();
 		if (!Object.keys(objects).find(pane => pane === paneId)) {
 			objects[paneId] = paneList;
 		}
 		paneList.insertAtEnd(obj);
-		this.modelToObjectMap.set(obj.model, obj);
+		this.modelIdToObjectMap.set(obj.id, obj);
 		this.setDynamicObjects(objects);
 	}
 
@@ -40,20 +66,22 @@ export class DynamicObjectsModel extends ChartBaseElement {
 	 * @param model
 	 * @param paneId
 	 */
-	removeObject(model: unknown, paneId: PaneId) {
-		const objects = this.objects;
-		const paneList = objects[paneId];
-		const obj = this.modelToObjectMap.get(model);
-		if (paneList && obj) {
-			const targetNode = new ListNode(obj);
-			const targetPos = paneList.getNodePosition(targetNode);
-			paneList.removeAt(targetPos);
-			this.modelToObjectMap.delete(model);
-			if (paneList.size() === 0) {
-				delete objects[paneId];
-			}
-			this.setDynamicObjects(objects);
+	removeObject(id: DynamicObjectId) {
+		const objInfo = this.getObjectInfoById(id);
+
+		if (!objInfo) {
+			return;
 		}
+
+		const [obj, paneList] = objInfo;
+		const targetNode = new ListNode(obj);
+		const targetPos = paneList.getNodePosition(targetNode);
+		paneList.removeAt(targetPos);
+		this.modelIdToObjectMap.delete(id);
+		if (paneList.size() === 0) {
+			delete this.objects[obj.paneId];
+		}
+		this.setDynamicObjects(this.objects);
 	}
 
 	/**
@@ -61,18 +89,23 @@ export class DynamicObjectsModel extends ChartBaseElement {
 	 * @param paneId
 	 * @param listNode
 	 */
-	bringToFront(paneId: PaneId, listNode: ListNode<DynamicObject>) {
-		const list = this.objects[paneId];
-		if (list) {
-			const targetPos = list.getNodePosition(listNode);
-			if (targetPos >= 0 && targetPos < list.size()) {
-				const nodeToReplace = list.removeAt(targetPos);
-				if (nodeToReplace) {
-					list.insertAtEnd(nodeToReplace.data);
-				}
-			}
-			this.setDynamicObjects(this.objects);
+	bringToFront(id: DynamicObjectId) {
+		const objInfo = this.getObjectInfoById(id);
+
+		if (!objInfo) {
+			return;
 		}
+
+		const [obj, paneList] = objInfo;
+		const targetNode = new ListNode(obj);
+		const targetPos = paneList.getNodePosition(targetNode);
+		if (targetPos >= 0 && targetPos < paneList.size()) {
+			const nodeToReplace = paneList.removeAt(targetPos);
+			if (nodeToReplace) {
+				paneList.insertAtEnd(nodeToReplace.data);
+			}
+		}
+		this.setDynamicObjects(this.objects);
 	}
 
 	/**
@@ -80,18 +113,23 @@ export class DynamicObjectsModel extends ChartBaseElement {
 	 * @param paneId
 	 * @param listNode
 	 */
-	bringToBack(paneId: PaneId, listNode: ListNode<DynamicObject>) {
-		const list = this.objects[paneId];
-		if (list) {
-			const targetPos = list.getNodePosition(listNode);
-			if (targetPos > 0 && targetPos <= list.size()) {
-				const nodeToReplace = list.removeAt(targetPos);
-				if (nodeToReplace) {
-					list.insertAt(0, nodeToReplace?.data);
-				}
-			}
-			this.setDynamicObjects(this.objects);
+	bringToBack(id: DynamicObjectId) {
+		const objInfo = this.getObjectInfoById(id);
+
+		if (!objInfo) {
+			return;
 		}
+
+		const [obj, paneList] = objInfo;
+		const targetNode = new ListNode(obj);
+		const targetPos = paneList.getNodePosition(targetNode);
+		if (targetPos > 0 && targetPos <= paneList.size()) {
+			const nodeToReplace = paneList.removeAt(targetPos);
+			if (nodeToReplace) {
+				paneList.insertAt(0, nodeToReplace?.data);
+			}
+		}
+		this.setDynamicObjects(this.objects);
 	}
 
 	/**
@@ -99,18 +137,23 @@ export class DynamicObjectsModel extends ChartBaseElement {
 	 * @param obj
 	 * @param paneId
 	 */
-	moveForward(paneId: PaneId, listNode: ListNode<DynamicObject>) {
-		const list = this.objects[paneId];
-		if (list) {
-			const targetPos = list.getNodePosition(listNode);
-			if (targetPos >= 0 && targetPos < list.size()) {
-				const nodeToReplace = list.removeAt(targetPos);
-				if (nodeToReplace) {
-					list.insertAt(targetPos + 1, nodeToReplace.data);
-				}
-			}
-			this.setDynamicObjects(this.objects);
+	moveForward(id: DynamicObjectId) {
+		const objInfo = this.getObjectInfoById(id);
+
+		if (!objInfo) {
+			return;
 		}
+
+		const [obj, paneList] = objInfo;
+		const targetNode = new ListNode(obj);
+		const targetPos = paneList.getNodePosition(targetNode);
+		if (targetPos >= 0 && targetPos < paneList.size()) {
+			const nodeToReplace = paneList.removeAt(targetPos);
+			if (nodeToReplace) {
+				paneList.insertAt(targetPos + 1, nodeToReplace.data);
+			}
+		}
+		this.setDynamicObjects(this.objects);
 	}
 
 	/**
@@ -118,19 +161,25 @@ export class DynamicObjectsModel extends ChartBaseElement {
 	 * @param obj
 	 * @param paneId
 	 */
-	moveBackwards(paneId: PaneId, listNode: ListNode<DynamicObject>) {
-		const list = this.objects[paneId];
-		if (list) {
-			const targetPos = list.getNodePosition(listNode);
-			if (targetPos > 0 && targetPos <= list.size()) {
-				const nodeToReplace = list.removeAt(targetPos);
-				if (nodeToReplace) {
-					list.insertAt(targetPos - 1, nodeToReplace?.data);
-				}
-			}
-			this.setDynamicObjects(this.objects);
+	moveBackwards(id: DynamicObjectId) {
+		const objInfo = this.getObjectInfoById(id);
+
+		if (!objInfo) {
+			return;
 		}
+
+		const [obj, paneList] = objInfo;
+		const targetNode = new ListNode(obj);
+		const targetPos = paneList.getNodePosition(targetNode);
+		if (targetPos > 0 && targetPos <= paneList.size()) {
+			const nodeToReplace = paneList.removeAt(targetPos);
+			if (nodeToReplace) {
+				paneList.insertAt(targetPos - 1, nodeToReplace?.data);
+			}
+		}
+		this.setDynamicObjects(this.objects);
 	}
+
 	/**
 	 * Getter for the objects
 	 */
