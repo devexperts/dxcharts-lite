@@ -133,21 +133,25 @@ export class ChartComponent extends ChartBaseElement {
 	protected doActivate(): void {
 		super.doActivate();
 		// TODO hack, main data series is created before doActivate, so we need to add it manually
-		this.dynamicObjects.model.addObject(
-			{ model: this.chartModel.mainCandleSeries, drawer: this.dataSeriesDrawer },
-			this.chartModel.mainCandleSeries.extentComponent.paneUUID,
-		);
+		this.dynamicObjects.model.addObject({
+			id: this.chartModel.mainCandleSeries.id,
+			paneId: this.chartModel.mainCandleSeries.extentComponent.paneUUID,
+			model: this.chartModel.mainCandleSeries,
+			drawer: this.dataSeriesDrawer,
+		});
 		this.addRxSubscription(
 			this.paneManager.dataSeriesAddedSubject.subscribe(series => {
-				this.dynamicObjects.model.addObject(
-					{ model: series, drawer: this.dataSeriesDrawer },
-					series.extentComponent.paneUUID,
-				);
+				this.dynamicObjects.model.addObject({
+					id: series.id,
+					paneId: series.extentComponent.paneUUID,
+					model: series,
+					drawer: this.dataSeriesDrawer,
+				});
 			}),
 		);
 		this.addRxSubscription(
 			this.paneManager.dataSeriesRemovedSubject.subscribe(series => {
-				this.dynamicObjects.model.removeObject(series, series.extentComponent.paneUUID);
+				this.dynamicObjects.model.removeObject(series.id);
 			}),
 		);
 	}

@@ -57,7 +57,12 @@ export class VolumesComponent extends ChartBaseElement {
 			this.volumesColorByChartTypeMap,
 			() => true,
 		);
-		dynamicObjectsComponent.model.addObject({ drawer: volumesDrawer, model: volumesModel }, CHART_UUID);
+		dynamicObjectsComponent.model.addObject({
+			id: volumesModel.id,
+			paneId: CHART_UUID,
+			drawer: volumesDrawer,
+			model: volumesModel,
+		});
 		this.addChildEntity(this.separateVolumes);
 		this.registerDefaultVolumeColorResolvers();
 		this.volumeVisibilityChangedSubject.next(config.components.volumes.visible);
