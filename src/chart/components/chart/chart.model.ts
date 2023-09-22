@@ -961,6 +961,7 @@ export class ChartModel extends ChartBaseElement {
 
 			if (lastCandle) {
 				series.updateCurrentPrice(lastCandle.close);
+				this.paneManager.yExtents.forEach(ext => ext.yAxis.updateOrderedLabels(true));
 			}
 
 			if (isInView && lastCandle && candles.length === 1) {
