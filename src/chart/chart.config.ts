@@ -510,6 +510,8 @@ export const getDefaultConfig = (): FullChartConfig => ({
 				boxNegative: 'rgba(217,44,64,1)',
 				boxPositive: 'rgba(77,153,83,1)',
 				boxSelected: 'rgba(255,255,255,1)',
+				labelTextNegative: 'rgba(217,44,64,1)',
+				labelTextPositive: 'rgba(77,153,83,1)',
 			},
 			countdownToBarClose: {
 				textNegative: 'rgba(255,255,255,1)',
@@ -1408,6 +1410,8 @@ export interface YAxisLastPriceLabelColorConfig {
 	textSelected: string;
 	textNegative: string;
 	textPositive: string;
+	labelTextPositive: string;
+	labelTextNegative: string;
 }
 
 export interface YAxisBidAskLabelColorConfig {

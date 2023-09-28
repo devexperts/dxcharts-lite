@@ -77,7 +77,12 @@ export class DataSeriesYAxisLabelsProvider implements YAxisLabelsProvider {
 		const config = this.series.config;
 		const paintConfig = config.paintConfig[0] ?? DEFAULT_DATA_SERIES_PAINT_CONFIG;
 		const bgColor = paintConfig.color;
-		const textColor = getLabelTextColorByBackgroundColor(bgColor, 'white', 'black');
+
+		const textColor = getLabelTextColorByBackgroundColor(
+			bgColor,
+			paintConfig.lightTextColor ?? 'white',
+			paintConfig.darkTextColor ?? 'black	',
+		);
 		return {
 			textColor,
 			bgColor,

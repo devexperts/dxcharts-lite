@@ -8,6 +8,17 @@ import { FullChartColors, YAxisLabelsColors } from '../../chart.config';
 
 export const DEFAULT_LABEL_COLOR = '#FF00FF';
 
+export const getPlainLabelTextColor = (lastPriceMovement: PriceMovement, colors: YAxisLabelsColors): string => {
+	if (lastPriceMovement === 'down') {
+		return colors.lastPrice.labelTextNegative;
+	} else if (lastPriceMovement === 'up') {
+		return colors.lastPrice.labelTextPositive;
+	} else if (lastPriceMovement === 'none') {
+		return colors.lastPrice.labelTextPositive;
+	} else {
+		return colors.lastPrice.labelTextPositive;
+	}
+};
 export const getPrimaryLabelTextColor = (lastPriceMovement: PriceMovement, colors: YAxisLabelsColors): string => {
 	if (lastPriceMovement === 'down') {
 		return colors.lastPrice.textNegative;

@@ -42,6 +42,8 @@ export interface DataSeriesPaintConfig {
 	color: string;
 	lineWidth: number;
 	hoveredLineWidth: number;
+	lightTextColor?: string;
+	darkTextColor?: string;
 	//add this for TREND_HISTOGRAM study type
 	// this way not add breaking change
 	aditionalColor?: string;

@@ -7,7 +7,7 @@ import { FullChartConfig, YAxisConfig } from '../../../chart.config';
 import { CandleSeriesModel } from '../../../model/candle-series.model';
 import { DataSeriesType } from '../../../model/data-series.config';
 import { ChartModel, LastCandleLabelHandler } from '../../chart/chart.model';
-import { getPrimaryLabelTextColor } from '../label-color.functions';
+import { getPlainLabelTextColor, getPrimaryLabelTextColor } from '../label-color.functions';
 import { YAxisLabelDrawConfig } from '../y-axis-labels.drawer';
 import { LabelGroup, VisualYAxisLabel, YAxisLabelsProvider } from './y-axis-labels.model';
 import { lastOf } from '../../../utils/array.utils';
@@ -30,9 +30,11 @@ export class LastCandleLabelsProvider implements YAxisLabelsProvider {
 	public getUnorderedLabels(): LabelGroup[] {
 		const collectedLabels: LabelGroup[] = [];
 		const visible = this.yAxisConfig.labels.settings.lastPrice.mode !== 'none';
+
 		if (visible) {
 			// main candle series
 			const yAxisVisualLabel = this.getYAxisVisualLabel(this.chartModel.mainCandleSeries);
+
 			const mainCandleSeriesVisualLabel: VisualYAxisLabel | null = yAxisVisualLabel
 				? {
 						...yAxisVisualLabel,
@@ -105,13 +107,18 @@ export class LastCandleLabelsProvider implements YAxisLabelsProvider {
 	 */
 	private getLabelDrawConfig(series: CandleSeriesModel, primary: boolean): YAxisLabelDrawConfig {
 		const colors = series.colors.labels;
+		const isPlain = this.fullConfig.components.yAxis.labels.settings['lastPrice'].type === 'plain';
 		const getLabelBoxColor = this.resolveLabelColorFn(series.config.type);
 		const { rectLabelTextColor, rectLabelInvertedTextColor } = this.chartModel.config.colors.yAxis;
 		let boxColor = '#FFFFFF';
 		let textColor = '#FFFFFF';
 		if (colors) {
 			boxColor = getLabelBoxColor(series.lastPriceMovement, series.colors);
-			textColor = primary ? getPrimaryLabelTextColor(series.lastPriceMovement, colors) : rectLabelTextColor;
+			textColor = isPlain
+				? getPlainLabelTextColor(series.lastPriceMovement, colors)
+				: primary
+				? getPrimaryLabelTextColor(series.lastPriceMovement, colors)
+				: rectLabelTextColor;
 		}
 		return {
 			bgColor: boxColor,
