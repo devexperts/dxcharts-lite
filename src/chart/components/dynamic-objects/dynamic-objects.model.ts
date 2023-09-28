@@ -7,7 +7,6 @@ export type PaneId = string;
 export type DynamicObjectId = string | number;
 
 export interface DynamicObject<T = unknown> {
-	readonly htId: DynamicObjectId;
 	readonly id: DynamicObjectId;
 	readonly drawer: DynamicModelDrawer<T>;
 	readonly paneId: PaneId;
@@ -58,7 +57,7 @@ export class DynamicObjectsModel extends ChartBaseElement {
 			objects[paneId] = paneList;
 		}
 		paneList.insertAtEnd(obj);
-		this.modelIdToObjectMap.set(obj.id ?? obj.htId, obj);
+		this.modelIdToObjectMap.set(obj.id, obj);
 		this.setDynamicObjects(objects);
 	}
 
