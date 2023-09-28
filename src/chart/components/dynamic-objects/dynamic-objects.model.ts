@@ -4,9 +4,10 @@ import { LinkedList, ListNode } from '../../utils/linkedList.utils';
 import { DynamicModelDrawer } from './dynamic-objects.drawer';
 
 export type PaneId = string;
-type DynamicObjectId = string | number;
+export type DynamicObjectId = string | number;
 
 export interface DynamicObject<T = unknown> {
+	readonly htId: DynamicObjectId;
 	readonly id: DynamicObjectId;
 	readonly drawer: DynamicModelDrawer<T>;
 	readonly paneId: PaneId;
@@ -57,7 +58,7 @@ export class DynamicObjectsModel extends ChartBaseElement {
 			objects[paneId] = paneList;
 		}
 		paneList.insertAtEnd(obj);
-		this.modelIdToObjectMap.set(obj.id, obj);
+		this.modelIdToObjectMap.set(obj.id ?? obj.htId, obj);
 		this.setDynamicObjects(objects);
 	}
 

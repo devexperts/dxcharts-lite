@@ -35,7 +35,7 @@ export class HTDataSeriesDrawer implements Drawer {
 			const drawer = this.seriesDrawers[paintTool];
 			if (drawer) {
 				const drawConfig: ChartDrawerConfig = {
-					singleColor: this.canvasModel.idToColor(series.id),
+					singleColor: this.canvasModel.idToColor(series.htId),
 					forceBold: 7,
 				};
 				// +- 1 to correctly draw points which are partly inside bounds

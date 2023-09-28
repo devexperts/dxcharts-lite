@@ -72,7 +72,7 @@ export class CandleSeriesModel extends DataSeriesModel<Candle, VisualCandle> {
 		private readonly candleWidthByChartType: Partial<Record<DataSeriesType, CandleWidthCalculator>>,
 		public colors: CandleSeriesColors = DEFAULT_CANDLE_SERIES_CONFIG,
 	) {
-		super(extentComponent, id);
+		super(extentComponent, id, id);
 		this._instrument = instrument;
 		this.instrument = instrument;
 		this.highLowProvider = createCandleSeriesHighLowProvider(this);

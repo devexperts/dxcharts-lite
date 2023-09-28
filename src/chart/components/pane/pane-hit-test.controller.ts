@@ -38,7 +38,7 @@ export class PaneHitTestController implements HitTestSubscriber<DataSeriesModel>
 	 * @returns {DataSeriesModel | undefined} - The data series with the given ID, or undefined if it does not exist.
 	 */
 	public lookup(id: number): DataSeriesModel | undefined {
-		const result = this.allDataSeries.find(d => d.id === id);
+		const result = this.allDataSeries.find(d => d.htId === id);
 		return result;
 	}
 
@@ -48,7 +48,7 @@ export class PaneHitTestController implements HitTestSubscriber<DataSeriesModel>
 	 * @returns {void}
 	 */
 	onHover(model: DataSeriesModel | null): void {
-		this.allDataSeries.forEach(d => (d.hovered = d.id === model?.id));
+		this.allDataSeries.forEach(d => (d.hovered = d.htId === model?.htId));
 		this.canvasModel.fireDraw();
 	}
 

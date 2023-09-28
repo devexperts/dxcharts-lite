@@ -58,6 +58,7 @@ export class VolumesComponent extends ChartBaseElement {
 			() => true,
 		);
 		dynamicObjectsComponent.model.addObject({
+			htId: volumesModel.id,
 			id: volumesModel.id,
 			paneId: CHART_UUID,
 			drawer: volumesDrawer,

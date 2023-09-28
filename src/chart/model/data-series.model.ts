@@ -3,6 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
+import { DynamicObjectId } from '../components/dynamic-objects/dynamic-objects.model';
 import { YExtentComponent } from '../components/pane/extent/y-extent-component';
 import { DataSeriesYAxisLabelsProvider } from '../components/y_axis/price_labels/data-series-y-axis-labels.provider';
 import { binarySearch, create2DArray, lastOf, slice2DArray } from '../utils/array.utils';
@@ -121,7 +122,8 @@ export class DataSeriesModel<
 
 	constructor(
 		public extentComponent: YExtentComponent,
-		public id: number,
+		public htId: number,
+		public id: DynamicObjectId,
 		_config: AtLeastOne<DataSeriesConfig> = cloneUnsafe(DEFAULT_DATA_SERIES_CONFIG),
 	) {
 		super();

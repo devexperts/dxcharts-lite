@@ -31,7 +31,7 @@ export class CompareSeriesHoverProducerPart implements HoverProducerPart<Compare
 			return {
 				instrument: series.instrument.symbol,
 				price: priceToShow,
-				id: series.id,
+				id: series.htId,
 			};
 		});
 
