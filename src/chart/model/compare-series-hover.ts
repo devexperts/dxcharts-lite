@@ -9,7 +9,8 @@ import { BaseHover, HoverProducerPart } from '../inputhandlers/hover-producer.co
 export interface CompareSeriesHover {
 	instrument: string;
 	price: string;
-	id: number;
+	id: string;
+	htId: number;
 }
 
 export class CompareSeriesHoverProducerPart implements HoverProducerPart<CompareSeriesHover[]> {
@@ -31,7 +32,8 @@ export class CompareSeriesHoverProducerPart implements HoverProducerPart<Compare
 			return {
 				instrument: series.instrument.symbol,
 				price: priceToShow,
-				id: series.htId,
+				id: series.id,
+				htId: series.htId,
 			};
 		});
 

@@ -151,7 +151,7 @@ export class ChartComponent extends ChartBaseElement {
 		);
 		this.addRxSubscription(
 			this.paneManager.dataSeriesRemovedSubject.subscribe(series => {
-				this.dynamicObjects.model.removeObject(series.htId);
+				this.dynamicObjects.model.removeObject(series.id);
 			}),
 		);
 	}

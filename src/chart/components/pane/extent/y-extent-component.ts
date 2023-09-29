@@ -99,7 +99,7 @@ export class YExtentComponent extends ChartBaseElement {
 	 * @returns {DataSeriesModel} - The newly created DataSeriesModel object.
 	 */
 	public createDataSeries(): DataSeriesModel {
-		const series = new DataSeriesModel(this, this.hitTestController.getNewDataSeriesHitTestId(), uuid());
+		const series = new DataSeriesModel(this, uuid(), this.hitTestController.getNewDataSeriesHitTestId());
 		series.toVisualPoints = this.toVisualPoints;
 		return series;
 	}
