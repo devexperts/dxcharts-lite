@@ -121,7 +121,8 @@ export class DataSeriesModel<
 
 	constructor(
 		public extentComponent: YExtentComponent,
-		public id: number,
+		public id: string,
+		public htId: number,
 		_config: AtLeastOne<DataSeriesConfig> = cloneUnsafe(DEFAULT_DATA_SERIES_CONFIG),
 	) {
 		super();

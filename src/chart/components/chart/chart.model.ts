@@ -38,6 +38,7 @@ import { ChartBaseModel } from './chart-base.model';
 import { CandleSeries, ChartInstrument, PartialCandle } from './chart.component';
 import { fakeCandle } from './fake-candles';
 import { SecondaryChartColorsPool } from './secondary-chart-colors-pool';
+import { uuid } from '../../utils/uuid.utils';
 
 export type VisualCandleCalculator = (
 	candle: Candle,
@@ -93,6 +94,7 @@ export class ChartModel extends ChartBaseElement {
 		const candleSeries = new MainCandleSeriesModel(
 			this.chartBaseModel,
 			this.paneManager.panes[CHART_UUID].mainExtent,
+			uuid(),
 			this.paneManager.hitTestController.getNewDataSeriesHitTestId(),
 			this.bus,
 			this.scale,
@@ -435,6 +437,7 @@ export class ChartModel extends ChartBaseElement {
 	private createCandleSeriesModel(instrument: ChartInstrument, colors?: CandleSeriesColors): CandleSeriesModel {
 		const candleSeries = new CandleSeriesModel(
 			this.paneManager.panes[CHART_UUID].mainExtent,
+			uuid(),
 			this.paneManager.hitTestController.getNewDataSeriesHitTestId(),
 			this.bus,
 			this.scale,
@@ -620,7 +623,7 @@ export class ChartModel extends ChartBaseElement {
 		// lineX is the middle of candle - it's correct
 		return this.scale.toX(visualCandle.centerUnit);
 	}
-	
+
 	/**
 	 * Transforms X coordinate (relative to canvas element) to Candle object.
 	 * If extrapolate = false, then it takes leftmost/rightmost existing candle

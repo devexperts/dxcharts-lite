@@ -64,7 +64,8 @@ export class CandleSeriesModel extends DataSeriesModel<Candle, VisualCandle> {
 
 	constructor(
 		extentComponent: YExtentComponent,
-		id: number,
+		id: string,
+		htId: number,
 		private eventBus: EventBus,
 		scale: ScaleModel,
 		instrument: ChartInstrument,
@@ -72,7 +73,7 @@ export class CandleSeriesModel extends DataSeriesModel<Candle, VisualCandle> {
 		private readonly candleWidthByChartType: Partial<Record<DataSeriesType, CandleWidthCalculator>>,
 		public colors: CandleSeriesColors = DEFAULT_CANDLE_SERIES_CONFIG,
 	) {
-		super(extentComponent, id);
+		super(extentComponent, id, htId);
 		this._instrument = instrument;
 		this.instrument = instrument;
 		this.highLowProvider = createCandleSeriesHighLowProvider(this);

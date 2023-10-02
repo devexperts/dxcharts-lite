@@ -4,7 +4,7 @@ import { LinkedList, ListNode } from '../../utils/linkedList.utils';
 import { DynamicModelDrawer } from './dynamic-objects.drawer';
 
 export type PaneId = string;
-type DynamicObjectId = string | number;
+export type DynamicObjectId = string | number;
 
 export interface DynamicObject<T = unknown> {
 	readonly id: DynamicObjectId;
