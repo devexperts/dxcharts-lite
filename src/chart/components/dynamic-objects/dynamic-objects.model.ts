@@ -45,6 +45,22 @@ export class DynamicObjectsModel extends ChartBaseElement {
 	}
 
 	/**
+	 * @returns `DynamicObject` position in associated pane `LinkedList`
+	 */
+	getObjectPosition(id: DynamicObjectId): number | undefined {
+		const objInfo = this.getObjectInfoById(id);
+
+		if (!objInfo) {
+			return;
+		}
+
+		const [obj, paneList] = objInfo;
+		const targetNode = new ListNode(obj);
+
+		return paneList.getNodePosition(targetNode);
+	}
+
+	/**
 	 * Adds an object from outside chart-core into model
 	 * @param obj
 	 * @param paneId
@@ -82,6 +98,33 @@ export class DynamicObjectsModel extends ChartBaseElement {
 			delete this.objects[obj.paneId];
 		}
 		this.setDynamicObjects(this.objects);
+	}
+
+	/**
+	 * Moves the object inside the associated LinkedList to the specified position
+	 */
+	moveToPosition(id: DynamicObjectId, position: number) {
+		const objInfo = this.getObjectInfoById(id);
+
+		if (!objInfo) {
+			return;
+		}
+
+		const [obj, paneList] = objInfo;
+		const node = new ListNode(obj);
+		const currentPos = paneList.getNodePosition(node);
+
+		if (currentPos === position) {
+			return;
+		}
+
+		if (currentPos < position) {
+			paneList.insertAt(position, obj);
+			paneList.removeAt(currentPos);
+		} else {
+			paneList.removeAt(currentPos);
+			paneList.insertAt(position, obj);
+		}
 	}
 
 	/**
