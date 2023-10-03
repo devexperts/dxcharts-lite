@@ -10,11 +10,13 @@ describe('chart', () => {
 		['prepend candles', [candles.slice(10), candles.slice(0, 10)]],
 		['prepend with a gap', [candles.slice(0, 10), candles.slice(20, 30)]],
 		['prepend with overlap', [candles.slice(10), candles.slice(0, 20)]],
+		['prepend with full overlap', [candles.slice(10), candles]],
 		['only update existing candles', [candles, candles.slice(10, 20)]],
 		['update all candles', [candles, candles]],
 		['append candles', [candles.slice(0, 10), candles.slice(10)]],
 		['append candles with a gap', [candles.slice(0, 10), candles.slice(20)]],
 		['append candles with overlap', [candles.slice(0, 20), candles.slice(10)]],
+		['append candles with full overlap', [candles.slice(0, 20), candles]],
 		['prepend and append', [candles.slice(10, 20), candles.slice(0, 30)]],
 		[
 			"fill in the gap (won't work but should not error)",
