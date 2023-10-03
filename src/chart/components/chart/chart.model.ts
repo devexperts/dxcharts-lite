@@ -389,6 +389,7 @@ export class ChartModel extends ChartBaseElement {
 		this.scale.moveXStart(this.scale.xStart + prependedCandlesWidth);
 		this.candlesPrependSubject.next({
 			prependedCandlesWidth,
+			prependedCandlesCount: updateResult.prepended,
 			preparedCandles,
 		});
 
