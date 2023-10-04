@@ -125,6 +125,7 @@ export class DynamicObjectsModel extends ChartBaseElement {
 			paneList.removeAt(currentPos);
 			paneList.insertAt(position, obj);
 		}
+		this.setDynamicObjects(this.objects);
 	}
 
 	/**
@@ -143,12 +144,10 @@ export class DynamicObjectsModel extends ChartBaseElement {
 		const targetNode = new ListNode(obj);
 		const targetPos = paneList.getNodePosition(targetNode);
 		if (targetPos >= 0 && targetPos < paneList.size()) {
-			const nodeToReplace = paneList.removeAt(targetPos);
-			if (nodeToReplace) {
-				paneList.insertAtEnd(nodeToReplace.data);
-			}
+			paneList.removeAt(targetPos);
+			paneList.insertAtEnd(obj);
+			this.setDynamicObjects(this.objects);
 		}
-		this.setDynamicObjects(this.objects);
 	}
 
 	/**
@@ -167,12 +166,10 @@ export class DynamicObjectsModel extends ChartBaseElement {
 		const targetNode = new ListNode(obj);
 		const targetPos = paneList.getNodePosition(targetNode);
 		if (targetPos > 0 && targetPos <= paneList.size()) {
-			const nodeToReplace = paneList.removeAt(targetPos);
-			if (nodeToReplace) {
-				paneList.insertAt(0, nodeToReplace?.data);
-			}
+			paneList.removeAt(targetPos);
+			paneList.insertAt(0, obj);
+			this.setDynamicObjects(this.objects);
 		}
-		this.setDynamicObjects(this.objects);
 	}
 
 	/**
@@ -190,13 +187,11 @@ export class DynamicObjectsModel extends ChartBaseElement {
 		const [obj, paneList] = objInfo;
 		const targetNode = new ListNode(obj);
 		const targetPos = paneList.getNodePosition(targetNode);
-		if (targetPos >= 0 && targetPos < paneList.size()) {
-			const nodeToReplace = paneList.removeAt(targetPos);
-			if (nodeToReplace) {
-				paneList.insertAt(targetPos + 1, nodeToReplace.data);
-			}
+		if (targetPos >= 0 && targetPos + 1 < paneList.size()) {
+			paneList.removeAt(targetPos);
+			paneList.insertAt(targetPos + 1, obj);
+			this.setDynamicObjects(this.objects);
 		}
-		this.setDynamicObjects(this.objects);
 	}
 
 	/**
@@ -214,13 +209,11 @@ export class DynamicObjectsModel extends ChartBaseElement {
 		const [obj, paneList] = objInfo;
 		const targetNode = new ListNode(obj);
 		const targetPos = paneList.getNodePosition(targetNode);
-		if (targetPos > 0 && targetPos <= paneList.size()) {
-			const nodeToReplace = paneList.removeAt(targetPos);
-			if (nodeToReplace) {
-				paneList.insertAt(targetPos - 1, nodeToReplace?.data);
-			}
+		if (targetPos > 0 && targetPos < paneList.size()) {
+			paneList.removeAt(targetPos);
+			paneList.insertAt(targetPos - 1, obj);
+			this.setDynamicObjects(this.objects);
 		}
-		this.setDynamicObjects(this.objects);
 	}
 
 	/**
