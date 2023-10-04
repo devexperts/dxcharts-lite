@@ -17,16 +17,15 @@ import { PaneManager } from '../pane/pane-manager.component';
 import { SeparateVolumesComponent } from './separate-volumes.component';
 import { resolveColorForBar, resolveColorForCandle, resolveColorForLine } from './volume-color-resolvers.functions';
 import { VolumesDrawer } from './volumes.drawer';
-import { VolumesModel } from './volumes.model';
+import { VOLUMES_UUID, VolumesModel } from './volumes.model';
 
 export type VolumeColorResolver = (priceMovement: PriceMovement, colors: FullChartColors) => string;
 
 export class VolumesComponent extends ChartBaseElement {
 	separateVolumes: SeparateVolumesComponent;
-	dynamicObjectsComponent: DynamicObjectsComponent;
 	public volumesColorByChartTypeMap: Partial<Record<BarType, VolumeColorResolver>> = {};
 	volumesModel: VolumesModel;
-	volumesDrawer: VolumesDrawer
+	private readonly volumesDrawer: VolumesDrawer;
 	public volumeVisibilityChangedSubject = new BehaviorSubject<boolean>(false);
 	public volumeIsSeparateModeChangedSubject = new BehaviorSubject<boolean>(false);
 
@@ -38,7 +37,7 @@ export class VolumesComponent extends ChartBaseElement {
 		drawingManager: DrawingManager,
 		private config: FullChartConfig,
 		paneManager: PaneManager,
-		dynamicObjectsComponent: DynamicObjectsComponent,
+		private dynamicObjectsComponent: DynamicObjectsComponent,
 	) {
 		super();
 		const volumesModel = new VolumesModel(chartComponent, scale);
@@ -51,7 +50,6 @@ export class VolumesComponent extends ChartBaseElement {
 			volumesModel,
 			paneManager,
 		);
-		this.dynamicObjectsComponent = dynamicObjectsComponent;
 		this.volumesDrawer = new VolumesDrawer(
 			config,
 			this.volumesModel,
@@ -140,7 +138,7 @@ export class VolumesComponent extends ChartBaseElement {
 	private addVolumesToDynamicObjects() {
 		this.dynamicObjectsComponent.model.addObject({
 			id: this.volumesModel.id,
-			paneId: this.config.components.volumes.showSeparately ? this.volumesModel.id : CHART_UUID,
+			paneId: this.config.components.volumes.showSeparately ? VOLUMES_UUID : CHART_UUID,
 			drawer: this.volumesDrawer,
 			model: this.volumesModel,
 		});
