@@ -384,13 +384,12 @@ export class ChartModel extends ChartBaseElement {
 
 		// caclulate offset width for prepanded candles
 		const prependedCandlesWidth = this.chartBaseModel.mainVisualPoints
-			.slice(0, updateResult.prepended)
+			.slice(0, updateResult.prepended.length)
 			.reduce((acc, cur) => acc + cur.width, 0);
 		this.scale.moveXStart(this.scale.xStart + prependedCandlesWidth);
 		this.candlesPrependSubject.next({
 			prependedCandlesWidth,
-			prependedCandlesCount: updateResult.prepended,
-			preparedCandles,
+			prependedCandles: updateResult.prepended,
 		});
 
 		this.chartBaseModel.recalculatePeriod();
@@ -1065,7 +1064,7 @@ export class ChartModel extends ChartBaseElement {
 		});
 
 		return {
-			prepended: prepend.length,
+			prepended: prepend,
 			candles: [...prepend, ...targetCopy],
 		};
 	}
@@ -1111,8 +1110,8 @@ export class ChartModel extends ChartBaseElement {
 }
 
 export interface UpdateCandlesResult {
-	prepended: number;
-	appended?: number;
+	prepended: Candle[];
+	appended?: Candle[];
 	candles: Candle[];
 }
 
@@ -1161,8 +1160,8 @@ const updateCandles = (target: Candle[], update: Candle[]): UpdateCandlesResult 
 	});
 
 	return {
-		prepended: prepend.length,
-		appended: append.length,
+		prepended: prepend,
+		appended: append,
 		candles: [...prepend, ...targetCopy, ...append],
 	};
 };
