@@ -42,7 +42,7 @@ export class YAxisScaleHandler extends ChartBaseElement {
 		super();
 		// drag to Y-scale and double click to auto scale
 		if (config.customScale) {
-			const dragPredicate = () => config.type !== 'percent';
+			const dragPredicate = () => config.type !== 'percent' && config.visible;
 			const dragNDropYComponent = new DragNDropYComponent(
 				hitTest,
 				{
