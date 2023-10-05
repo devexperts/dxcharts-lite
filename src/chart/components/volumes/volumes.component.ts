@@ -120,8 +120,9 @@ export class VolumesComponent extends ChartBaseElement {
 	public setVisible(visible = true) {
 		this.config.components.volumes.visible = visible;
 		this.volumeVisibilityChangedSubject.next(visible);
-		visible ?
-			this.addVolumesToDynamicObjects() : this.dynamicObjectsComponent.model.removeObject(this.volumesModel.id);
+		visible
+			? this.addVolumesToDynamicObjects()
+			: this.dynamicObjectsComponent.model.removeObject(this.volumesModel.id);
 		if (this.config.components.volumes.showSeparately) {
 			if (visible) {
 				this.separateVolumes.activateSeparateVolumes();
@@ -136,6 +137,12 @@ export class VolumesComponent extends ChartBaseElement {
 	}
 
 	private addVolumesToDynamicObjects() {
+		// check if the volumes dynamic object is already added
+		const position = this.dynamicObjectsComponent.model.getObjectPosition(this.volumesModel.id);
+		if (position !== -1) {
+			return;
+		}
+
 		this.dynamicObjectsComponent.model.addObject({
 			id: this.volumesModel.id,
 			paneId: this.config.components.volumes.showSeparately ? VOLUMES_UUID : CHART_UUID,

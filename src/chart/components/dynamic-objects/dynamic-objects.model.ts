@@ -46,12 +46,14 @@ export class DynamicObjectsModel extends ChartBaseElement {
 
 	/**
 	 * @returns `DynamicObject` position in associated pane `LinkedList`
+	 * @returns `-1` if an object was not found
+	 *
 	 */
-	getObjectPosition(id: DynamicObjectId): number | undefined {
+	getObjectPosition(id: DynamicObjectId): number {
 		const objInfo = this.getObjectInfoById(id);
 
 		if (!objInfo) {
-			return;
+			return -1;
 		}
 
 		const [obj, paneList] = objInfo;
