@@ -11,7 +11,7 @@ export class DynamicObjectsComponent extends ChartBaseElement {
 		super();
 
 		// model
-		const dynamicObjectsModel = new DynamicObjectsModel();
+		const dynamicObjectsModel = new DynamicObjectsModel(canvasModel);
 		this.model = dynamicObjectsModel;
 		this.addChildEntity(dynamicObjectsModel);
 
