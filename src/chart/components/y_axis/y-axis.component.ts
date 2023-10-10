@@ -252,7 +252,8 @@ export class YAxisComponent extends ChartBaseElement {
 	 */
 	public setVisible(isVisible: boolean) {
 		this.state.visible = isVisible;
-		this.eventBus.fireDraw();
+		this.model.fancyLabelsModel.updateLabels();
+		this.model.baseLabelsModel.updateLabels();
 	}
 
 	/**

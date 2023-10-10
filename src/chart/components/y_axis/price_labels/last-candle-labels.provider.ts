@@ -29,7 +29,7 @@ export class LastCandleLabelsProvider implements YAxisLabelsProvider {
 	 */
 	public getUnorderedLabels(): LabelGroup[] {
 		const collectedLabels: LabelGroup[] = [];
-		const visible = this.yAxisConfig.labels.settings.lastPrice.mode !== 'none';
+		const visible = this.yAxisConfig.labels.settings.lastPrice.mode !== 'none' && this.yAxisConfig.visible;
 		if (visible) {
 			// main candle series
 			const yAxisVisualLabel = this.getYAxisVisualLabel(this.chartModel.mainCandleSeries);
