@@ -34,6 +34,7 @@ export class CrossToolComponent extends ChartBaseElement {
 		private paneManager: PaneManager,
 		crossEventProducer: CrossEventProducerComponent,
 		hoverProducer: HoverProducerComponent,
+		private backgroundCanvasModel: CanvasModel,
 	) {
 		super();
 		this.model = new CrossToolModel(
@@ -63,11 +64,24 @@ export class CrossToolComponent extends ChartBaseElement {
 	private registerDefaultDrawerTypes() {
 		this.registerCrossToolTypeDrawer(
 			'cross-and-labels',
-			new CrossAndLabelsDrawerType(this.config, this.canvasBoundsContainer, this.paneManager, () => true),
+			new CrossAndLabelsDrawerType(
+				this.config,
+				this.canvasBoundsContainer,
+				this.paneManager,
+				this.backgroundCanvasModel,
+				() => true,
+			),
 		);
 		this.registerCrossToolTypeDrawer(
 			'just-labels',
-			new CrossAndLabelsDrawerType(this.config, this.canvasBoundsContainer, this.paneManager, () => true, true),
+			new CrossAndLabelsDrawerType(
+				this.config,
+				this.canvasBoundsContainer,
+				this.paneManager,
+				this.backgroundCanvasModel,
+				() => true,
+				true,
+			),
 		);
 		this.registerCrossToolTypeDrawer('none', new NoneDrawerType());
 	}

@@ -5,6 +5,7 @@
  */
 import { CanvasBoundsContainer, CanvasElement } from '../../../canvas/canvas-bounds-container';
 import { FullChartConfig } from '../../../chart.config';
+import { CanvasModel } from '../../../model/canvas.model';
 import { avoidAntialiasing, drawRoundedRect } from '../../../utils/canvas/canvas-drawing-functions.utils';
 import { PaneManager } from '../../pane/pane-manager.component';
 import { priceLabelDrawersMap } from '../../y_axis/price_labels/price-label.drawer';
@@ -21,6 +22,7 @@ export class CrossAndLabelsDrawerType implements CrossToolTypeDrawer {
 		private config: FullChartConfig,
 		private canvasBoundsContainer: CanvasBoundsContainer,
 		private paneManager: PaneManager,
+		private backgroundCanvasModel: CanvasModel,
 		private crossDrawPredicate: () => boolean = () => true,
 		private noLines?: boolean,
 	) {}
@@ -161,6 +163,7 @@ export class CrossAndLabelsDrawerType implements CrossToolTypeDrawer {
 					extent.yAxis.state,
 					this.config.colors.yAxis,
 					true,
+					this.backgroundCanvasModel.ctx,
 				);
 			}
 		}
