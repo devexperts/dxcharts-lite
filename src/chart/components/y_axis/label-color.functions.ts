@@ -12,7 +12,7 @@ export const DEFAULT_LABEL_COLOR = '#FF00FF';
 export function getPlainLabelTextColor(
 	colorsConfig: FullChartColors,
 	textColor: string,
-	inversedTextColor: string,
+	invertedTextColor: string,
 	yAxisState: YAxisConfig,
 ) {
 	// `plain` label is transparent, so to calculate text color
@@ -32,7 +32,7 @@ export function getPlainLabelTextColor(
 
 	const bgColor = yAxisBGColor === 'transparent' ? chartBGColor : yAxisBGColor;
 
-	return getLabelTextColorByBackgroundColor(bgColor, textColor, inversedTextColor);
+	return getLabelTextColorByBackgroundColor(bgColor, textColor, invertedTextColor);
 }
 
 export const getPrimaryLabelTextColor = (lastPriceMovement: PriceMovement, colors: YAxisLabelsColors): string => {
