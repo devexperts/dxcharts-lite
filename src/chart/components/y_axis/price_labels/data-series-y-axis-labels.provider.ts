@@ -16,7 +16,7 @@ export class DataSeriesYAxisLabelsProvider implements YAxisLabelsProvider {
 		private series: DataSeriesModel,
 		private config: DataSeriesConfig,
 		public yAxisBoundsProvider: BoundsProvider,
-		public axisState?: YAxisConfig,
+		public axisState: YAxisConfig,
 	) {}
 
 	/**
@@ -28,42 +28,47 @@ export class DataSeriesYAxisLabelsProvider implements YAxisLabelsProvider {
 	 */
 	public getUnorderedLabels(): LabelGroup[] {
 		const visible = this.config.visible;
-		if (visible) {
-			const getLastPointForLabel =
-				this.config.labelLastValue === 'series'
-					? this.series.getLastDataSeriesPoint
-					: this.series.getLastVisualSeriesPoint;
-			const bounds = this.yAxisBoundsProvider();
-			const mode = this.config.labelMode;
-			const appearanceType = this.config.labelAppearanceType;
-
-			const lastPoint = getLastPointForLabel();
-			if (lastPoint !== undefined) {
-				const lastPointY = this.series.view.toY(lastPoint.close);
-				if (isFinite(lastPointY)) {
-					const label = this.series.valueFormatter(lastPoint.close);
-					const drawConfig = this.getLabelDrawConfig();
-
-					return [
-						{
-							labels: [
-								{
-									y: lastPointY,
-									description: this.series.name,
-									mode,
-									labelType: appearanceType,
-									labelText: label,
-									...drawConfig,
-								},
-							],
-							axisState: this.axisState,
-							bounds,
-						},
-					];
-				}
-			}
+		if (!visible) {
+			return [];
 		}
-		return [];
+
+		const getLastPointForLabel =
+			this.config.labelLastValue === 'series'
+				? this.series.getLastDataSeriesPoint
+				: this.series.getLastVisualSeriesPoint;
+		const bounds = this.yAxisBoundsProvider();
+		const mode = this.config.labelMode;
+		const appearanceType = this.config.labelAppearanceType;
+
+		const lastPoint = getLastPointForLabel();
+		if (lastPoint === undefined) {
+			return [];
+		}
+
+		const lastPointY = this.series.view.toY(lastPoint.close);
+		if (!isFinite(lastPointY)) {
+			return [];
+		}
+
+		const label = this.series.valueFormatter(lastPoint.close);
+		const drawConfig = this.getLabelDrawConfig();
+
+		return [
+			{
+				labels: [
+					{
+						y: lastPointY,
+						description: this.series.name,
+						mode,
+						labelType: appearanceType,
+						labelText: label,
+						...drawConfig,
+					},
+				],
+				axisState: this.axisState,
+				bounds,
+			},
+		];
 	}
 
 	/**
@@ -76,8 +81,10 @@ export class DataSeriesYAxisLabelsProvider implements YAxisLabelsProvider {
 	private getLabelDrawConfig(): YAxisLabelDrawConfig {
 		const config = this.series.config;
 		const paintConfig = config.paintConfig[0] ?? DEFAULT_DATA_SERIES_PAINT_CONFIG;
+
 		const bgColor = paintConfig.color;
 		const textColor = getLabelTextColorByBackgroundColor(bgColor, 'white', 'black');
+
 		return {
 			textColor,
 			bgColor,
