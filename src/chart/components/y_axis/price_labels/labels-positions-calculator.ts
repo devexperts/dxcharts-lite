@@ -41,23 +41,43 @@ export function calcLabelsYCoordinates(points: PositionAndWeight[], labelHeight:
 		.filter(notEmpty)
 		.sort(sortLabels); // sort labels in ascending order, top -> down
 	const newCoordinates: number[] = new Array(formattedCoordinates.length);
-	formattedCoordinates.forEach((current, idx) => {
-		if (current === null) {
-			return;
+
+	const lowestWeight = formattedCoordinates.reduce(
+		(acc, curr) => Math.min(acc, curr.labelWeight),
+		Number.POSITIVE_INFINITY,
+	);
+	const lowestWeightIndex = formattedCoordinates.findIndex(x => x.labelWeight === lowestWeight);
+
+	for (let i = lowestWeightIndex; i >= 0; i--) {
+		const current = formattedCoordinates[i];
+		const prev = formattedCoordinates[i - 1];
+		if (!current) {
+			continue;
 		}
-		const next = formattedCoordinates[idx + 1];
-		if (next && next.top < current.bottom) {
-			/**
-			 * adjust padding if weight diff is 1, used for countdown label padding
-			 * @doc-tags tricky
-			 */
-			const paddingAdjust = next.labelWeight - current.labelWeight === 1 ? 2 : 0;
-			const delta = current.bottom - next.top + paddingAdjust;
-			next.top += delta;
-			next.bottom += delta;
+
+		if (prev && prev.bottom > current.top) {
+			const paddingAdjust = Math.abs(prev.labelWeight - current.labelWeight) === 1 ? 2 : 0;
+			prev.bottom = current.top - paddingAdjust;
+			prev.top = prev.bottom - labelHeight;
 		}
 		newCoordinates[current.actualIndex] = (current.top + current.bottom) / 2;
-	});
+	}
+
+	for (let i = lowestWeightIndex; i < formattedCoordinates.length; i++) {
+		const current = formattedCoordinates[i];
+		const next = formattedCoordinates[i + 1];
+		if (!current) {
+			break;
+		}
+
+		if (next && next.top < current.bottom) {
+			const paddingAdjust = Math.abs(next.labelWeight - current.labelWeight) === 1 ? 2 : 0;
+			next.top = current.bottom + paddingAdjust;
+			next.bottom = next.top + labelHeight;
+		}
+		newCoordinates[current.actualIndex] = (current.top + current.bottom) / 2;
+	}
+
 	return newCoordinates;
 }
 
