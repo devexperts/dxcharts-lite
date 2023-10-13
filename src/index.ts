@@ -18,16 +18,4 @@ const createChart =
 		return chart;
 	};
 
-/**
- * DXChart global variable. Exposes ChartBootstrap constructor.
- * @doc-tags chart-core,api
- */
-// @ts-ignore
-window['DXChart'] = {
-	// @ts-ignore
-	...window['DXChart'],
-	Chart,
-	createChart,
-};
-
 export { createChart, Chart };
