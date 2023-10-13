@@ -14,7 +14,7 @@ module.exports = env => {
 		output: {
 			filename: `./[name]${prodEnv ? '.min' : ''}.js`,
 			path: path.resolve(__dirname, 'dist'),
-			library: 'dxChart',
+			library: 'DXChart',
 		},
 		resolve: {
 			extensions: ['.ts', '.js', '.json'],
