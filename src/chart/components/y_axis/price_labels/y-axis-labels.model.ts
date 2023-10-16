@@ -35,6 +35,11 @@ export interface VisualYAxisLabel extends YAxisLabelDrawConfig {
 	labelWeight?: number;
 	description?: string;
 	subGroupId?: number; // used to identify linked labels
+	// some labels can be shown only at certain aggregation periods
+	showWhen?: {
+		periodLessThen?: number;
+		periodMoreThen?: number;
+	}
 }
 
 export interface LabelGroup {

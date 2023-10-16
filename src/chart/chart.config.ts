@@ -1391,6 +1391,10 @@ export type YAxisLabelAppearanceType = 'badge' | 'rectangle' | 'plain';
 export interface YAxisLabelConfig {
 	mode: YAxisLabelMode;
 	type: YAxisLabelAppearanceType;
+	showWhen?: {
+		periodLessThen?: number;
+		periodMoreThen?: number;
+	};
 }
 
 export interface YAxisLabelColorConfig {

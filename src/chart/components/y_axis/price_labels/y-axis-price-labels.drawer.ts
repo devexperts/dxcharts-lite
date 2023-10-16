@@ -13,6 +13,8 @@ import { FullChartConfig } from '../../../chart.config';
 import { Drawer } from '../../../drawers/drawing-manager';
 import { CanvasModel } from '../../../model/canvas.model';
 import { fillRect } from '../../../utils/canvas/canvas-drawing-functions.utils';
+import { labelsPeriodPredicate } from '../../../utils/labels.utils';
+import { ChartModel } from '../../chart/chart.model';
 import { PaneManager } from '../../pane/pane-manager.component';
 import { drawLabel } from './price-label.drawer';
 import { LabelGroup, VisualYAxisLabel } from './y-axis-labels.model';
@@ -24,6 +26,7 @@ export class YAxisPriceLabelsDrawer implements Drawer {
 		private canvasBoundsContainer: CanvasBoundsContainer,
 		private fullConfig: FullChartConfig,
 		private paneManager: PaneManager,
+		private chartModel: ChartModel,
 	) {}
 
 	draw() {
@@ -34,36 +37,41 @@ export class YAxisPriceLabelsDrawer implements Drawer {
 			if (extent.yAxis.state.visible) {
 				const yAxisBounds = extent.getYAxisBounds();
 				const paneBounds = this.canvasBoundsContainer.getBounds(CanvasElement.ALL_PANES);
+				const period = this.chartModel.getPeriod();
 				const orderedLabels = extent.yAxis.model.fancyLabelsModel.orderedLabels;
 				this.drawHighlightedBackgroundBetweenLabels(orderedLabels);
 				orderedLabels.forEach(l => {
 					const bounds = l.bounds ?? yAxisBounds;
-					l.labels.forEach(vl =>
+					l.labels.forEach(vl => {
+						if (labelsPeriodPredicate(vl, period)) {
+							drawLabel(
+								ctx,
+								backgroundCtx,
+								bounds,
+								paneBounds,
+								vl,
+								this.canvasBoundsContainer,
+								extent.yAxis.state,
+								this.fullConfig.colors.yAxis,
+							);
+						}
+					});
+				});
+				// TODO I added this as a simple mechanism to add custom labels, we need to review it
+				Object.values(extent.yAxis.model.fancyLabelsModel.customLabels).forEach(l => {
+					if (labelsPeriodPredicate(l, period)) {
 						drawLabel(
 							ctx,
 							backgroundCtx,
-							bounds,
+							yAxisBounds,
 							paneBounds,
-							vl,
+							l,
 							this.canvasBoundsContainer,
 							extent.yAxis.state,
 							this.fullConfig.colors.yAxis,
-						),
-					);
+						);
+					}
 				});
-				// TODO I added this as a simple mechanism to add custom labels, we need to review it
-				Object.values(extent.yAxis.model.fancyLabelsModel.customLabels).forEach(l =>
-					drawLabel(
-						ctx,
-						backgroundCtx,
-						yAxisBounds,
-						paneBounds,
-						l,
-						this.canvasBoundsContainer,
-						extent.yAxis.state,
-						this.fullConfig.colors.yAxis,
-					),
-				);
 			}
 		});
 	}

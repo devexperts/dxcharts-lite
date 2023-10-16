@@ -4,6 +4,7 @@
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 import { FullChartConfig, DateTimeFormatConfig } from '../chart.config';
+import { labelsPeriodPredicate } from '../utils/labels.utils';
 
 export interface TimeFormatterConfig {
 	shortDays?: string[];
@@ -150,20 +151,7 @@ export const recalculateXFormatter = (
 			return formatterFactory(xAxisLabelFormat);
 		} else if (Array.isArray(xAxisLabelFormat)) {
 			// conditional format
-			const matchingFormats = xAxisLabelFormat.filter(config => {
-				if (config.showWhen) {
-					const predicates = [];
-					if (config.showWhen.periodLessThen) {
-						predicates.push(() => period < (config.showWhen?.periodLessThen ?? 0));
-					}
-					if (config.showWhen.periodMoreThen) {
-						predicates.push(() => period >= (config.showWhen?.periodMoreThen ?? 0));
-					}
-					return predicates.every(p => p());
-				} else {
-					return true;
-				}
-			});
+			const matchingFormats = xAxisLabelFormat.filter(config => labelsPeriodPredicate(config, period));
 			if (matchingFormats.length > 0) {
 				const formatConfig = matchingFormats[0];
 				if (formatConfig.format) {

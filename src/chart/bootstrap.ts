@@ -566,6 +566,7 @@ export default class ChartBootstrap {
 			this.canvasBoundsContainer,
 			this.config,
 			this.paneManager,
+			this.chartModel,
 		);
 		yAxisCompositeDrawer.addDrawer(yAxisLabelsDrawer);
 	}
