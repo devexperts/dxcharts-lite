@@ -120,11 +120,11 @@ export class XAxisComponent extends ChartBaseElement {
 		this.addRxSubscription(
 			this.chartComponent.chartModel.candlesPrependSubject
 				.pipe(
-					filter(({ preparedCandles }) => preparedCandles.length !== 0),
-					map(({ preparedCandles }) => {
+					filter(({ prependedCandles }) => prependedCandles.length !== 0),
+					map(({ prependedCandles }) => {
 						return this.chartComponent.chartModel.mainCandleSeries.visualPoints.slice(
 							0,
-							preparedCandles.length,
+							prependedCandles.length,
 						);
 					}),
 				)

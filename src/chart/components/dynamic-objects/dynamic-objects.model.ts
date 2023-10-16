@@ -2,6 +2,7 @@ import { BehaviorSubject } from 'rxjs';
 import { ChartBaseElement } from '../../model/chart-base-element';
 import { LinkedList, ListNode } from '../../utils/linkedList.utils';
 import { DynamicModelDrawer } from './dynamic-objects.drawer';
+import { CanvasModel } from '../../model/canvas.model';
 
 export type PaneId = string;
 export type DynamicObjectId = string | number;
@@ -17,7 +18,9 @@ export class DynamicObjectsModel extends ChartBaseElement {
 	private _objects: BehaviorSubject<Record<PaneId, LinkedList<DynamicObject>>>;
 	private modelIdToObjectMap: Map<DynamicObjectId, DynamicObject> = new Map();
 
-	constructor() {
+	constructor(
+		private canvasModel: CanvasModel,
+	) {
 		super();
 		this._objects = new BehaviorSubject({});
 	}
@@ -46,12 +49,14 @@ export class DynamicObjectsModel extends ChartBaseElement {
 
 	/**
 	 * @returns `DynamicObject` position in associated pane `LinkedList`
+	 * @returns `-1` if an object was not found
+	 *
 	 */
-	getObjectPosition(id: DynamicObjectId): number | undefined {
+	getObjectPosition(id: DynamicObjectId): number {
 		const objInfo = this.getObjectInfoById(id);
 
 		if (!objInfo) {
-			return;
+			return -1;
 		}
 
 		const [obj, paneList] = objInfo;
@@ -229,5 +234,6 @@ export class DynamicObjectsModel extends ChartBaseElement {
 	 */
 	setDynamicObjects(objects: Record<PaneId, LinkedList<DynamicObject>>) {
 		this._objects.next(objects);
+		this.canvasModel.fireDraw();
 	}
 }

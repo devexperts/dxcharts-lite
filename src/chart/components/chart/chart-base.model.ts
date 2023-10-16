@@ -18,7 +18,7 @@ type DataPoint<T extends BaseType> = T extends 'candle' ? Candle : DataSeriesPoi
 type VisualPoint<T extends BaseType> = T extends 'candle' ? VisualCandle : VisualSeriesPoint;
 export interface PrependedCandlesData {
 	prependedCandlesWidth: number;
-	preparedCandles: Candle[];
+	prependedCandles: Candle[];
 }
 
 /**

@@ -5,6 +5,7 @@
  */
 import { Chart } from './chart/chart';
 import { PartialChartConfig } from './chart/chart.config';
+import { generateCandlesDataTS } from './chart/utils/candles-generator-ts.utils';
 
 const createChart =
 	/**
@@ -18,16 +19,4 @@ const createChart =
 		return chart;
 	};
 
-/**
- * DXChart global variable. Exposes ChartBootstrap constructor.
- * @doc-tags chart-core,api
- */
-// @ts-ignore
-window['DXChart'] = {
-	// @ts-ignore
-	...window['DXChart'],
-	Chart,
-	createChart,
-};
-
-export { createChart, Chart };
+export { createChart, Chart, generateCandlesDataTS as generateCandleData };

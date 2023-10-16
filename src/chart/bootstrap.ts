@@ -510,6 +510,7 @@ export default class ChartBootstrap {
 			paneManager,
 			this.crossEventProducer,
 			this.hoverProducer,
+			this.backgroundCanvasModel,
 		);
 
 		this.chartComponents.push(this.crossToolComponent);
