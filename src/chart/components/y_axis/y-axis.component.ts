@@ -48,7 +48,7 @@ export class YAxisComponent extends ChartBaseElement {
 
 	constructor(
 		private eventBus: EventBus,
-		config: FullChartConfig,
+		private config: FullChartConfig,
 		private canvasModel: CanvasModel,
 		public scale: ScaleModel,
 		canvasInputListeners: CanvasInputListenerComponent,
@@ -252,7 +252,9 @@ export class YAxisComponent extends ChartBaseElement {
 	 */
 	public setVisible(isVisible: boolean) {
 		this.state.visible = isVisible;
-		this.eventBus.fireDraw();
+		this.config.components.yAxis.visible = isVisible;
+		this.model.fancyLabelsModel.updateLabels();
+		this.model.baseLabelsModel.updateLabels();
 	}
 
 	/**

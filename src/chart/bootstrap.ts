@@ -564,7 +564,7 @@ export default class ChartBootstrap {
 			yAxisLabelsCanvasModel,
 			this.backgroundCanvasModel,
 			this.canvasBoundsContainer,
-			this.config.colors.yAxis,
+			this.config,
 			this.paneManager,
 		);
 		yAxisCompositeDrawer.addDrawer(yAxisLabelsDrawer);

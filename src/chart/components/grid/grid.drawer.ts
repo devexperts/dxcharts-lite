@@ -54,10 +54,12 @@ export class GridDrawer implements Drawer {
 	 * @param {CanvasRenderingContext2D} ctx - The 2D rendering context of the canvas element.
 	 */
 	drawZeroLine(ctx: CanvasRenderingContext2D) {
+		const yAxisLabels = this.yLabelsProvider();
 		if (
 			this.getBaseline &&
 			this.yAxisState.type === 'percent' &&
-			this.yAxisState.zeroPercentLine
+			this.yAxisState.zeroPercentLine &&
+			yAxisLabels.length
 		) {
 			const bounds = this.xBoundsProvider();
 			const y = floor(this.getBaseline());
