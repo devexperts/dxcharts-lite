@@ -253,6 +253,7 @@ export class YAxisComponent extends ChartBaseElement {
 	public setVisible(isVisible: boolean) {
 		this.state.visible = isVisible;
 		this.config.components.yAxis.visible = isVisible;
+		isVisible ? this.enable() : this.disable();
 		this.model.fancyLabelsModel.updateLabels();
 		this.model.baseLabelsModel.updateLabels();
 	}
