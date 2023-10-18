@@ -248,7 +248,7 @@ export class YAxisComponent extends ChartBaseElement {
 	}
 
 	/**
-	 * Controls visibility of the y-axis
+	 * Controls visibility of the y-axis (additionally disable/enable component)
 	 */
 	public setVisible(isVisible: boolean) {
 		this.state.visible = isVisible;
