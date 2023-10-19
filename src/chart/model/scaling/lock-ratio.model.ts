@@ -12,16 +12,32 @@ export const zoomXToZoomY = (zoomX: Zoom, ratio: ZoomXToZoomYRatio): Zoom => zoo
 export const zoomYToZoomX = (zoomY: Zoom, ratio: ZoomXToZoomYRatio): Zoom => zoomY * ratio;
 
 /**
- * Locks the zoomY with zoomX and moves yEnd according to ratio changes.
+ * Locks the zoomY with zoomX and zooms y-scale depending on x-scale.
  * @param state
  * @param zoomXYRatio
  */
-export const lockedYEndViewportCalculator = (state: ViewportModelState, zoomXYRatio: ZoomXToZoomYRatio) => {
+export const changeYToKeepRatio = (state: ViewportModelState, zoomXYRatio: ZoomXToZoomYRatio) => {
 	const prevZoomY = state.zoomY;
 	state.zoomY = zoomXToZoomY(state.zoomX, zoomXYRatio);
 	const zoomYMult = state.zoomY / prevZoomY;
 	const lastYHeight = state.yEnd - state.yStart;
 	const newYHeight = lastYHeight * zoomYMult;
 	const delta = newYHeight - lastYHeight;
-	state.yEnd = state.yEnd + delta;
+	state.yEnd = state.yEnd + delta / 2;
+	state.yStart = state.yStart - delta / 2;
+};
+
+/**
+ *  Locks the zoomY with zoomX and zooms x-scale depending on y-scale.
+ * @param state
+ * @param zoomXYRatio
+ */
+export const changeXToKeepRatio = (state: ViewportModelState, zoomXYRatio: ZoomXToZoomYRatio) => {
+	const prevZoomX = state.zoomX;
+	state.zoomX = zoomYToZoomX(state.zoomY, zoomXYRatio);
+	const zoomXMult = state.zoomX / prevZoomX;
+	const lastXWidth = state.xEnd - state.xStart;
+	const newXWidth = lastXWidth * zoomXMult;
+	const delta = newXWidth - lastXWidth;
+	state.xStart = state.xStart - delta;
 };
