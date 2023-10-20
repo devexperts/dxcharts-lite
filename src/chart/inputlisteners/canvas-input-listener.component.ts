@@ -140,6 +140,14 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 		return e instanceof TouchEvent;
 	}
 
+	private leftMouseButtonListener(cb: (e: MouseEvent) => void) {
+		return (e: MouseEvent) => {
+			if (e.button === MouseButton.left) {
+				cb(e);
+			}
+		};
+	}
+
 	/**
 	 * This methods allows you to start dragging programmatically
 	 * @param e
@@ -177,10 +185,9 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 		this.yDragEndSubject.next();
 	};
 
-	private clickHandler = () => this.clickSubject.next(this.currentPoint);
-
 	/**
-	 * Prevents text selection inside chart-core canvas. TODO Do we need it?
+	 * TODO: Do we need it?
+	 * Prevents text selection inside chart-core canvas.
 	 */
 	private fixTextSelection() {
 		const selectListener = (e: Event) => {
@@ -218,12 +225,21 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 			this.addSubscription(document.removeEventListener.bind(document, dragEndEvent, this.dragEndListener));
 		});
 
-		this.addSubscription(subscribeListener(this.element, this.clickHandler, 'click'));
+		this.addSubscription(
+			subscribeListener(
+				this.element,
+				this.leftMouseButtonListener(() => this.clickSubject.next(this.currentPoint)),
+				'click',
+			),
+		);
 
-		const clickDocumentListener = (e: Event) => {
-			this.clickDocumentSubject.next(e);
-		};
-		this.addSubscription(subscribeListener(document, clickDocumentListener, 'click'));
+		this.addSubscription(
+			subscribeListener(
+				document,
+				this.leftMouseButtonListener(e => this.clickDocumentSubject.next(e)),
+				'click',
+			),
+		);
 
 		const device = deviceDetector();
 		if (device === 'apple' || device === 'mobile') {
@@ -282,7 +298,11 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 		this.addSubscription(subscribeListener(this.element, (e: TouchEvent) => longTouchListener(e), 'touchstart'));
 
 		this.addSubscription(
-			subscribeListener(this.element, () => this.dbClickSubject.next(this.currentPoint), 'dblclick'),
+			subscribeListener(
+				this.element,
+				this.leftMouseButtonListener(() => this.dbClickSubject.next(this.currentPoint)),
+				'dblclick',
+			),
 		);
 
 		this.addSubscription(
@@ -325,14 +345,26 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 		);
 
 		this.addSubscription(
-			subscribeListener(this.element, () => this.mouseDownSubject.next(this.currentPoint), 'mousedown'),
+			subscribeListener(
+				this.element,
+				this.leftMouseButtonListener(() => this.mouseDownSubject.next(this.currentPoint)),
+				'mousedown',
+			),
 		);
 
 		this.addSubscription(
-			subscribeListener(this.element, () => this.mouseUpSubject.next(this.currentPoint), 'mouseup'),
+			subscribeListener(
+				this.element,
+				this.leftMouseButtonListener(() => this.mouseUpSubject.next(this.currentPoint)),
+				'mouseup',
+			),
 		);
 		this.addSubscription(
-			subscribeListener(document, () => this.mouseUpDocumentSubject.next(this.currentPoint), 'mouseup'),
+			subscribeListener(
+				document,
+				this.leftMouseButtonListener(() => this.mouseUpDocumentSubject.next(this.currentPoint)),
+				'mouseup',
+			),
 		);
 
 		this.addRxSubscription(
