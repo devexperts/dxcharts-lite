@@ -140,6 +140,14 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 		return e instanceof TouchEvent;
 	}
 
+	private leftMouseButtonListener(cb: (e: MouseEvent) => void) {
+		return (e: MouseEvent) => {
+			if (e.button === MouseButton.left) {
+				cb(e);
+			}
+		};
+	}
+
 	/**
 	 * This methods allows you to start dragging programmatically
 	 * @param e
@@ -220,11 +228,7 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 		this.addSubscription(
 			subscribeListener(
 				this.element,
-				(e: MouseEvent) => {
-					if (e.button === MouseButton.left) {
-						this.clickSubject.next(this.currentPoint);
-					}
-				},
+				this.leftMouseButtonListener(() => this.clickSubject.next(this.currentPoint)),
 				'click',
 			),
 		);
@@ -232,11 +236,7 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 		this.addSubscription(
 			subscribeListener(
 				document,
-				(e: MouseEvent) => {
-					if (e.button === MouseButton.left) {
-						this.clickDocumentSubject.next(e);
-					}
-				},
+				this.leftMouseButtonListener(e => this.clickDocumentSubject.next(e)),
 				'click',
 			),
 		);
@@ -300,11 +300,7 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 		this.addSubscription(
 			subscribeListener(
 				this.element,
-				(e: MouseEvent) => {
-					if (e.button === MouseButton.left) {
-						this.dbClickSubject.next(this.currentPoint);
-					}
-				},
+				this.leftMouseButtonListener(() => this.dbClickSubject.next(this.currentPoint)),
 				'dblclick',
 			),
 		);
@@ -351,11 +347,7 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 		this.addSubscription(
 			subscribeListener(
 				this.element,
-				(e: MouseEvent) => {
-					if (e.button === MouseButton.left) {
-						this.mouseDownSubject.next(this.currentPoint);
-					}
-				},
+				this.leftMouseButtonListener(() => this.mouseDownSubject.next(this.currentPoint)),
 				'mousedown',
 			),
 		);
@@ -363,22 +355,14 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 		this.addSubscription(
 			subscribeListener(
 				this.element,
-				(e: MouseEvent) => {
-					if (e.button === MouseButton.left) {
-						this.mouseUpSubject.next(this.currentPoint);
-					}
-				},
+				this.leftMouseButtonListener(() => this.mouseUpSubject.next(this.currentPoint)),
 				'mouseup',
 			),
 		);
 		this.addSubscription(
 			subscribeListener(
 				document,
-				(e: MouseEvent) => {
-					if (e.button === MouseButton.left) {
-						this.mouseUpDocumentSubject.next(this.currentPoint);
-					}
-				},
+				this.leftMouseButtonListener(() => this.mouseUpDocumentSubject.next(this.currentPoint)),
 				'mouseup',
 			),
 		);
