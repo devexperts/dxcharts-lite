@@ -19,4 +19,4 @@ const createChart =
 		return chart;
 	};
 
-export { createChart, Chart, generateCandlesDataTS as generateCandleData };
+export { createChart, Chart, generateCandlesDataTS as generateCandlesData };
