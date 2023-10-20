@@ -3,7 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { subscribeListener } from '../utils/dom.utils';
+import { MouseButton, leftMouseButtonListener, subscribeListener } from '../utils/dom.utils';
 import EventBus from '../events/event-bus';
 import { merge, Observable, Subject } from 'rxjs';
 import { ChartBaseElement } from '../model/chart-base-element';
@@ -15,11 +15,6 @@ import { touchpadDetector } from '../utils/device/touchpad.utils';
 import { Bounds } from '../model/bounds.model';
 
 type CustomMouseEvent = MouseEvent | TouchEvent;
-enum MouseButton {
-	left = 0,
-	middle = 1,
-	right = 2,
-}
 
 /**
  * Gathers user input on canvas element:
@@ -140,14 +135,6 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 		return e instanceof TouchEvent;
 	}
 
-	private leftMouseButtonListener(cb: (e: MouseEvent) => void) {
-		return (e: MouseEvent) => {
-			if (e.button === MouseButton.left) {
-				cb(e);
-			}
-		};
-	}
-
 	/**
 	 * This methods allows you to start dragging programmatically
 	 * @param e
@@ -228,7 +215,7 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 		this.addSubscription(
 			subscribeListener(
 				this.element,
-				this.leftMouseButtonListener(() => this.clickSubject.next(this.currentPoint)),
+				leftMouseButtonListener(() => this.clickSubject.next(this.currentPoint)),
 				'click',
 			),
 		);
@@ -236,7 +223,7 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 		this.addSubscription(
 			subscribeListener(
 				document,
-				this.leftMouseButtonListener(e => this.clickDocumentSubject.next(e)),
+				leftMouseButtonListener(e => this.clickDocumentSubject.next(e)),
 				'click',
 			),
 		);
@@ -300,7 +287,7 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 		this.addSubscription(
 			subscribeListener(
 				this.element,
-				this.leftMouseButtonListener(() => this.dbClickSubject.next(this.currentPoint)),
+				leftMouseButtonListener(() => this.dbClickSubject.next(this.currentPoint)),
 				'dblclick',
 			),
 		);
@@ -347,7 +334,7 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 		this.addSubscription(
 			subscribeListener(
 				this.element,
-				this.leftMouseButtonListener(() => this.mouseDownSubject.next(this.currentPoint)),
+				leftMouseButtonListener(() => this.mouseDownSubject.next(this.currentPoint)),
 				'mousedown',
 			),
 		);
@@ -355,14 +342,14 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 		this.addSubscription(
 			subscribeListener(
 				this.element,
-				this.leftMouseButtonListener(() => this.mouseUpSubject.next(this.currentPoint)),
+				leftMouseButtonListener(() => this.mouseUpSubject.next(this.currentPoint)),
 				'mouseup',
 			),
 		);
 		this.addSubscription(
 			subscribeListener(
 				document,
-				this.leftMouseButtonListener(() => this.mouseUpDocumentSubject.next(this.currentPoint)),
+				leftMouseButtonListener(() => this.mouseUpDocumentSubject.next(this.currentPoint)),
 				'mouseup',
 			),
 		);
