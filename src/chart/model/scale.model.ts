@@ -125,10 +125,14 @@ export class ScaleModel extends ViewportModel {
 		forceNoAnimation: boolean = false,
 		zoomSensitivity: number = this.config.scale.zoomSensitivity,
 	) {
+		const disabledAnimations = this.config.scale.disableAnimations || forceNoAnimation;
+		if (disabledAnimations) {
+			this.haltAnimation();
+		}
 		this.beforeStartAnimationSubject.next();
 		const state = this.export();
 		zoomXToPercentViewportCalculator(this, state, viewportPercent, zoomSensitivity, zoomIn);
-		this.zoomXTo(state, forceNoAnimation);
+		this.zoomXTo(state, disabledAnimations);
 	}
 
 	/**
@@ -137,10 +141,13 @@ export class ScaleModel extends ViewportModel {
 	 * @param zoomSensitivity - The sensitivity of the zoom. Default value is taken from the configuration object.
 	 */
 	public zoomXToEnd(zoomIn: boolean, zoomSensitivity: number = this.config.scale.zoomSensitivity) {
+		if (this.config.scale.disableAnimations) {
+			this.haltAnimation();
+		}
 		this.beforeStartAnimationSubject.next();
 		const state = this.export();
 		zoomXToEndViewportCalculator(this, state, zoomSensitivity, zoomIn);
-		this.zoomXTo(state);
+		this.zoomXTo(state, this.config.scale.disableAnimations);
 	}
 
 	public haltAnimation() {
@@ -152,7 +159,6 @@ export class ScaleModel extends ViewportModel {
 
 	private zoomXTo(state: ViewportModelState, forceNoAnimation?: boolean) {
 		const initialStateCopy = { ...state };
-
 		const constrainedState = this.scalePostProcessor(initialStateCopy, state);
 		if (this.state.lockPriceToBarRatio) {
 			lockedYEndViewportCalculator(constrainedState, this.zoomXYRatio);
@@ -160,7 +166,6 @@ export class ScaleModel extends ViewportModel {
 		if (this.state.auto) {
 			this.autoScaleModel.doAutoYScale(constrainedState);
 		}
-
 		if (forceNoAnimation) {
 			this.apply(constrainedState);
 		} else {
@@ -193,6 +198,7 @@ export class ScaleModel extends ViewportModel {
 
 	/**
 	 * Moves both xStart and xEnd without changing the viewport width (zoom).
+	 * Works without animation.
 	 * WILL CHANGE the Y axis if scale.auto=true.
 	 * @param xStart - starting point in units
 	 */
@@ -218,6 +224,7 @@ export class ScaleModel extends ViewportModel {
 
 	/**
 	 * Moves both yStart and yEnd without changing the viewport height (zoom).
+	 * Works without animation.
 	 * Will not move viewport if scale.auto=true
 	 * @param yStart - starting point in units
 	 */
