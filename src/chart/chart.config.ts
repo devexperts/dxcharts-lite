@@ -82,7 +82,7 @@ export const getDefaultConfig = (): FullChartConfig => ({
 		inverse: false,
 		zoomSensitivity: 0.25,
 		defaultViewportItems: 100,
-		disableAnimations: true
+		disableAnimations: false
 	},
 	timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, // local timezone
 	components: {
