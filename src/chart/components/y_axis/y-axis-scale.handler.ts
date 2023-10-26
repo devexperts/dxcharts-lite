@@ -14,7 +14,6 @@ import { DragInfo } from '../dran-n-drop_helper/drag-n-drop.component';
 import { DragNDropYComponent } from '../dran-n-drop_helper/drag-n-drop-y.component';
 import { ChartPanComponent } from '../pan/chart-pan.component';
 import { ScaleModel } from '../../model/scale.model';
-import { changeXToKeepRatio } from '../../model/scaling/lock-ratio.model';
 
 // if you drag full Y height from top to bottom - you will have x3 zoom, and vice-versa
 const FULL_Y_HEIGHT_ZOOM_FACTOR = 10;
@@ -94,10 +93,6 @@ export class YAxisScaleHandler extends ChartBaseElement {
 		const newYEnd = this.lastYEnd + delta;
 		this.autoScaleCallback(false);
 		this.viewportModel.setYScale(newYStart, newYEnd);
-		if (this.viewportModel.state.lockPriceToBarRatio) {
-			changeXToKeepRatio(this.viewportModel, this.viewportModel.zoomXYRatio);
-		}
-		this.bus.fireDraw();
 	};
 
 	private onYDragEnd = () => {
