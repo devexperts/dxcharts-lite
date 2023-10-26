@@ -82,6 +82,7 @@ export const getDefaultConfig = (): FullChartConfig => ({
 		inverse: false,
 		zoomSensitivity: 0.25,
 		defaultViewportItems: 100,
+		disableAnimations: false
 	},
 	timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, // local timezone
 	components: {
@@ -895,6 +896,10 @@ export interface ChartScale {
 	 * Adjust x viewport when y-axis width is changed, so x zoom remains the same
 	 */
 	keepZoomXOnYAxisChange: boolean;
+	/**
+	 * Disable all scale process animations
+	 */
+	disableAnimations: boolean;
 }
 
 export interface AutoScaleDisableOnDrag {
