@@ -678,6 +678,8 @@ __metadata:
     webpack: ^5.89.0
     webpack-cli: ^5.1.4
     webpack-dev-server: ^4.15.1
+  peerDependencies:
+    rxjs: ">=6.5.2"
   languageName: unknown
   linkType: soft
 
