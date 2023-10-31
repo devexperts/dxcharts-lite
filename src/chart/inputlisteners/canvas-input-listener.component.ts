@@ -7,7 +7,7 @@ import { MouseButton, leftMouseButtonListener, subscribeListener } from '../util
 import EventBus from '../events/event-bus';
 import { merge, Observable, Subject } from 'rxjs';
 import { ChartBaseElement } from '../model/chart-base-element';
-import { distinctUntilChanged, filter, map } from 'rxjs/operators';
+import { distinctUntilChanged, filter, map, tap } from 'rxjs/operators';
 import { EVENT_RESIZED } from '../events/events';
 import { HitBoundsTest } from '../canvas/canvas-bounds-container';
 import { touchpadDetector } from '../utils/device/touchpad.utils';
@@ -765,9 +765,10 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 	 * @returns {Observable<MouseEvent>} - An Observable that emits a MouseEvent when a context menu event is triggered and the mouse pointer is within the bounds of the element.
 	 */
 	public observeContextMenu(hitBoundsTest: HitBoundsTest = () => true): Observable<MouseEvent> {
-		return this.contextMenuSubject
-			.asObservable()
-			.pipe(filter(() => hitBoundsTest(this.currentPoint.x, this.currentPoint.y)));
+		return this.contextMenuSubject.asObservable().pipe(
+			filter(() => hitBoundsTest(this.currentPoint.x, this.currentPoint.y)),
+			tap(p => p.preventDefault()),
+		);
 	}
 
 	/**
