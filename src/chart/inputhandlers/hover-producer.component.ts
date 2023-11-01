@@ -136,7 +136,7 @@ export class HoverProducerComponent extends ChartBaseElement {
 		// on long touch - disable panning and show cross tool
 		const hitTest = this.canvasBoundsContainer.getBoundsHitTest(CanvasElement.ALL_PANES);
 		this.addRxSubscription(
-			this.canvasInputListener.observeLongTouch(hitTest).subscribe(event => {
+			this.canvasInputListener.observeLongTouchStart(hitTest).subscribe(event => {
 				this.paneManager.chartPanComponent.deactivatePanHandlers();
 				this.longTouchActivatedSubject.next(true);
 				const x = event.touches[0].clientX - this.canvasBoundsContainer.canvasOnPageLocation.x;

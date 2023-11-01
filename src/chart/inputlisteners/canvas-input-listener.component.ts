@@ -9,10 +9,10 @@ import { merge, Observable, Subject } from 'rxjs';
 import { ChartBaseElement } from '../model/chart-base-element';
 import { distinctUntilChanged, filter, map, tap } from 'rxjs/operators';
 import { EVENT_RESIZED } from '../events/events';
-import { deviceDetector } from '../utils/device/device-detector.utils';
 import { HitBoundsTest } from '../canvas/canvas-bounds-container';
 import { touchpadDetector } from '../utils/device/touchpad.utils';
 import { Bounds } from '../model/bounds.model';
+import { deviceDetector } from '../utils/device/device-detector.utils';
 
 type CustomMouseEvent = MouseEvent | TouchEvent;
 
@@ -56,9 +56,10 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 	private touchMoveSubject = new Subject<TouchEvent>();
 	private touchEndSubject = new Subject<TouchEvent>();
 	private touchCancelSubject = new Subject<TouchEvent>();
+	private longTouchStartSubject = new Subject<TouchEvent>();
+	private longTouchEndSubject = new Subject<TouchEvent>();
 
 	private contextMenuSubject = new Subject<MouseEvent>();
-	private longTouchSubject = new Subject<TouchEvent>();
 
 	private pinchSubject = new Subject<WheelEvent>();
 	private scrollGestureSubject = new Subject<WheelEvent>();
@@ -231,58 +232,65 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 		const device = deviceDetector();
 		if (device === 'apple' || device === 'mobile') {
 			// workaround to handle double taps for iOS
-			const doubleTapListenerProducer = () => {
-				let timeoutId: number | null = null;
-				return () => {
-					if (timeoutId) {
-						this.dbTapSubject.next(this.currentPoint);
-						clearTimeout(timeoutId);
-						timeoutId = null;
-					} else {
-						timeoutId = window.setTimeout(() => {
-							timeoutId = null;
-						}, 250);
+			let dbTapTimeout: number | null = null;
+			const doubleTapListenerProducer = (e: TouchEvent) => {
+				e.preventDefault();
+				if (dbTapTimeout) {
+					this.dbTapSubject.next(this.currentPoint);
+					clearTimeout(dbTapTimeout);
+					dbTapTimeout = null;
+				} else {
+					dbTapTimeout = window.setTimeout(() => {
+						dbTapTimeout = null;
+					}, 250);
+				}
+			};
+			this.addSubscription(subscribeListener(this.element, doubleTapListenerProducer, 'touchend'));
+
+			// workaround to handle long touch start/end for iOS
+			const longTouchListeners = (e: TouchEvent, delay = 700, pixelsForMoveReset = 3) => {
+				e.preventDefault();
+				const initialCoords = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+				let coords = { x: 0, y: 0 };
+				let longTouchStart = false;
+				let timerLongTouchStart: ReturnType<typeof setTimeout> | null = null;
+
+				// start timeout for long touch
+				timerLongTouchStart = setTimeout(() => {
+					longTouchStart = true;
+					this.longTouchStartSubject.next(e);
+				}, delay);
+
+				const touchMoveHandler = (e: TouchEvent) => {
+					e.preventDefault();
+					coords = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+					// clear long touch timeout if move area is bigger than pixelsForMove
+					if (
+						Math.sqrt(Math.pow(coords.x - initialCoords.x, 2) + Math.pow(coords.y - initialCoords.y, 2)) >
+							pixelsForMoveReset ||
+						e.touches.length > 1
+					) {
+						timerLongTouchStart && clearTimeout(timerLongTouchStart);
 					}
 				};
+				const touchEndHandler = (e: TouchEvent) => {
+					e.preventDefault();
+					timerLongTouchStart && clearTimeout(timerLongTouchStart);
+					if (longTouchStart) {
+						longTouchStart = false;
+						this.longTouchEndSubject.next(e);
+					}
+					this.element.removeEventListener('touchend', touchEndHandler);
+					this.element.removeEventListener('touchmove', touchMoveHandler);
+				};
+				this.element.addEventListener('touchmove', touchMoveHandler);
+				this.element.addEventListener('touchend', touchEndHandler);
 			};
-			const doubleTapListener = doubleTapListenerProducer();
-			this.addSubscription(subscribeListener(this.element, doubleTapListener, 'touchend'));
+
+			this.addSubscription(
+				subscribeListener(this.element, (e: TouchEvent) => longTouchListeners(e), 'touchstart'),
+			);
 		}
-
-		const longTouchListener = (e: TouchEvent, delay = 500, pixelsForMoveReset = 2) => {
-			e.preventDefault();
-			let timer: ReturnType<typeof setTimeout> | null = null;
-			const initialCoords = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-			let coords = { x: 0, y: 0 };
-
-			const touchMoveHandler = (e: TouchEvent) => {
-				coords = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-				if (
-					Math.sqrt(Math.pow(coords.x - initialCoords.x, 2) + Math.pow(coords.y - initialCoords.y, 2)) >
-						pixelsForMoveReset ||
-					e.touches.length > 1
-				) {
-					touchEnd();
-				}
-			};
-
-			const touchEnd = () => {
-				if (timer) {
-					clearTimeout(timer);
-					timer = null;
-				}
-
-				this.element.removeEventListener('touchend', touchEnd);
-				this.element.removeEventListener('touchmove', touchMoveHandler);
-			};
-
-			timer = setTimeout(() => this.longTouchSubject.next(e), delay);
-
-			this.element.addEventListener('touchmove', touchMoveHandler, { passive: true });
-			this.element.addEventListener('touchend', touchEnd);
-		};
-
-		this.addSubscription(subscribeListener(this.element, (e: TouchEvent) => longTouchListener(e), 'touchstart'));
 
 		this.addSubscription(
 			subscribeListener(
@@ -764,15 +772,25 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 	}
 
 	/**
-	 * Returns an Observable that emits a TouchEvent when a long touch is detected on the current element.
+	 * Returns an Observable that emits a TouchEvent when a long touch start is detected on the current element.
 	 * @param {HitBoundsTest} [hitBoundsTest=() => true] - A function that returns a boolean indicating whether the touch event occurred within the bounds of the current element.
 	 * @returns {Observable<TouchEvent>} - An Observable that emits a TouchEvent when a long touch is detected on the current element.
 	 */
-	public observeLongTouch(hitBoundsTest: HitBoundsTest = () => true): Observable<TouchEvent> {
-		return this.longTouchSubject.asObservable().pipe(
-			filter(() => hitBoundsTest(this.currentPoint.x, this.currentPoint.y)),
-			tap(p => p.preventDefault()),
-		);
+	public observeLongTouchStart(hitBoundsTest: HitBoundsTest = () => true): Observable<TouchEvent> {
+		return this.longTouchStartSubject
+			.asObservable()
+			.pipe(filter(() => hitBoundsTest(this.currentPoint.x, this.currentPoint.y)));
+	}
+
+	/**
+	 * Returns an Observable that emits a TouchEvent when a long touch end is detected on the current element.
+	 * @param {HitBoundsTest} [hitBoundsTest=() => true] - A function that returns a boolean indicating whether the touch event occurred within the bounds of the current element.
+	 * @returns {Observable<TouchEvent>} - An Observable that emits a TouchEvent when a long touch is detected on the current element.
+	 */
+	public observeLongTouchEnd(hitBoundsTest: HitBoundsTest = () => true): Observable<TouchEvent> {
+		return this.longTouchEndSubject
+			.asObservable()
+			.pipe(filter(() => hitBoundsTest(this.currentPoint.x, this.currentPoint.y)));
 	}
 
 	/**
