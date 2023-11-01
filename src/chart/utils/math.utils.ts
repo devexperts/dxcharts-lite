@@ -5,7 +5,7 @@ import { StringTMap } from './object.utils';
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-export const MAX_DECIMAL_DIGITS = 14;
+const MAX_DECIMAL_DIGITS = 14;
 // Array of powers of 10. Used in roundDecimal to walk through mantissa.
 
 const POW10: number[] = [];
