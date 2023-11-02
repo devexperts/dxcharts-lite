@@ -86,7 +86,7 @@ export const touchpadDetector = (e: WheelEvent): boolean => {
 };
 
 /**
- * this function returns different ящщь sensitivity for the percent axis and the others
+ * this function returns different zoom sensitivity for the percent axis and the others
  * @param config
  * @param isTouchpad
  * @returns {number}
@@ -95,6 +95,6 @@ export const touchpadDetector = (e: WheelEvent): boolean => {
  */
 export const getTouchpadSensitivity = (config: FullChartConfig): number => {
 	const isPercentAxisType = config.components.yAxis.type === 'percent';
-	const zoomSensitivity = isPercentAxisType ? config.scale.zoomSensitivity / 4 : config.scale.zoomSensitivity;
+	const zoomSensitivity = isPercentAxisType ? config.scale.touchpadSensitivity / 4 : config.scale.touchpadSensitivity;
 	return zoomSensitivity;
 };

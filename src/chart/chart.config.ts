@@ -81,6 +81,7 @@ export const getDefaultConfig = (): FullChartConfig => ({
 		},
 		inverse: false,
 		zoomSensitivity: 0.25,
+		touchpadSensitivity: 0.1,
 		defaultViewportItems: 100,
 		disableAnimations: false
 	},
@@ -885,9 +886,15 @@ export interface ChartScale {
 	 */
 	autoScaleDisableOnDrag: AutoScaleDisableOnDrag;
 	/**
+	 * Value is related to zoom event (zooming chart via mouse)
 	 * 0..1 ratio of full viewport; 0.5 = middle, 0.75 = 3/4 of viewport
 	 */
 	zoomSensitivity: number;
+	/**
+	 * Value is related to pinch touchpad event (zooming chart via touchpad)
+	 * 0..1 ratio of full viewport; 0.5 = middle, 0.75 = 3/4 of viewport
+	 */
+	touchpadSensitivity: number;
 	/**
 	 * Defines how much items (candles) will be in viewport when chart applies basic scale
 	 */
