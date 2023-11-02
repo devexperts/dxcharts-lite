@@ -81,7 +81,7 @@ export const getDefaultConfig = (): FullChartConfig => ({
 		},
 		inverse: false,
 		zoomSensitivity: 0.25,
-		touchpadSensitivity: 0.1,
+		touchpadSensitivity: 0.05,
 		defaultViewportItems: 100,
 		disableAnimations: false
 	},
