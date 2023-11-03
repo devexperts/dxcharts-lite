@@ -230,6 +230,7 @@ export class YAxisComponent extends ChartBaseElement {
 	public setAxisType(type: PriceAxisType) {
 		if (type !== this.state.type) {
 			this.state.type = type;
+			this.config.components.yAxis.type = type;
 			this.axisTypeSetSubject.next(type);
 			this.scale.autoScale(true);
 			this.model.fancyLabelsModel.updateLabels(true);

@@ -65,11 +65,7 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 		private chartPanComponent: ChartPanComponent,
 	) {
 		super();
-		this.touchHandler = new MainCanvasTouchHandler(
-			this.scale,
-			this.canvasInputListener,
-			this.mainCanvasParent,
-		);
+		this.touchHandler = new MainCanvasTouchHandler(this.scale, this.canvasInputListener, this.mainCanvasParent);
 
 		const allPanesHitTest = this.canvasBoundsContainer.getBoundsHitTest(CanvasElement.ALL_PANES);
 
@@ -101,10 +97,8 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 	 * @param {WheelEvent} e - Wheel event
 	 * @returns {void}
 	 */
-	private zoomXHandler = (e: WheelEvent) => {
-		const isTouchpad = touchpadDetector(e);
+	private zoomXHandler = (e: WheelEvent, zoomSensitivity: number) => {
 		const zoomIn = e.deltaY < 0;
-		const zoomSensitivity = isTouchpad ? getTouchpadSensitivity(this.config) : this.config.scale.zoomSensitivity;
 
 		if (this.config.scale.zoomToCursor) {
 			const b = this.canvasBoundsContainer.getBounds(CanvasElement.CANVAS);
@@ -137,7 +131,16 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 				this.canvasInputListener.observePinch(allPanesHitTest),
 			)
 				.pipe(throttleTime(this.wheelTrottleTime, undefined, { trailing: true, leading: true }))
-				.subscribe(this.zoomXHandler),
+				.subscribe(e => {
+					const isTouchpad = touchpadDetector(e);
+					const zoomSensitivity = isTouchpad
+						? getTouchpadSensitivity(
+								this.config.components.yAxis.type,
+								this.config.scale.zoomSensitivity.pinch,
+						  )
+						: this.config.scale.zoomSensitivity.wheel;
+					this.zoomXHandler(e, zoomSensitivity);
+				}),
 		);
 
 		this.addRxSubscription(
@@ -159,9 +162,13 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 						const unitsDelta = pixelsToUnits(deltaX, this.scale.zoomX);
 						this.scale.moveXStart(this.scale.xStart - unitsDelta);
 					} else if (deltaY !== 0 && Math.abs(deltaY) > Math.abs(deltaX)) {
-						this.zoomXHandler(e);
+						const zoomSensitivity = getTouchpadSensitivity(
+							this.config.components.yAxis.type,
+							this.config.scale.zoomSensitivity.pinch,
+						);
+						console.log(this.config.components.yAxis.type, zoomSensitivity)
+						this.zoomXHandler(e, zoomSensitivity);
 					}
-
 					this.bus.fireDraw();
 				}),
 		);
@@ -202,10 +209,7 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 					scale.autoScale(false);
 				}
 			} else {
-				const unitsDelta = pixelsToUnits(
-					scale.state.inverse ? -absoluteDelta : absoluteDelta,
-					scale.zoomY,
-				);
+				const unitsDelta = pixelsToUnits(scale.state.inverse ? -absoluteDelta : absoluteDelta, scale.zoomY);
 				scale.moveYStart(lastYStart + unitsDelta);
 			}
 		};
