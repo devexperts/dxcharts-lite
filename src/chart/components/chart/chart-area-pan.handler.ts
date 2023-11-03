@@ -164,9 +164,8 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 					} else if (deltaY !== 0 && Math.abs(deltaY) > Math.abs(deltaX)) {
 						const zoomSensitivity = getTouchpadSensitivity(
 							this.config.components.yAxis.type,
-							this.config.scale.zoomSensitivity.pinch,
+							this.config.scale.zoomSensitivity.glide,
 						);
-						console.log(this.config.components.yAxis.type, zoomSensitivity)
 						this.zoomXHandler(e, zoomSensitivity);
 					}
 					this.bus.fireDraw();
