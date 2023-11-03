@@ -80,9 +80,13 @@ export const getDefaultConfig = (): FullChartConfig => ({
 			yDiff: 80,
 		},
 		inverse: false,
-		zoomSensitivity: 0.25,
+		zoomSensitivity: {
+			wheel: 0.25,
+			pinch: 0.05,
+			glide: 0.05,
+		},
 		defaultViewportItems: 100,
-		disableAnimations: false
+		disableAnimations: false,
 	},
 	timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, // local timezone
 	components: {
@@ -884,10 +888,24 @@ export interface ChartScale {
 	 * When dragging chart under specific angle - will automatically disable auto-scale.
 	 */
 	autoScaleDisableOnDrag: AutoScaleDisableOnDrag;
-	/**
-	 * 0..1 ratio of full viewport; 0.5 = middle, 0.75 = 3/4 of viewport
-	 */
-	zoomSensitivity: number;
+
+	zoomSensitivity: {
+		/**
+		 * Value is related to zoom event (zooming chart via mouse wheel)
+		 * 0..1 ratio of full viewport; 0.5 = middle, 0.75 = 3/4 of viewport
+		 */
+		wheel: number;
+		/**
+		 * Value is related to pinch touchpad event (zooming chart via touchpad)
+		 * 0..1 ratio of full viewport; 0.5 = middle, 0.75 = 3/4 of viewport
+		 */
+		pinch: number;
+		/**
+		 * Value is related to glide touchpad event (scrolling chart via touchpad)
+		 * 0..1 ratio of full viewport; 0.5 = middle, 0.75 = 3/4 of viewport
+		 */
+		glide: number;
+	};
 	/**
 	 * Defines how much items (candles) will be in viewport when chart applies basic scale
 	 */
