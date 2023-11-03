@@ -893,12 +893,12 @@ export interface ChartScale {
 		 * Value is related to zoom event (zooming chart via mouse wheel)
 		 * 0..1 ratio of full viewport; 0.5 = middle, 0.75 = 3/4 of viewport
 		 */
-		wheel: 0.25,
+		wheel: number;
 		/**
 		 * Value is related to pinch touchpad event (zooming chart via touchpad)
 		 * 0..1 ratio of full viewport; 0.5 = middle, 0.75 = 3/4 of viewport
 		 */
-		pinch: 0.05,
+		pinch: number;
 	};
 	/**
 	 * Defines how much items (candles) will be in viewport when chart applies basic scale
