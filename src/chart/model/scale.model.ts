@@ -10,7 +10,7 @@ import { startViewportModelAnimation } from '../animation/viewport-model-animati
 import { cloneUnsafe } from '../utils/object.utils';
 import { AutoScaleViewportSubModel } from './scaling/auto-scale.model';
 import { zoomConstraint } from './scaling/constrait.functions';
-import { ZoomXToZoomYRatio, lockedYEndViewportCalculator, ratioFromZoomXY } from './scaling/lock-ratio.model';
+import { ZoomXToZoomYRatio, changeXToKeepRatio, changeYToKeepRatio, ratioFromZoomXY } from './scaling/lock-ratio.model';
 import { moveXStart, moveYStart } from './scaling/move-chart.functions';
 import { Price, Unit, ViewportModel, ViewportModelState, Zoom, compareStates } from './scaling/viewport.model';
 import { zoomXToEndViewportCalculator, zoomXToPercentViewportCalculator } from './scaling/x-zooming.functions';
@@ -62,7 +62,7 @@ export class ScaleModel extends ViewportModel {
 
 	autoScaleModel: AutoScaleViewportSubModel;
 
-	zoomXYRatio: ZoomXToZoomYRatio = 0;
+	public zoomXYRatio: ZoomXToZoomYRatio = 0;
 	offsets: ChartConfigComponentsOffsets;
 
 	xConstraints: Constraints[] = [];
@@ -161,7 +161,7 @@ export class ScaleModel extends ViewportModel {
 		const initialStateCopy = { ...state };
 		const constrainedState = this.scalePostProcessor(initialStateCopy, state);
 		if (this.state.lockPriceToBarRatio) {
-			lockedYEndViewportCalculator(constrainedState, this.zoomXYRatio);
+			changeYToKeepRatio(constrainedState, this.zoomXYRatio);
 		}
 		if (this.state.auto) {
 			this.autoScaleModel.doAutoYScale(constrainedState);
@@ -187,7 +187,7 @@ export class ScaleModel extends ViewportModel {
 		const state = this.export();
 		const constrainedState = this.scalePostProcessor(initialState, state);
 		if (this.state.lockPriceToBarRatio) {
-			lockedYEndViewportCalculator(constrainedState, this.zoomXYRatio);
+			changeYToKeepRatio(constrainedState, this.zoomXYRatio);
 		}
 		if (this.state.auto) {
 			this.autoScaleModel.doAutoYScale(constrainedState);
@@ -196,6 +196,26 @@ export class ScaleModel extends ViewportModel {
 		this.apply(constrainedState);
 	}
 
+	public setYScale(yStart: Unit, yEnd: Unit, fire = false) {
+		const initialState = this.export();
+		super.setYScale(yStart, yEnd, fire);
+		const state = this.export();
+		const constrainedState = this.scalePostProcessor(initialState, state);
+
+		if (this.state.lockPriceToBarRatio) {
+			changeXToKeepRatio(constrainedState, this.zoomXYRatio);
+
+			this.setXScale(constrainedState.xStart, constrainedState.xEnd);
+			// TODO: rewrite logic for applying constraints to consider both axes, now constraints on Y may not work correctly
+			return;
+		} else {
+			if (this.state.auto) {
+				this.autoScaleModel.doAutoYScale(constrainedState);
+			}
+
+			this.apply(constrainedState);
+		}
+	}
 	/**
 	 * Moves both xStart and xEnd without changing the viewport width (zoom).
 	 * Works without animation.
