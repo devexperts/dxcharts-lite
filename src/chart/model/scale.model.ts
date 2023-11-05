@@ -123,7 +123,7 @@ export class ScaleModel extends ViewportModel {
 		viewportPercent: ViewportPercent,
 		zoomIn: boolean,
 		forceNoAnimation: boolean = false,
-		zoomSensitivity: number = this.config.scale.zoomSensitivity,
+		zoomSensitivity: number,
 	) {
 		const disabledAnimations = this.config.scale.disableAnimations || forceNoAnimation;
 		if (disabledAnimations) {
@@ -140,7 +140,7 @@ export class ScaleModel extends ViewportModel {
 	 * @param zoomIn - If true, the chart will be zoomed in. If false, the chart will be zoomed out.
 	 * @param zoomSensitivity - The sensitivity of the zoom. Default value is taken from the configuration object.
 	 */
-	public zoomXToEnd(zoomIn: boolean, zoomSensitivity: number = this.config.scale.zoomSensitivity) {
+	public zoomXToEnd(zoomIn: boolean, zoomSensitivity: number) {
 		if (this.config.scale.disableAnimations) {
 			this.haltAnimation();
 		}
