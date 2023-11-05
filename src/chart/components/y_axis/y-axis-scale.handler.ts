@@ -33,10 +33,10 @@ export class YAxisScaleHandler extends ChartBaseElement {
 	constructor(
 		private bus: EventBus,
 		config: YAxisConfig,
-		chartPanComponent: ChartPanComponent,
-		private viewportModel: ScaleModel,
+		panning: ChartPanComponent,
+		private scale: ScaleModel,
 		canvasInputListener: CanvasInputListenerComponent,
-		private canvasBoundsContainer: CanvasBoundsContainer,
+		private bounds: CanvasBoundsContainer,
 		hitTest: HitBoundsTest,
 		private autoScaleCallback: (auto: boolean) => void,
 	) {
@@ -52,7 +52,7 @@ export class YAxisScaleHandler extends ChartBaseElement {
 					onDragEnd: callIfPredicateTrue(this.onYDragEnd, dragPredicate),
 				},
 				canvasInputListener,
-				chartPanComponent,
+				panning,
 				{
 					disableChartPanning: false,
 				},
@@ -69,10 +69,10 @@ export class YAxisScaleHandler extends ChartBaseElement {
 	}
 
 	private onYDragStart = () => {
-		this.lastYStart = this.viewportModel.yStart;
-		this.lastYEnd = this.viewportModel.yEnd;
-		this.lastYHeight = this.viewportModel.yEnd - this.viewportModel.yStart;
-		this.lastYPxHeight = this.canvasBoundsContainer.getBounds(CanvasElement.Y_AXIS).height;
+		this.lastYStart = this.scale.yStart;
+		this.lastYEnd = this.scale.yEnd;
+		this.lastYHeight = this.scale.yEnd - this.scale.yStart;
+		this.lastYPxHeight = this.bounds.getBounds(CanvasElement.Y_AXIS).height;
 	};
 
 	private onYDragTick = (dragInfo: DragInfo) => {
@@ -92,7 +92,8 @@ export class YAxisScaleHandler extends ChartBaseElement {
 		const newYStart = this.lastYStart - delta;
 		const newYEnd = this.lastYEnd + delta;
 		this.autoScaleCallback(false);
-		this.viewportModel.setYScale(newYStart, newYEnd);
+		this.scale.setYScale(newYStart, newYEnd);
+		this.bus.fireDraw();
 	};
 
 	private onYDragEnd = () => {

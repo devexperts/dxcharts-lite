@@ -206,7 +206,7 @@ export class ScaleModel extends ViewportModel {
 			changeXToKeepRatio(constrainedState, this.zoomXYRatio);
 
 			this.setXScale(constrainedState.xStart, constrainedState.xEnd);
-			//TODO: rewrite logic for applying contraints to consider both axes, now contrainsts on Y may not work correctly
+			// TODO: rewrite logic for applying constraints to consider both axes, now constraints on Y may not work correctly
 			return;
 		} else {
 			if (this.state.auto) {
