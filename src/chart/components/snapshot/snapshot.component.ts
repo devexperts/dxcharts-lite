@@ -43,6 +43,7 @@ export class SnapshotComponent extends ChartBaseElement {
 			ctx.drawImage(this.elements.mainCanvas, 0, 0, width, height);
 			ctx.drawImage(this.elements.dynamicObjectsCanvas, 0, 0, width, height);
 			ctx.drawImage(this.elements.crossToolCanvas, 0, 0, width, height);
+			ctx.drawImage(this.elements.yAxisLabelsCanvas, 0, 0, width, height);
 			userDrawCallback && userDrawCallback(ctx);
 			return new Promise<Blob>((resolve, fail) =>
 				this.elements.snapshotCanvas.toBlob(blob => {
