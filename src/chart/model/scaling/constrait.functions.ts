@@ -55,7 +55,7 @@ export const candleEdgesConstrait = (
  * @doc-tags viewport,zoom,scaling
  */
 export const zoomConstraint = (
-	initialState: ViewportModelState,
+	_: ViewportModelState,
 	state: ViewportModelState,
 	chartConfig: ChartConfigComponentsChart,
 	boundsProvider: BoundsProvider,
@@ -79,7 +79,6 @@ export const zoomConstraint = (
 		}
 
 		if (minViewportReached) {
-			newState.xEnd = initialState.xEnd;
 			newState.xStart = newState.xEnd - chartConfig.minCandles;
 			newState.zoomX = calculateZoom(newState.xEnd - newState.xStart, bounds.width);
 			return newState;
