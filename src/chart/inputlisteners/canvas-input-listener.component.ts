@@ -64,7 +64,7 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 
 	private pinchSubject = new Subject<WheelEvent>();
 	private scrollGestureSubject = new Subject<WheelEvent>();
-	private fastScrollTouch = new Subject<TouchEvent>();
+	private fastTouchScroll = new Subject<TouchEvent>();
 
 	mouseLeavesCanvasSubject = new Subject<boolean>();
 
@@ -301,7 +301,7 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 					// because landscape and portait orientations would give different % results
 					const minDistance = 35;
 					// in ms, should be lower to detect as "fast"
-					const maxTime = 200;
+					const maxTime = 250;
 
 					const touchStartTs = this.touchStartTimestamp;
 					const touchEndTs = Date.now();
@@ -312,7 +312,7 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 					const isRightTime = time <= maxTime;
 
 					if (isRightDistance && isRightTime) {
-						this.fastScrollTouch.next(e);
+						this.fastTouchScroll.next(e);
 					}
 				}
 			};
@@ -831,10 +831,12 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 	 * Returns an Observable that emits a Touch whenever a fast scroll is detected.
 	 * Fast scroll happens whenever chart or any other pane were moved faster than usual
 	 * The Observable is created from a Subject that is subscribed to by the component's template.
-	 * @returns {Observable<TouchEvent>} An Observable that emits a TouchEvent whenever a fast scroll gesture is detected.
+	 * @returns {Observable<TouchEvent>} An Observable that emits a TouchEvent whenever a fast scroll is detected.
 	 */
-	public observeFastScrollTouch(): Observable<TouchEvent> {
-		return this.fastScrollTouch.asObservable();
+	public observeFastTouchScroll(hitBoundsTest: HitBoundsTest = () => true): Observable<TouchEvent> {
+		return this.fastTouchScroll
+			.asObservable()
+			.pipe(filter(() => hitBoundsTest(this.currentPoint.x, this.currentPoint.y)));
 	}
 
 	/**
