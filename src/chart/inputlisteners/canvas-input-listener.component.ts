@@ -53,6 +53,7 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 	private wheelSubject = new Subject<WheelEvent>();
 
 	private touchStartSubject = new Subject<TouchEvent>();
+	private touchStartTimestamp = 0;
 	private touchMoveSubject = new Subject<TouchEvent>();
 	private touchEndSubject = new Subject<TouchEvent>();
 	private touchCancelSubject = new Subject<TouchEvent>();
@@ -63,6 +64,7 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 
 	private pinchSubject = new Subject<WheelEvent>();
 	private scrollGestureSubject = new Subject<WheelEvent>();
+	private fastScrollTouch = new Subject<TouchEvent>();
 
 	mouseLeavesCanvasSubject = new Subject<boolean>();
 
@@ -290,6 +292,31 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 			this.addSubscription(
 				subscribeListener(this.element, (e: TouchEvent) => longTouchListeners(e), 'touchstart'),
 			);
+
+			const fastScrollListenerProducer = (e: TouchEvent) => {
+				e.preventDefault();
+				// should work only if dragged to the left
+				if (this.prevDragPoint.x > this.dragStartPoint.x) {
+					// in percent, perhaps should be changed to just pixels,
+					// because landscape and portait orientations would give different % results
+					const minDistance = 35;
+					// in ms, should be lower to detect as "fast"
+					const minTime = 200;
+
+					const touchStartTs = this.touchStartTimestamp;
+					const touchEndTs = Date.now();
+					const time = touchEndTs - touchStartTs;
+
+					const distance = ((this.prevDragPoint.x - this.dragStartPoint.x) / this.canvasBounds.width) * 100;
+					const isMinDistance = distance > minDistance;
+					const isMinTime = time <= minTime;
+
+					if (isMinDistance && isMinTime) {
+						this.fastScrollTouch.next(e);
+					}
+				}
+			};
+			this.addSubscription(subscribeListener(this.element, fastScrollListenerProducer, 'touchend'));
 		}
 
 		this.addSubscription(
@@ -301,7 +328,14 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 		);
 
 		this.addSubscription(
-			subscribeListener(this.element, (e: TouchEvent) => this.touchStartSubject.next(e), 'touchstart'),
+			subscribeListener(
+				this.element,
+				(e: TouchEvent) => {
+					this.touchStartSubject.next(e);
+					this.touchStartTimestamp = Date.now();
+				},
+				'touchstart',
+			),
 		);
 		this.addSubscription(
 			subscribeListener(this.element, (e: TouchEvent) => this.touchMoveSubject.next(e), 'touchmove', true),
@@ -791,6 +825,16 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 		return this.longTouchEndSubject
 			.asObservable()
 			.pipe(filter(() => hitBoundsTest(this.currentPoint.x, this.currentPoint.y)));
+	}
+
+	/**
+	 * Returns an Observable that emits a Touch whenever a fast scroll is detected.
+	 * Fast scroll happens whenever chart or any other pane were moved faster than usual
+	 * The Observable is created from a Subject that is subscribed to by the component's template.
+	 * @returns {Observable<TouchEvent>} An Observable that emits a TouchEvent whenever a fast scroll gesture is detected.
+	 */
+	public observeFastScrollTouch(): Observable<TouchEvent> {
+		return this.fastScrollTouch.asObservable();
 	}
 
 	/**
