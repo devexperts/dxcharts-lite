@@ -301,17 +301,17 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 					// because landscape and portait orientations would give different % results
 					const minDistance = 35;
 					// in ms, should be lower to detect as "fast"
-					const minTime = 200;
+					const maxTime = 200;
 
 					const touchStartTs = this.touchStartTimestamp;
 					const touchEndTs = Date.now();
 					const time = touchEndTs - touchStartTs;
 
 					const distance = ((this.prevDragPoint.x - this.dragStartPoint.x) / this.canvasBounds.width) * 100;
-					const isMinDistance = distance > minDistance;
-					const isMinTime = time <= minTime;
+					const isRightDistance = distance > minDistance;
+					const isRightTime = time <= maxTime;
 
-					if (isMinDistance && isMinTime) {
+					if (isRightDistance && isRightTime) {
 						this.fastScrollTouch.next(e);
 					}
 				}
