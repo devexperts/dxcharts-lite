@@ -3,7 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { fun } from '../canvas/offscreen/init';
+import { initOffscreenWorker } from '../canvas/offscreen/init';
 import EventBus from '../events/event-bus';
 import { EVENT_DRAW } from '../events/events';
 import { ChartResizeHandler } from '../inputhandlers/chart-resize.handler';
@@ -58,7 +58,7 @@ export class DrawingManager {
 	private worker: any;
 
 	constructor(eventBus: EventBus, private chartResizeHandler: ChartResizeHandler, canvases: CanvasModel[]) {
-		fun(canvases).then(worker => {
+		initOffscreenWorker(canvases).then(worker => {
 			this.worker = worker;
 			this.readyDraw = true;
 		});
@@ -82,7 +82,7 @@ export class DrawingManager {
 					}
 				}
 				animationFrameThrottled(this.animFrameId, async () => {
-					if (!this.isDrawable()) { 
+					if (!this.isDrawable()) {
 						return;
 					}
 					this.forceDraw(this.canvasIdsList);

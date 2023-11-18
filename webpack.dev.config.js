@@ -1,6 +1,7 @@
 const path = require('path');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyPlugin = require("copy-webpack-plugin");
 
 module.exports = env => {
 	return {
@@ -28,6 +29,7 @@ module.exports = env => {
 			devMiddleware: {
 				writeToDisk: true,
 			},
+			headers: { 'Cross-Origin-Opener-Policy': 'same-origin', 'Cross-Origin-Embedder-Policy': 'credentialless' },
 		},
 		module: {
 			rules: [
@@ -54,6 +56,11 @@ module.exports = env => {
 					mode: 'write-references',
 				},
 			}),
+			new CopyPlugin({
+				patterns: [
+				  { from: "multiply.wasm", to: "multiply.wasm" },
+				],
+			  }),
 		],
 		devtool: 'source-map',
 	};

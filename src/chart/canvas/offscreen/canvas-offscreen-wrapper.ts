@@ -1,3 +1,8 @@
+import { BEGIN_PATH, BEZIER_CURVE_TO, CLEAR_RECT, CLIP, CLOSE_PATH, FILL, FILL_RECT, FILL_STYLE, FILL_TEXT, FONT, HEIGHT, LINE_CAP, LINE_TO, LINE_WIDTH, MOVE_TO, QUADRATIC_CURVE_TO, RECT, RESTORE, SAVE, SCALE, SET_LINE_DASH, STROKE, STROKE_RECT, STROKE_STYLE, STROKE_TEXT, WIDTH } from "./canvas-ctx.mapper";
+
+const END_OF_FILE = 0xDEAD;
+
+
 export class CanvasOffscreenContext2D implements Partial<CanvasRenderingContext2D> {
 	public commands: unknown[] = [];
 
@@ -14,82 +19,62 @@ export class CanvasOffscreenContext2D implements Partial<CanvasRenderingContext2
 	}
 
 	commit() {
-		this.commands[this.counter] = 'EOF';
+		this.commands[this.counter] = END_OF_FILE;
 		this.counter = 0;
 		this.commands[this.counter++] = this.canvasId;
 	}
 
-	// style = {
-	// 	canvasId: this.canvasId,
-	// 	canvasCommands: this.canvasCommands,
-	// 	set width(val: number) {
-	// 		this.canvasCommands.push([this.canvasId, 'style', 'width', val]);
-	// 	},
-	// 	set height(val: number) {
-	// 		this.canvasCommands.push([this.canvasId, 'style', 'height', val]);
-	// 	},
-	// };
-
 	set font(val: string) {
 		this.__font = val;
-		this.commands[this.counter++] = 'font';
+		this.commands[this.counter++] = FONT;
+		this.commands[this.counter++] = -1;
 		this.commands[this.counter++] = val;
-		this.commands[this.counter++] = 'EOC';
-		// this.commands.push([this.canvasId, 'font', val]);
 	}
 
 	set width(val: number) {
-		this.commands[this.counter++] = 'width';
+		this.commands[this.counter++] = WIDTH;
+		this.commands[this.counter++] = -1;
 		this.commands[this.counter++] = val;
-		this.commands[this.counter++] = 'EOC';
-		// this.canvasCommands.push([this.canvasId, 'width', val]);
 	}
 
 	set height(val: number) {
-		this.commands[this.counter++] = 'height';
+		this.commands[this.counter++] = HEIGHT;
+		this.commands[this.counter++] = -1;
 		this.commands[this.counter++] = val;
-		this.commands[this.counter++] = 'EOC';
-		// this.canvasCommands.push([this.canvasId, 'width', val]);
 	}
 
 	set fillStyle(val: string | CanvasGradient | CanvasPattern | undefined) {
-		this.commands[this.counter++] = 'fillStyle';
+		this.commands[this.counter++] = FILL_STYLE;
+		this.commands[this.counter++] = -1;
 		this.commands[this.counter++] = val;
-		this.commands[this.counter++] = 'EOC';
-		// this.commands.push([this.canvasId, 'fillStyle', val]);
 	}
 
 	set strokeStyle(val: string | CanvasGradient | CanvasPattern | undefined) {
-		this.commands[this.counter++] = 'strokeStyle';
+		this.commands[this.counter++] = STROKE_STYLE;
+		this.commands[this.counter++] = -1;
 		this.commands[this.counter++] = val;
-		this.commands[this.counter++] = 'EOC';
-		// this.commands.push([this.canvasId, 'strokeStyle', val]);
 	}
 
 	set lineWidth(val: number) {
-		this.commands[this.counter++] = 'lineWidth';
+		this.commands[this.counter++] = LINE_WIDTH;
+		this.commands[this.counter++] = -1;
 		this.commands[this.counter++] = val;
-		this.commands[this.counter++] = 'EOC';
-		// this.commands.push([this.canvasId, 'lineWidth', val]);
 	}
 
 	set lineCap(val: CanvasLineCap) {
-		this.commands[this.counter++] = 'lineCap';
+		this.commands[this.counter++] = LINE_CAP;
+		this.commands[this.counter++] = -1;
 		this.commands[this.counter++] = val;
-		this.commands[this.counter++] = 'EOC';
-		// this.commands.push([this.canvasId, 'lineCap', val]);
 	}
 
 	public save(): void {
-		this.commands[this.counter++] = 'save';
-		this.commands[this.counter++] = 'EOC';
-		// this.commands.push([this.canvasId, 'save']);
+		this.commands[this.counter++] = SAVE;
+		this.commands[this.counter++] = 0;
 	}
 
 	public restore(): void {
-		this.commands[this.counter++] = 'restore';
-		this.commands[this.counter++] = 'EOC';
-		// this.commands.push([this.canvasId, 'restore']);
+		this.commands[this.counter++] = RESTORE;
+		this.commands[this.counter++] = 0;
 	}
 
 	public measureText(text: string): TextMetrics {
@@ -98,97 +83,88 @@ export class CanvasOffscreenContext2D implements Partial<CanvasRenderingContext2
 	}
 
 	public clearRect(x: number, y: number, w: number, h: number): void {
-		this.commands[this.counter++] = 'clearRect';
+		this.commands[this.counter++] = CLEAR_RECT;
+		this.commands[this.counter++] = 4;
 		this.commands[this.counter++] = x;
 		this.commands[this.counter++] = y;
 		this.commands[this.counter++] = w;
 		this.commands[this.counter++] = h;
-		this.commands[this.counter++] = 'EOC';
-		// this.commands.push([this.canvasId, 'clearRect', x, y, w, h]);
 	}
 
 	public fillRect(x: number, y: number, w: number, h: number): void {
-		this.commands[this.counter++] = 'fillRect';
+		this.commands[this.counter++] = FILL_RECT;
+		this.commands[this.counter++] = 4;
 		this.commands[this.counter++] = x;
 		this.commands[this.counter++] = y;
 		this.commands[this.counter++] = w;
 		this.commands[this.counter++] = h;
-		this.commands[this.counter++] = 'EOC';
-		// this.commands.push([this.canvasId, 'fillRect', x, y, w, h]);
 	}
 
 	public strokeText(text: string, x: number, y: number, maxWidth?: number): void {
-		this.commands[this.counter++] = 'strokeText';
+		this.commands[this.counter++] = STROKE_TEXT;
+		this.commands[this.counter++] = maxWidth !== undefined ? 4 : 3;
 		this.commands[this.counter++] = text;
 		this.commands[this.counter++] = x;
 		this.commands[this.counter++] = y;
 		if (maxWidth !== undefined) {
 			this.commands[this.counter++] = maxWidth;
 		}
-		this.commands[this.counter++] = 'EOC';
-		// this.commands.push([this.canvasId, 'strokeText', text, x, y, maxWidth]);
 	}
 
 	public setLineDash(segments: number[]): void {
-		this.commands[this.counter++] = 'setLineDash';
+		this.commands[this.counter++] = SET_LINE_DASH;
+		this.commands[this.counter++] = 1;
 		this.commands[this.counter++] = segments;
-		this.commands[this.counter++] = 'EOC';
-		// this.commands.push([this.canvasId, 'setLineDash', segments]);
 	}
 
 	public fillText(text: string, x: number, y: number, maxWidth?: number | undefined): void {
-		this.commands[this.counter++] = 'fillText';
+		this.commands[this.counter++] = FILL_TEXT;
+		this.commands[this.counter++] = maxWidth !== undefined ? 4 : 3;
 		this.commands[this.counter++] = text;
 		this.commands[this.counter++] = x;
 		this.commands[this.counter++] = y;
 		if (maxWidth !== undefined) {
 			this.commands[this.counter++] = maxWidth;
 		}
-		this.commands[this.counter++] = 'EOC';
-		// this.commands.push([this.canvasId, 'fillText', text, x, y, maxWidth]);
 	}
 
 	public rect(x: number, y: number, w: number, h: number): void {
-		this.commands[this.counter++] = 'rect';
+		this.commands[this.counter++] = RECT;
+		this.commands[this.counter++] = 4;
 		this.commands[this.counter++] = x;
 		this.commands[this.counter++] = y;
 		this.commands[this.counter++] = w;
 		this.commands[this.counter++] = h;
-		this.commands[this.counter++] = 'EOC';
-		// this.commands.push([this.canvasId, 'rect', x, y, w, h]);
 	}
 
 	public clip(fillRule?: CanvasFillRule | undefined): void;
 	public clip(path: Path2D, fillRule?: CanvasFillRule | undefined): void;
 	public clip(...args: unknown[]): void {
-		this.commands[this.counter++] = 'clip';
+		this.commands[this.counter++] = CLIP;
+		this.commands[this.counter++] = args.length;
 		for (const arg of args) {
 			this.commands[this.counter++] = arg;
 		}
-		this.commands[this.counter++] = 'EOC';
-		// this.commands.push([this.canvasId, 'clip', ...args]);
 	}
 
 	public quadraticCurveTo(cpx: number, cpy: number, x: number, y: number): void {
-		this.commands[this.counter++] = 'quadraticCurveTo';
+		this.commands[this.counter++] = QUADRATIC_CURVE_TO;
+		this.commands[this.counter++] = 4;
 		this.commands[this.counter++] = cpx;
 		this.commands[this.counter++] = cpy;
 		this.commands[this.counter++] = x;
 		this.commands[this.counter++] = y;
-		this.commands[this.counter++] = 'EOC';
-		// this.commands.push([this.canvasId, 'quadraticCurveTo', cpx, cpy, x, y]);
 	}
 
 	public bezierCurveTo(cp1x: number, cp1y: number, cp2x: number, cp2y: number, x: number, y: number): void {
-		this.commands[this.counter++] = 'bezierCurveTo';
+		this.commands[this.counter++] = BEZIER_CURVE_TO;
+		this.commands[this.counter++] = 6;
 		this.commands[this.counter++] = cp1x;
 		this.commands[this.counter++] = cp1y;
 		this.commands[this.counter++] = cp2x;
 		this.commands[this.counter++] = cp2y;
 		this.commands[this.counter++] = x;
 		this.commands[this.counter++] = y;
-		this.commands[this.counter++] = 'EOC';
-		// this.commands.push([this.canvasId, 'bezierCurveTo', cp1x, cp1y, cp2x, cp2y, x, y]);
 	}
 
 	public getImageData(sx: number, sy: number, sw: number, sh: number): ImageData {
@@ -196,60 +172,52 @@ export class CanvasOffscreenContext2D implements Partial<CanvasRenderingContext2
 	}
 
 	public beginPath(): void {
-		this.commands[this.counter++] = 'beginPath';
-		this.commands[this.counter++] = 'EOC';
-		// this.commands.push([this.canvasId, 'beginPath']);
+		this.commands[this.counter++] = BEGIN_PATH;
+		this.commands[this.counter++] = 0;
 	}
 
 	public moveTo(x: number, y: number): void {
-		this.commands[this.counter++] = 'moveTo';
+		this.commands[this.counter++] = MOVE_TO;
+		this.commands[this.counter++] = 2;
 		this.commands[this.counter++] = x;
 		this.commands[this.counter++] = y;
-		this.commands[this.counter++] = 'EOC';
-		// this.commands.push([this.canvasId, 'moveTo', x, y]);
 	}
 
 	public lineTo(x: number, y: number): void {
-		this.commands[this.counter++] = 'lineTo';
+		this.commands[this.counter++] = LINE_TO;
+		this.commands[this.counter++] = 2;
 		this.commands[this.counter++] = x;
 		this.commands[this.counter++] = y;
-		this.commands[this.counter++] = 'EOC';
-		// this.commands.push([this.canvasId, 'lineTo', x, y]);
 	}
 
 	public stroke(): void {
-		this.commands[this.counter++] = 'stroke';
-		this.commands[this.counter++] = 'EOC';
-		// this.commands.push([this.canvasId, 'stroke']);
+		this.commands[this.counter++] = STROKE;
+		this.commands[this.counter++] = 0;
 	}
 
 	public fill(): void {
-		this.commands[this.counter++] = 'fill';
-		this.commands[this.counter++] = 'EOC';
-		// this.commands.push([this.canvasId, 'fill']);
+		this.commands[this.counter++] = FILL;
+		this.commands[this.counter++] = 0;
 	}
 
 	public closePath(): void {
-		this.commands[this.counter++] = 'closePath';
-		this.commands[this.counter++] = 'EOC';
-		// this.commands.push([this.canvasId, 'closePath']);
+		this.commands[this.counter++] = CLOSE_PATH;
+		this.commands[this.counter++] = 0;
 	}
 
 	public strokeRect(x: number, y: number, w: number, h: number): void {
-		this.commands[this.counter++] = 'strokeRect';
+		this.commands[this.counter++] = STROKE_RECT;
+		this.commands[this.counter++] = 4;
 		this.commands[this.counter++] = x;
 		this.commands[this.counter++] = y;
 		this.commands[this.counter++] = w;
 		this.commands[this.counter++] = h;
-		this.commands[this.counter++] = 'EOC';
-		// this.commands.push([this.canvasId, 'strokeRect', x, y, w, h]);
 	}
 
 	public scale(x: number, y: number): void {
-		this.commands[this.counter++] = 'scale';
+		this.commands[this.counter++] = SCALE;
+		this.commands[this.counter++] = 2;
 		this.commands[this.counter++] = x;
 		this.commands[this.counter++] = y;
-		this.commands[this.counter++] = 'EOC';
-		// this.commands.push([this.canvasId, 'scale', x, y]);
 	}
 }
