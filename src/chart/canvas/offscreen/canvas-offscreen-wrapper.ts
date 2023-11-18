@@ -1,34 +1,75 @@
-import { BEGIN_PATH, BEZIER_CURVE_TO, CLEAR_RECT, CLIP, CLOSE_PATH, FILL, FILL_RECT, FILL_STYLE, FILL_TEXT, FONT, HEIGHT, LINE_CAP, LINE_TO, LINE_WIDTH, MOVE_TO, QUADRATIC_CURVE_TO, RECT, RESTORE, SAVE, SCALE, SET_LINE_DASH, STROKE, STROKE_RECT, STROKE_STYLE, STROKE_TEXT, WIDTH } from "./canvas-ctx.mapper";
+import {
+	BEGIN_PATH,
+	BEZIER_CURVE_TO,
+	CLEAR_RECT,
+	CLIP,
+	CLOSE_PATH,
+	FILL,
+	FILL_RECT,
+	FILL_STYLE,
+	FILL_TEXT,
+	FONT,
+	HEIGHT,
+	LINE_CAP,
+	LINE_TO,
+	LINE_WIDTH,
+	MOVE_TO,
+	QUADRATIC_CURVE_TO,
+	RECT,
+	RESTORE,
+	SAVE,
+	SCALE,
+	STROKE,
+	STROKE_RECT,
+	STROKE_STYLE,
+	STROKE_TEXT,
+	WIDTH
+} from './canvas-ctx.mapper';
 
-const END_OF_FILE = 0xDEAD;
+const END_OF_FILE = 0xdead;
+const canvas = document.createElement('canvas');
+// @ts-ignore
+const ctxForMeasure: CanvasRenderingContext2D = canvas.getContext('2d');
 
+let poolCounter = Number.MIN_SAFE_INTEGER;
+const stringsPool = new Map<string, number>();
+export const strSync: unknown[] = [];
 
 export class CanvasOffscreenContext2D implements Partial<CanvasRenderingContext2D> {
-	public commands: unknown[] = [];
+	public commands: Float64Array;
+	public buffer: unknown;
 
-	// public canvasCommands: [string, string, ...unknown[]][] = [];
+	private getStringId(str: string): number {
+		let id = stringsPool.get(str);
+		if (id === undefined) {
+			id = poolCounter++;
+			strSync.push(str, id);
+			stringsPool.set(str, id);
+		}
+		return id;
+	}
+
 	private __font: string = '12px Arial';
-	private realCtx: CanvasRenderingContext2D;
 	private counter = 0;
 
-	constructor(private canvasId: string) {
-		const canvas = document.createElement('canvas');
+	constructor(public idx: number) {
+		this.buffer = new SharedArrayBuffer(8 * 50000);
 		// @ts-ignore
-		this.realCtx = canvas.getContext('2d');
-		this.commands[this.counter++] = this.canvasId;
+		this.commands = new Float64Array(this.buffer);
+		this.commands[this.counter++] = this.idx;
 	}
 
 	commit() {
 		this.commands[this.counter] = END_OF_FILE;
 		this.counter = 0;
-		this.commands[this.counter++] = this.canvasId;
+		this.commands[this.counter++] = this.idx;
 	}
 
 	set font(val: string) {
 		this.__font = val;
 		this.commands[this.counter++] = FONT;
 		this.commands[this.counter++] = -1;
-		this.commands[this.counter++] = val;
+		this.commands[this.counter++] = this.getStringId(val);
 	}
 
 	set width(val: number) {
@@ -46,13 +87,15 @@ export class CanvasOffscreenContext2D implements Partial<CanvasRenderingContext2
 	set fillStyle(val: string | CanvasGradient | CanvasPattern | undefined) {
 		this.commands[this.counter++] = FILL_STYLE;
 		this.commands[this.counter++] = -1;
-		this.commands[this.counter++] = val;
+		// @ts-ignore
+		this.commands[this.counter++] = this.getStringId(val);
 	}
 
 	set strokeStyle(val: string | CanvasGradient | CanvasPattern | undefined) {
 		this.commands[this.counter++] = STROKE_STYLE;
 		this.commands[this.counter++] = -1;
-		this.commands[this.counter++] = val;
+		// @ts-ignore
+		this.commands[this.counter++] = this.getStringId(val);
 	}
 
 	set lineWidth(val: number) {
@@ -64,7 +107,7 @@ export class CanvasOffscreenContext2D implements Partial<CanvasRenderingContext2
 	set lineCap(val: CanvasLineCap) {
 		this.commands[this.counter++] = LINE_CAP;
 		this.commands[this.counter++] = -1;
-		this.commands[this.counter++] = val;
+		this.commands[this.counter++] = this.getStringId(val);;
 	}
 
 	public save(): void {
@@ -78,8 +121,8 @@ export class CanvasOffscreenContext2D implements Partial<CanvasRenderingContext2
 	}
 
 	public measureText(text: string): TextMetrics {
-		this.realCtx.font = this.__font;
-		return this.realCtx.measureText(text);
+		ctxForMeasure.font = this.__font;
+		return ctxForMeasure.measureText(text);
 	}
 
 	public clearRect(x: number, y: number, w: number, h: number): void {
@@ -103,7 +146,7 @@ export class CanvasOffscreenContext2D implements Partial<CanvasRenderingContext2
 	public strokeText(text: string, x: number, y: number, maxWidth?: number): void {
 		this.commands[this.counter++] = STROKE_TEXT;
 		this.commands[this.counter++] = maxWidth !== undefined ? 4 : 3;
-		this.commands[this.counter++] = text;
+		this.commands[this.counter++] = this.getStringId(text);
 		this.commands[this.counter++] = x;
 		this.commands[this.counter++] = y;
 		if (maxWidth !== undefined) {
@@ -111,16 +154,17 @@ export class CanvasOffscreenContext2D implements Partial<CanvasRenderingContext2
 		}
 	}
 
-	public setLineDash(segments: number[]): void {
-		this.commands[this.counter++] = SET_LINE_DASH;
-		this.commands[this.counter++] = 1;
-		this.commands[this.counter++] = segments;
+	public setLineDash(): void {
+		// console.log('dash')
+		// this.commands[this.counter++] = SET_LINE_DASH;
+		// this.commands[this.counter++] = 1;
+		// this.commands[this.counter++] = segments;
 	}
 
 	public fillText(text: string, x: number, y: number, maxWidth?: number | undefined): void {
 		this.commands[this.counter++] = FILL_TEXT;
 		this.commands[this.counter++] = maxWidth !== undefined ? 4 : 3;
-		this.commands[this.counter++] = text;
+		this.commands[this.counter++] = this.getStringId(text);
 		this.commands[this.counter++] = x;
 		this.commands[this.counter++] = y;
 		if (maxWidth !== undefined) {
@@ -143,6 +187,7 @@ export class CanvasOffscreenContext2D implements Partial<CanvasRenderingContext2
 		this.commands[this.counter++] = CLIP;
 		this.commands[this.counter++] = args.length;
 		for (const arg of args) {
+			// @ts-ignore
 			this.commands[this.counter++] = arg;
 		}
 	}

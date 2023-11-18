@@ -25,6 +25,7 @@ export class CanvasModel {
 	public height: number = 0;
 	public prevHeight: number = 0;
 	public prevWidth: number = 0;
+	public idx: number = 0;
 	public readonly _canvasId: string;
 	type: CanvasBarType = CANDLE_TYPE;
 	constructor(
@@ -39,7 +40,7 @@ export class CanvasModel {
 		this.parent = findHeightParent(canvas);
 
 		this._canvasId = canvas.getAttribute('data-element') ?? '';
-		const ctx = new CanvasOffscreenContext2D(this._canvasId);
+		const ctx = new CanvasOffscreenContext2D(this.idx);
 		if (ctx === null) {
 			throw new Error("Couldn't get 2d context????");
 		}

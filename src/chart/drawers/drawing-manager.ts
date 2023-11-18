@@ -3,6 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
+import { strSync } from '../canvas/offscreen/canvas-offscreen-wrapper';
 import { initOffscreenWorker } from '../canvas/offscreen/init';
 import EventBus from '../events/event-bus';
 import { EVENT_DRAW } from '../events/events';
@@ -91,8 +92,12 @@ export class DrawingManager {
 					this.readyDraw = false;
 					// @ts-ignore
 					canvases.forEach(canvas => canvas.ctx.commit());
+					if (strSync.length) {
+						await this.worker.syncStrings(strSync);
+						strSync.length = 0;
+					}
 					// @ts-ignore
-					await this.worker.executeCanvasCommands(canvases.map(canvas => canvas.ctx.commands));
+					await this.worker.executeCanvasCommands();
 					this.readyDraw = true;
 				});
 			}

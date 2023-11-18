@@ -6,9 +6,14 @@ export const initOffscreenWorker = async (canvases: CanvasModel[]) => {
 
 	// @ts-ignore
 	const worker = await new OffscreenWorker();
-	for (const canvas of canvases) {
+	for (let i = 0; i < canvases.length; i++) {
+		const canvas = canvases[i];
 		const offscreen = canvas.canvas.transferControlToOffscreen();
-		await worker.addCanvas(canvas._canvasId, transfer(offscreen, [offscreen]));
+		canvas.idx = i;
+		// @ts-ignore
+		canvas.ctx.idx = i;
+		// @ts-ignore
+		await worker.addCanvas(i, transfer(offscreen, [offscreen]), canvas.ctx.buffer);
 	}
 
 	return worker;
