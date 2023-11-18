@@ -16,7 +16,7 @@ import {
 	FullChartConfig,
 	GridComponentConfig,
 	PartialChartConfig,
-	mergeWithDefaultConfig
+	mergeWithDefaultConfig,
 } from './chart.config';
 import { ChartBaseModel } from './components/chart/chart-base.model';
 import { ChartComponent } from './components/chart/chart.component';
@@ -183,18 +183,25 @@ export default class ChartBootstrap implements ChartContainer {
 			this.canvasModels,
 			config,
 		);
-		this.chartResizeHandler = chartResizeHandler;
-		chartResizeHandler.subscribeResize();
-		this.components.push(chartResizeHandler.unsubscribeAnimationUpdate.bind(chartResizeHandler));
-		const drawingManager = new DrawingManager(eventBus, chartResizeHandler);
-		this.drawingManager = drawingManager;
+
+		const backgroundCanvasModel = createCanvasModel(
+			eventBus,
+			elements.backgroundCanvas,
+			config,
+			this.canvasModels,
+			elements.chartResizer,
+			{
+				// can be read frequently, see {redrawBackgroundArea} function
+				willReadFrequently: true,
+			},
+		);
+		this.backgroundCanvasModel = backgroundCanvasModel;
 		const mainCanvasModel = createMainCanvasModel(
 			eventBus,
 			elements.mainCanvas,
 			elements.chartResizer,
 			this.config.components.chart.type,
 			this.config,
-			drawingManager,
 			this.canvasModels,
 		);
 		this.mainCanvasModel = mainCanvasModel;
@@ -202,17 +209,35 @@ export default class ChartBootstrap implements ChartContainer {
 			eventBus,
 			elements.dynamicObjectsCanvas,
 			config,
-			drawingManager,
 			this.canvasModels,
 			elements.chartResizer,
 		);
+		const crossToolCanvasModel = createCanvasModel(
+			eventBus,
+			elements.crossToolCanvas,
+			config,
+			this.canvasModels,
+			elements.chartResizer,
+		);
+		const snapshotCanvasModel = createCanvasModel(
+			eventBus,
+			elements.snapshotCanvas,
+			config,
+			this.canvasModels,
+			elements.chartResizer,
+		);
+		this.chartResizeHandler = chartResizeHandler;
+		chartResizeHandler.subscribeResize();
+		this.components.push(chartResizeHandler.unsubscribeAnimationUpdate.bind(chartResizeHandler));
+		const drawingManager = new DrawingManager(eventBus, chartResizeHandler, this.canvasModels);
+		this.drawingManager = drawingManager;
+		
 		const dataSeriesCanvasClearDrawer = new ClearCanvasDrawer(this.dynamicObjectsCanvasModel);
 		drawingManager.addDrawer(dataSeriesCanvasClearDrawer, 'SERIES_CLEAR');
 		const yAxisLabelsCanvasModel = createCanvasModel(
 			eventBus,
 			elements.yAxisLabelsCanvas,
 			config,
-			drawingManager,
 			this.canvasModels,
 			elements.chartResizer,
 		);
@@ -238,7 +263,6 @@ export default class ChartBootstrap implements ChartContainer {
 			elements.hitTestCanvas,
 			canvasInputListener,
 			canvasBoundsContainer,
-			drawingManager,
 			config,
 			this.canvasModels,
 			elements.chartResizer,
@@ -260,20 +284,6 @@ export default class ChartBootstrap implements ChartContainer {
 		);
 		this.scaleModel = scaleModel;
 		//#endregion
-
-		const backgroundCanvasModel = createCanvasModel(
-			eventBus,
-			elements.backgroundCanvas,
-			config,
-			drawingManager,
-			this.canvasModels,
-			elements.chartResizer,
-			{
-				// can be read frequently, see {redrawBackgroundArea} function
-				willReadFrequently: true,
-			},
-		);
-		this.backgroundCanvasModel = backgroundCanvasModel;
 
 		this.cursorHandler = new CursorHandler(
 			elements.canvasArea,
@@ -397,14 +407,6 @@ export default class ChartBootstrap implements ChartContainer {
 			drawingManager,
 		);
 		this.chartComponents.push(this.watermarkComponent);
-		const crossToolCanvasModel = createCanvasModel(
-			eventBus,
-			elements.crossToolCanvas,
-			config,
-			drawingManager,
-			this.canvasModels,
-			elements.chartResizer,
-		);
 		this.highlightsComponent = new HighlightsComponent(
 			eventBus,
 			config,
@@ -433,7 +435,7 @@ export default class ChartBootstrap implements ChartContainer {
 		);
 		this.chartComponents.push(this.navigationMapComponent);
 		this.userInputListenerComponents.push(this.navigationMapComponent.navigationMapMoveHandler);
-		
+
 		// high low component
 		const highLowComponent = new HighLowComponent(
 			config,
@@ -508,14 +510,6 @@ export default class ChartBootstrap implements ChartContainer {
 
 		this.chartComponents.push(this.crossToolComponent);
 		// Snapshot component
-		const snapshotCanvasModel = createCanvasModel(
-			eventBus,
-			elements.snapshotCanvas,
-			config,
-			drawingManager,
-			this.canvasModels,
-			elements.chartResizer,
-		);
 		const snapshotComponent = new SnapshotComponent(this.elements, snapshotCanvasModel);
 		this.snapshotComponent = snapshotComponent;
 		this.chartComponents.push(snapshotComponent);
@@ -693,7 +687,6 @@ export default class ChartBootstrap implements ChartContainer {
 	getOffsets(): ChartConfigComponentsOffsets {
 		return this.config.components && this.config.components.offsets;
 	}
-
 
 	/**
 	 * Sets the visibility of the borders of the candles in the chart.

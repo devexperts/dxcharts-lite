@@ -3,10 +3,11 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
+import { fun } from '../canvas/offscreen/init';
 import EventBus from '../events/event-bus';
 import { EVENT_DRAW } from '../events/events';
 import { ChartResizeHandler } from '../inputhandlers/chart-resize.handler';
-import { MIN_SUPPORTED_CANVAS_SIZE } from '../model/canvas.model';
+import { CanvasModel, MIN_SUPPORTED_CANVAS_SIZE } from '../model/canvas.model';
 import { arrayIntersect, reorderArray } from '../utils/array.utils';
 import { StringTMap } from '../utils/object.utils';
 import { animationFrameThrottled } from '../utils/performance/request-animation-frame-throttle.utils';
@@ -53,8 +54,14 @@ export class DrawingManager {
 	private readonly drawHitTestCanvas: () => void;
 	private canvasIdsList: Array<string> | undefined = [];
 	private animFrameId = `draw_${uuid()}`;
+	private readyDraw = false;
+	private worker: any;
 
-	constructor(eventBus: EventBus, private chartResizeHandler: ChartResizeHandler) {
+	constructor(eventBus: EventBus, private chartResizeHandler: ChartResizeHandler, canvases: CanvasModel[]) {
+		fun(canvases).then(worker => {
+			this.worker = worker;
+			this.readyDraw = true;
+		});
 		// eventBus.on(EVENT_DRAW_LAST_CANDLE, () => animationFrameThrottled(this.animFrameId + 'last', () => this.drawLastBar()));
 		this.drawHitTestCanvas = () => {
 			this.drawingOrder.forEach(drawer => {
@@ -74,10 +81,19 @@ export class DrawingManager {
 						this.canvasIdsList = undefined;
 					}
 				}
-				animationFrameThrottled(this.animFrameId, () => {
+				animationFrameThrottled(this.animFrameId, async () => {
+					if (!this.isDrawable()) { 
+						return;
+					}
 					this.forceDraw(this.canvasIdsList);
 					this.canvasIdsList = [];
 					this.drawHitTestCanvas();
+					for (const canvas of canvases) {
+						// @ts-ignore
+						await this.worker.executeCanvasCommands(canvas.ctx.commands);
+						// @ts-ignore
+						canvas.ctx.commands = [];
+					}
 				});
 			}
 		});
@@ -129,6 +145,7 @@ export class DrawingManager {
 	 */
 	public isDrawable(): boolean {
 		return (
+			this.readyDraw &&
 			(this.chartResizeHandler.previousBCR?.height ?? 0) > MIN_SUPPORTED_CANVAS_SIZE.width &&
 			(this.chartResizeHandler.previousBCR?.width ?? 0) > MIN_SUPPORTED_CANVAS_SIZE.height
 		);

@@ -5,11 +5,13 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 module.exports = env => {
 	return {
 		mode: 'development',
+		target: 'web',
 		entry: {
 			index: './src/index.dev.ts',
+			worker: './src/chart/canvas/offscreen/offscreen-worker.js',
 		},
 		output: {
-			filename: `./test/[name].js`,
+			filename: `./[name].js`,
 			path: path.resolve(__dirname, 'dist'),
 		},
 		resolve: {
@@ -23,6 +25,9 @@ module.exports = env => {
 			historyApiFallback: true,
 			open: false,
 			liveReload: false,
+			devMiddleware: {
+				writeToDisk: true,
+			},
 		},
 		module: {
 			rules: [
@@ -50,6 +55,6 @@ module.exports = env => {
 				},
 			}),
 		],
-		devtool: 'inline-source-map',
+		devtool: 'source-map',
 	};
 };

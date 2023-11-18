@@ -7,11 +7,10 @@ import { merge, Observable, Subject, Subscription } from 'rxjs';
 import { map, throttleTime } from 'rxjs/operators';
 import { CanvasBoundsContainer, CanvasElement } from '../canvas/canvas-bounds-container';
 import { CursorType, FullChartConfig } from '../chart.config';
-import { CanvasModel, initCanvasWithConfig } from './canvas.model';
-import { DrawingManager } from '../drawers/drawing-manager';
 import EventBus from '../events/event-bus';
 import { CanvasInputListenerComponent, Point } from '../inputlisteners/canvas-input-listener.component';
 import { animationFrameId } from '../utils/performance/request-animation-frame-throttle.utils';
+import { CanvasModel, initCanvasWithConfig } from './canvas.model';
 
 const bigPrimeNumber = 317;
 
@@ -46,12 +45,11 @@ export class HitTestCanvasModel extends CanvasModel {
 		canvas: HTMLCanvasElement,
 		private canvasInputListener: CanvasInputListenerComponent,
 		private canvasBoundsContainer: CanvasBoundsContainer,
-		drawingManager: DrawingManager,
 		chartConfig: FullChartConfig,
 		canvasModels: CanvasModel[],
 		resizer?: HTMLElement,
 	) {
-		super(eventBus, canvas, drawingManager, canvasModels, resizer, {
+		super(eventBus, canvas, canvasModels, resizer, {
 			willReadFrequently: true,
 			desynchronized: true,
 		});
