@@ -88,12 +88,21 @@ export class DrawingManager {
 					this.forceDraw(this.canvasIdsList);
 					this.canvasIdsList = [];
 					this.drawHitTestCanvas();
+					this.readyDraw = false;
 					for (const canvas of canvases) {
 						// @ts-ignore
-						await this.worker.executeCanvasCommands(canvas.ctx.commands);
+						if (canvas.ctx.commands.length === 0) {
+							continue;
+						}
 						// @ts-ignore
-						canvas.ctx.commands = [];
+						canvas.ctx.commit();
+						// @ts-ignore
+						canvas.ctx.commands.length && await this.worker.executeCanvasCommands(canvas.ctx.commands);
+						// @ts-ignore
+						canvas.ctx.resetCtx();
+						
 					}
+					this.readyDraw = true;
 				});
 			}
 		});
