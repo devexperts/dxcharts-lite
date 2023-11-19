@@ -3,25 +3,10 @@ import { num2Ctx } from './canvas-ctx.mapper';
 
 const END_OF_FILE = 0xdead;
 
-// async function loadWasmModule() {
-// 	// Fetch the Wasm binary
-// 	const response = await fetch('multiply.wasm');
-// 	const bytes = await response.arrayBuffer();
-
-// 	// Create a WebAssembly.Module and instantiate it
-// 	const wasmModule = new WebAssembly.Module(bytes);
-// 	const wasmInstance = new WebAssembly.Instance(wasmModule);
-
-// 	// Get the exported 'multiply' function
-// 	const multiply = wasmInstance.exports.multiply;
-// 	return multiply;
-// }
-
 const stringsPool = new Map();
 
 export class OffscreenWorker {
 	constructor() {
-		this.canvases = {};
 		this.ctxs = {};
 		this.buffers = {};
 		this.args = [
@@ -37,13 +22,9 @@ export class OffscreenWorker {
 			new Array(9),
 			new Array(10),
 		];
-		// loadWasmModule().then(multiply => {
-		// 	this.multiply = multiply;
-		// });
 	}
 
 	addCanvas(canvasId, canvas, commandsBuffer) {
-		this.canvases[canvasId] = canvas;
 		this.buffers[canvasId] = new Float64Array(commandsBuffer);
 		this.ctxs[canvasId] = canvas.getContext('2d');
 	}

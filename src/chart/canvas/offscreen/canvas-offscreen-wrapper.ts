@@ -37,7 +37,7 @@ export const strSync: unknown[] = [];
 
 export class CanvasOffscreenContext2D implements Partial<CanvasRenderingContext2D> {
 	public commands: Float64Array;
-	public buffer: unknown;
+	public buffer: SharedArrayBuffer;
 
 	private getStrPtr(str: string): number {
 		let id = stringPtrs.get(str);
@@ -53,9 +53,7 @@ export class CanvasOffscreenContext2D implements Partial<CanvasRenderingContext2
 	private counter = 0;
 
 	constructor(public idx: number) {
-		// eslint-disable-next-line no-undef
 		this.buffer = new SharedArrayBuffer(8 * 50000);
-		// @ts-ignore
 		this.commands = new Float64Array(this.buffer);
 	}
 
