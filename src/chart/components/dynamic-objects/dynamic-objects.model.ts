@@ -2,21 +2,67 @@ import { BehaviorSubject } from 'rxjs';
 import { ChartBaseElement } from '../../model/chart-base-element';
 import { LinkedList, ListNode } from '../../utils/linkedList.utils';
 import { DynamicModelDrawer } from './dynamic-objects.drawer';
+import { CanvasModel } from '../../model/canvas.model';
 
 export type PaneId = string;
+export type DynamicObjectId = string | number;
 
 export interface DynamicObject<T = unknown> {
+	readonly id: DynamicObjectId;
 	readonly drawer: DynamicModelDrawer<T>;
-	readonly model: T;
+	readonly paneId: PaneId;
+	readonly model?: T;
 }
 
 export class DynamicObjectsModel extends ChartBaseElement {
 	private _objects: BehaviorSubject<Record<PaneId, LinkedList<DynamicObject>>>;
-	private modelToObjectMap: Map<unknown, DynamicObject> = new Map();
+	private modelIdToObjectMap: Map<DynamicObjectId, DynamicObject> = new Map();
 
-	constructor() {
+	constructor(
+		private canvasModel: CanvasModel,
+	) {
 		super();
 		this._objects = new BehaviorSubject({});
+	}
+
+	/**
+	 * @returns the `DynamicObject` itself and pane `LinkedList` where the object is stored.
+	 *
+	 */
+	private getObjectInfoById(id: DynamicObjectId): [DynamicObject, LinkedList<DynamicObject>] | undefined {
+		const obj = this.modelIdToObjectMap.get(id);
+
+		if (!obj) {
+			return undefined;
+		}
+
+		const paneId = obj.paneId;
+		const objects = this.objects;
+		const paneList = objects[paneId];
+
+		if (!paneList) {
+			return undefined;
+		}
+
+		return [obj, paneList];
+	}
+
+	/**
+	 * @returns `DynamicObject` position in associated pane `LinkedList`
+	 * @returns `-1` if an object was not found
+	 *
+	 */
+	getObjectPosition(id: DynamicObjectId): number {
+		const objInfo = this.getObjectInfoById(id);
+
+		if (!objInfo) {
+			return -1;
+		}
+
+		const [obj, paneList] = objInfo;
+		const targetNode = new ListNode(obj);
+
+		return paneList.getNodePosition(targetNode);
 	}
 
 	/**
@@ -24,14 +70,15 @@ export class DynamicObjectsModel extends ChartBaseElement {
 	 * @param obj
 	 * @param paneId
 	 */
-	addObject(obj: DynamicObject, paneId: PaneId) {
+	addObject(obj: DynamicObject) {
+		const paneId = obj.paneId;
 		const objects = this.objects;
 		const paneList = objects[paneId] ?? new LinkedList();
 		if (!Object.keys(objects).find(pane => pane === paneId)) {
 			objects[paneId] = paneList;
 		}
 		paneList.insertAtEnd(obj);
-		this.modelToObjectMap.set(obj.model, obj);
+		this.modelIdToObjectMap.set(obj.id, obj);
 		this.setDynamicObjects(objects);
 	}
 
@@ -40,20 +87,50 @@ export class DynamicObjectsModel extends ChartBaseElement {
 	 * @param model
 	 * @param paneId
 	 */
-	removeObject(model: unknown, paneId: PaneId) {
-		const objects = this.objects;
-		const paneList = objects[paneId];
-		const obj = this.modelToObjectMap.get(model);
-		if (paneList && obj) {
-			const targetNode = new ListNode(obj);
-			const targetPos = paneList.getNodePosition(targetNode);
-			paneList.removeAt(targetPos);
-			this.modelToObjectMap.delete(model);
-			if (paneList.size() === 0) {
-				delete objects[paneId];
-			}
-			this.setDynamicObjects(objects);
+	removeObject(id: DynamicObjectId) {
+		const objInfo = this.getObjectInfoById(id);
+
+		if (!objInfo) {
+			return;
 		}
+
+		const [obj, paneList] = objInfo;
+		const targetNode = new ListNode(obj);
+		const targetPos = paneList.getNodePosition(targetNode);
+		paneList.removeAt(targetPos);
+		this.modelIdToObjectMap.delete(id);
+		if (paneList.size() === 0) {
+			delete this.objects[obj.paneId];
+		}
+		this.setDynamicObjects(this.objects);
+	}
+
+	/**
+	 * Moves the object inside the associated LinkedList to the specified position
+	 */
+	moveToPosition(id: DynamicObjectId, position: number) {
+		const objInfo = this.getObjectInfoById(id);
+
+		if (!objInfo) {
+			return;
+		}
+
+		const [obj, paneList] = objInfo;
+		const node = new ListNode(obj);
+		const currentPos = paneList.getNodePosition(node);
+
+		if (currentPos === position) {
+			return;
+		}
+
+		if (currentPos < position) {
+			paneList.insertAt(position, obj);
+			paneList.removeAt(currentPos);
+		} else {
+			paneList.removeAt(currentPos);
+			paneList.insertAt(position, obj);
+		}
+		this.setDynamicObjects(this.objects);
 	}
 
 	/**
@@ -61,16 +138,19 @@ export class DynamicObjectsModel extends ChartBaseElement {
 	 * @param paneId
 	 * @param listNode
 	 */
-	bringToFront(paneId: PaneId, listNode: ListNode<DynamicObject>) {
-		const list = this.objects[paneId];
-		if (list) {
-			const targetPos = list.getNodePosition(listNode);
-			if (targetPos >= 0 && targetPos < list.size()) {
-				const nodeToReplace = list.removeAt(targetPos);
-				if (nodeToReplace) {
-					list.insertAtEnd(nodeToReplace.data);
-				}
-			}
+	bringToFront(id: DynamicObjectId) {
+		const objInfo = this.getObjectInfoById(id);
+
+		if (!objInfo) {
+			return;
+		}
+
+		const [obj, paneList] = objInfo;
+		const targetNode = new ListNode(obj);
+		const targetPos = paneList.getNodePosition(targetNode);
+		if (targetPos >= 0 && targetPos < paneList.size()) {
+			paneList.removeAt(targetPos);
+			paneList.insertAtEnd(obj);
 			this.setDynamicObjects(this.objects);
 		}
 	}
@@ -80,16 +160,19 @@ export class DynamicObjectsModel extends ChartBaseElement {
 	 * @param paneId
 	 * @param listNode
 	 */
-	bringToBack(paneId: PaneId, listNode: ListNode<DynamicObject>) {
-		const list = this.objects[paneId];
-		if (list) {
-			const targetPos = list.getNodePosition(listNode);
-			if (targetPos > 0 && targetPos <= list.size()) {
-				const nodeToReplace = list.removeAt(targetPos);
-				if (nodeToReplace) {
-					list.insertAt(0, nodeToReplace?.data);
-				}
-			}
+	bringToBack(id: DynamicObjectId) {
+		const objInfo = this.getObjectInfoById(id);
+
+		if (!objInfo) {
+			return;
+		}
+
+		const [obj, paneList] = objInfo;
+		const targetNode = new ListNode(obj);
+		const targetPos = paneList.getNodePosition(targetNode);
+		if (targetPos > 0 && targetPos <= paneList.size()) {
+			paneList.removeAt(targetPos);
+			paneList.insertAt(0, obj);
 			this.setDynamicObjects(this.objects);
 		}
 	}
@@ -99,16 +182,19 @@ export class DynamicObjectsModel extends ChartBaseElement {
 	 * @param obj
 	 * @param paneId
 	 */
-	moveForward(paneId: PaneId, listNode: ListNode<DynamicObject>) {
-		const list = this.objects[paneId];
-		if (list) {
-			const targetPos = list.getNodePosition(listNode);
-			if (targetPos >= 0 && targetPos < list.size()) {
-				const nodeToReplace = list.removeAt(targetPos);
-				if (nodeToReplace) {
-					list.insertAt(targetPos + 1, nodeToReplace.data);
-				}
-			}
+	moveForward(id: DynamicObjectId) {
+		const objInfo = this.getObjectInfoById(id);
+
+		if (!objInfo) {
+			return;
+		}
+
+		const [obj, paneList] = objInfo;
+		const targetNode = new ListNode(obj);
+		const targetPos = paneList.getNodePosition(targetNode);
+		if (targetPos >= 0 && targetPos + 1 < paneList.size()) {
+			paneList.removeAt(targetPos);
+			paneList.insertAt(targetPos + 1, obj);
 			this.setDynamicObjects(this.objects);
 		}
 	}
@@ -118,19 +204,23 @@ export class DynamicObjectsModel extends ChartBaseElement {
 	 * @param obj
 	 * @param paneId
 	 */
-	moveBackwards(paneId: PaneId, listNode: ListNode<DynamicObject>) {
-		const list = this.objects[paneId];
-		if (list) {
-			const targetPos = list.getNodePosition(listNode);
-			if (targetPos > 0 && targetPos <= list.size()) {
-				const nodeToReplace = list.removeAt(targetPos);
-				if (nodeToReplace) {
-					list.insertAt(targetPos - 1, nodeToReplace?.data);
-				}
-			}
+	moveBackwards(id: DynamicObjectId) {
+		const objInfo = this.getObjectInfoById(id);
+
+		if (!objInfo) {
+			return;
+		}
+
+		const [obj, paneList] = objInfo;
+		const targetNode = new ListNode(obj);
+		const targetPos = paneList.getNodePosition(targetNode);
+		if (targetPos > 0 && targetPos < paneList.size()) {
+			paneList.removeAt(targetPos);
+			paneList.insertAt(targetPos - 1, obj);
 			this.setDynamicObjects(this.objects);
 		}
 	}
+
 	/**
 	 * Getter for the objects
 	 */
@@ -144,5 +234,6 @@ export class DynamicObjectsModel extends ChartBaseElement {
 	 */
 	setDynamicObjects(objects: Record<PaneId, LinkedList<DynamicObject>>) {
 		this._objects.next(objects);
+		this.canvasModel.fireDraw();
 	}
 }

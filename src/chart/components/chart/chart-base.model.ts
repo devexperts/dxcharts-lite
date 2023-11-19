@@ -18,7 +18,7 @@ type DataPoint<T extends BaseType> = T extends 'candle' ? Candle : DataSeriesPoi
 type VisualPoint<T extends BaseType> = T extends 'candle' ? VisualCandle : VisualSeriesPoint;
 export interface PrependedCandlesData {
 	prependedCandlesWidth: number;
-	preparedCandles: Candle[];
+	prependedCandles: Candle[];
 }
 
 /**
@@ -50,8 +50,8 @@ export class ChartBaseModel<T extends BaseType = 'point'> {
 	 * @param timestamp
 	 */
 	// TODO think how to make this function like candleFromX
-	public dataFromTimestamp(timestamp: Timestamp, shouldExtrapolate: boolean = true): VisualPoint<T> {
-		const result = searchCandleIndex(timestamp, shouldExtrapolate, this.mainDataPoints, this.period);
+	public dataFromTimestamp(timestamp: Timestamp, shouldExtrapolate: boolean = true, selectedDataPoints: DataPoint<T>[] = this.mainDataPoints): VisualPoint<T> {
+		const result = searchCandleIndex(timestamp, shouldExtrapolate, selectedDataPoints, this.period);
 		return this.dataFromIdx(result.index);
 	}
 

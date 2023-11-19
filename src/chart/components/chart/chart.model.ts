@@ -38,6 +38,7 @@ import { ChartBaseModel } from './chart-base.model';
 import { CandleSeries, ChartInstrument, PartialCandle } from './chart.component';
 import { fakeCandle } from './fake-candles';
 import { SecondaryChartColorsPool } from './secondary-chart-colors-pool';
+import { uuid } from '../../utils/uuid.utils';
 
 export type VisualCandleCalculator = (
 	candle: Candle,
@@ -93,6 +94,7 @@ export class ChartModel extends ChartBaseElement {
 		const candleSeries = new MainCandleSeriesModel(
 			this.chartBaseModel,
 			this.paneManager.panes[CHART_UUID].mainExtent,
+			uuid(),
 			this.paneManager.hitTestController.getNewDataSeriesHitTestId(),
 			this.bus,
 			this.scale,
@@ -251,7 +253,7 @@ export class ChartModel extends ChartBaseElement {
 			// now the visual candles
 			candleSeriesModel.recalculateVisualPoints();
 			this.candlesSetSubject.next();
-			this.bus.fireDraw([this.canvasModel.canvasId]);
+			this.canvasModel.fireDraw();
 		}
 		return candleSeriesModel;
 	}
@@ -287,7 +289,7 @@ export class ChartModel extends ChartBaseElement {
 		this.autoScaleOnCandles();
 		this.scale.doAutoScale();
 		this.candlesSetSubject.next();
-		this.bus.fireDraw([this.canvasModel.canvasId]);
+		this.canvasModel.fireDraw();
 	}
 
 	/**
@@ -382,12 +384,12 @@ export class ChartModel extends ChartBaseElement {
 
 		// caclulate offset width for prepanded candles
 		const prependedCandlesWidth = this.chartBaseModel.mainVisualPoints
-			.slice(0, updateResult.prepended)
+			.slice(0, updateResult.prepended.length)
 			.reduce((acc, cur) => acc + cur.width, 0);
 		this.scale.moveXStart(this.scale.xStart + prependedCandlesWidth);
 		this.candlesPrependSubject.next({
 			prependedCandlesWidth,
-			preparedCandles,
+			prependedCandles: updateResult.prepended,
 		});
 
 		this.chartBaseModel.recalculatePeriod();
@@ -435,6 +437,7 @@ export class ChartModel extends ChartBaseElement {
 	private createCandleSeriesModel(instrument: ChartInstrument, colors?: CandleSeriesColors): CandleSeriesModel {
 		const candleSeries = new CandleSeriesModel(
 			this.paneManager.panes[CHART_UUID].mainExtent,
+			uuid(),
 			this.paneManager.hitTestController.getNewDataSeriesHitTestId(),
 			this.bus,
 			this.scale,
@@ -511,7 +514,6 @@ export class ChartModel extends ChartBaseElement {
 		if (seriesToUpdate) {
 			seriesToUpdate.config.type = chartType;
 			seriesToUpdate.updateCandleSeriesColors(candleSeriesConfig);
-			this.bus.fireDraw([this.canvasModel.canvasId]);
 		}
 		this.bus.fireDraw([this.canvasModel.canvasId]);
 	}
@@ -621,7 +623,7 @@ export class ChartModel extends ChartBaseElement {
 		// lineX is the middle of candle - it's correct
 		return this.scale.toX(visualCandle.centerUnit);
 	}
-	
+
 	/**
 	 * Transforms X coordinate (relative to canvas element) to Candle object.
 	 * If extrapolate = false, then it takes leftmost/rightmost existing candle
@@ -680,8 +682,13 @@ export class ChartModel extends ChartBaseElement {
 	 * For given timestamp finds the closest candle in dataset.
 	 * @param timestamp
 	 */
-	public candleFromTimestamp(timestamp: Timestamp, shouldExtrapolate: boolean = true): VisualCandle {
-		return this.chartBaseModel.dataFromTimestamp(timestamp, shouldExtrapolate);
+	public candleFromTimestamp(
+		timestamp: Timestamp,
+		extrapolate: boolean = true,
+		selectedCandleSeries: CandleSeriesModel = this.mainCandleSeries,
+	): VisualCandle {
+		const dataPointsSource = selectedCandleSeries.dataPoints;
+		return this.chartBaseModel.dataFromTimestamp(timestamp, extrapolate, dataPointsSource);
 	}
 
 	/**
@@ -957,13 +964,14 @@ export class ChartModel extends ChartBaseElement {
 
 			if (lastCandle) {
 				series.updateCurrentPrice(lastCandle.close);
+				this.paneManager.yExtents.forEach(ext => ext.yAxis.updateOrderedLabels(true));
 			}
 
 			if (isInView && lastCandle && candles.length === 1) {
 				// can apply some optimization
 				// series.recalculateOnlyLastVisualCandle();
 				// TODO apply optimization
-				this.bus.fireDraw([this.canvasModel.canvasId]);
+				this.canvasModel.fireDraw();
 			} else {
 				series.recalculateVisualPoints();
 			}
@@ -1056,7 +1064,7 @@ export class ChartModel extends ChartBaseElement {
 		});
 
 		return {
-			prepended: prepend.length,
+			prepended: prepend,
 			candles: [...prepend, ...targetCopy],
 		};
 	}
@@ -1078,11 +1086,32 @@ export class ChartModel extends ChartBaseElement {
 	public updateLastCandle(candle: Candle, instrumentSymbol: string = this.mainCandleSeries.instrument.symbol): void {
 		this.updateCandles([candle], instrumentSymbol);
 	}
+
+	/**
+	 * Remove candle by idx and recaculate indexes
+	 * @param candle - new candle
+	 * @param instrument - name of the instrument to update
+	 */
+	public removeCandleByIdx(idx: number, instrumentSymbol: string = this.mainCandleSeries.instrument.symbol) {
+		const seriesList = this.findSeriesBySymbol(instrumentSymbol);
+		if (seriesList.length === 0) {
+			console.warn("removeCandle by id failed. Can't find series", instrumentSymbol);
+			return;
+		}
+		seriesList.forEach(series => {
+			series.dataPoints = series.dataPoints.slice(0, idx).concat(series.dataPoints.slice(idx + 1));
+			reindexCandles(series.dataPoints);
+			series.recalculateVisualPoints();
+		});
+		this.candlesRemovedSubject.next();
+		this.candlesUpdatedSubject.next();
+		this.canvasModel.fireDraw();
+	}
 }
 
 export interface UpdateCandlesResult {
-	prepended: number;
-	appended?: number;
+	prepended: Candle[];
+	appended?: Candle[];
 	candles: Candle[];
 }
 
@@ -1131,8 +1160,8 @@ const updateCandles = (target: Candle[], update: Candle[]): UpdateCandlesResult 
 	});
 
 	return {
-		prepended: prepend.length,
-		appended: append.length,
+		prepended: prepend,
+		appended: append,
 		candles: [...prepend, ...targetCopy, ...append],
 	};
 };

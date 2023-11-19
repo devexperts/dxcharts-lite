@@ -59,7 +59,7 @@ export class HoverProducerComponent extends ChartBaseElement {
 	get hover(): Hover | null {
 		return this.hoverSubject.getValue();
 	}
-	private longTouchActivated: boolean = false;
+	private longTouchActivatedSubject: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 	private hoverProducerParts: HoverProducerParts;
 	xFormatter: DateTimeFormatter = () => '';
 	constructor(
@@ -123,7 +123,7 @@ export class HoverProducerComponent extends ChartBaseElement {
 		this.addRxSubscription(this.scale.xChanged.subscribe(() => this.fireLastCross()));
 		this.addRxSubscription(
 			this.canvasInputListener.observeTouchStart().subscribe(event => {
-				const x = event.touches[0].clientX;
+				const x = event.touches[0].clientX - this.canvasBoundsContainer.canvasOnPageLocation.x;
 				const y = event.touches[0].clientY - this.canvasBoundsContainer.canvasOnPageLocation.y;
 				const candle = this.chartModel.candleFromX(x, true);
 				if (candle) {
@@ -136,19 +136,20 @@ export class HoverProducerComponent extends ChartBaseElement {
 		// on long touch - disable panning and show cross tool
 		const hitTest = this.canvasBoundsContainer.getBoundsHitTest(CanvasElement.ALL_PANES);
 		this.addRxSubscription(
-			this.canvasInputListener.observeLongTouch(hitTest).subscribe(event => {
+			this.canvasInputListener.observeLongTouchStart(hitTest).subscribe(event => {
 				this.paneManager.chartPanComponent.deactivatePanHandlers();
-				this.longTouchActivated = true;
-				const x = event.touches[0].clientX;
+				this.longTouchActivatedSubject.next(true);
+				const x = event.touches[0].clientX - this.canvasBoundsContainer.canvasOnPageLocation.x;
 				const y = event.touches[0].clientY - this.canvasBoundsContainer.canvasOnPageLocation.y;
 				this.createAndFireHover([x, y, '']);
+				this.crossEventProducer.crossSubject.next([x, y, '']);
 			}),
 		);
 		this.addRxSubscription(
 			this.canvasInputListener.observeTouchEndDocument().subscribe(() => {
 				this.paneManager.chartPanComponent.activateChartPanHandlers();
-				if (this.longTouchActivated) {
-					this.longTouchActivated = false;
+				if (this.longTouchActivatedSubject.getValue()) {
+					this.longTouchActivatedSubject.next(false);
 					this.crossEventProducer.fireCrossClose();
 				}
 			}),
@@ -271,7 +272,6 @@ export class HoverProducerComponent extends ChartBaseElement {
 				const candle = hover.candleHover?.visualCandle.candle;
 				candle && this.chartModel.mainCandleSeries.setActiveCandle(candle);
 			}
-			// const showCrossToolOverride = isMobile() ? this.longTouchActivated : showCrossTool;
 			this.hoverSubject.next(hover);
 		} else {
 			this.crossEventProducer.fireCrossClose();

@@ -1,6 +1,6 @@
 # DXCharts data examples
 
-#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/95mdd5)<!--/CSB_LINK-->
+#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/zskz5r)<!--/CSB_LINK-->
 
 ## 💫 Setting the Main Series
 
@@ -10,10 +10,6 @@ This method takes an object with a series of candles `CandleSeries`, and renders
 ```js
 chart.setData({
 	candles: candlesData,
-	instrument: {
-		symbol: instrumentName,
-		description: instrumentDescription,
-	},
 });
 ```
 
@@ -24,7 +20,7 @@ to compare multiple sets of data on the same chart. To add a compare series, you
 which works in a similar way to setMainSeries.
 
 ```js
-chartInstance.chartComponent.setSecondarySeries({
+chart.data.setSecondarySeries({
 	candles: candlesData,
 	instrument: {
 		symbol: instrumentName,
@@ -39,7 +35,7 @@ You can also set both the main series and multiple secondary series using the `s
 This method takes two parameters: the main series as a `CandleSeries` object and an array of secondary series as `CandleSeries[]`.
 
 ```js
-chartInstance.chartComponent.setAllSeries(
+chart.data.setAllSeries(
 	{
 		candles: mainCandlesData,
 		instrument: {
@@ -83,7 +79,7 @@ const lastCandle = {
 	timestamp: 1684331744325000,
 	volume: 1000,
 };
-chartInstance.chartComponent.addLastCandle(lastCandle);
+chart.data.addLastCandle(lastCandle);
 ```
 
 ## ⏱️ How to update last candle
@@ -105,5 +101,5 @@ const updatedLastCandle = {
 	lo: Math.min(newClosePrice, lastCandle.lo),
 	hi: Math.max(newClosePrice, lastCandle.hi),
 };
-chartInstance.chartComponent.updateLastCandle(updatedLastCandle);
+chart.data.updateLastCandle(updatedLastCandle);
 ```

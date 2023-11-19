@@ -1,6 +1,6 @@
 # Pane & PaneManager
 
-#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/nwkrjd)<!--/CSB_LINK-->
+#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/zrmcp4)<!--/CSB_LINK-->
 
 Pane is a container for data series. Visually it represents a rectangle area where data series are drawn.
 
@@ -18,7 +18,7 @@ To draw a data series on pane you need to create it and add to pane:
 // you can get panes order this way, this array contains uuids of panes
 const order = chart.paneManager.panesOrder;
 
-const pane = chart.paneManager.paneComponents[paneUuid];
+const pane = chart.paneManager.panes[paneUuid];
 const dataSeries = pane.createDataSeries();
 const data = DXChart.generateCandlesData({ quantity: 1000, withVolume: true });
 // add data series to pane

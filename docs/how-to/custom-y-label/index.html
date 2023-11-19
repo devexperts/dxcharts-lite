@@ -1,137 +1,141 @@
 <!DOCTYPE html>
 <html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta
+			name="viewport"
+			content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
+		<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+		<title>DXCharts Lite custom y-axis labels</title>
+		<link rel="stylesheet" href="../common-styles.css" />
+		<link rel="stylesheet" href="./style.css" />
+		<script src="https://www.unpkg.com/@devexperts/dxcharts-lite@2.0.1/dist/dxchart.min.js"></script>
+		<script type="importmap">
+			{
+				"imports": {
+					"@devexperts/dxcharts-lite/": "https://www.unpkg.com/@devexperts/dxcharts-lite@2.0.1/"
+				}
+			}
+		</script>
+		<script type="module">
+			import generateCandlesData from '@devexperts/dxcharts-lite/dist/chart/utils/candles-generator.utils';
 
-<head>
-	<meta charset="UTF-8" />
-	<meta name="viewport"
-		content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
-	<meta http-equiv="X-UA-Compatible" content="ie=edge" />
-	<title>DXCharts Lite custom y-axis labels</title>
-	<link rel="stylesheet" href="../common-styles.css" />
-	<link rel="stylesheet" href="./style.css" />
-	<script src="https://www.unpkg.com/@devexperts/dxcharts-lite@1.0.1/dist/dxchart.min.js"></script>
-	<script src="https://www.unpkg.com/@devexperts/dxcharts-lite@1.0.1/dist/chart/utils/candles-generator.utils.js"
-		type="module"></script>
-	<script type="module">
-		const node = document.querySelector('#root');
-		const chart = DXChart.createChart(node);
-		const candles = DXChart.generateCandlesData({ quantity: 1000, withVolume: true });
-		chart.setData({
-			candles,
-		});
+			const node = document.querySelector('#root');
+			const chart = DXChart.createChart(node);
+			const candles = generateCandlesData({ quantity: 1000, withVolume: true });
+			chart.setData({ candles });
 
-		const yInput = document.querySelector('[name="y"]');
-		yInput.setAttribute('value', candles.at(-1).close | 0);
+			const yInput = document.querySelector('[name="y"]');
+			yInput.setAttribute('value', candles.at(-1).close | 0);
 
-		const labelInputs = [].slice.call(document.querySelectorAll('#form input, #form select'));
-		chart.yAxis.changeLabelMode('lastPrice', 'none');
+			const labelInputs = [].slice.call(document.querySelectorAll('#form input, #form select'));
+			chart.yAxis.changeLabelMode('lastPrice', 'none');
 
-		const updateFromInputs = () => {
-			const options = labelInputs.reduce(
-				(accum, current) => ({
-					...accum,
-					[current.name]: current.value,
-				}),
-				{},
-			);
+			const updateFromInputs = () => {
+				const options = labelInputs.reduce(
+					(accum, current) => ({
+						...accum,
+						[current.name]: current.value,
+					}),
+					{},
+				);
 
-			chart.yAxis.addSimpleYAxisLabel('custom_label', {
-				y: parseInt(chart.chartModel.toY(options.y)),
-				labelText: options.labelText,
-				bgColor: options.bgColor,
-				labelType: options.labelType,
-				mode: options.mode,
-				description: options.textDescription,
-				textColor: options.textColor,
-				descColor: options.descColor,
-				lineColor: options.lineColor,
-				paddingTop: parseInt(options.vPadding, 10),
-				paddingBottom: parseInt(options.vPadding, 10),
+				chart.yAxis.addSimpleYAxisLabel('custom_label', {
+					y: parseInt(chart.chartModel.toY(options.y)),
+					labelText: options.labelText,
+					bgColor: options.bgColor,
+					labelType: options.labelType,
+					mode: options.mode,
+					description: options.textDescription,
+					textColor: options.textColor,
+					descColor: options.descColor,
+					lineColor: options.lineColor,
+					paddingTop: parseInt(options.vPadding, 10),
+					paddingBottom: parseInt(options.vPadding, 10),
+				});
+
+				chart.yAxis.changeLabelsDescriptionVisibility(options.description === 'true');
+			};
+
+			labelInputs.forEach(input => {
+				input.addEventListener('change', updateFromInputs);
+				input.addEventListener('keyup', updateFromInputs);
 			});
 
-			chart.yAxis.changeLabelsDescriptionVisibility(options.description === 'true');
-		};
+			chart.scale.yChanged.subscribe(updateFromInputs);
+			setTimeout(updateFromInputs, 100);
+		</script>
+	</head>
 
-		labelInputs.forEach(input => {
-			input.addEventListener('change', updateFromInputs);
-			input.addEventListener('keyup', updateFromInputs);
-		});
+	<body>
+		<div class="chart__container">
+			<div class="chart" id="root"></div>
+			<div class="settings">
+				<form action="" id="form">
+					<label>
+						<input name="y" type="number" value="220" />
+						<small>price</small>
+					</label>
 
-		chart.scale.yChanged.subscribe(updateFromInputs);
-		setTimeout(updateFromInputs, 100);
-	</script>
-</head>
+					<label>
+						<input name="labelText" type="text" value="Label" />
+						<small>text on the label</small>
+					</label>
+					<label>
+						<input name="textDescription" type="text" value="description" />
+						<small>text of description</small>
+					</label>
+					<label>
+						<input name="bgColor" type="color" value="#ffcc00" />
+						<small>label color</small>
+					</label>
 
-<body>
-	<div class="chart__container">
-		<div class="chart" id="root"></div>
-		<div class="settings">
-		<form action="" id="form">
-			<label>
-				<input name="y" type="number" value="220" />
-				<small>price</small>
-			</label>
+					<label>
+						<input name="textColor" type="color" value="#ffffff" />
+						<small>text color</small>
+					</label>
 
-			<label>
-				<input name="labelText" type="text" value="Label" />
-				<small>text on the label</small>
-			</label>
-			<label>
-				<input name="textDescription" type="text" value="description" />
-				<small>text of description</small>
-			</label>
-			<label>
-				<input name="bgColor" type="color" value="#ffcc00" />
-				<small>label color</small>
-			</label>
+					<label>
+						<input name="descColor" type="color" value="#ffffff" />
+						<small>description color</small>
+					</label>
 
-			<label>
-				<input name="textColor" type="color" value="#ffffff" />
-				<small>text color</small>
-			</label>
+					<label>
+						<input name="lineColor" type="color" value="#ffffff" />
+						<small>line color</small>
+					</label>
 
-			<label>
-				<input name="descColor" type="color" value="#ffffff" />
-				<small>description color</small>
-			</label>
+					<label>
+						<input name="vPadding" type="range" min="0" max="20" value="5" step="1" />
+						<small>vertical padding</small>
+					</label>
 
-			<label>
-				<input name="lineColor" type="color" value="#ffffff" />
-				<small>line color</small>
-			</label>
+					<div>
+						<select name="labelType" value="{selectedType}">
+							<option value="badge">badge</option>
+							<option value="rectangle">rectangle</option>
+							<option value="plain">plain</option>
+						</select>
+						<small>label type</small>
+					</div>
 
-			<label>
-				<input name="vPadding" type="range" min="0" max="20" value="5" step="1" />
-				<small>vertical padding</small>
-			</label>
+					<div>
+						<select name="mode" value="{selectedType}">
+							<option value="line">line</option>
+							<option value="line-label" selected>line-label</option>
+							<option value="label">label</option>
+						</select>
+						<small>label mode</small>
+					</div>
 
-			<div>
-				<select name="labelType" value="{selectedType}">
-					<option value="badge">badge</option>
-					<option value="rectangle">rectangle</option>
-					<option value="plain">plain</option>
-				</select>
-				<small>label type</small>
+					<div>
+						<select name="description" value="{selectedType}">
+							<option value="true" selected>visible</option>
+							<option value="false">hidden</option></select
+						><small>description</small>
+					</div>
+				</form>
 			</div>
-
-			<div>
-				<select name="mode" value="{selectedType}">
-					<option value="line">line</option>
-					<option value="line-label" selected>line-label</option>
-					<option value="label">label</option>
-				</select>
-				<small>label mode</small>
-			</div>
-
-			<div>
-				<select name="description" value="{selectedType}">
-					<option value="true" selected>visible</option>
-					<option value="false">hidden</option>
-				</select><small>description</small>
-			</div>
-		</form>
 		</div>
-	</div>
-</body>
-
+	</body>
 </html>

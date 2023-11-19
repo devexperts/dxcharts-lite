@@ -1,6 +1,6 @@
 # Colors
 
-#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/j29ccd)<!--/CSB_LINK-->
+#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/yvqysl)<!--/CSB_LINK-->
 ## Set colors via config
 
 You can set your own configuration with colors during initialization:
@@ -50,7 +50,7 @@ const customColors = {
 };
 
 const container = document.getElementById('chart');
-const chartInstance = DXChart.createChart(container, {
+const chart = DXChart.createChart(container, {
 	colors: customColors,
 });
 ```

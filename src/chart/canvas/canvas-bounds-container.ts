@@ -42,11 +42,11 @@ export class CanvasElement {
 	static CHART_WITH_Y_AXIS = 'CHART_WITH_Y_AXIS';
 	static EVENTS = 'EVENTS';
 	/**
-	 * @deprecated - use CanvasElement.PANE_UUID(CHART_UUID) instead
+	 * @returns pane bounds for the main chart
 	 */
 	static CHART = CanvasElement.PANE_UUID(CHART_UUID);
 	/**
-	 * @deprecated - use CanvasElement.PANE_UUID_Y_AXIS(CHART_UUID) instead
+	 * @returns y-axis bounds for the main chart
 	 */
 	static Y_AXIS = CanvasElement.PANE_UUID_Y_AXIS(CHART_UUID);
 }

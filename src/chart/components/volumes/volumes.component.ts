@@ -17,7 +17,7 @@ import { PaneManager } from '../pane/pane-manager.component';
 import { SeparateVolumesComponent } from './separate-volumes.component';
 import { resolveColorForBar, resolveColorForCandle, resolveColorForLine } from './volume-color-resolvers.functions';
 import { VolumesDrawer } from './volumes.drawer';
-import { VolumesModel } from './volumes.model';
+import { VOLUMES_UUID, VolumesModel } from './volumes.model';
 
 export type VolumeColorResolver = (priceMovement: PriceMovement, colors: FullChartColors) => string;
 
@@ -25,6 +25,7 @@ export class VolumesComponent extends ChartBaseElement {
 	separateVolumes: SeparateVolumesComponent;
 	public volumesColorByChartTypeMap: Partial<Record<BarType, VolumeColorResolver>> = {};
 	volumesModel: VolumesModel;
+	private readonly volumesDrawer: VolumesDrawer;
 	public volumeVisibilityChangedSubject = new BehaviorSubject<boolean>(false);
 	public volumeIsSeparateModeChangedSubject = new BehaviorSubject<boolean>(false);
 
@@ -36,7 +37,7 @@ export class VolumesComponent extends ChartBaseElement {
 		drawingManager: DrawingManager,
 		private config: FullChartConfig,
 		paneManager: PaneManager,
-		dynamicObjectsComponent: DynamicObjectsComponent,
+		private dynamicObjectsComponent: DynamicObjectsComponent,
 	) {
 		super();
 		const volumesModel = new VolumesModel(chartComponent, scale);
@@ -49,7 +50,7 @@ export class VolumesComponent extends ChartBaseElement {
 			volumesModel,
 			paneManager,
 		);
-		const volumesDrawer = new VolumesDrawer(
+		this.volumesDrawer = new VolumesDrawer(
 			config,
 			this.volumesModel,
 			chartComponent.chartModel,
@@ -57,7 +58,7 @@ export class VolumesComponent extends ChartBaseElement {
 			this.volumesColorByChartTypeMap,
 			() => true,
 		);
-		dynamicObjectsComponent.model.addObject({ drawer: volumesDrawer, model: volumesModel }, CHART_UUID);
+		config.components.volumes.visible && this.addVolumesToDynamicObjects();
 		this.addChildEntity(this.separateVolumes);
 		this.registerDefaultVolumeColorResolvers();
 		this.volumeVisibilityChangedSubject.next(config.components.volumes.visible);
@@ -119,7 +120,10 @@ export class VolumesComponent extends ChartBaseElement {
 	public setVisible(visible = true) {
 		this.config.components.volumes.visible = visible;
 		this.volumeVisibilityChangedSubject.next(visible);
-		if (this.config.components.volumes.showSeparately === true) {
+		visible
+			? this.addVolumesToDynamicObjects()
+			: this.dynamicObjectsComponent.model.removeObject(this.volumesModel.id);
+		if (this.config.components.volumes.showSeparately) {
 			if (visible) {
 				this.separateVolumes.activateSeparateVolumes();
 				this.volumeIsSeparateModeChangedSubject.next(true);
@@ -130,5 +134,20 @@ export class VolumesComponent extends ChartBaseElement {
 		}
 		this.canvasBoundsContainer.recalculatePanesHeightRatios();
 		this.canvasModel.fireDraw();
+	}
+
+	private addVolumesToDynamicObjects() {
+		// check if the volumes dynamic object is already added
+		const position = this.dynamicObjectsComponent.model.getObjectPosition(this.volumesModel.id);
+		if (position !== -1) {
+			return;
+		}
+
+		this.dynamicObjectsComponent.model.addObject({
+			id: this.volumesModel.id,
+			paneId: this.config.components.volumes.showSeparately ? VOLUMES_UUID : CHART_UUID,
+			drawer: this.volumesDrawer,
+			model: this.volumesModel,
+		});
 	}
 }

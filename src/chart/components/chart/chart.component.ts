@@ -43,6 +43,7 @@ import { PaneManager } from '../pane/pane-manager.component';
 import {
 	defaultCandleTransformer,
 	hollowCandleTransformer,
+	lineCandleTransformer,
 	trendCandleTransformer,
 } from './candle-transformer.functions';
 import { deleteCandlesIndex } from './candle.functions';
@@ -132,21 +133,25 @@ export class ChartComponent extends ChartBaseElement {
 	protected doActivate(): void {
 		super.doActivate();
 		// TODO hack, main data series is created before doActivate, so we need to add it manually
-		this.dynamicObjects.model.addObject(
-			{ model: this.chartModel.mainCandleSeries, drawer: this.dataSeriesDrawer },
-			this.chartModel.mainCandleSeries.extentComponent.paneUUID,
-		);
+		this.dynamicObjects.model.addObject({
+			id: this.chartModel.mainCandleSeries.id,
+			paneId: this.chartModel.mainCandleSeries.extentComponent.paneUUID,
+			model: this.chartModel.mainCandleSeries,
+			drawer: this.dataSeriesDrawer,
+		});
 		this.addRxSubscription(
 			this.paneManager.dataSeriesAddedSubject.subscribe(series => {
-				this.dynamicObjects.model.addObject(
-					{ model: series, drawer: this.dataSeriesDrawer },
-					series.extentComponent.paneUUID,
-				);
+				this.dynamicObjects.model.addObject({
+					id: series.id,
+					paneId: series.extentComponent.paneUUID,
+					model: series,
+					drawer: this.dataSeriesDrawer,
+				});
 			}),
 		);
 		this.addRxSubscription(
 			this.paneManager.dataSeriesRemovedSubject.subscribe(series => {
-				this.dynamicObjects.model.removeObject(series, series.extentComponent.paneUUID);
+				this.dynamicObjects.model.removeObject(series.id);
 			}),
 		);
 	}
@@ -161,6 +166,7 @@ export class ChartComponent extends ChartBaseElement {
 		this.registerCandlesTransformer('candle', defaultCandleTransformer);
 		this.registerCandlesTransformer('trend', trendCandleTransformer);
 		this.registerCandlesTransformer('hollow', hollowCandleTransformer);
+		this.registerCandlesTransformer('line', lineCandleTransformer);
 	}
 
 	get barTypeValues(): Array<BarType> {
@@ -408,6 +414,15 @@ export class ChartComponent extends ChartBaseElement {
 	 */
 	public addLastCandle(candle: Candle, instrumentSymbol?: string) {
 		this.chartModel.addLastCandle(candle, instrumentSymbol);
+	}
+
+	/**
+	 * Remove candle by idx and recaculate indexes
+	 * @param idx - candle index
+	 * @param instrument - name of the instrument to update
+	 */
+	public removeCandleByIdx(idx: number, instrumentSymbol?: string) {
+		this.chartModel.removeCandleByIdx(idx, instrumentSymbol);
 	}
 
 	/**

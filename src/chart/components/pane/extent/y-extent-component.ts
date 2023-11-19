@@ -16,6 +16,7 @@ import {
 import { ScaleModel } from '../../../model/scale.model';
 import { HighLowProvider, mergeHighLow } from '../../../model/scaling/auto-scale.model';
 import { Pixel, Price, Unit } from '../../../model/scaling/viewport.model';
+import { uuid } from '../../../utils/uuid.utils';
 import { ChartBaseModel } from '../../chart/chart-base.model';
 import { createYExtentFormatters } from '../../chart/price.formatter';
 import { DragNDropYComponent } from '../../dran-n-drop_helper/drag-n-drop-y.component';
@@ -98,7 +99,7 @@ export class YExtentComponent extends ChartBaseElement {
 	 * @returns {DataSeriesModel} - The newly created DataSeriesModel object.
 	 */
 	public createDataSeries(): DataSeriesModel {
-		const series = new DataSeriesModel(this, this.hitTestController.getNewDataSeriesHitTestId());
+		const series = new DataSeriesModel(this, uuid(), this.hitTestController.getNewDataSeriesHitTestId());
 		series.toVisualPoints = this.toVisualPoints;
 		return series;
 	}

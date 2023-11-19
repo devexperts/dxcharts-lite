@@ -1,6 +1,6 @@
 # Y-Axis
 
-#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/qqkc44)<!--/CSB_LINK-->
+#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/x6x7d4)<!--/CSB_LINK-->
 
 Scale presentation can be controlled using following API
 

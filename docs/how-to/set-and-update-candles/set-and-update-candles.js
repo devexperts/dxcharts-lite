@@ -1,3 +1,5 @@
+import generateCandlesData from '@devexperts/dxcharts-lite/dist/chart/utils/candles-generator.utils';
+
 document.addEventListener('DOMContentLoaded', async () => {
 	const container = document.getElementById('dxcharts_lite');
 	const showTicks = document.querySelector('#ticks');
@@ -13,7 +15,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 	const candles = await getChartData();
 
 	// And create a new chart instance with empty data
-	const chartInstance = DXChart.createChart(container);
+	const chart = DXChart.createChart(container);
 
 	// Now we can add loaded data
 	chart.setData({ candles });
@@ -25,7 +27,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 				const lastCandle = candles[candles.length - 1];
 				const c = generateLastCandleUpdate(lastCandle);
 				console.log(c);
-				chartInstance.chartComponent.updateLastCandle(c);
+				chart.chartComponent.updateLastCandle(c);
 			}, 1000);
 			return;
 		}
@@ -38,12 +40,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 	let secondarySeriesModels = [];
 	addDataBtn.addEventListener('click', e => {
 		secondarySeries.push({
-			candles: DXChart.generateCandlesData({ quantity: 1000, withVolume: true }),
+			candles: generateCandlesData({ quantity: 1000, withVolume: true }),
 			symbol: `MOCK ${secondarySeries.length}`,
 		});
 		const compareData = secondarySeries[secondarySeries.length - 1];
 
-		const secondaryModel = chartInstance.chartComponent.setSecondarySeries({
+		const secondaryModel = chart.chartComponent.setSecondarySeries({
 			candles: compareData.candles,
 			instrument: { symbol: compareData.symbol },
 		});
@@ -61,7 +63,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 		if (e.target.dataset.type) {
 			const symbol = e.target.id;
 			const seriesModel = secondarySeriesModels.find(series => series.name === symbol);
-			chartInstance.chartComponent.removeSecondarySeries(seriesModel);
+			chart.data.removeSecondarySeries(seriesModel);
 
 			secondarySeries = secondarySeries.filter(series => series.symbol !== symbol);
 			secondarySeriesModels = secondarySeriesModels.filter(series => series.name !== symbol);
@@ -73,7 +75,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // Imagine we have some provider and data returns as a Promise
 async function getChartData() {
-	return await new Promise(resolve => resolve(DXChart.generateCandlesData({ quantity: 1000, withVolume: true })));
+	return await new Promise(resolve => resolve(generateCandlesData({ quantity: 1000, withVolume: true })));
 }
 
 function generateLastCandleUpdate(lastCandle) {

@@ -4,8 +4,9 @@
 |Method|Parameters|Returns|Description|
 |---|---|---|---|
 |`doActivate`||`void`|Method that activates the canvas bounds container and recalculates the zoom Y of the scale model.|
-|`createGridComponent`|`uuid: string` - The unique identifier of the pane.`scale: ScaleModel` - The scale model used to calculate the scale of the grid.`yAxisLabelsGenerator: NumericYAxisLabelsGenerator` - The generator used to create the labels for the y-axis.`yAxisState: YAxisConfig` |`GridComponent`|Creates a new GridComponent instance with the provided parameters.|
-|`createYPanHandler`|`uuid: string` - The unique identifier of the chart pane.`scale: ScaleModel` - The scale model of the chart.|`[Unsubscriber, DragNDropYComponent]`|Creates a handler for Y-axis panning of the chart.|
+|`toY`|`price: number` |`number`||
+|`createGridComponent`|`uuid: string` - The unique identifier of the pane.`scale: ScaleModel` `yAxisLabelsGenerator: NumericYAxisLabelsGenerator` - The generator used to create the labels for the y-axis.`yAxisState: YAxisConfig` |`GridComponent`|Creates a new GridComponent instance with the provided parameters.|
+|`createYPanHandler`|`uuid: string` - The unique identifier of the chart pane.`scale: ScaleModel` |`[Unsubscriber, DragNDropYComponent]`|Creates a handler for Y-axis panning of the chart.|
 |`addCursors`|`extentIdx: number` `yAxisComponent: YAxisComponent` |`Unsubscriber`||
 |`createExtentComponent`|`options: AtLeastOne<YExtentCreationOptions>` |`YExtentComponent`||
 |`removeExtentComponent`|`extentComponent: YExtentComponent` |`void`||

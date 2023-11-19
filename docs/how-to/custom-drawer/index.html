@@ -1,69 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta
+			name="viewport"
+			content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
+		<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+		<title>DXCharts Lite Custom drawer</title>
+		<link rel="stylesheet" href="../common-styles.css" />
+		<script src="https://www.unpkg.com/@devexperts/dxcharts-lite@2.0.1/dist/dxchart.min.js"></script>
+		<script type="importmap">
+			{
+				"imports": {
+					"@devexperts/dxcharts-lite/": "https://www.unpkg.com/@devexperts/dxcharts-lite@2.0.1/"
+				}
+			}
+		</script>
+	</head>
 
-<head>
-	<meta charset="UTF-8" />
-	<meta name="viewport"
-		content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
-	<meta http-equiv="X-UA-Compatible" content="ie=edge" />
-	<title>DXCharts Lite Custom drawer</title>
-	<link rel="stylesheet" href="../common-styles.css" />
-	<script src="https://www.unpkg.com/@devexperts/dxcharts-lite@1.0.1/dist/dxchart.min.js"></script>
-</head>
+	<body>
+		<div class="settings">
+			<h1>Chart custom drawer example</h1>
+		</div>
+		<div id="chart" class="chart"></div>
+		<script type="module">
+			import { clipToBounds } from '@devexperts/dxcharts-lite/dist/chart/drawers/data-series.drawer';
+			import generateCandlesData from '@devexperts/dxcharts-lite/dist/chart/utils/candles-generator.utils';
+			const container = document.getElementById('chart');
+			const chart = DXChart.createChart(container);
 
-<body>
-	<div class="settings">
-		<h1>Chart custom drawer example</h1>
-	</div>
-	<div id="chart" class="chart"></div>
-	<script type="module">
-		import { clipToBounds } from 'https://www.unpkg.com/@devexperts/dxcharts-lite@1.0.1/dist/chart/drawers/data-series.drawer.js';
-		import generateCandlesData from 'https://www.unpkg.com/@devexperts/dxcharts-lite@1.0.1/dist/chart/utils/candles-generator.utils.js';
-		const container = document.getElementById('chart');
-		const chart = DXChart.createChart(container);
+			const candles = generateCandlesData({ quantity: 1000, withVolume: true });
+			chart.setData({ candles });
 
-		const candles = generateCandlesData({ quantity: 1000, withVolume: true });
-		chart.setData({ candles });
+			const customDrawer = {
+				draw() {
+					const ctx = chart.dynamicObjectsCanvasModel.ctx;
+					const series = chart.chartModel.mainCandleSeries.getSeriesInViewport().flat();
+					const lastCandle = series[series.length - 1];
+					const startCandle = series[0];
+					// to get actual coordinates for canvas we need to use scaleModel,
+					// since actual coordinates in pixels depends on current zoom level and viewport (scale)
+					const [x1, y1] = [startCandle.x(chart.scale), startCandle.y(chart.scale)];
+					const [x2, y2] = [lastCandle.x(chart.scale), lastCandle.y(chart.scale)];
+					// below we do some manipulations which modifies ctx state, so we need to save it and restore after drawing
+					ctx.save();
+					const bounds = chart.bounds.getBounds('PANE_CHART');
+					// clip drawing bounds to chart pane, so it will not be drawn outside of chart pane (on y-axis, for example)
+					clipToBounds(ctx, bounds);
 
-		const customDrawer = {
-			draw() {
-				const ctx = chart.dynamicObjectsCanvasModel.ctx;
-				const series = chart.chartModel.mainCandleSeries.getSeriesInViewport().flat();
-				const lastCandle = series[series.length - 1];
-				const startCandle = series[0];
-				// to get actual coordinates for canvas we need to use scaleModel,
-				// since actual coordinates in pixels depends on current zoom level and viewport (scale)
-				const [x1, y1] = [startCandle.x(chart.scale), startCandle.y(chart.scale)];
-				const [x2, y2] = [lastCandle.x(chart.scale), lastCandle.y(chart.scale)];
-				// below we do some manipulations which modifies ctx state, so we need to save it and restore after drawing
-				ctx.save();
-				const bounds = chart.canvasBoundsContainer.getBounds('PANE_CHART');
-				// clip drawing bounds to chart pane, so it will not be drawn outside of chart pane (on y-axis, for example)
-				clipToBounds(ctx, bounds);
+					ctx.beginPath();
+					ctx.lineWidth = 3;
+					ctx.strokeStyle = 'orange';
+					ctx.fillStyle = 'orange';
+					// draw line
+					ctx.moveTo(x1, y1);
+					ctx.lineTo(x2, y2);
+					ctx.stroke();
+					// draw circle on the end of the line
+					ctx.beginPath();
+					ctx.arc(x2, y2, 5, 0, 2 * Math.PI);
+					ctx.fill();
+					// restore ctx state
+					ctx.restore();
+				},
+				// this methods should return ids of canvases which this drawers uses
+				getCanvasIds() {
+					return [chart.dynamicObjectsCanvasModel.canvasId];
+				},
+			};
 
-				ctx.beginPath();
-				ctx.lineWidth = 3;
-				ctx.strokeStyle = 'orange';
-				ctx.fillStyle = 'orange';
-				// draw line
-				ctx.moveTo(x1, y1);
-				ctx.lineTo(x2, y2);
-				ctx.stroke();
-				// draw circle on the end of the line
-				ctx.beginPath();
-				ctx.arc(x2, y2, 5, 0, 2 * Math.PI);
-				ctx.fill();
-				// restore ctx state
-				ctx.restore();
-			},
-			// this methods should return ids of canvases which this drawers uses
-			getCanvasIds() {
-				return [chart.dynamicObjectsCanvasModel.canvasId];
-			},
-		};
-
-		chart.drawingManager.addDrawerAfter(customDrawer, 'arrowTrendDrawer', 'DATA_SERIES');
-	</script>
-</body>
-
+			chart.drawingManager.addDrawerAfter(customDrawer, 'arrowTrendDrawer', 'DYNAMIC_OBJECTS');
+		</script>
+	</body>
 </html>

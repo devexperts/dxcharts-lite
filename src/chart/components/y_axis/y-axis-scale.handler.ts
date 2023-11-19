@@ -9,10 +9,11 @@ import { YAxisConfig } from '../../chart.config';
 import EventBus from '../../events/event-bus';
 import { ChartBaseElement } from '../../model/chart-base-element';
 import { CanvasInputListenerComponent } from '../../inputlisteners/canvas-input-listener.component';
-import { Pixel, Unit, ViewportModel } from '../../model/scaling/viewport.model';
+import { Pixel, Unit } from '../../model/scaling/viewport.model';
 import { DragInfo } from '../dran-n-drop_helper/drag-n-drop.component';
 import { DragNDropYComponent } from '../dran-n-drop_helper/drag-n-drop-y.component';
 import { ChartPanComponent } from '../pan/chart-pan.component';
+import { ScaleModel } from '../../model/scale.model';
 
 // if you drag full Y height from top to bottom - you will have x3 zoom, and vice-versa
 const FULL_Y_HEIGHT_ZOOM_FACTOR = 10;
@@ -32,17 +33,17 @@ export class YAxisScaleHandler extends ChartBaseElement {
 	constructor(
 		private bus: EventBus,
 		config: YAxisConfig,
-		chartPanComponent: ChartPanComponent,
-		private viewportModel: ViewportModel,
+		panning: ChartPanComponent,
+		private scale: ScaleModel,
 		canvasInputListener: CanvasInputListenerComponent,
-		private canvasBoundsContainer: CanvasBoundsContainer,
+		private bounds: CanvasBoundsContainer,
 		hitTest: HitBoundsTest,
 		private autoScaleCallback: (auto: boolean) => void,
 	) {
 		super();
 		// drag to Y-scale and double click to auto scale
 		if (config.customScale) {
-			const dragPredicate = () => config.type !== 'percent';
+			const dragPredicate = () => config.type !== 'percent' && config.visible;
 			const dragNDropYComponent = new DragNDropYComponent(
 				hitTest,
 				{
@@ -51,7 +52,7 @@ export class YAxisScaleHandler extends ChartBaseElement {
 					onDragEnd: callIfPredicateTrue(this.onYDragEnd, dragPredicate),
 				},
 				canvasInputListener,
-				chartPanComponent,
+				panning,
 				{
 					disableChartPanning: false,
 				},
@@ -68,10 +69,10 @@ export class YAxisScaleHandler extends ChartBaseElement {
 	}
 
 	private onYDragStart = () => {
-		this.lastYStart = this.viewportModel.yStart;
-		this.lastYEnd = this.viewportModel.yEnd;
-		this.lastYHeight = this.viewportModel.yEnd - this.viewportModel.yStart;
-		this.lastYPxHeight = this.canvasBoundsContainer.getBounds(CanvasElement.Y_AXIS).height;
+		this.lastYStart = this.scale.yStart;
+		this.lastYEnd = this.scale.yEnd;
+		this.lastYHeight = this.scale.yEnd - this.scale.yStart;
+		this.lastYPxHeight = this.bounds.getBounds(CanvasElement.Y_AXIS).height;
 	};
 
 	private onYDragTick = (dragInfo: DragInfo) => {
@@ -91,7 +92,7 @@ export class YAxisScaleHandler extends ChartBaseElement {
 		const newYStart = this.lastYStart - delta;
 		const newYEnd = this.lastYEnd + delta;
 		this.autoScaleCallback(false);
-		this.viewportModel.setYScale(newYStart, newYEnd);
+		this.scale.setYScale(newYStart, newYEnd);
 		this.bus.fireDraw();
 	};
 

@@ -3,7 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { FullChartConfig } from '../../chart.config';
+import { PriceAxisType } from '../../components/labels_generator/numeric-axis-labels.generator';
 
 const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 //@ts-ignore
@@ -86,15 +86,13 @@ export const touchpadDetector = (e: WheelEvent): boolean => {
 };
 
 /**
- * this function returns different ящщь sensitivity for the percent axis and the others
+ * this function returns different zoom sensitivity for the percent axis and the others
  * @param config
  * @param isTouchpad
  * @returns {number}
  *
  * @doc-tags chart-core, zoom
  */
-export const getTouchpadSensitivity = (config: FullChartConfig): number => {
-	const isPercentAxisType = config.components.yAxis.type === 'percent';
-	const zoomSensitivity = isPercentAxisType ? config.scale.zoomSensitivity / 4 : config.scale.zoomSensitivity;
-	return zoomSensitivity;
+export const getTouchpadSensitivity = (type: PriceAxisType, zoomSensitivity: number): number => {
+	return type === 'percent' ? zoomSensitivity / 4 : zoomSensitivity;
 };

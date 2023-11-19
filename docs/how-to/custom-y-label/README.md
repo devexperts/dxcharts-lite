@@ -1,6 +1,6 @@
 # Y-Axis labels
 
-#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/c4twvf)<!--/CSB_LINK-->
+#### <!--CSB_LINK-->[Live Example](https://codesandbox.io/s/gg9prx)<!--/CSB_LINK-->
 
 There are 3 ways to see a label on a scale
 
@@ -70,7 +70,7 @@ chart.yAxis.addSimpleYAxisLabel('custom_label', {
 and update it every time scale is changed - zoomed or shifted by subscribing to `yChanged` stream
 
 ```js
-chartInstance.scale.yChanged.subscribe(/*update callback here*/);
+chart.scale.yChanged.subscribe(/*update callback here*/);
 ```
 
 `yChanged` is an Rxjs stream and can be manupulated using rx operators, `throttle` for example

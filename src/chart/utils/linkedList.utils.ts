@@ -18,106 +18,107 @@ export class LinkedList<T> {
 
 	constructor(head?: ListNode<T>) {
 		this._head = head ?? null;
-		// init tail
 		if (this.head !== null) {
-			let current: ListNode<T>;
-			current = this.head;
+			// init tail
+			let current = this.head;
 			while (current.next) {
 				current = current.next;
 			}
 			this._tail = current;
+			this.length++;
 		}
 	}
 
-	public insertAtEnd(data: T): ListNode<T> {
+	public insertAtEnd(data: T) {
 		const node = new ListNode(data);
-		let current: ListNode<T>;
 
 		if (this.head === null) {
 			this._head = node;
 		} else {
-			current = this.head;
+			let current = this.head;
+			// iterate till the end of the list
 			while (current.next) {
 				current = current.next;
 			}
+			// insert the node at the end
 			current.next = node;
 		}
 		this._tail = node;
 		this.length++;
-		return node;
 	}
 
 	public insertAt(position: number, data: T) {
-		if (position > -1 && position < this.length && this.head) {
-			let current = this.head;
-			let index = 0;
-			let previous = null;
-			const node = new ListNode(data);
+		// falsy cases
+		if (!this.head || position < 0 || position > this.length) {
+			return null;
+		}
 
+		const node = new ListNode(data);
+
+		// if position === 0 it means that we need to insert the node in the head
+		if (position === 0) {
+			node.next = this.head;
+			this._head = node;
+		} else {
+			let current: ListNode<T> | null = this.head;
+			let previous = current;
+			let index = 0;
+			// iterate till the index === position
+			while (current && index < position) {
+				index++;
+				previous = current;
+				current = current.next;
+			}
+			// insert an element
+			node.next = current;
+			previous.next = node;
+			// update tail
 			if (position === this.length - 1) {
 				this._tail = node;
 			}
-
-			if (position === 0) {
-				node.next = current;
-				this._head = node;
-			} else {
-				while (index < position && current.next) {
-					index++;
-					previous = current;
-					current = current.next;
-				}
-				node.next = current;
-				if (previous) {
-					previous.next = node;
-				}
-			}
-			this.length++;
-			return current;
-		} else {
-			this._head = new ListNode(data);
-			this.length++;
-			return this.head;
 		}
+		this.length++;
 	}
 
-	public removeAt(position: number): ListNode<T> | null {
-		if (position > -1 && position < this.length && this.head) {
-			let current = this.head;
-			let previous = null;
-			let index = 0;
-
-			if (position === 0) {
-				this._head = current.next;
-			} else {
-				while (index < position && current.next) {
-					index++;
-					previous = current;
-					current = current.next;
-				}
-				if (previous) {
-					previous.next = current.next;
-				}
-				if (position === this.length - 1) {
-					this._tail = current;
-				}
-			}
-			this.length--;
-			return current;
-		} else {
+	public removeAt(position: number) {
+		// falsy cases
+		if (!this.head || position < 0 || position >= this.length) {
 			return null;
 		}
+
+		let current = this.head;
+		let previous = current;
+		let index = 0;
+
+		// if position === 0 it means that we need to delete the first node
+		if (position === 0) {
+			this._head = current.next;
+		} else {
+			// iterate till the index === position
+			while (current.next && index < position) {
+				index++;
+				previous = current;
+				current = current.next;
+			}
+			// remove the element
+			previous.next = current.next;
+			// update tail
+			if (position === this.length - 1) {
+				this._tail = previous;
+			}
+		}
+		this.length--;
 	}
 
 	public getNodePosition(node: ListNode<T>) {
 		let index = 0;
 		let current = this.head;
 
-		while (node) {
-			if (current?.data === node.data) {
+		while (current) {
+			if (current.data === node.data) {
 				return index;
 			}
-			current = current && current.next;
+			current = current.next;
 			index++;
 		}
 

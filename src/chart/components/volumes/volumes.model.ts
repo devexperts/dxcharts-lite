@@ -14,7 +14,9 @@ import { firstOf, maxMin } from '../../utils/array.utils';
 
 const volumeMaxMinFn = maxMin<VisualCandle>(candle => candle.candle.volume);
 
+export const VOLUMES_UUID = 'volumes';
 export class VolumesModel extends ChartBaseElement {
+	public readonly id = VOLUMES_UUID;
 	// max volume in all data series
 	volumeMax = new BehaviorSubject<Unit>(0);
 	highLowProvider: HighLowProvider = {

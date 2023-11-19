@@ -1,73 +1,79 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-	<meta charset="UTF-8" />
-	<meta name="viewport"
-		content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
-	<meta http-equiv="X-UA-Compatible" content="ie=edge" />
-	<link rel="stylesheet" href="../common-styles.css" />
-	<title>DXCharts Lite Custom data-series drawer</title>
-	<script src="https://www.unpkg.com/@devexperts/dxcharts-lite@1.0.1/dist/dxchart.min.js"></script>
-</head>
-
-<body>
-	<div class="settings">
-		<h1>Chart custom data-series drawer example</h1>
-	</div>
-	<div id="chart" class="chart"></div>
-	<script type="module">
-		import { buildLinePath } from 'https://www.unpkg.com/@devexperts/dxcharts-lite@1.0.1/dist/chart/drawers/data-series-drawers/data-series-drawers.utils.js';
-		import generateCandlesData from 'https://www.unpkg.com/@devexperts/dxcharts-lite@1.0.1/dist/chart/utils/candles-generator.utils.js';
-		const container = document.getElementById('chart');
-		const chart = DXChart.createChart(container);
-
-		const candles = generateCandlesData({ quantity: 1000, withVolume: true });
-		chart.setData({ candles });
-
-		const myDrawer = {
-			draw(
-				ctx, // CanvasRenderingContext2D
-				allPoints, // VisualSeriesPoint[][]
-				model, // DataSeriesModel - can be also CandleSeriesModel - in this case points have all candle fields
-				drawerConfig, // ChartDrawerConfig
-			) {
-				allPoints.forEach((points, idx) => {
-					const allPoints = points.flat();
-					for (let i = 0; i < allPoints.length; i++) {
-						const prevPoint = allPoints[i - 1];
-						const point = allPoints[i];
-						const x = point.x(model.view);
-						const y = point.y(model.view);
-						if (point.close > prevPoint?.close) {
-							// it is not necessary to save and restore when modifying the context state
-							// - it is done by DataSeriesDrawer, which calls draw() method of specific data series drawer
-							ctx.fillStyle = drawerConfig.singleColor ?? 'green';
-							ctx.fillText('⬆', x, y);
-						} else {
-							// drawerConfig.singleColor is defined when the drawer is drawn by hit test drawer
-							// in order to work with hit test correctly you have to use drawerConfig.singleColor if it's defined
-							ctx.fillStyle = drawerConfig.singleColor ?? 'red';
-							ctx.fillText('⬇', x, y);
-						}
-					}
-				});
-			},
-		};
-
-		chart.chartComponent.registerDataSeriesTypeDrawer('TREND', myDrawer);
-		// label color logic can be very dynamic, so we can't use simple color config
-		// instead you can provide resolver function which returns color for the label
-		chart.yAxis.registerLabelColorResolver('TREND', () => {
-			if (candles[candles.length - 1].close > candles[candles.length - 2].close) {
-				return 'green';
-			} else {
-				return 'red';
+	<head>
+		<meta charset="UTF-8" />
+		<meta
+			name="viewport"
+			content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
+		<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+		<link rel="stylesheet" href="../common-styles.css" />
+		<title>DXCharts Lite Custom data-series drawer</title>
+		<script src="https://www.unpkg.com/@devexperts/dxcharts-lite@2.0.1/dist/dxchart.min.js"></script>
+		<script type="importmap">
+			{
+				"imports": {
+					"@devexperts/dxcharts-lite/": "https://www.unpkg.com/@devexperts/dxcharts-lite@2.0.1/"
+				}
 			}
-		});
+		</script>
+	</head>
 
-		chart.chartComponent.setChartType('TREND');
-	</script>
-</body>
+	<body>
+		<div class="settings">
+			<h1>Chart custom data-series drawer example</h1>
+		</div>
+		<div id="chart" class="chart"></div>
+		<script type="module">
+			import { buildLinePath } from '@devexperts/dxcharts-lite/dist//chart/drawers/data-series-drawers/data-series-drawers.utils';
+			import generateCandlesData from '@devexperts/dxcharts-lite/dist/chart/utils/candles-generator.utils';
+			const container = document.getElementById('chart');
+			const chart = DXChart.createChart(container);
 
+			const candles = generateCandlesData({ quantity: 1000, withVolume: true });
+			chart.setData({ candles });
+
+			const myDrawer = {
+				draw(
+					ctx, // CanvasRenderingContext2D
+					allPoints, // VisualSeriesPoint[][]
+					model, // DataSeriesModel - can be also CandleSeriesModel - in this case points have all candle fields
+					drawerConfig, // ChartDrawerConfig
+				) {
+					allPoints.forEach((points, idx) => {
+						const allPoints = points.flat();
+						for (let i = 0; i < allPoints.length; i++) {
+							const prevPoint = allPoints[i - 1];
+							const point = allPoints[i];
+							const x = point.x(model.view);
+							const y = point.y(model.view);
+							if (point.close > prevPoint?.close) {
+								// it is not necessary to save and restore when modifying the context state
+								// - it is done by DataSeriesDrawer, which calls draw() method of specific data series drawer
+								ctx.fillStyle = drawerConfig.singleColor ?? 'green';
+								ctx.fillText('⬆', x, y);
+							} else {
+								// drawerConfig.singleColor is defined when the drawer is drawn by hit test drawer
+								// in order to work with hit test correctly you have to use drawerConfig.singleColor if it's defined
+								ctx.fillStyle = drawerConfig.singleColor ?? 'red';
+								ctx.fillText('⬇', x, y);
+							}
+						}
+					});
+				},
+			};
+
+			chart.data.registerDataSeriesTypeDrawer('TREND', myDrawer);
+			// label color logic can be very dynamic, so we can't use simple color config
+			// instead you can provide resolver function which returns color for the label
+			chart.yAxis.registerLabelColorResolver('TREND', () => {
+				if (candles[candles.length - 1].close > candles[candles.length - 2].close) {
+					return 'green';
+				} else {
+					return 'red';
+				}
+			});
+
+			chart.data.setChartType('TREND');
+		</script>
+	</body>
 </html>

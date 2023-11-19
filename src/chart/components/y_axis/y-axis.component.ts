@@ -48,7 +48,7 @@ export class YAxisComponent extends ChartBaseElement {
 
 	constructor(
 		private eventBus: EventBus,
-		config: FullChartConfig,
+		private config: FullChartConfig,
 		private canvasModel: CanvasModel,
 		public scale: ScaleModel,
 		canvasInputListeners: CanvasInputListenerComponent,
@@ -230,6 +230,7 @@ export class YAxisComponent extends ChartBaseElement {
 	public setAxisType(type: PriceAxisType) {
 		if (type !== this.state.type) {
 			this.state.type = type;
+			this.config.components.yAxis.type = type;
 			this.axisTypeSetSubject.next(type);
 			this.scale.autoScale(true);
 			this.model.fancyLabelsModel.updateLabels(true);
@@ -248,11 +249,14 @@ export class YAxisComponent extends ChartBaseElement {
 	}
 
 	/**
-	 * Controls visibility of the y-axis
+	 * Controls visibility of the y-axis (additionally disable/enable component)
 	 */
 	public setVisible(isVisible: boolean) {
 		this.state.visible = isVisible;
-		this.eventBus.fireDraw();
+		this.config.components.yAxis.visible = isVisible;
+		isVisible ? this.enable() : this.disable();
+		this.model.fancyLabelsModel.updateLabels();
+		this.model.baseLabelsModel.updateLabels();
 	}
 
 	/**

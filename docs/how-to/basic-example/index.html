@@ -1,31 +1,37 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta
+			name="viewport"
+			content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
+		<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+		<title>DXCharts Lite Basic Example</title>
+		<link rel="stylesheet" href="../common-styles.css" />
+		<script src="https://www.unpkg.com/@devexperts/dxcharts-lite@2.0.1/dist/dxchart.min.js"></script>
+		<script type="importmap">
+			{
+				"imports": {
+					"@devexperts/dxcharts-lite/": "https://www.unpkg.com/@devexperts/dxcharts-lite@2.0.1/"
+				}
+			}
+		</script>
+	</head>
 
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport"
-		content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-	<meta http-equiv="X-UA-Compatible" content="ie=edge">
-	<title>DXCharts Lite Basic Example</title>
-	<link rel="stylesheet" href="../common-styles.css" />
-	<script src="https://www.unpkg.com/@devexperts/dxcharts-lite@1.0.1/dist/dxchart.min.js"></script>
-	<script src="https://www.unpkg.com/@devexperts/dxcharts-lite@1.0.1/dist/chart/utils/candles-generator.utils.js"
-		type="module"></script>
-</head>
+	<body>
+		<div class="settings">
+			<h1>DXCharts Lite Basic example</h1>
+		</div>
 
-<body>
-	<div class="settings">
-		<h1>DXCharts Lite Basic example</h1>
-	</div>
+		<div id="dxcharts_lite" class="chart"></div>
+		<script type="module">
+			import generateCandlesData from '@devexperts/dxcharts-lite/dist/chart/utils/candles-generator.utils';
 
-	<div id="dxcharts_lite" class="chart"></div>
-	<script type="module">
-		const container = document.getElementById('dxcharts_lite');
-		const chartInstance = DXChart.createChart(container);
+			const container = document.getElementById('dxcharts_lite');
+			const chartInstance = DXChart.createChart(container);
 
-		const candles = DXChart.generateCandlesData({ quantity: 1000, withVolume: true });
-		chartInstance.setData({ candles });
-	</script>
-</body>
-
+			const candles = generateCandlesData({ quantity: 1000, withVolume: true });
+			chartInstance.setData({ candles });
+		</script>
+	</body>
 </html>

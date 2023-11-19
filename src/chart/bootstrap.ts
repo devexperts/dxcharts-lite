@@ -9,7 +9,6 @@ import { CHART_UUID, CanvasBoundsContainer, CanvasElement } from './canvas/canva
 import { ValidatedChartElements } from './canvas/chart-elements';
 import { CursorHandler } from './canvas/cursor.handler';
 import { createDefaultLayoutTemplate, extractElements } from './canvas/layout-creator';
-import ChartContainer from './chart-container';
 import {
 	ChartColors,
 	ChartConfigComponentsOffsets,
@@ -65,7 +64,7 @@ export type FitType = 'studies' | 'orders' | 'positions';
 /**
  * @deprecated use {Chart} instead
  */
-export default class ChartBootstrap implements ChartContainer {
+export default class ChartBootstrap {
 	// can be used for convenient ID storing
 	// is NOT used inside anyhow
 	public id: string;
@@ -114,6 +113,9 @@ export default class ChartBootstrap implements ChartContainer {
 	public mainCanvasModel: CanvasModel;
 	public dynamicObjectsCanvasModel: CanvasModel;
 	public hitTestCanvasModel: HitTestCanvasModel;
+	/**
+	 * @deprecated use {bounds} instead
+	 */
 	public canvasBoundsContainer: CanvasBoundsContainer;
 	public canvasInputListener: CanvasInputListenerComponent;
 	/**
@@ -142,6 +144,9 @@ export default class ChartBootstrap implements ChartContainer {
 	 */
 	public chartPanComponent: ChartPanComponent;
 	public paneManager: PaneManager;
+	/**
+	 * @deprecated use {hover} instead
+	 */
 	public hoverProducer: HoverProducerComponent;
 	public canvasModels: CanvasModel[] = [];
 	public chartResizeHandler: ChartResizeHandler;
@@ -453,6 +458,7 @@ export default class ChartBootstrap implements ChartContainer {
 		const lastCandleLabelsProvider = new LastCandleLabelsProvider(
 			this.chartModel,
 			this.config,
+			mainPane.mainExtent.yAxis.state,
 			this.chartModel.lastCandleLabelsByChartType,
 			this.yAxisComponent.getLabelsColorResolver.bind(this.yAxisComponent),
 		);
@@ -506,6 +512,7 @@ export default class ChartBootstrap implements ChartContainer {
 			paneManager,
 			this.crossEventProducer,
 			this.hoverProducer,
+			this.backgroundCanvasModel,
 		);
 
 		this.chartComponents.push(this.crossToolComponent);
@@ -551,7 +558,7 @@ export default class ChartBootstrap implements ChartContainer {
 			yAxisLabelsCanvasModel,
 			this.backgroundCanvasModel,
 			this.canvasBoundsContainer,
-			this.config.colors.yAxis,
+			this.config,
 			this.paneManager,
 		);
 		yAxisCompositeDrawer.addDrawer(yAxisLabelsDrawer);

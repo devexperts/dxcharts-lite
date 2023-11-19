@@ -1,36 +1,37 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta
+			name="viewport"
+			content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
+		<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+		<title>DXCharts Lite set and update candles example</title>
+		<link rel="stylesheet" href="../common-styles.css" />
+		<link rel="stylesheet" href="./style.css" />
+		<script src="https://www.unpkg.com/@devexperts/dxcharts-lite@2.0.1/dist/dxchart.min.js"></script>
+		<script type="importmap">
+			{
+				"imports": {
+					"@devexperts/dxcharts-lite/": "https://www.unpkg.com/@devexperts/dxcharts-lite@2.0.1/"
+				}
+			}
+		</script>
+	</head>
 
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport"
-		content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-	<meta http-equiv="X-UA-Compatible" content="ie=edge">
-	<title>DXCharts Lite set and update candles example</title>
-	<link rel="stylesheet" href="../common-styles.css" />
-	<link rel="stylesheet" href="./style.css">
-	<script src="https://www.unpkg.com/@devexperts/dxcharts-lite@1.0.1/dist/dxchart.min.js"></script>
-	<script src="https://www.unpkg.com/@devexperts/dxcharts-lite@1.0.1/dist/chart/utils/candles-generator.utils.js"
-		type="module"></script>
-</head>
+	<body>
+		<div class="settings">
+			<h1>DXCharts Lite chart data series playground</h1>
 
-<body>
+			<label for="ticks"> <input id="ticks" type="checkbox" name="ticks" /> Show ticks </label>
 
-	<div class="settings">
-		<h1>DXCharts Lite chart data series playground</h1>
-
-		<label for="ticks">
-			<input id="ticks" type="checkbox" name="ticks" /> Show ticks
-		</label>
-
-		<div>
-			<button id="load_data" class="btn">Load secondary series</button>
+			<div>
+				<button id="load_data" class="btn">Load secondary series</button>
+			</div>
+			<div id="compare_series" class="compare"></div>
 		</div>
-		<div id="compare_series" class="compare"></div>
-	</div>
-	<div id="dxcharts_lite" class="chart"></div>
+		<div id="dxcharts_lite" class="chart"></div>
 
-	<script src="./set-and-update-candles.js"></script>
-</body>
-
+		<script type="module" src="./set-and-update-candles.js"></script>
+	</body>
 </html>

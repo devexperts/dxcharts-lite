@@ -1,85 +1,77 @@
 <!DOCTYPE html>
 <html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta
+			name="viewport"
+			content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
+		<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+		<title>DXCharts Lite with label provider</title>
+		<link rel="stylesheet" href="../common-styles.css" />
+		<link rel="stylesheet" href="./style.css" />
+		<script src="https://www.unpkg.com/@devexperts/dxcharts-lite@2.0.1/dist/dxchart.min.js"></script>
+		<script type="importmap">
+			{
+				"imports": {
+					"@devexperts/dxcharts-lite/": "https://www.unpkg.com/@devexperts/dxcharts-lite@2.0.1/"
+				}
+			}
+		</script>
+		<script src="./label_provider.js"></script>
+		<script src="./label_provider_dynamic.js"></script>
+		<script type="module">
+			import provider from './label_provider.js';
+			import dynamicProvider from './label_provider_dynamic.js';
+			import generateCandlesData from '@devexperts/dxcharts-lite/dist/chart/utils/candles-generator.utils';
 
-<head>
-	<meta charset="UTF-8" />
-	<meta name="viewport"
-		content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
-	<meta http-equiv="X-UA-Compatible" content="ie=edge" />
-	<title>DXCharts Lite with label provider</title>
-	<link rel="stylesheet" href="../common-styles.css" />
-	<link rel="stylesheet" href="./style.css" />
-	<script src="https://www.unpkg.com/@devexperts/dxcharts-lite@1.0.1/dist/dxchart.min.js"></script>
-	<script src="https://www.unpkg.com/@devexperts/dxcharts-lite@1.0.1/dist/chart/utils/candles-generator.utils.js"
-		type="module"></script>
-	<script src="./label_provider.js"></script>
-	<script src="./label_provider_dynamic.js"></script>
-	<script type="module">
-		import provider from './label_provider.js';
-		import dynamicProvider from './label_provider_dynamic.js';
-		const config = { components: { crossTool: { type: 'none' } } };
+			const config = { components: { crossTool: { type: 'none' } } };
 
-		const node = document.querySelector('#root');
-		const chart = DXChart.createChart(node, config);
-		const candles = DXChart.generateCandlesData({ quantity: 1000, withVolume: true });
-		chart.setData({
-			candles,
-		});
+			const node = document.querySelector('#root');
+			const chart = DXChart.createChart(node, config);
+			const candles = generateCandlesData({ quantity: 1000, withVolume: true });
+			chart.setData({ candles });
 
-		chart.yAxis.changeLabelMode('lastPrice', 'none');
-		const labelInputs = [].slice.call(document.querySelectorAll('#label_options input, #label_options select'));
+			chart.yAxis.changeLabelMode('lastPrice', 'none');
+			const labelInputs = [].slice.call(document.querySelectorAll('#label_options input, #label_options select'));
 
-		const labelText = document.querySelector('[name="labelText"]');
-		const getName = {
-			name: labelText.value,
-		};
-		labelText.addEventListener('keyup', e => {
-			getName.name = labelText.value;
-			chart.yAxis.updateOrderedLabels();
-		});
+			const labelText = document.querySelector('[name="labelText"]');
+			const getName = {
+				name: labelText.value,
+			};
+			labelText.addEventListener('keyup', e => {
+				getName.name = labelText.value;
+				chart.yAxis.updateOrderedLabels();
+			});
 
-		const description = document.querySelector('[name="description"]');
-		description.addEventListener('change', e => {
-			chart.yAxis.changeLabelsDescriptionVisibility(e.target.value === 'true');
-		});
+			const description = document.querySelector('[name="description"]');
+			description.addEventListener('change', e => {
+				chart.yAxis.changeLabelsDescriptionVisibility(e.target.value === 'true');
+			});
 
-		chart.yAxis.registerYAxisLabelsProvider(
-			dynamicProvider(chart, 'GROUP2', getName),
-			'GROUP2',
-			`cool_label3`,
-		);
+			chart.yAxis.registerYAxisLabelsProvider(dynamicProvider(chart, 'GROUP2', getName), 'GROUP2', `cool_label3`);
 
-		chart.yAxis.registerYAxisLabelsProvider(
-			provider(100, 'static_lbl1', 'GROUP1'),
-			'GROUP1',
-			`static_lbl1`,
-		);
-		chart.yAxis.registerYAxisLabelsProvider(
-			provider(200, 'static_lbl2', 'GROUP2'),
-			'GROUP2',
-			`static_lbl2`,
-		);
-	</script>
-</head>
+			chart.yAxis.registerYAxisLabelsProvider(provider(100, 'static_lbl1', 'GROUP1'), 'GROUP1', `static_lbl1`);
+			chart.yAxis.registerYAxisLabelsProvider(provider(200, 'static_lbl2', 'GROUP2'), 'GROUP2', `static_lbl2`);
+		</script>
+	</head>
 
-<body>
-	<div class="chart__container">
-		<div class="chart" id="root"></div>
-		<div class="settings">
-			<form action="" id="form">
-				<label>
-					<input name="labelText" type="text" value="Label" />
-					<small>text on dynamic label</small>
-				</label>
-				<div>
-					<select name="description" value="{selectedType}">
-						<option value="true">visible</option>
-						<option value="false" selected>hidden</option>
-					</select><small>description</small>
-				</div>
-			</form>
+	<body>
+		<div class="chart__container">
+			<div class="chart" id="root"></div>
+			<div class="settings">
+				<form action="" id="form">
+					<label>
+						<input name="labelText" type="text" value="Label" />
+						<small>text on dynamic label</small>
+					</label>
+					<div>
+						<select name="description" value="{selectedType}">
+							<option value="true">visible</option>
+							<option value="false" selected>hidden</option></select
+						><small>description</small>
+					</div>
+				</form>
+			</div>
 		</div>
-	</div>
-</body>
-
+	</body>
 </html>

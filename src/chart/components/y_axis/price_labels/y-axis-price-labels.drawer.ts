@@ -9,7 +9,7 @@ import {
 	CHART_UUID,
 	limitYToBounds,
 } from '../../../canvas/canvas-bounds-container';
-import { FullChartColors } from '../../../chart.config';
+import { FullChartConfig } from '../../../chart.config';
 import { Drawer } from '../../../drawers/drawing-manager';
 import { CanvasModel } from '../../../model/canvas.model';
 import { fillRect } from '../../../utils/canvas/canvas-drawing-functions.utils';
@@ -22,7 +22,7 @@ export class YAxisPriceLabelsDrawer implements Drawer {
 		private yAxisLabelsCanvasModel: CanvasModel,
 		private backgroundCanvasModel: CanvasModel,
 		private canvasBoundsContainer: CanvasBoundsContainer,
-		private yAxisColors: FullChartColors['yAxis'],
+		private fullConfig: FullChartConfig,
 		private paneManager: PaneManager,
 	) {}
 
@@ -31,38 +31,40 @@ export class YAxisPriceLabelsDrawer implements Drawer {
 		const backgroundCtx = this.backgroundCanvasModel.ctx;
 
 		this.paneManager.yExtents.forEach(extent => {
-			const yAxisBounds = extent.getYAxisBounds();
-		const paneBounds = this.canvasBoundsContainer.getBounds(CanvasElement.ALL_PANES);
-			const orderedLabels = extent.yAxis.model.fancyLabelsModel.orderedLabels;
-		this.drawHighlightedBackgroundBetweenLabels(orderedLabels);
-		orderedLabels.forEach(l => {
-			const bounds = l.bounds ?? yAxisBounds;
-			l.labels.forEach(vl =>
-				drawLabel(
-					ctx,
-					backgroundCtx,
-					bounds,
-					paneBounds,
-					vl,
-					this.canvasBoundsContainer,
+			if (extent.yAxis.state.visible) {
+				const yAxisBounds = extent.getYAxisBounds();
+				const paneBounds = this.canvasBoundsContainer.getBounds(CanvasElement.ALL_PANES);
+				const orderedLabels = extent.yAxis.model.fancyLabelsModel.orderedLabels;
+				this.drawHighlightedBackgroundBetweenLabels(orderedLabels);
+				orderedLabels.forEach(l => {
+					const bounds = l.bounds ?? yAxisBounds;
+					l.labels.forEach(vl =>
+						drawLabel(
+							ctx,
+							backgroundCtx,
+							bounds,
+							paneBounds,
+							vl,
+							this.canvasBoundsContainer,
+							extent.yAxis.state,
+							this.fullConfig.colors.yAxis,
+						),
+					);
+				});
+				// TODO I added this as a simple mechanism to add custom labels, we need to review it
+				Object.values(extent.yAxis.model.fancyLabelsModel.customLabels).forEach(l =>
+					drawLabel(
+						ctx,
+						backgroundCtx,
+						yAxisBounds,
+						paneBounds,
+						l,
+						this.canvasBoundsContainer,
 						extent.yAxis.state,
-					this.yAxisColors,
-				),
-			);
-		});
-		// TODO I added this as a simple mechanism to add custom labels, we need to review it
-			Object.values(extent.yAxis.model.fancyLabelsModel.customLabels).forEach(l =>
-			drawLabel(
-				ctx,
-				backgroundCtx,
-				yAxisBounds,
-				paneBounds,
-				l,
-				this.canvasBoundsContainer,
-					extent.yAxis.state,
-				this.yAxisColors,
-			),
-		);
+						this.fullConfig.colors.yAxis,
+					),
+				);
+			}
 		});
 	}
 

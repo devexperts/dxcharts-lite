@@ -21,7 +21,8 @@ export class MainCandleSeriesModel extends CandleSeriesModel {
 	constructor(
 		private readonly baseModel: ChartBaseModel<'candle'>,
 		extentComponent: YExtentComponent,
-		id: number,
+		id: string,
+		htId: number,
 		eventBus: EventBus,
 		scale: ScaleModel,
 		instrument: ChartInstrument,
@@ -32,6 +33,7 @@ export class MainCandleSeriesModel extends CandleSeriesModel {
 		super(
 			extentComponent,
 			id,
+			htId,
 			eventBus,
 			scale,
 			instrument,

@@ -57,10 +57,7 @@ export class DataSeriesDrawer implements DynamicModelDrawer<DataSeriesModel> {
 			const paintTool = series.config.type;
 			const drawer = this.seriesDrawers[paintTool];
 			if (drawer) {
-				const viewportSeries = series.getSeriesInViewport(
-					series.scale.xStart - 1,
-					series.scale.xEnd + 1,
-				);
+				const viewportSeries = series.getSeriesInViewport(series.scale.xStart - 1, series.scale.xEnd + 1);
 				if (viewportSeries && viewportSeries.length >= 1) {
 					// +- 1 to correctly draw points which are partly inside bounds
 					drawer.draw(ctx, viewportSeries, series, {});
@@ -89,7 +86,7 @@ export const setLineWidth = (
 	if (drawerConfig.forceBold) {
 		ctx.lineWidth = drawerConfig.forceBold;
 	} else if (dataSeries.hovered) {
-		ctx.lineWidth = seriesSelectedWidth;
+		ctx.lineWidth = lineWidth !== seriesSelectedWidth ? lineWidth + 1 : seriesSelectedWidth;
 	} else {
 		ctx.lineWidth = lineWidth;
 	}

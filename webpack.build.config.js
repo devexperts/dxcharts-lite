@@ -14,7 +14,10 @@ module.exports = env => {
 		output: {
 			filename: `./[name]${prodEnv ? '.min' : ''}.js`,
 			path: path.resolve(__dirname, 'dist'),
-			library: 'dxChart',
+			library: {
+				name: 'DXChart',
+				type: 'window',
+			},
 		},
 		resolve: {
 			extensions: ['.ts', '.js', '.json'],
@@ -48,6 +51,7 @@ module.exports = env => {
 		optimization: {
 			minimizer: [
 				new EsbuildPlugin({
+					minify: true,
 					target: 'es6',
 				}),
 			],
