@@ -62,6 +62,7 @@ export class DrawingManager {
 		initOffscreenWorker(canvases).then(worker => {
 			this.worker = worker;
 			this.readyDraw = true;
+			eventBus.fireDraw();
 		});
 		// eventBus.on(EVENT_DRAW_LAST_CANDLE, () => animationFrameThrottled(this.animFrameId + 'last', () => this.drawLastBar()));
 		this.drawHitTestCanvas = () => {

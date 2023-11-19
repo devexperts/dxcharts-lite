@@ -55,9 +55,8 @@ export class OffscreenWorker {
 	}
 
 	executeCanvasCommands() {
-		for (const [,ctxCommands] of Object.entries(this.buffers)) {
+		for (const [canvasId, ctxCommands] of Object.entries(this.buffers)) {
 			let counter = 0;
-			const canvasId = ctxCommands[counter++];
 			const ctx = this.ctxs[canvasId];
 			while (ctxCommands[counter] !== END_OF_FILE) {
 				const method = num2Ctx[ctxCommands[counter++]];

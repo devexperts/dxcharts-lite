@@ -14,6 +14,7 @@ export const initOffscreenWorker = async (canvases: CanvasModel[]) => {
 		canvas.ctx.idx = i;
 		// @ts-ignore
 		await worker.addCanvas(i, transfer(offscreen, [offscreen]), canvas.ctx.buffer);
+		canvas.isOffscreen = true;
 	}
 
 	return worker;

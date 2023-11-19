@@ -31,20 +31,20 @@ const canvas = document.createElement('canvas');
 // @ts-ignore
 const ctxForMeasure: CanvasRenderingContext2D = canvas.getContext('2d');
 
-let poolCounter = Number.MIN_SAFE_INTEGER;
-const stringsPool = new Map<string, number>();
+let curPtr = Number.MIN_SAFE_INTEGER;
+const stringPtrs = new Map<string, number>();
 export const strSync: unknown[] = [];
 
 export class CanvasOffscreenContext2D implements Partial<CanvasRenderingContext2D> {
 	public commands: Float64Array;
 	public buffer: unknown;
 
-	private getStringId(str: string): number {
-		let id = stringsPool.get(str);
+	private getStrPtr(str: string): number {
+		let id = stringPtrs.get(str);
 		if (id === undefined) {
-			id = poolCounter++;
+			id = curPtr++;
 			strSync.push(str, id);
-			stringsPool.set(str, id);
+			stringPtrs.set(str, id);
 		}
 		return id;
 	}
@@ -53,23 +53,22 @@ export class CanvasOffscreenContext2D implements Partial<CanvasRenderingContext2
 	private counter = 0;
 
 	constructor(public idx: number) {
+		// eslint-disable-next-line no-undef
 		this.buffer = new SharedArrayBuffer(8 * 50000);
 		// @ts-ignore
 		this.commands = new Float64Array(this.buffer);
-		this.commands[this.counter++] = this.idx;
 	}
 
 	commit() {
 		this.commands[this.counter] = END_OF_FILE;
 		this.counter = 0;
-		this.commands[this.counter++] = this.idx;
 	}
 
 	set font(val: string) {
 		this.__font = val;
 		this.commands[this.counter++] = FONT;
 		this.commands[this.counter++] = -1;
-		this.commands[this.counter++] = this.getStringId(val);
+		this.commands[this.counter++] = this.getStrPtr(val);
 	}
 
 	set width(val: number) {
@@ -88,14 +87,14 @@ export class CanvasOffscreenContext2D implements Partial<CanvasRenderingContext2
 		this.commands[this.counter++] = FILL_STYLE;
 		this.commands[this.counter++] = -1;
 		// @ts-ignore
-		this.commands[this.counter++] = this.getStringId(val);
+		this.commands[this.counter++] = this.getStrPtr(val);
 	}
 
 	set strokeStyle(val: string | CanvasGradient | CanvasPattern | undefined) {
 		this.commands[this.counter++] = STROKE_STYLE;
 		this.commands[this.counter++] = -1;
 		// @ts-ignore
-		this.commands[this.counter++] = this.getStringId(val);
+		this.commands[this.counter++] = this.getStrPtr(val);
 	}
 
 	set lineWidth(val: number) {
@@ -107,7 +106,7 @@ export class CanvasOffscreenContext2D implements Partial<CanvasRenderingContext2
 	set lineCap(val: CanvasLineCap) {
 		this.commands[this.counter++] = LINE_CAP;
 		this.commands[this.counter++] = -1;
-		this.commands[this.counter++] = this.getStringId(val);;
+		this.commands[this.counter++] = this.getStrPtr(val);;
 	}
 
 	public save(): void {
@@ -146,7 +145,7 @@ export class CanvasOffscreenContext2D implements Partial<CanvasRenderingContext2
 	public strokeText(text: string, x: number, y: number, maxWidth?: number): void {
 		this.commands[this.counter++] = STROKE_TEXT;
 		this.commands[this.counter++] = maxWidth !== undefined ? 4 : 3;
-		this.commands[this.counter++] = this.getStringId(text);
+		this.commands[this.counter++] = this.getStrPtr(text);
 		this.commands[this.counter++] = x;
 		this.commands[this.counter++] = y;
 		if (maxWidth !== undefined) {
@@ -155,7 +154,6 @@ export class CanvasOffscreenContext2D implements Partial<CanvasRenderingContext2
 	}
 
 	public setLineDash(): void {
-		// console.log('dash')
 		// this.commands[this.counter++] = SET_LINE_DASH;
 		// this.commands[this.counter++] = 1;
 		// this.commands[this.counter++] = segments;
@@ -164,7 +162,7 @@ export class CanvasOffscreenContext2D implements Partial<CanvasRenderingContext2
 	public fillText(text: string, x: number, y: number, maxWidth?: number | undefined): void {
 		this.commands[this.counter++] = FILL_TEXT;
 		this.commands[this.counter++] = maxWidth !== undefined ? 4 : 3;
-		this.commands[this.counter++] = this.getStringId(text);
+		this.commands[this.counter++] = this.getStrPtr(text);
 		this.commands[this.counter++] = x;
 		this.commands[this.counter++] = y;
 		if (maxWidth !== undefined) {
@@ -181,15 +179,9 @@ export class CanvasOffscreenContext2D implements Partial<CanvasRenderingContext2
 		this.commands[this.counter++] = h;
 	}
 
-	public clip(fillRule?: CanvasFillRule | undefined): void;
-	public clip(path: Path2D, fillRule?: CanvasFillRule | undefined): void;
-	public clip(...args: unknown[]): void {
+	public clip(): void {
 		this.commands[this.counter++] = CLIP;
-		this.commands[this.counter++] = args.length;
-		for (const arg of args) {
-			// @ts-ignore
-			this.commands[this.counter++] = arg;
-		}
+		this.commands[this.counter++] = 0;
 	}
 
 	public quadraticCurveTo(cpx: number, cpy: number, x: number, y: number): void {
