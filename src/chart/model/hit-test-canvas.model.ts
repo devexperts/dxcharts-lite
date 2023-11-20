@@ -52,6 +52,7 @@ export class HitTestCanvasModel extends CanvasModel {
 		super(eventBus, canvas, canvasModels, resizer, {
 			willReadFrequently: true,
 			desynchronized: true,
+			offscreen: true,
 		});
 		initCanvasWithConfig(this, chartConfig);
 		canvas.style.visibility = 'hidden';

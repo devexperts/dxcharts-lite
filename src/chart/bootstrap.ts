@@ -198,6 +198,7 @@ export default class ChartBootstrap {
 			{
 				// can be read frequently, see {redrawBackgroundArea} function
 				willReadFrequently: true,
+				offscreen: true,
 			},
 		);
 		this.backgroundCanvasModel = backgroundCanvasModel;
@@ -206,8 +207,9 @@ export default class ChartBootstrap {
 			elements.mainCanvas,
 			elements.chartResizer,
 			this.config.components.chart.type,
-			this.config,
+			config,
 			this.canvasModels,
+			{ offscreen: true },
 		);
 		this.mainCanvasModel = mainCanvasModel;
 		this.dynamicObjectsCanvasModel = createCanvasModel(
@@ -216,6 +218,7 @@ export default class ChartBootstrap {
 			config,
 			this.canvasModels,
 			elements.chartResizer,
+			{ offscreen: true },
 		);
 		const crossToolCanvasModel = createCanvasModel(
 			eventBus,
@@ -223,6 +226,7 @@ export default class ChartBootstrap {
 			config,
 			this.canvasModels,
 			elements.chartResizer,
+			{ offscreen: true },
 		);
 		const snapshotCanvasModel = createCanvasModel(
 			eventBus,
@@ -230,6 +234,7 @@ export default class ChartBootstrap {
 			config,
 			this.canvasModels,
 			elements.chartResizer,
+			{ offscreen: true },
 		);
 		this.chartResizeHandler = chartResizeHandler;
 		chartResizeHandler.subscribeResize();
@@ -245,6 +250,7 @@ export default class ChartBootstrap {
 			config,
 			this.canvasModels,
 			elements.chartResizer,
+			{ offscreen: true },
 		);
 		const canvasBoundsContainer = new CanvasBoundsContainer(
 			config,

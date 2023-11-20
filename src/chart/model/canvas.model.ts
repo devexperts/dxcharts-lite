@@ -18,6 +18,8 @@ export const MIN_SUPPORTED_CANVAS_SIZE = {
 	height: 20,
 };
 
+export type CanvasModelOptions = CanvasRenderingContext2DSettings & { offscreen?: boolean };
+
 export class CanvasModel {
 	private readonly context: CanvasRenderingContext2D;
 	public parent: HTMLElement;
@@ -34,14 +36,13 @@ export class CanvasModel {
 		public canvas: HTMLCanvasElement,
 		canvasModels: CanvasModel[],
 		private resizer?: HTMLElement,
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		options: CanvasRenderingContext2DSettings = {},
+		public options: CanvasModelOptions = {},
 	) {
 		canvasModels.push(this);
 		this.parent = findHeightParent(canvas);
 
 		this._canvasId = canvas.getAttribute('data-element') ?? '';
-		const ctx = new CanvasOffscreenContext2D(this.idx);
+		const ctx = options.offscreen ? new CanvasOffscreenContext2D(this.idx) : canvas.getContext('2d', options);
 		if (ctx === null) {
 			throw new Error("Couldn't get 2d context????");
 		}
@@ -66,6 +67,8 @@ export class CanvasModel {
 			const dpiX = this.width / width;
 			const dpiY = this.height / height;
 			this.ctx.scale(dpiX, dpiY);
+			// @ts-ignore
+			// this.ctx.commit();
 		} else {
 			const dpi = window.devicePixelRatio;
 			this.canvas.width = width * dpi;
@@ -192,21 +195,7 @@ const TYPES: Partial<Record<BarType, CanvasBarType>> = {
  * @param {CanvasModel[]} canvasModels - An array of canvas models to add the new model to.
  *
  * @returns {CanvasModel} The newly created canvas model.
- 
-export function createMainCanvasModel(
-    eventBus,
-    canvas,
-    resizer,
-    barType,
-    config,
-    drawingManager,
-    canvasModels,
-) {
-    const canvasModel = createCanvasModel(eventBus, canvas, config, drawingManager, canvasModels, resizer);
-    // @ts-ignore
-    canvasModel.type = TYPES[barType] ?? CANDLE_TYPE;
-    return canvasModel;
-}*/
+ */
 export function createMainCanvasModel(
 	eventBus: EventBus,
 	canvas: HTMLCanvasElement,
@@ -214,8 +203,9 @@ export function createMainCanvasModel(
 	barType: BarType,
 	config: FullChartConfig,
 	canvasModels: CanvasModel[],
+	options?: CanvasModelOptions,
 ): CanvasModel {
-	const canvasModel = createCanvasModel(eventBus, canvas, config, canvasModels, resizer);
+	const canvasModel = createCanvasModel(eventBus, canvas, config, canvasModels, resizer, options);
 	// @ts-ignore
 	canvasModel.type = TYPES[barType] ?? CANDLE_TYPE;
 	return canvasModel;
@@ -239,7 +229,7 @@ export function createCanvasModel(
 	config: FullChartConfig,
 	canvasModels: CanvasModel[],
 	resizer?: HTMLElement,
-	options?: CanvasRenderingContext2DSettings,
+	options?: CanvasModelOptions,
 ): CanvasModel {
 	const canvasModel = new CanvasModel(eventBus, canvas, canvasModels, resizer, options);
 	initCanvasWithConfig(canvasModel, config);

@@ -28,7 +28,7 @@ export class BackgroundDrawer implements Drawer {
 		}
 		this.canvasModel.clear();
 		const ctx = this.canvasModel.ctx;
-		if (this.config.colors.chartAreaTheme.backgroundMode === 'gradient') {
+		if (this.config.colors.chartAreaTheme.backgroundMode === 'gradient' && !this.canvasModel.options.offscreen) {
 			const grd = ctx.createLinearGradient(0, 0, this.canvasModel.width, this.canvasModel.height);
 			grd.addColorStop(0, this.config.colors.chartAreaTheme.backgroundGradientTopColor);
 			grd.addColorStop(1, this.config.colors.chartAreaTheme.backgroundGradientBottomColor);

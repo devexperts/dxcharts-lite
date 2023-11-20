@@ -87,19 +87,29 @@ export class DrawingManager {
 					if (!this.isDrawable()) {
 						return;
 					}
-					this.forceDraw(this.canvasIdsList);
-					this.canvasIdsList = [];
+					// if (this.chartResizeHandler.canvasNeedsResize) {
+					// 	this.chartResizeHandler.canvasNeedsResize = false;
+					// 	this.chartResizeHandler.canvasModels.forEach(
+					// 		model => this.chartResizeHandler.previousBCR && model.updateDPR(this.chartResizeHandler.previousBCR),
+					// 	);
+					// }
+					this.forceDraw();
 					this.drawHitTestCanvas();
 					this.readyDraw = false;
 					// @ts-ignore
-					canvases.forEach(canvas => canvas.ctx.commit());
+					canvases.forEach(canvas => canvas.ctx.commit?.());
+					console.log('locked');
 					if (strSync.length) {
 						await this.worker.syncStrings(strSync);
 						strSync.length = 0;
 					}
 					// @ts-ignore
 					await this.worker.executeCanvasCommands();
+					// @ts-ignore
+					canvases.forEach(canvas => (canvas.ctx.locked = false));
 					this.readyDraw = true;
+					console.log('unlocked');
+					this.canvasIdsList = [];
 				});
 			}
 		});

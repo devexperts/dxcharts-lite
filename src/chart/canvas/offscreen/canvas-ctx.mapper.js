@@ -26,6 +26,8 @@ export const FILL = 23;
 export const CLOSE_PATH = 24;
 export const STROKE_RECT = 25;
 export const SCALE = 26;
+export const NOP = 27;
+export const ARC = 28;
 
 export const num2Ctx = [
     'font',
@@ -54,5 +56,7 @@ export const num2Ctx = [
     'fill',
     'closePath',
     'strokeRect',
-    'scale'
+    'scale',
+    'nop',
+    'arc',
 ];
