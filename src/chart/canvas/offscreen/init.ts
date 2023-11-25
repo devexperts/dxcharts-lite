@@ -4,16 +4,11 @@ const OffscreenWorker = wrap<any>(new Worker(new URL('./offscreen-worker.js', im
 // const OffscreenWorker = wrap<any>(new Worker(new URL('http://localhost:3000/worker.js')));
 let worker: any = null;
 let _startOffset = 0;
-let first = false;
 
 export const initOffscreenWorker = async (canvases: CanvasModel[]) => {
 	if (worker === null) {
 		// @ts-ignore
 		worker = await new OffscreenWorker();
-	}
-	if (!first) {
-		first = true;
-		return worker;
 	}
 	const startOffset = _startOffset;
 	_startOffset += 100;

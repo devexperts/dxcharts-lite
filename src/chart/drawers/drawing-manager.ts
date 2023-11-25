@@ -87,28 +87,19 @@ export class DrawingManager {
 					if (!this.isDrawable()) {
 						return;
 					}
-					// if (this.chartResizeHandler.canvasNeedsResize) {
-					// 	this.chartResizeHandler.canvasNeedsResize = false;
-					// 	this.chartResizeHandler.canvasModels.forEach(
-					// 		model => this.chartResizeHandler.previousBCR && model.updateDPR(this.chartResizeHandler.previousBCR),
-					// 	);
-					// }
 					this.forceDraw();
 					this.drawHitTestCanvas();
-					this.readyDraw = false;
 					// @ts-ignore
 					canvases.forEach(canvas => canvas.ctx.commit?.());
-					console.log('locked');
 					if (strSync.length) {
 						await this.worker.syncStrings(strSync);
 						strSync.length = 0;
 					}
 					// @ts-ignore
-					await this.worker.executeCanvasCommands();
+					await this.worker.executeCanvasCommands(canvases.map(canvas => canvas.idx));
 					// @ts-ignore
-					canvases.forEach(canvas => (canvas.ctx.locked = false));
+					canvases.forEach(canvas => canvas.ctx.finish?.());
 					this.readyDraw = true;
-					console.log('unlocked');
 					this.canvasIdsList = [];
 				});
 			}
@@ -123,7 +114,7 @@ export class DrawingManager {
 	 */
 	public redrawCanvasesImmediate() {
 		this.chartResizeHandler.fireUpdates();
-		this.forceDraw();
+		// this.forceDraw();
 	}
 
 	drawLastBar() {
@@ -139,6 +130,7 @@ export class DrawingManager {
 		if (!this.isDrawable()) {
 			return;
 		}
+		this.readyDraw = false;
 		this.drawingOrder.forEach(drawerName => {
 			if (drawerName.indexOf(HIT_TEST_PREFIX) === -1) {
 				const drawer = this.drawersMap[drawerName];

@@ -28,9 +28,9 @@ export class CanvasModel {
 	public prevHeight: number = 0;
 	public prevWidth: number = 0;
 	public idx: number = 0;
-	public isOffscreen = false;
 	public readonly _canvasId: string;
 	type: CanvasBarType = CANDLE_TYPE;
+	public isOffscreen: boolean = false;
 	constructor(
 		private eventBus: EventBus,
 		public canvas: HTMLCanvasElement,
@@ -59,22 +59,17 @@ export class CanvasModel {
 		const { width, height } = bcr;
 		this.canvas.style.height = height + 'px';
 		this.canvas.style.width = width + 'px';
-		if (this.isOffscreen) {
+		const dpi = window.devicePixelRatio;
+		if (this.options.offscreen) {
 			// @ts-ignore
-			this.ctx.width = height;
+			this.ctx.width = width * dpi;
 			// @ts-ignore
-			this.ctx.height = height;
-			const dpiX = this.width / width;
-			const dpiY = this.height / height;
-			this.ctx.scale(dpiX, dpiY);
-			// @ts-ignore
-			// this.ctx.commit();
+			this.ctx.height = height * dpi;
 		} else {
-			const dpi = window.devicePixelRatio;
 			this.canvas.width = width * dpi;
 			this.canvas.height = height * dpi;
-			this.ctx.scale(dpi, dpi);
 		}
+		this.ctx.scale(dpi, dpi);
 		this.width = width;
 		this.height = height;
 	}

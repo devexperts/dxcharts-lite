@@ -22,11 +22,24 @@ export class OffscreenWorker {
 			new Array(9),
 			new Array(10),
 		];
+		this.debug = {};
 	}
 
 	addCanvas(canvasId, options, canvas, commandsBuffer) {
 		this.buffers[canvasId] = new Float64Array(commandsBuffer);
-		this.ctxs[canvasId] = canvas.getContext('2d', options);
+		const ctx = canvas.getContext('2d', options);
+		Object.defineProperty(ctx, 'width', {
+			set(width) {
+				return (ctx.canvas.width = width);
+			},
+		});
+		Object.defineProperty(ctx, 'height', {
+			set(height) {
+				return (ctx.canvas.height = height);
+			},
+		});
+		this.ctxs[canvasId] = ctx;
+		this.debug[canvasId] = [];
 	}
 
 	syncStrings(strs) {
@@ -35,26 +48,21 @@ export class OffscreenWorker {
 		}
 	}
 
-	executeCanvasCommands() {
+	executeCanvasCommands(canvasIds) {
+		canvasIds = canvasIds.map((canvasId) => '' + canvasId);
 		for (const [canvasId, ctxCommands] of Object.entries(this.buffers)) {
-			// if (!canvasIds.includes(canvasId)) {
-			// 	continue;
-			// }
+			if (!canvasIds.includes(canvasId)) {
+				continue;
+			}
 			let counter = 0;
 			const ctx = this.ctxs[canvasId];
 			while (ctxCommands[counter] !== END_OF_FILE) {
 				const method = num2Ctx[ctxCommands[counter++]];
-				if (method === undefined) {
-					debugger;
-				}
 				const argsLen = ctxCommands[counter++];
 				if (argsLen !== -1) {
 					const args = this.args[argsLen];
 					for (let i = 0; i < argsLen; i++) {
 						const arg = ctxCommands[counter++];
-						if (args === undefined) {
-							debugger;
-						}
 						args[i] = stringsPool.get(arg) ?? arg;
 					}
 					ctx[method].apply(ctx, args);
@@ -63,7 +71,6 @@ export class OffscreenWorker {
 					ctx[method] = stringsPool.get(arg) ?? arg;
 				}
 			}
-			// ctxCommands[0] = END_OF_FILE;
 		}
 	}
 }
