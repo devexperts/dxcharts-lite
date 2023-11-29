@@ -126,7 +126,7 @@ export class CrossToolModel extends ChartBaseElement {
 		} else {
 			this.currentHover.y = hover.y;
 		}
-		this.currentHover.paneId = CHART_UUID;
+		this.currentHover.paneId = hover.paneId;
 		this.currentHoverSubject.next(this.currentHover);
 	}
 }
