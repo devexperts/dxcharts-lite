@@ -9,14 +9,14 @@ import {
 	FullChartColors,
 	getFontFromConfig,
 	YAxisAlign,
-	YAxisLabelAppearanceType,
+	YAxisLabelAppearanceType, YAxisLabelMode,
 } from '../../../chart.config';
 import { redrawBackgroundArea } from '../../../drawers/chart-background.drawer';
 import { Bounds } from '../../../model/bounds.model';
 import { avoidAntialiasing, drawLine } from '../../../utils/canvas/canvas-drawing-functions.utils';
 import { calculateSymbolHeight, calculateTextWidth } from '../../../utils/canvas/canvas-font-measure-tool.utils';
 import { floor } from '../../../utils/math.utils';
-import { drawBadgeLabel, drawPlainLabel, drawRectLabel } from '../y-axis-labels.drawer';
+import { drawBadgeLabel, drawPlainLabel, drawRectLabel, checkLabelInBoundaries } from '../y-axis-labels.drawer';
 import { VisualYAxisLabel, YAxisVisualLabelType } from './y-axis-labels.model';
 
 type LabelDrawer = typeof drawBadgeLabel | typeof drawRectLabel | typeof drawPlainLabel;
@@ -96,22 +96,30 @@ export function drawLabel(
 		showLine && avoidAntialiasing(ctx, () => drawLine(ctx, lineXStart, lineY, lineXEnd, lineY, 1));
 	const _drawLabel = () => drawLabel(ctx, bounds, text, centralY, visualLabel, config, colors, false, backgroundCtx);
 
-	switch (mode) {
-		case 'line':
-			_drawLine();
-			_drawDescription();
-			break;
-		case 'line-label':
-			_drawLine();
-			_drawDescription();
-			_drawLabel();
-			break;
-		case 'label':
-			_drawDescription();
-			_drawLabel();
-			break;
-		case 'none':
-			break;
+	const drawLineLabel = () => {
+		_drawLine();
+		_drawDescription();
+	}
+
+	const drawLineLabelLabel = () => {
+		_drawLine();
+		_drawLabel();
+		_drawDescription();
+	}
+
+	const drawLabelLabel = () => {
+		_drawDescription();
+		_drawLabel();
+	}
+
+	const labelDrawerByMode: Record<Exclude<YAxisLabelMode, 'none'>, () => void> = {
+		'line': drawLineLabel,
+		'line-label': drawLineLabelLabel,
+		'label': drawLabelLabel,
+	}
+
+	if (mode !== 'none' && checkLabelInBoundaries(centralY, bounds, labelBoxHeight)) {
+		labelDrawerByMode[mode]();
 	}
 
 	ctx.restore();
@@ -142,14 +150,6 @@ function drawDescription(
 	const labelBoxY = centralY - fontHeight / 2 - paddingTop;
 	const labelBoxBottom = centralY + fontHeight / 2 + paddingBottom;
 	const labelBoxHeight = labelBoxBottom - labelBoxY;
-
-	// do not draw, if description is out of bounds
-	if (
-		centralY < labelBounds.y + labelBoxHeight / 2 ||
-		centralY > labelBounds.y + labelBounds.height - labelBoxHeight / 2
-	) {
-		return;
-	}
 
 	ctx.save();
 
