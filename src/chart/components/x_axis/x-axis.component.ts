@@ -61,6 +61,7 @@ export class XAxisComponent extends ChartBaseElement {
 			scale,
 			timeZoneModel,
 			this.canvasModel,
+			canvasBoundsContainer,
 		);
 		this.xAxisLabelsGenerator = xAxisLabelsGenerator;
 
@@ -121,18 +122,14 @@ export class XAxisComponent extends ChartBaseElement {
 			this.chartComponent.chartModel.candlesPrependSubject
 				.pipe(
 					filter(({ prependedCandles }) => prependedCandles.length !== 0),
-					map(({ prependedCandles }) => {
-						return this.chartComponent.chartModel.mainCandleSeries.visualPoints.slice(
-							0,
-							prependedCandles.length,
-						);
-					}),
+					map(({ prependedCandles }) =>
+						this.chartComponent.chartModel.mainCandleSeries.visualPoints.slice(0, prependedCandles.length),
+					),
 				)
 				.subscribe(newCandles => {
 					//@ts-ignore
 					if (availableBarTypes.includes(this.config.components.chart.type)) {
-						this.xAxisLabelsGenerator.updateHistoryLabels &&
-							this.xAxisLabelsGenerator.updateHistoryLabels(newCandles);
+						this.xAxisLabelsGenerator.updateHistoryLabels?.(newCandles);
 					}
 				}),
 		);
@@ -152,9 +149,7 @@ export class XAxisComponent extends ChartBaseElement {
 					distinctUntilChanged((a, b) => a?.candle?.timestamp === b?.candle?.timestamp),
 					filter(notEmpty),
 				)
-				.subscribe(x => {
-					this.xAxisLabelsGenerator.updateLastLabel && this.xAxisLabelsGenerator.updateLastLabel(x);
-				}),
+				.subscribe(x => this.xAxisLabelsGenerator?.updateLastLabel?.(x)),
 		);
 	}
 

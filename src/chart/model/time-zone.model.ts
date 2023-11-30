@@ -3,12 +3,11 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { getTimezoneOffset as getTimezoneOffsetDateFnsTz } from 'date-fns-tz';
 import { Observable, ReplaySubject, Subject } from 'rxjs';
 import { DateFormatter, FullChartConfig } from '../chart.config';
-import { memoize } from '../utils/performance/memoize.utils';
 import { DateTimeFormatter, DateTimeFormatterFactory, dateTimeFormatterFactory } from './date-time.formatter';
 import { Timestamp } from './scaling/viewport.model';
+import { getTimezoneOffset } from '../utils/timezone.utils';
 
 export interface TimeZone {
 	readonly timeZone: string;
@@ -16,18 +15,17 @@ export interface TimeZone {
 	readonly utcOffset: string;
 }
 
-export const memoizedTZOffset = memoize(getTimezoneOffsetDateFnsTz);
-
-export const getTimezoneOffset = (timezone: string, time: Timestamp) => {
-	// we must pass time here, because we can have daylight saving time, otherwise we will get wrong offset
-	const localOffset = new Date(time).getTimezoneOffset() * 60 * 1000;
-	return localOffset + memoizedTZOffset(timezone, time);
-};
+// 1 hour in milliseconds
+const timeMultiplier = 60 * 1000;
 
 export class TimeZoneModel {
 	private timeZoneChangedSubject: Subject<string> = new ReplaySubject<string>();
 	private dateTimeFormatterFactory: DateTimeFormatterFactory;
-	public currentTzOffset = (time: Timestamp): number => this.getOffset(this.config.timezone, time);
+
+	public currentTzOffset = (time: Timestamp): number => {
+		// we must pass time here, because we can have daylight saving time, otherwise we will get wrong offset
+		return getTimezoneOffset(this.config.timezone, time) + new Date(time).getTimezoneOffset() * timeMultiplier;
+	};
 
 	constructor(private config: FullChartConfig) {
 		this.dateTimeFormatterFactory = this.initFormatterFactory(this.config.dateFormatter);
@@ -100,35 +98,17 @@ export class TimeZoneModel {
 		return this.formatterCache[format];
 	}
 
-	/**
-	 * Calculates the offset of a given timezone from the local timezone.
-	 * @private
-	 * @param {string} timezone - The timezone to calculate the offset for.
-	 */
-	private getOffset = (timezone: string, time: Timestamp) => getTimezoneOffset(timezone, time);
-
-	/**
-	 * Gets the timezone offset value in milliseconds
-	 * @param {string} timezone name
-	 * @returns {function(time:Number):Date}
-	 */
 	public tzOffset(timezone: string): (time: number) => Date {
-		// we must pass time here, because we can have daylight saving time, otherwise we will get wrong offset
-		const localOffset = (time: Timestamp) => -new Date(time).getTimezoneOffset() * timeMultiplier;
-		let offset: (time: Timestamp) => number;
 		if (!timezone) {
-			offset = localOffset;
+			return time => new Date(time);
 		} else {
-			// we must pass time here, because we can have daylight saving time, otherwise we will get wrong offset
-			offset = (time: Timestamp) => memoizedTZOffset(timezone, time);
+			// In JS Date object is created with local tz offset,
+			// so we have to subtract localOffset from current time
+			return time => {
+				return new Date(
+					time + getTimezoneOffset(timezone, time) + new Date(time).getTimezoneOffset() * timeMultiplier,
+				);
+			};
 		}
-		// In JS Date object is created with local tz offset,
-		// so we have to subtract localOffset from current time
-		return time => {
-			return new Date(+time + offset(time) - localOffset(time));
-		};
 	}
 }
-
-// 1 hour in milliseconds
-const timeMultiplier = 60 * 1000;
