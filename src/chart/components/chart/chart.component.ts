@@ -117,7 +117,7 @@ export class ChartComponent extends ChartBaseElement {
 		//#region data series drawers
 		this.registerDefaultDataSeriesDrawers();
 		//#endregion
-		this.backgroundDrawer = new BackgroundDrawer(backgroundCanvasModel, this.config);
+		this.backgroundDrawer = new BackgroundDrawer(backgroundCanvasModel, this.config, this.canvasBoundsContainer);
 		drawingManager.addDrawer(this.backgroundDrawer, 'MAIN_BACKGROUND');
 		cursorHandler.setCursorForCanvasEl(CanvasElement.PANE_UUID(CHART_UUID), config.components.chart.cursor);
 
