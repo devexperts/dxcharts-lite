@@ -43,8 +43,9 @@ export const DEFAULT_PRICE_LABEL_PADDING = 4;
  * @param text - text to draw
  * @param centralY - y
  * @param config - label styles config
- * @param align
  * @param yAxisState
+ * @param yAxisColors
+ * @param checkBoundaries
  */
 export function drawBadgeLabel(
 	ctx: CanvasRenderingContext2D,
@@ -54,7 +55,7 @@ export function drawBadgeLabel(
 	config: YAxisLabelDrawConfig,
 	yAxisState: YAxisConfig,
 	yAxisColors: FullChartColors['yAxis'],
-	drawOutside: boolean = false,
+	checkBoundaries: boolean = true,
 ): void {
 	const align = yAxisState.align;
 	const textFont = config.textFont ?? getFontFromConfig(yAxisState);
@@ -71,12 +72,10 @@ export function drawBadgeLabel(
 	const labelBoxHeight = labelBoxBottomY - labelBoxTopY;
 
 	// do not draw, if label is out of bounds
-	if (
-		(centralY < bounds.y + labelBoxHeight / 2 || centralY > bounds.y + bounds.height - labelBoxHeight / 2) &&
-		!drawOutside
-	) {
+	if (checkBoundaries && !checkLabelInBoundaries(centralY, bounds, labelBoxHeight)) {
 		return;
 	}
+
 	ctx.save();
 	ctx.fillStyle = bgColor;
 	ctx.strokeStyle = bgColor;
@@ -119,8 +118,9 @@ export function drawBadgeLabel(
  * @param text - text to draw
  * @param centralY - y
  * @param config - label styles config
- * @param align
  * @param yAxisState
+ * @param yAxisColors
+ * @param checkBoundaries
  */
 export function drawRectLabel(
 	ctx: CanvasRenderingContext2D,
@@ -130,7 +130,7 @@ export function drawRectLabel(
 	config: YAxisLabelDrawConfig,
 	yAxisState: YAxisConfig,
 	yAxisColors: FullChartColors['yAxis'],
-	drawOutside: boolean = false,
+	checkBoundaries: boolean = true,
 ) {
 	const align = yAxisState.align;
 	const textFont = config.textFont ?? getFontFromConfig(yAxisState);
@@ -150,12 +150,10 @@ export function drawRectLabel(
 	const rounded = config.rounded ?? yAxisState.typeConfig.rectangle?.rounded;
 
 	// do not draw, if label is out of bounds
-	if (
-		(centralY < bounds.y + labelBoxHeight / 2 || centralY > bounds.y + bounds.height - labelBoxHeight / 2) &&
-		!drawOutside
-	) {
+	if (checkBoundaries && !checkLabelInBoundaries(centralY, bounds, labelBoxHeight)) {
 		return;
 	}
+
 	ctx.save();
 	ctx.fillStyle = bgColor;
 	ctx.strokeStyle = bgColor;
@@ -188,8 +186,10 @@ export function drawRectLabel(
  * @param text - text to draw
  * @param centralY - y
  * @param config - label styles config
- * @param align
  * @param yAxisState
+ * @param yAxisColors
+ * @param checkBoundaries
+ * @param backgroundCtx
  */
 export function drawPlainLabel(
 	ctx: CanvasRenderingContext2D,
@@ -199,7 +199,7 @@ export function drawPlainLabel(
 	config: YAxisLabelDrawConfig,
 	yAxisState: YAxisConfig,
 	yAxisColors: FullChartColors['yAxis'],
-	drawOutside: boolean = false,
+	checkBoundaries: boolean = true,
 	backgroundCtx?: CanvasRenderingContext2D,
 ) {
 	const align = yAxisState.align;
@@ -219,12 +219,10 @@ export function drawPlainLabel(
 	const labelBoxHeight = labelBoxBottomY - labelBoxTopY;
 
 	// do not draw, if label is out of bounds
-	if (
-		(centralY < bounds.y + labelBoxHeight / 2 || centralY > bounds.y + bounds.height - labelBoxHeight / 2) &&
-		!drawOutside
-	) {
+	if (checkBoundaries && !checkLabelInBoundaries(centralY, bounds, labelBoxHeight)) {
 		return;
 	}
+
 	ctx.save();
 	ctx.fillStyle = bgColor;
 	ctx.strokeStyle = bgColor;
@@ -260,4 +258,15 @@ export function getLabelYOffset(
 ) {
 	const fontHeight = calculateSymbolHeight(font, ctx);
 	return fontHeight / 2 + paddingTop;
+}
+
+/**
+ * Checks if label fits in chart scale boundaries
+ * @param centralY
+ * @param bounds
+ * @param labelBoxHeight
+ * returns true if label fits
+ */
+export function checkLabelInBoundaries(centralY: number, bounds: Bounds, labelBoxHeight: number) {
+	return !(centralY < bounds.y + labelBoxHeight / 2 || centralY > bounds.y + bounds.height - labelBoxHeight / 2);
 }
