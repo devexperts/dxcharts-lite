@@ -18,7 +18,7 @@ jobs:
             - run: yarn install --frozen-lockfile
             - run: git config user.email "pmalyshev@devexperts.com"
             - run: git config user.name "dxpm"
-            - run: npm version minor git-tag-version false
+            - run: npm version minor --no-git-tag-version
             - run: npm publish --access public
               env:
                   NODE_AUTH_TOKEN: ${{secrets.NPMJS_DEVEXPERTS_BOT_PUBLISH_TOKEN}}
