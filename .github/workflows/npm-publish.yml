@@ -16,6 +16,8 @@ jobs:
                   registry-url: https://registry.npmjs.org/
                   scope: '@devexperts'
             - run: yarn install --frozen-lockfile
+            - run: git config user.email "pmalyshev@devexperts.com"
+            - run: git config user.name "dxpm"
             - run: npm version minor
             - run: npm publish --access public
               env:
