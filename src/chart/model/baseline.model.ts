@@ -102,7 +102,7 @@ export class BaselineModel extends ChartBaseElement {
 		this.resizerBounds.height = this.config.components.baseline.height;
 		const relativeBaselineY = chart.y + chart.height * (this.baselineYPercents / 100);
 		this.resizerBounds.y = relativeBaselineY;
-		this.canvasBoundContainer.bounds[BASELINE_RESIZER_UUID] = this.resizerBounds;
+		this.canvasBoundContainer.bounds.set(BASELINE_RESIZER_UUID, this.resizerBounds);
 	}
 
 	/**

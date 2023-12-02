@@ -76,7 +76,7 @@ export class CanvasBoundsContainer {
 	// TODO rework, remove this
 	private mainCandleSeries?: CandleSeriesModel;
 	// holds all canvas element bounds
-	bounds: Record<string, Bounds> = {};
+	bounds: Map<string, Bounds> = new Map();
 	// position of canvas on the whole page
 	canvasOnPageLocation: Bounds = { x: 0, y: 0, pageX: 0, pageY: 0, width: 0, height: 0 };
 	// holds ordered "top to bottom" array of panes UUID's (studies in past)
@@ -215,11 +215,11 @@ export class CanvasBoundsContainer {
 	public removedPaneBounds(uuid: string) {
 		arrayRemove2(this.panesOrder, uuid);
 		delete this.graphsHeightRatio[uuid];
-		delete this.bounds[CanvasElement.PANE_UUID(uuid)];
+		this.bounds.delete(CanvasElement.PANE_UUID(uuid));
 		this.yAxisWidths.left
 			.concat(this.yAxisWidths.right)
-			.forEach((_, idx) => delete this.bounds[CanvasElement.PANE_UUID_Y_AXIS(uuid, idx)]);
-		delete this.bounds[CanvasElement.PANE_UUID_RESIZER(uuid)];
+			.forEach((_, idx) => this.bounds.delete(CanvasElement.PANE_UUID_Y_AXIS(uuid, idx)));
+		this.bounds.delete(CanvasElement.PANE_UUID_RESIZER(uuid));
 		this.recalculatePanesHeightRatios();
 		this.panesOrderChangedSubject.next(this.panesOrder);
 	}
@@ -374,8 +374,7 @@ export class CanvasBoundsContainer {
 	 * @private
 	 */
 	private updateAllBoundsPageCoordinates() {
-		for (const name of Object.keys(this.bounds)) {
-			const bound = this.bounds[name];
+		for (const bound of this.bounds.values()) {
 			bound.pageX = bound.x + this.canvasOnPageLocation.x;
 			bound.pageY = bound.y + this.canvasOnPageLocation.y;
 		}
@@ -660,10 +659,14 @@ export class CanvasBoundsContainer {
 	 * @return {Bounds} bounds of element
 	 */
 	public getBounds(el: string): Bounds {
-		if (this.bounds[el] === undefined) {
-			this.bounds[el] = this.copyOf(DEFAULT_BOUNDS);
+		let bounds = this.bounds.get(el);
+		if (bounds === undefined) {
+			bounds = this.copyOf(DEFAULT_BOUNDS);
+			this.bounds.set(el, bounds);
+			return bounds;
+		} else {
+			return bounds;
 		}
-		return this.bounds[el];
 	}
 	/**
 	 * Returns the position of CANVAS on whole page.
@@ -679,7 +682,7 @@ export class CanvasBoundsContainer {
 		return this.panesOrder.reduce(
 			(acc, uuid) => ({
 				...acc,
-				[uuid]: this.bounds[CanvasElement.PANE_UUID(uuid)],
+				[uuid]: this.bounds.get(CanvasElement.PANE_UUID(uuid)),
 			}),
 			{},
 		);
@@ -916,7 +919,7 @@ export const isInBounds = (point: Point, bounds: Bounds) =>
 export const isInVerticalBounds = (y: number, bounds: Bounds) => y > bounds.y && y < bounds.y + bounds.height;
 
 const upsertBounds = (
-	storage: Record<string, Bounds>,
+	storage: Map<string, Bounds>,
 	uuid: string,
 	x: number,
 	y: number,
@@ -924,7 +927,7 @@ const upsertBounds = (
 	height: number,
 	canvasOnPageLocation: Point,
 ): Bounds => {
-	const existing = storage[uuid];
+	const existing = storage.get(uuid);
 	if (existing) {
 		existing.x = x;
 		existing.y = y;
@@ -942,7 +945,7 @@ const upsertBounds = (
 		width,
 		height,
 	};
-	storage[uuid] = newly;
+	storage.set(uuid, newly);
 	return newly;
 };
 
