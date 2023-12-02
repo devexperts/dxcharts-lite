@@ -48,9 +48,10 @@ export class SeparateVolumesComponent extends ChartBaseElement {
 	 */
 	activateSeparateVolumes() {
 		if (this.paneManager.panes[SeparateVolumesComponent.UUID] === undefined) {
+			const precision = 1;
 			const volumePane = this.paneManager.createPane(SeparateVolumesComponent.UUID, {
 				paneFormatters: {
-					regular: volumeFormatter,
+					regular: (value: number) => volumeFormatter(value, precision),
 				},
 				useDefaultHighLow: false,
 				increment: 1,
