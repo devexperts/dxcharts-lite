@@ -5,7 +5,6 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 module.exports = env => {
 	return {
 		mode: 'development',
-		target: 'web',
 		entry: {
 			index: './src/index.dev.ts',
 			worker: './src/chart/canvas/offscreen/offscreen-worker.js',
@@ -25,9 +24,6 @@ module.exports = env => {
 			historyApiFallback: true,
 			open: false,
 			liveReload: false,
-			devMiddleware: {
-				writeToDisk: true,
-			},
 			headers: { 'Cross-Origin-Opener-Policy': 'same-origin', 'Cross-Origin-Embedder-Policy': 'credentialless' },
 		},
 		module: {
@@ -56,6 +52,6 @@ module.exports = env => {
 				},
 			}),
 		],
-		devtool: 'source-map',
+		devtool: 'inline-source-map',
 	};
 };

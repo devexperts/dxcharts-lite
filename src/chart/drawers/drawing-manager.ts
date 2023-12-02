@@ -104,14 +104,14 @@ export class DrawingManager {
 			return;
 		}
 		// @ts-ignore
+		// commit method exists only in offscreen context class and it adds END_OF_FILE marker to the buffer
+		// so worker knows where is the end of commands
 		this.canvases.forEach(canvas => canvas.ctx.commit?.());
 		if (strsToSync.length) {
 			await this.worker.syncStrings(strsToSync);
 			strsToSync.length = 0;
 		}
 		await this.worker.executeCanvasCommands(this.canvases.map(canvas => canvas.idx));
-		// @ts-ignore
-		this.canvases.forEach(canvas => canvas.ctx.finish?.());
 	}
 
 	/**
@@ -122,7 +122,7 @@ export class DrawingManager {
 	 */
 	public redrawCanvasesImmediate() {
 		this.chartResizeHandler.fireUpdates();
-		// this.forceDraw();
+		this.forceDraw();
 	}
 
 	drawLastBar() {
