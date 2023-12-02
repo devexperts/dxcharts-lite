@@ -1,3 +1,4 @@
+import { CanvasModel } from '../../model/canvas.model';
 import {
 	ARC,
 	BEGIN_PATH,
@@ -67,7 +68,7 @@ export const strsToSync: Array<string | number> = [];
  * In this case we store the string in the global pool (strSync) and write the id (number) of the string to the buffer.
  * After that, before the draw command we need to perform synchronization of this pool between main thread and worker thread.
  */
-export class CanvasOffscreenContext2D implements Partial<CanvasRenderingContext2D> {
+export class CanvasOffscreenContext2D implements CanvasRenderingContext2D {
 	public commands: Float64Array;
 	public buffer: SharedArrayBuffer;
 	/**
@@ -87,7 +88,7 @@ export class CanvasOffscreenContext2D implements Partial<CanvasRenderingContext2
 
 	private __font: string = '12px Arial';
 
-	constructor(public idx: number) {
+	constructor(public canvas: HTMLCanvasElement) {
 		this.buffer = new SharedArrayBuffer(8 * 100000);
 		this.commands = new Float64Array(this.buffer);
 		this.commit();
@@ -121,17 +122,15 @@ export class CanvasOffscreenContext2D implements Partial<CanvasRenderingContext2
 		this.commands[this.counter++] = val;
 	}
 
-	set fillStyle(val: string | CanvasGradient | CanvasPattern | undefined) {
+	set fillStyle(val: string) {
 		this.commands[this.counter++] = FILL_STYLE;
 		this.commands[this.counter++] = -1;
-		// @ts-ignore
 		this.commands[this.counter++] = this.getStrPtr(val);
 	}
 
-	set strokeStyle(val: string | CanvasGradient | CanvasPattern | undefined) {
+	set strokeStyle(val: string) {
 		this.commands[this.counter++] = STROKE_STYLE;
 		this.commands[this.counter++] = -1;
-		// @ts-ignore
 		this.commands[this.counter++] = this.getStrPtr(val);
 	}
 
@@ -331,4 +330,142 @@ export class CanvasOffscreenContext2D implements Partial<CanvasRenderingContext2
 		this.commands[this.counter++] = x;
 		this.commands[this.counter++] = y;
 	}
+
+	//#region unimplemented
+	globalAlpha = 0;
+	globalCompositeOperation = 'color' as const;
+	imageSmoothingEnabled = false;
+	imageSmoothingQuality = 'high' as const;
+	lineDashOffset = 0;
+	lineJoin = 'round' as const;
+	miterLimit = 0;
+	shadowBlur = 0;
+	shadowColor = '';
+	shadowOffsetX = 0;
+	shadowOffsetY = 0;
+	direction = 'inherit' as const;
+	fontKerning = 'auto' as const;
+	filter = '';
+	textAlign = 'center' as const;
+	textBaseline = 'alphabetic' as const;
+	getContextAttributes(): CanvasRenderingContext2DSettings {
+		throw new Error('Method not implemented.');
+	}
+	drawImage(image: CanvasImageSource, dx: number, dy: number): void;
+	drawImage(image: CanvasImageSource, dx: number, dy: number, dw: number, dh: number): void;
+	drawImage(
+		image: CanvasImageSource,
+		sx: number,
+		sy: number,
+		sw: number,
+		sh: number,
+		dx: number,
+		dy: number,
+		dw: number,
+		dh: number,
+	): void;
+	drawImage(
+		image: unknown,
+		sx: unknown,
+		sy: unknown,
+		sw?: unknown,
+		sh?: unknown,
+		dx?: unknown,
+		dy?: unknown,
+		dw?: unknown,
+		dh?: unknown,
+	): void;
+	drawImage(): void {
+		throw new Error('Method not implemented.');
+	}
+	isPointInPath(x: number, y: number, fillRule?: CanvasFillRule | undefined): boolean;
+	isPointInPath(path: Path2D, x: number, y: number, fillRule?: CanvasFillRule | undefined): boolean;
+	isPointInPath(path: unknown, x: unknown, y?: unknown, fillRule?: unknown): boolean;
+	isPointInPath(): boolean {
+		throw new Error('Method not implemented.');
+	}
+	isPointInStroke(x: number, y: number): boolean;
+	isPointInStroke(path: Path2D, x: number, y: number): boolean;
+	isPointInStroke(path: unknown, x: unknown, y?: unknown): boolean;
+	isPointInStroke(): boolean {
+		throw new Error('Method not implemented.');
+	}
+	createConicGradient(startAngle: number, x: number, y: number): CanvasGradient;
+	createConicGradient(): CanvasGradient {
+		throw new Error('Method not implemented.');
+	}
+	createPattern(image: CanvasImageSource, repetition: string | null): CanvasPattern | null;
+	createPattern(): CanvasPattern | null {
+		throw new Error('Method not implemented.');
+	}
+	createRadialGradient(x0: number, y0: number, r0: number, x1: number, y1: number, r1: number): CanvasGradient;
+	createRadialGradient(): CanvasGradient {
+		throw new Error('Method not implemented.');
+	}
+	createImageData(sw: number, sh: number, settings?: ImageDataSettings | undefined): ImageData;
+	createImageData(imagedata: ImageData): ImageData;
+	createImageData(sw: unknown, sh?: unknown, settings?: unknown): ImageData;
+	createImageData(): ImageData {
+		throw new Error('Method not implemented.');
+	}
+	arcTo(x1: number, y1: number, x2: number, y2: number, radius: number): void;
+	arcTo(): void {
+		throw new Error('Method not implemented.');
+	}
+	ellipse(
+		x: number,
+		y: number,
+		radiusX: number,
+		radiusY: number,
+		rotation: number,
+		startAngle: number,
+		endAngle: number,
+		counterclockwise?: boolean | undefined,
+	): void;
+	ellipse(): void {
+		throw new Error('Method not implemented.');
+	}
+	roundRect(
+		x: number,
+		y: number,
+		w: number,
+		h: number,
+		radii?: number | DOMPointInit | (number | DOMPointInit)[] | undefined,
+	): void;
+	roundRect(): void {
+		throw new Error('Method not implemented.');
+	}
+	getLineDash(): number[] {
+		throw new Error('Method not implemented.');
+	}
+	getTransform(): DOMMatrix {
+		throw new Error('Method not implemented.');
+	}
+	resetTransform(): void {
+		throw new Error('Method not implemented.');
+	}
+	rotate(): void {
+		throw new Error('Method not implemented.');
+	}
+	setTransform(a: number, b: number, c: number, d: number, e: number, f: number): void;
+	setTransform(transform?: DOMMatrix2DInit | undefined): void;
+	setTransform(): void {
+		throw new Error('Method not implemented.');
+	}
+	transform(): void {
+		throw new Error('Method not implemented.');
+	}
+	translate(): void {
+		throw new Error('Method not implemented.');
+	}
+	drawFocusIfNeeded(element: Element): void;
+	drawFocusIfNeeded(path: Path2D, element: Element): void;
+	drawFocusIfNeeded(): void {
+		throw new Error('Method not implemented.');
+	}
+	//#endregion
+}
+
+export function isOffscreenCanvasModel(model: CanvasModel): model is CanvasModel<CanvasOffscreenContext2D> {
+	return model.options.offscreen ?? false;
 }

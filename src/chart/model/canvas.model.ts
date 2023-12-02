@@ -3,7 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { CanvasOffscreenContext2D } from '../canvas/offscreen/canvas-offscreen-wrapper';
+import { CanvasOffscreenContext2D, isOffscreenCanvasModel } from '../canvas/offscreen/canvas-offscreen-wrapper';
 import { BarType, FullChartConfig } from '../chart.config';
 import EventBus from '../events/event-bus';
 import { PickedDOMRect } from '../inputhandlers/chart-resize.handler';
@@ -31,6 +31,7 @@ export class CanvasModel<T extends CanvasRenderingContext2D = CanvasRenderingCon
 	public readonly _canvasId: string;
 	type: CanvasBarType = CANDLE_TYPE;
 	constructor(
+		ctx: T,
 		private eventBus: EventBus,
 		public canvas: HTMLCanvasElement,
 		canvasModels: CanvasModel[],
@@ -41,11 +42,6 @@ export class CanvasModel<T extends CanvasRenderingContext2D = CanvasRenderingCon
 		this.parent = findHeightParent(canvas);
 
 		this._canvasId = canvas.getAttribute('data-element') ?? '';
-		const ctx = options.offscreen ? new CanvasOffscreenContext2D(this.idx) : canvas.getContext('2d', options);
-		if (ctx === null) {
-			throw new Error("Couldn't get 2d context????");
-		}
-		// @ts-ignore
 		this.context = ctx;
 		this.updateCanvasWidthHeight(canvas, this.getChartResizerElement().getBoundingClientRect());
 	}
@@ -59,10 +55,8 @@ export class CanvasModel<T extends CanvasRenderingContext2D = CanvasRenderingCon
 		this.canvas.style.height = height + 'px';
 		this.canvas.style.width = width + 'px';
 		const dpi = window.devicePixelRatio;
-		if (this.options.offscreen) {
-			// @ts-ignore
+		if (isOffscreenCanvasModel(this)) {
 			this.ctx.width = width * dpi;
-			// @ts-ignore
 			this.ctx.height = height * dpi;
 		} else {
 			this.canvas.width = width * dpi;
@@ -225,10 +219,25 @@ export function createCanvasModel(
 	resizer?: HTMLElement,
 	options?: CanvasModelOptions,
 ): CanvasModel {
-	const canvasModel = new CanvasModel(eventBus, canvas, canvasModels, resizer, options);
+	const canvasModel = new CanvasModel(
+		getCanvasContext(canvas, options),
+		eventBus,
+		canvas,
+		canvasModels,
+		resizer,
+		options,
+	);
 	initCanvasWithConfig(canvasModel, config);
 	return canvasModel;
 }
+
+export const getCanvasContext = (canvas: HTMLCanvasElement, options?: CanvasModelOptions): CanvasRenderingContext2D => {
+	const ctx = options?.offscreen ? new CanvasOffscreenContext2D(canvas) : canvas.getContext('2d', options);
+	if (ctx === null) {
+		throw new Error("Couldn't get 2d context. Canvas is not supported.");
+	}
+	return ctx;
+};
 
 /**
  * Initializes a canvas with a given configuration.

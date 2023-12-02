@@ -4,7 +4,11 @@
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 import { Remote } from 'comlink';
-import { strsToSync } from '../canvas/offscreen/canvas-offscreen-wrapper';
+import {
+	CanvasOffscreenContext2D,
+	isOffscreenCanvasModel,
+	strsToSync,
+} from '../canvas/offscreen/canvas-offscreen-wrapper';
 import { initOffscreenWorker } from '../canvas/offscreen/init-offscreen';
 import { OffscreenWorker } from '../canvas/offscreen/offscreen-worker';
 import EventBus from '../events/event-bus';
@@ -59,9 +63,11 @@ export class DrawingManager {
 	private animFrameId = `draw_${uuid()}`;
 	private readyDraw = false;
 	private worker?: Remote<OffscreenWorker>;
+	private offscreenCanvases: CanvasModel<CanvasOffscreenContext2D>[] = [];
 
-	constructor(eventBus: EventBus, private chartResizeHandler: ChartResizeHandler, private canvases: CanvasModel[]) {
+	constructor(eventBus: EventBus, private chartResizeHandler: ChartResizeHandler, canvases: CanvasModel[]) {
 		initOffscreenWorker(canvases).then(worker => {
+			this.offscreenCanvases = canvases.filter(isOffscreenCanvasModel);
 			this.worker = worker;
 			this.readyDraw = true;
 			eventBus.fireDraw();
@@ -91,7 +97,7 @@ export class DrawingManager {
 					}
 					this.forceDraw();
 					this.drawHitTestCanvas();
-					await this.drawInWorker();
+					await this.drawOffscreen();
 					this.readyDraw = true;
 					this.canvasIdsList = [];
 				});
@@ -99,19 +105,18 @@ export class DrawingManager {
 		});
 	}
 
-	private async drawInWorker() {
+	private async drawOffscreen() {
 		if (this.worker === undefined) {
 			return;
 		}
-		// @ts-ignore
-		// commit method exists only in offscreen context class and it adds END_OF_FILE marker to the buffer
+		// commit method exists only in offscreen context class and adds END_OF_FILE marker to the buffer
 		// so worker knows where is the end of commands
-		this.canvases.forEach(canvas => canvas.ctx.commit?.());
+		this.offscreenCanvases.forEach(canvas => canvas.ctx.commit());
 		if (strsToSync.length) {
 			await this.worker.syncStrings(strsToSync);
 			strsToSync.length = 0;
 		}
-		await this.worker.executeCanvasCommands(this.canvases.map(canvas => canvas.idx));
+		await this.worker.executeCanvasCommands(this.offscreenCanvases.map(canvas => canvas.idx));
 	}
 
 	/**
@@ -120,9 +125,11 @@ export class DrawingManager {
 	 * If all canvases update in separate animation frames - we see visual lag. Instead we should do all updates and then redraw.
 	 * @doc-tags tricky,canvas,resize
 	 */
-	public redrawCanvasesImmediate() {
+	public async redrawCanvasesImmediate() {
 		this.chartResizeHandler.fireUpdates();
 		this.forceDraw();
+		await this.drawOffscreen();
+		this.readyDraw = true;
 	}
 
 	drawLastBar() {

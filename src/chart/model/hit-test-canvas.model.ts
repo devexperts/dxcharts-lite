@@ -10,7 +10,7 @@ import { CursorType, FullChartConfig } from '../chart.config';
 import EventBus from '../events/event-bus';
 import { CanvasInputListenerComponent, Point } from '../inputlisteners/canvas-input-listener.component';
 import { animationFrameId } from '../utils/performance/request-animation-frame-throttle.utils';
-import { CanvasModel, initCanvasWithConfig } from './canvas.model';
+import { CanvasModel, getCanvasContext, initCanvasWithConfig } from './canvas.model';
 
 const bigPrimeNumber = 317;
 
@@ -49,11 +49,12 @@ export class HitTestCanvasModel extends CanvasModel {
 		canvasModels: CanvasModel[],
 		resizer?: HTMLElement,
 	) {
-		super(eventBus, canvas, canvasModels, resizer, {
+		const options = {
 			willReadFrequently: true,
 			desynchronized: true,
 			offscreen: true,
-		});
+		};
+		super(getCanvasContext(canvas, options), eventBus, canvas, canvasModels, resizer, options);
 		initCanvasWithConfig(this, chartConfig);
 		canvas.style.visibility = 'hidden';
 		this.enableUserControls();
