@@ -20,8 +20,8 @@ export const MIN_SUPPORTED_CANVAS_SIZE = {
 
 export type CanvasModelOptions = CanvasRenderingContext2DSettings & { offscreen?: boolean };
 
-export class CanvasModel {
-	private readonly context: CanvasRenderingContext2D;
+export class CanvasModel<T extends CanvasRenderingContext2D = CanvasRenderingContext2D> {
+	private readonly context: T;
 	public parent: HTMLElement;
 	public width: number = 0;
 	public height: number = 0;
@@ -30,7 +30,6 @@ export class CanvasModel {
 	public idx: number = 0;
 	public readonly _canvasId: string;
 	type: CanvasBarType = CANDLE_TYPE;
-	public isOffscreen: boolean = false;
 	constructor(
 		private eventBus: EventBus,
 		public canvas: HTMLCanvasElement,
@@ -78,7 +77,7 @@ export class CanvasModel {
 		return this._canvasId;
 	}
 
-	get ctx(): CanvasRenderingContext2D {
+	get ctx(): T {
 		return this.context;
 	}
 

@@ -198,7 +198,7 @@ export default class ChartBootstrap {
 			{
 				// can be read frequently, see {redrawBackgroundArea} function
 				willReadFrequently: true,
-				offscreen: false,
+				offscreen: true,
 			},
 		);
 		this.backgroundCanvasModel = backgroundCanvasModel;

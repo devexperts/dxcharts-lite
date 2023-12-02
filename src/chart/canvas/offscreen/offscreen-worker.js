@@ -1,14 +1,20 @@
 import { expose } from 'comlink';
-import { num2Ctx } from './canvas-ctx.mapper';
+import { num2Ctx, END_OF_FILE } from './canvas-ctx.mapper';
 
-const END_OF_FILE = 0xdead;
-
+/**
+ * Global pool of strings which is used to synchronize strings between main thread and worker thread.
+ * It's intentional that this map is global, because we want to have common strings pool between all charts.
+ * The goal of this pool is to have a unique string id for each string and write this id to the shared buffer,
+ * so we don't have to encode and write the string to the buffer (encoding string is not an easy task,
+ * also on repeated encodings it'll be much faster since we write only one number instead of array of bytes for corresponding string).
+ */
 const stringsPool = new Map();
 
 export class OffscreenWorker {
 	constructor() {
 		this.ctxs = {};
 		this.buffers = {};
+		// Pre-allocate args arrays to avoid GC
 		this.args = [
 			new Array(0),
 			new Array(1),
@@ -22,24 +28,33 @@ export class OffscreenWorker {
 			new Array(9),
 			new Array(10),
 		];
-		this.debug = {};
+	}
+
+	defineCustomCanvasProperties(ctx) {
+		// reroute width and height setter to canvas
+		Object.defineProperty(ctx, 'width', {
+			set(width) {
+				ctx.canvas.width = width;
+			},
+		});
+		Object.defineProperty(ctx, 'height', {
+			set(height) {
+				ctx.canvas.height = height;
+			},
+		});
+		// define custom setLineDashFlat method, because we can't transfer objects like array directly using SharedArrayBuffer
+		Object.defineProperty(ctx, 'setLineDashFlat', {
+			value(...dash) {
+				ctx.setLineDash(dash);
+			},
+		});
 	}
 
 	addCanvas(canvasId, options, canvas, commandsBuffer) {
 		this.buffers[canvasId] = new Float64Array(commandsBuffer);
 		const ctx = canvas.getContext('2d', options);
-		Object.defineProperty(ctx, 'width', {
-			set(width) {
-				return (ctx.canvas.width = width);
-			},
-		});
-		Object.defineProperty(ctx, 'height', {
-			set(height) {
-				return (ctx.canvas.height = height);
-			},
-		});
+		this.defineCustomCanvasProperties(ctx);
 		this.ctxs[canvasId] = ctx;
-		this.debug[canvasId] = [];
 	}
 
 	syncStrings(strs) {
@@ -49,7 +64,8 @@ export class OffscreenWorker {
 	}
 
 	executeCanvasCommands(canvasIds) {
-		canvasIds = canvasIds.map((canvasId) => '' + canvasId);
+		// transform canvasIds to strings
+		canvasIds = canvasIds.map(canvasId => '' + canvasId);
 		for (const [canvasId, ctxCommands] of Object.entries(this.buffers)) {
 			if (!canvasIds.includes(canvasId)) {
 				continue;
@@ -63,12 +79,14 @@ export class OffscreenWorker {
 					const args = this.args[argsLen];
 					for (let i = 0; i < argsLen; i++) {
 						const arg = ctxCommands[counter++];
-						args[i] = stringsPool.get(arg) ?? arg;
+						// simple heuristic to detect strings (@see CanvasOffscreenContext2D)
+						args[i] = arg < -1_000_000_000 ? stringsPool.get(arg) : arg;
 					}
 					ctx[method].apply(ctx, args);
 				} else {
 					const arg = ctxCommands[counter++];
-					ctx[method] = stringsPool.get(arg) ?? arg;
+					// simple heuristic to detect strings (@see CanvasOffscreenContext2D)
+					ctx[method] = arg < -1_000_000_000 ? stringsPool.get(arg) : arg;
 				}
 			}
 		}
