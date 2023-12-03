@@ -13,9 +13,10 @@ const stringsPool = new Map();
 const bigPrimeNumber = 317;
 
 export class OffscreenWorker {
-	constructor() {
-		this.ctxs = {};
-		this.buffers = {};
+	constructor(dpr) {
+		this.dpr = dpr;
+		this.ctxs = new Map();
+		this.buffers = new Map();
 		// Pre-allocate args arrays to avoid GC
 		this.args = [
 			new Array(0),
@@ -59,20 +60,23 @@ export class OffscreenWorker {
 			},
 		});
 		const ctxs = this.ctxs;
+		const dpr = this.dpr;
 		Object.defineProperty(ctx, 'redrawBackgroundArea', {
 			value(backgroundCtxIdx, ctxIdx, x, y, width, height, opacity) {
-				const backgroundCtx = ctxs[backgroundCtxIdx];
-				const ctx = ctxs[ctxIdx];
-				ctx && backgroundCtx && redrawBackgroundArea(backgroundCtx, ctx, x, y, width, height, opacity);
+				const backgroundCtx = ctxs.get(backgroundCtxIdx);
+				const ctx = ctxs.get(ctxIdx);
+				ctx &&
+					backgroundCtx &&
+					redrawBackgroundArea(dpr, backgroundCtx, ctx, x, y, width, height, opacity);
 			},
 		});
 	}
 
-	addCanvas(canvasId, options, canvas, commandsBuffer) {
-		this.buffers[canvasId] = new Float64Array(commandsBuffer);
+	addCanvas(canvasIdx, options, canvas, commandsBuffer) {
+		this.buffers.set(canvasIdx, new Float64Array(commandsBuffer));
 		const ctx = canvas.getContext('2d', options);
 		this.defineCustomCanvasProperties(ctx);
-		this.ctxs[canvasId] = ctx;
+		this.ctxs.set(canvasIdx, ctx);
 	}
 
 	syncStrings(strs) {
@@ -82,14 +86,12 @@ export class OffscreenWorker {
 	}
 
 	executeCanvasCommands(canvasIds) {
-		// transform canvasIds to strings
-		canvasIds = canvasIds.map(canvasId => '' + canvasId);
-		for (const [canvasId, ctxCommands] of Object.entries(this.buffers)) {
+		for (const [canvasId, ctxCommands] of this.buffers.entries()) {
 			if (!canvasIds.includes(canvasId)) {
 				continue;
 			}
 			let counter = 0;
-			const ctx = this.ctxs[canvasId];
+			const ctx = this.ctxs.get(canvasId);
 			while (ctxCommands[counter] !== END_OF_FILE) {
 				const method = num2Ctx[ctxCommands[counter++]];
 				const argsLen = ctxCommands[counter++];
@@ -111,11 +113,11 @@ export class OffscreenWorker {
 	}
 
 	getColorId(idx, x, y) {
-		const ctx = this.ctxs[idx];
+		const ctx = this.ctxs.get(idx);
 		if (!ctx) {
 			return -1;
 		}
-		const data = ctx.getImageData(x * 2, y * 2, 1, 1).data;
+		const data = ctx.getImageData(x * this.dpr, y * this.dpr, 1, 1).data;
 		const id = (data[0] * 65536 + data[1] * 256 + data[2]) / bigPrimeNumber;
 		return id;
 	}
@@ -127,8 +129,7 @@ expose(OffscreenWorker);
 const floor = value => ~~value;
 // this function in used in case when
 // some entity can overlap with another chart entity, so we need to hide the another entity
-export const redrawBackgroundArea = (backgroundCtx, ctx, x, y, width, height, opacity) => {
-	const dpr = 2;
+export const redrawBackgroundArea = (dpr, backgroundCtx, ctx, x, y, width, height, opacity) => {
 	const xCoord = x * dpr;
 	const yCoord = y * dpr;
 	const widthCoord = width * dpr;

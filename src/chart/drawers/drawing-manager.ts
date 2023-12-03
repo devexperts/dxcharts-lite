@@ -9,10 +9,7 @@ import {
 	isOffscreenCanvasModel,
 	strsToSync,
 } from '../canvas/offscreen/canvas-offscreen-wrapper';
-import {
-	initOffscreenWorker,
-	isOffscreenWorkerAvailable,
-} from '../canvas/offscreen/init-offscreen';
+import { initOffscreenWorker, isOffscreenWorkerAvailable } from '../canvas/offscreen/init-offscreen';
 import { OffscreenWorker } from '../canvas/offscreen/offscreen-worker';
 import EventBus from '../events/event-bus';
 import { EVENT_DRAW } from '../events/events';
@@ -70,7 +67,7 @@ export class DrawingManager {
 	private offscreenCanvases: CanvasModel<CanvasOffscreenContext2D>[] = [];
 
 	constructor(
-		config: FullChartConfig,
+		private config: FullChartConfig,
 		eventBus: EventBus,
 		private chartResizeHandler: ChartResizeHandler,
 		canvases: CanvasModel[],
@@ -107,6 +104,8 @@ export class DrawingManager {
 				}
 				animationFrameThrottled(this.animFrameId, async () => {
 					if (!this.isDrawable()) {
+						// previous rendering cycle is not finished yet, schedule another draw
+						eventBus.fireDraw();
 						return;
 					}
 					this.forceDraw();
@@ -140,9 +139,14 @@ export class DrawingManager {
 	 * @doc-tags tricky,canvas,resize
 	 */
 	public async redrawCanvasesImmediate() {
+		// not safe and meaningless to use in offscreen mode
+		// I'm not sure if it's even possible because of async nature of offscreen
+		// of course we can implement some kind of spinlock, but it's insane
+		if (this.config.offscreen) {
+			return;
+		}
 		this.chartResizeHandler.fireUpdates();
 		this.forceDraw();
-		await this.drawOffscreen();
 		this.readyDraw = true;
 	}
 

@@ -16,7 +16,7 @@ let canvasesIdxOffset = 0;
 export const initOffscreenWorker = async (canvases: CanvasModel[]): Promise<Remote<OffscreenWorker>> => {
 	if (offscreenWorker === undefined) {
 		if (typeof OffscreenWorkerClass === 'function') {
-			offscreenWorker = await new OffscreenWorkerClass();
+			offscreenWorker = await new OffscreenWorkerClass(window.devicePixelRatio);
 		} else {
 			return Promise.reject('Offscreen worker is not available.');
 		}

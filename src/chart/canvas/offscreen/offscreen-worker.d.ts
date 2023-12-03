@@ -1,4 +1,5 @@
 export declare class OffscreenWorker {
+    constructor(devicePixelRatio: number);
 	/**
 	 * Adds offscreen canvas to the worker
 	 */
@@ -21,5 +22,11 @@ export declare class OffscreenWorker {
 	 */
 	executeCanvasCommands(canvasIds: number[]): void;
 
+    /**
+     * Returns the color id for the given canvas idx and coordinates, @see HitTestCanvasModel
+     * @param idx canvas idx
+     * @param x - x coordinate on the canvas
+     * @param y - y coordinate on the canvas
+     */
     getColorId(idx: number, x: number, y: number): number;
 }
