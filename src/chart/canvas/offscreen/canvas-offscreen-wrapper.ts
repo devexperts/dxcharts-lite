@@ -29,6 +29,8 @@ import {
 	STROKE_STYLE,
 	STROKE_TEXT,
 	WIDTH,
+	SET_GRADIENT_FILL_STYLE,
+	REDRAW_BACKGROUND_AREA,
 } from './canvas-ctx.mapper';
 
 // Regular 2d context is used only for measuring text
@@ -329,6 +331,56 @@ export class CanvasOffscreenContext2D implements CanvasRenderingContext2D {
 		this.commands[this.counter++] = 2;
 		this.commands[this.counter++] = x;
 		this.commands[this.counter++] = y;
+	}
+
+	/**
+	 * Special method for gradient fill, because we can't transfer CanvasGradient directly to offscreen.
+	 * Is equivalent for following code:
+	 * 		const grd = ctx.createLinearGradient(x, y, w, h);
+	 * 		grd.addColorStop(offset0, color0);
+	 *		grd.addColorStop(offset1, color1);
+	 *		ctx.fillStyle = grd;
+	 */
+	public setGradientFillStyle(
+		x: number,
+		y: number,
+		w: number,
+		h: number,
+		offset0: number,
+		color0: string,
+		offset1: number,
+		color1: string,
+	): void {
+		this.commands[this.counter++] = SET_GRADIENT_FILL_STYLE;
+		this.commands[this.counter++] = 8;
+		this.commands[this.counter++] = x;
+		this.commands[this.counter++] = y;
+		this.commands[this.counter++] = w;
+		this.commands[this.counter++] = h;
+		this.commands[this.counter++] = offset0;
+		this.commands[this.counter++] = this.getStrPtr(color0);
+		this.commands[this.counter++] = offset1;
+		this.commands[this.counter++] = this.getStrPtr(color1);
+	}
+
+	public redrawBackgroundArea(
+		backgroundCtxIdx: number,
+		ctxIdx: number,
+		x: number,
+		y: number,
+		w: number,
+		h: number,
+		opacity?: number,
+	): void {
+		this.commands[this.counter++] = REDRAW_BACKGROUND_AREA;
+		this.commands[this.counter++] = 7;
+		this.commands[this.counter++] = backgroundCtxIdx;
+		this.commands[this.counter++] = ctxIdx;
+		this.commands[this.counter++] = x;
+		this.commands[this.counter++] = y;
+		this.commands[this.counter++] = w;
+		this.commands[this.counter++] = h;
+		this.commands[this.counter++] = opacity ?? 1;
 	}
 
 	//#region unimplemented

@@ -9,6 +9,7 @@ import { ChartAreaTheme, FullChartConfig } from '../chart.config';
 import { getDPR } from '../utils/device/device-pixel-ratio.utils';
 import { deepEqual } from '../utils/object.utils';
 import { floor } from '../utils/math.utils';
+import { isOffscreenCanvasModel } from '../canvas/offscreen/canvas-offscreen-wrapper';
 
 export class BackgroundDrawer implements Drawer {
 	constructor(private canvasModel: CanvasModel, private config: FullChartConfig) {}
@@ -28,11 +29,26 @@ export class BackgroundDrawer implements Drawer {
 		}
 		this.canvasModel.clear();
 		const ctx = this.canvasModel.ctx;
-		if (this.config.colors.chartAreaTheme.backgroundMode === 'gradient' && !this.canvasModel.options.offscreen) {
-			const grd = ctx.createLinearGradient(0, 0, this.canvasModel.width, this.canvasModel.height);
-			grd.addColorStop(0, this.config.colors.chartAreaTheme.backgroundGradientTopColor);
-			grd.addColorStop(1, this.config.colors.chartAreaTheme.backgroundGradientBottomColor);
-			ctx.fillStyle = grd;
+		if (this.config.colors.chartAreaTheme.backgroundMode === 'gradient') {
+			if (isOffscreenCanvasModel(this.canvasModel)) {
+				const offscreenCtx = this.canvasModel.ctx;
+				// special method for gradient fill, because we can't transfer CanvasGradient directly to offscreen
+				offscreenCtx.setGradientFillStyle(
+					0,
+					0,
+					this.canvasModel.width,
+					this.canvasModel.height,
+					0,
+					this.config.colors.chartAreaTheme.backgroundGradientTopColor,
+					1,
+					this.config.colors.chartAreaTheme.backgroundGradientBottomColor,
+				);
+			} else {
+				const grd = ctx.createLinearGradient(0, 0, this.canvasModel.width, this.canvasModel.height);
+				grd.addColorStop(0, this.config.colors.chartAreaTheme.backgroundGradientTopColor);
+				grd.addColorStop(1, this.config.colors.chartAreaTheme.backgroundGradientBottomColor);
+				ctx.fillStyle = grd;
+			}
 		} else {
 			ctx.fillStyle = this.config.colors.chartAreaTheme.backgroundColor;
 		}

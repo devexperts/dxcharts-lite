@@ -43,8 +43,8 @@ export class CursorHandler extends ChartBaseElement {
 		this.canvasInputListener
 			.observeMouseMoveNoDrag()
 			.pipe(throttleTime(100, undefined, { trailing: true }))
-			.subscribe(point => {
-				const cursorFromHT = this.hitTestCanvasModel.resolveCursor(point);
+			.subscribe(async (point) => {
+				const cursorFromHT = await this.hitTestCanvasModel.resolveCursor(point);
 				if (cursorFromHT !== undefined) {
 					this.updateCursor(cursorFromHT);
 					return;

@@ -1,6 +1,4 @@
 export declare class OffscreenWorker {
-	constructor(): void;
-
 	/**
 	 * Adds offscreen canvas to the worker
 	 */
@@ -22,4 +20,6 @@ export declare class OffscreenWorker {
 	 * Executes canvas commands for the given canvas ids
 	 */
 	executeCanvasCommands(canvasIds: number[]): void;
+
+    getColorId(idx: number, x: number, y: number): number;
 }

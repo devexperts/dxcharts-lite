@@ -28,7 +28,12 @@ export const STROKE_RECT = 25;
 export const SCALE = 26;
 export const NOP = 27;
 export const ARC = 28;
+// custom method
 export const SET_LINE_DASH_FLAT = 29;
+// custom method
+export const SET_GRADIENT_FILL_STYLE = 30;
+// custom method
+export const REDRAW_BACKGROUND_AREA = 31;
 
 // Special command which indicates the end of canvas commands inside the buffer
 export const END_OF_FILE = 0xdead;
@@ -66,4 +71,6 @@ export const num2Ctx = [
 	'nop',
 	'arc',
 	'setLineDashFlat',
+	'setGradientFillStyle',
+	'redrawBackgroundArea',
 ];

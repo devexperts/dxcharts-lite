@@ -198,7 +198,7 @@ export default class ChartBootstrap {
 			{
 				// can be read frequently, see {redrawBackgroundArea} function
 				willReadFrequently: true,
-				offscreen: true,
+				offscreen: config.offscreen,
 			},
 		);
 		this.backgroundCanvasModel = backgroundCanvasModel;
@@ -209,7 +209,7 @@ export default class ChartBootstrap {
 			this.config.components.chart.type,
 			config,
 			this.canvasModels,
-			{ offscreen: true },
+			{ offscreen: config.offscreen },
 		);
 		this.mainCanvasModel = mainCanvasModel;
 		this.dynamicObjectsCanvasModel = createCanvasModel(
@@ -218,7 +218,7 @@ export default class ChartBootstrap {
 			config,
 			this.canvasModels,
 			elements.chartResizer,
-			{ offscreen: true },
+			{ offscreen: config.offscreen },
 		);
 		const crossToolCanvasModel = createCanvasModel(
 			eventBus,
@@ -226,7 +226,7 @@ export default class ChartBootstrap {
 			config,
 			this.canvasModels,
 			elements.chartResizer,
-			{ offscreen: true },
+			{ offscreen: config.offscreen },
 		);
 		const snapshotCanvasModel = createCanvasModel(
 			eventBus,
@@ -234,14 +234,14 @@ export default class ChartBootstrap {
 			config,
 			this.canvasModels,
 			elements.chartResizer,
-			{ offscreen: true },
+			{ offscreen: config.offscreen },
 		);
 		this.chartResizeHandler = chartResizeHandler;
 		chartResizeHandler.subscribeResize();
 		this.components.push(chartResizeHandler.unsubscribeAnimationUpdate.bind(chartResizeHandler));
-		const drawingManager = new DrawingManager(eventBus, chartResizeHandler, this.canvasModels);
+		const drawingManager = new DrawingManager(config, eventBus, chartResizeHandler, this.canvasModels);
 		this.drawingManager = drawingManager;
-		
+
 		const dataSeriesCanvasClearDrawer = new ClearCanvasDrawer(this.dynamicObjectsCanvasModel);
 		drawingManager.addDrawer(dataSeriesCanvasClearDrawer, 'SERIES_CLEAR');
 		const yAxisLabelsCanvasModel = createCanvasModel(
@@ -250,7 +250,7 @@ export default class ChartBootstrap {
 			config,
 			this.canvasModels,
 			elements.chartResizer,
-			{ offscreen: true },
+			{ offscreen: config.offscreen },
 		);
 		const canvasBoundsContainer = new CanvasBoundsContainer(
 			config,

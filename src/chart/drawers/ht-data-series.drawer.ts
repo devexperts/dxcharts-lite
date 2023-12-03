@@ -5,7 +5,7 @@
  */
 import { PaneManager } from '../components/pane/pane-manager.component';
 import { DataSeriesModel } from '../model/data-series.model';
-import { HitTestCanvasModel } from '../model/hit-test-canvas.model';
+import { HitTestCanvasModel, idToColor } from '../model/hit-test-canvas.model';
 import { ChartDrawerConfig, clipToBounds, SeriesDrawer } from './data-series.drawer';
 import { Drawer } from './drawing-manager';
 
@@ -35,7 +35,7 @@ export class HTDataSeriesDrawer implements Drawer {
 			const drawer = this.seriesDrawers[paintTool];
 			if (drawer) {
 				const drawConfig: ChartDrawerConfig = {
-					singleColor: this.canvasModel.idToColor(series.htId),
+					singleColor: idToColor(series.htId),
 					forceBold: 7,
 				};
 				// +- 1 to correctly draw points which are partly inside bounds

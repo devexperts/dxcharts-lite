@@ -19,6 +19,7 @@ import { arrayIntersect, reorderArray } from '../utils/array.utils';
 import { StringTMap } from '../utils/object.utils';
 import { animationFrameThrottled } from '../utils/performance/request-animation-frame-throttle.utils';
 import { uuid } from '../utils/uuid.utils';
+import { FullChartConfig } from '../chart.config';
 
 export const HIT_TEST_PREFIX = 'HIT_TEST_';
 
@@ -62,16 +63,26 @@ export class DrawingManager {
 	private canvasIdsList: Array<string> | undefined = [];
 	private animFrameId = `draw_${uuid()}`;
 	private readyDraw = false;
-	private worker?: Remote<OffscreenWorker>;
+	private offscreenWorker?: Remote<OffscreenWorker>;
 	private offscreenCanvases: CanvasModel<CanvasOffscreenContext2D>[] = [];
 
-	constructor(eventBus: EventBus, private chartResizeHandler: ChartResizeHandler, canvases: CanvasModel[]) {
-		initOffscreenWorker(canvases).then(worker => {
-			this.offscreenCanvases = canvases.filter(isOffscreenCanvasModel);
-			this.worker = worker;
+	constructor(
+		config: FullChartConfig,
+		eventBus: EventBus,
+		private chartResizeHandler: ChartResizeHandler,
+		canvases: CanvasModel[],
+	) {
+		if (config.offscreen) {
+			initOffscreenWorker(canvases).then(worker => {
+				this.offscreenCanvases = canvases.filter(isOffscreenCanvasModel);
+				this.offscreenWorker = worker;
+				this.readyDraw = true;
+				eventBus.fireDraw();
+			});
+		} else {
 			this.readyDraw = true;
 			eventBus.fireDraw();
-		});
+		}
 		// eventBus.on(EVENT_DRAW_LAST_CANDLE, () => animationFrameThrottled(this.animFrameId + 'last', () => this.drawLastBar()));
 		this.drawHitTestCanvas = () => {
 			this.drawingOrder.forEach(drawer => {
@@ -106,17 +117,17 @@ export class DrawingManager {
 	}
 
 	private async drawOffscreen() {
-		if (this.worker === undefined) {
+		if (this.offscreenWorker === undefined) {
 			return;
 		}
 		// commit method exists only in offscreen context class and adds END_OF_FILE marker to the buffer
 		// so worker knows where is the end of commands
 		this.offscreenCanvases.forEach(canvas => canvas.ctx.commit());
 		if (strsToSync.length) {
-			await this.worker.syncStrings(strsToSync);
+			await this.offscreenWorker.syncStrings(strsToSync);
 			strsToSync.length = 0;
 		}
-		await this.worker.executeCanvasCommands(this.offscreenCanvases.map(canvas => canvas.idx));
+		await this.offscreenWorker.executeCanvasCommands(this.offscreenCanvases.map(canvas => canvas.idx));
 	}
 
 	/**

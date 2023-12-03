@@ -10,6 +10,8 @@ import { num2Ctx, END_OF_FILE } from './canvas-ctx.mapper';
  */
 const stringsPool = new Map();
 
+const bigPrimeNumber = 317;
+
 export class OffscreenWorker {
 	constructor() {
 		this.ctxs = {};
@@ -46,6 +48,22 @@ export class OffscreenWorker {
 		Object.defineProperty(ctx, 'setLineDashFlat', {
 			value(...dash) {
 				ctx.setLineDash(dash);
+			},
+		});
+		Object.defineProperty(ctx, 'setGradientFillStyle', {
+			value(x, y, width, height, offset0, color0, offset1, color1) {
+				const gradient = ctx.createLinearGradient(x, y, width, height);
+				gradient.addColorStop(offset0, color0);
+				gradient.addColorStop(offset1, color1);
+				ctx.fillStyle = gradient;
+			},
+		});
+		const ctxs = this.ctxs;
+		Object.defineProperty(ctx, 'redrawBackgroundArea', {
+			value(backgroundCtxIdx, ctxIdx, x, y, width, height, opacity) {
+				const backgroundCtx = ctxs[backgroundCtxIdx];
+				const ctx = ctxs[ctxIdx];
+				ctx && backgroundCtx && redrawBackgroundArea(backgroundCtx, ctx, x, y, width, height, opacity);
 			},
 		});
 	}
@@ -91,6 +109,55 @@ export class OffscreenWorker {
 			}
 		}
 	}
+
+	getColorId(idx, x, y) {
+		const ctx = this.ctxs[idx];
+		if (!ctx) {
+			return -1;
+		}
+		const data = ctx.getImageData(x * 2, y * 2, 1, 1).data;
+		const id = (data[0] * 65536 + data[1] * 256 + data[2]) / bigPrimeNumber;
+		return id;
+	}
 }
 
 expose(OffscreenWorker);
+
+// eslint-disable-next-line no-bitwise
+const floor = value => ~~value;
+// this function in used in case when
+// some entity can overlap with another chart entity, so we need to hide the another entity
+export const redrawBackgroundArea = (backgroundCtx, ctx, x, y, width, height, opacity) => {
+	const dpr = 2;
+	const xCoord = x * dpr;
+	const yCoord = y * dpr;
+	const widthCoord = width * dpr;
+	const heightCoord = height * dpr;
+	let imageData = backgroundCtx.getImageData(xCoord, yCoord, widthCoord, heightCoord);
+	if (opacity !== undefined) {
+		// convert rgba to rgb for black background
+		//		Target.R = (Source.A * Source.R)
+		//		Target.G = (Source.A * Source.G)
+		//		Target.B = (Source.A * Source.B)
+		const alpha = imageData.data[3] / 255;
+		if (alpha === 1) {
+			// fast path
+			for (let i = 3; i < imageData.data.length; i += 4) {
+				imageData.data[i] = floor(imageData.data[i] * opacity);
+			}
+		} else {
+			for (let i = 0; i < imageData.data.length; i++) {
+				const v = imageData.data[i];
+				imageData.data[i] = i % 4 === 3 ? floor(v * opacity) : floor(alpha * v);
+			}
+		}
+		imageData = new ImageData(
+			// i % 4 === 3 - this condition is for alpha channel
+			imageData.data,
+			imageData.width,
+			imageData.height,
+			{ colorSpace: imageData.colorSpace },
+		);
+	}
+	ctx.putImageData(imageData, xCoord, yCoord);
+};
