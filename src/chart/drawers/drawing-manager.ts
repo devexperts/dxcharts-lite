@@ -9,7 +9,10 @@ import {
 	isOffscreenCanvasModel,
 	strsToSync,
 } from '../canvas/offscreen/canvas-offscreen-wrapper';
-import { initOffscreenWorker } from '../canvas/offscreen/init-offscreen';
+import {
+	initOffscreenWorker,
+	isOffscreenWorkerAvailable,
+} from '../canvas/offscreen/init-offscreen';
 import { OffscreenWorker } from '../canvas/offscreen/offscreen-worker';
 import EventBus from '../events/event-bus';
 import { EVENT_DRAW } from '../events/events';
@@ -72,7 +75,7 @@ export class DrawingManager {
 		private chartResizeHandler: ChartResizeHandler,
 		canvases: CanvasModel[],
 	) {
-		if (config.offscreen) {
+		if (config.offscreen && isOffscreenWorkerAvailable) {
 			initOffscreenWorker(canvases).then(worker => {
 				this.offscreenCanvases = canvases.filter(isOffscreenCanvasModel);
 				this.offscreenWorker = worker;

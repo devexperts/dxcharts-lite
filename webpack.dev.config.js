@@ -7,7 +7,7 @@ module.exports = env => {
 		mode: 'development',
 		entry: {
 			index: './src/index.dev.ts',
-			worker: './src/chart/canvas/offscreen/offscreen-worker.js',
+			'offscreen-worker': './src/chart/canvas/offscreen/offscreen-worker.js',
 		},
 		output: {
 			filename: `./[name].js`,
@@ -34,7 +34,7 @@ module.exports = env => {
 					include: path.resolve('./src'),
 					loader: 'esbuild-loader',
 					options: {
-						target: 'es6',
+						target: 'es2020',
 					},
 				},
 			],

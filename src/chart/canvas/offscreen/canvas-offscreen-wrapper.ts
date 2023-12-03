@@ -229,8 +229,8 @@ export class CanvasOffscreenContext2D implements CanvasRenderingContext2D {
 	public setLineDash(dash: number[]): void {
 		this.commands[this.counter++] = SET_LINE_DASH_FLAT;
 		this.commands[this.counter++] = dash.length;
-		for (let i = 0; i < dash.length; i++) {
-			this.commands[this.counter++] = dash[i];
+		for (const el of dash) {
+			this.commands[this.counter++] = el;
 		}
 	}
 
