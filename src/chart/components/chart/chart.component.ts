@@ -228,7 +228,8 @@ export class ChartComponent extends ChartBaseElement {
 			new MainChartHistogramDrawer(this.config.components.chart.histogram),
 		);
 
-		const mainChartBoundsProvider = () => this.canvasBoundsContainer.getBounds(CanvasElement.PANE_UUID(CHART_UUID));
+		const chartPaneId = CanvasElement.PANE_UUID(CHART_UUID);
+		const mainChartBoundsProvider = () => this.canvasBoundsContainer.getBounds(chartPaneId);
 		this.registerDataSeriesTypeDrawer('LINEAR', new LinearDrawer());
 		this.registerDataSeriesTypeDrawer('HISTOGRAM', new HistogramDrawer());
 		this.registerDataSeriesTypeDrawer('TREND_HISTOGRAM', new TrendHistogramDrawer());
