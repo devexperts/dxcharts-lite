@@ -55,6 +55,7 @@ export class HitTestCanvasModel extends CanvasModel {
 			willReadFrequently: true,
 			desynchronized: true,
 			offscreen: chartConfig.offscreen,
+			offscreenBufferSize: 15 * 1000000,
 		};
 		super(getCanvasContext(canvas, options), eventBus, canvas, canvasModels, resizer, options);
 		initCanvasWithConfig(this, chartConfig);

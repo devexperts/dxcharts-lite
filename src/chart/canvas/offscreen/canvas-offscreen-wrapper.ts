@@ -90,8 +90,8 @@ export class CanvasOffscreenContext2D implements CanvasRenderingContext2D {
 
 	private __font: string = '12px Arial';
 
-	constructor(public canvas: HTMLCanvasElement) {
-		this.buffer = new SharedArrayBuffer(8 * 100000);
+	constructor(public canvas: HTMLCanvasElement, bufferSize?: number) {
+		this.buffer = new SharedArrayBuffer(bufferSize ?? 10 * 100000);
 		this.commands = new Float64Array(this.buffer);
 		this.commit();
 	}

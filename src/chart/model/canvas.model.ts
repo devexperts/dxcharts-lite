@@ -18,7 +18,12 @@ export const MIN_SUPPORTED_CANVAS_SIZE = {
 	height: 20,
 };
 
-export type CanvasModelOptions = CanvasRenderingContext2DSettings & { offscreen?: boolean };
+export type CanvasModelOptions = CanvasRenderingContext2DSettings & {
+	offscreen?: boolean;
+	// size of SharedArrayBuffer in bytes
+	// if size is not enough, then the chart will crash on render
+	offscreenBufferSize?: number;
+};
 
 export class CanvasModel<T extends CanvasRenderingContext2D = CanvasRenderingContext2D> {
 	private readonly context: T;
@@ -232,7 +237,7 @@ export function createCanvasModel(
 }
 
 export const getCanvasContext = (canvas: HTMLCanvasElement, options?: CanvasModelOptions): CanvasRenderingContext2D => {
-	const ctx = options?.offscreen ? new CanvasOffscreenContext2D(canvas) : canvas.getContext('2d', options);
+	const ctx = options?.offscreen ? new CanvasOffscreenContext2D(canvas, options.offscreenBufferSize) : canvas.getContext('2d', options);
 	if (ctx === null) {
 		throw new Error("Couldn't get 2d context. Canvas is not supported.");
 	}
