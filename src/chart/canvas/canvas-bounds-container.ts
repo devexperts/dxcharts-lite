@@ -660,10 +660,12 @@ export class CanvasBoundsContainer {
 	 * @return {Bounds} bounds of element
 	 */
 	public getBounds(el: string): Bounds {
-		if (this.bounds[el] === undefined) {
-			this.bounds[el] = this.copyOf(DEFAULT_BOUNDS);
+		let bounds = this.bounds[el];
+		if (bounds === undefined) {
+			bounds = this.copyOf(DEFAULT_BOUNDS);
+			this.bounds[el] = bounds;
 		}
-		return this.bounds[el];
+		return bounds;
 	}
 	/**
 	 * Returns the position of CANVAS on whole page.
