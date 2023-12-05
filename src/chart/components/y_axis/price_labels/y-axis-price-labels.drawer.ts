@@ -27,9 +27,6 @@ export class YAxisPriceLabelsDrawer implements Drawer {
 	) {}
 
 	draw() {
-		const ctx = this.yAxisLabelsCanvasModel.ctx;
-		const backgroundCtx = this.backgroundCanvasModel.ctx;
-
 		this.paneManager.yExtents.forEach(extent => {
 			if (extent.yAxis.state.visible) {
 				const yAxisBounds = extent.getYAxisBounds();
@@ -40,8 +37,8 @@ export class YAxisPriceLabelsDrawer implements Drawer {
 					const bounds = l.bounds ?? yAxisBounds;
 					l.labels.forEach(vl =>
 						drawLabel(
-							ctx,
-							backgroundCtx,
+							this.yAxisLabelsCanvasModel,
+							this.backgroundCanvasModel,
 							bounds,
 							paneBounds,
 							vl,
@@ -54,8 +51,8 @@ export class YAxisPriceLabelsDrawer implements Drawer {
 				// TODO I added this as a simple mechanism to add custom labels, we need to review it
 				Object.values(extent.yAxis.model.fancyLabelsModel.customLabels).forEach(l =>
 					drawLabel(
-						ctx,
-						backgroundCtx,
+						this.yAxisLabelsCanvasModel,
+						this.backgroundCanvasModel,
 						yAxisBounds,
 						paneBounds,
 						l,

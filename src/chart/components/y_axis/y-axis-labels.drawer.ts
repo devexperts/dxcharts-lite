@@ -3,9 +3,11 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
+import { isOffscreenCanvasModel } from '../../canvas/offscreen/canvas-offscreen-wrapper';
 import { YAxisConfig, FullChartColors, getFontFromConfig } from '../../chart.config';
 import { redrawBackgroundArea } from '../../drawers/chart-background.drawer';
 import { Bounds } from '../../model/bounds.model';
+import { CanvasModel } from '../../model/canvas.model';
 import { drawPriceLabel, drawRoundedRect } from '../../utils/canvas/canvas-drawing-functions.utils';
 import { calculateSymbolHeight, calculateTextWidth } from '../../utils/canvas/canvas-font-measure-tool.utils';
 import { getLabelTextColorByBackgroundColor } from '../../utils/canvas/canvas-text-functions.utils';
@@ -47,7 +49,7 @@ export const DEFAULT_PRICE_LABEL_PADDING = 4;
  * @param yAxisState
  */
 export function drawBadgeLabel(
-	ctx: CanvasRenderingContext2D,
+	canvasModel: CanvasModel,
 	bounds: Bounds,
 	text: string,
 	centralY: number,
@@ -56,6 +58,7 @@ export function drawBadgeLabel(
 	yAxisColors: FullChartColors['yAxis'],
 	drawOutside: boolean = false,
 ): void {
+	const ctx = canvasModel.ctx;
 	const align = yAxisState.align;
 	const textFont = config.textFont ?? getFontFromConfig(yAxisState);
 	const bgColor = config.bgColor;
@@ -123,7 +126,7 @@ export function drawBadgeLabel(
  * @param yAxisState
  */
 export function drawRectLabel(
-	ctx: CanvasRenderingContext2D,
+	canvasModel: CanvasModel,
 	bounds: Bounds,
 	text: string,
 	centralY: number,
@@ -132,6 +135,7 @@ export function drawRectLabel(
 	yAxisColors: FullChartColors['yAxis'],
 	drawOutside: boolean = false,
 ) {
+	const ctx = canvasModel.ctx;
 	const align = yAxisState.align;
 	const textFont = config.textFont ?? getFontFromConfig(yAxisState);
 	const bgColor = config.bgColor;
@@ -192,7 +196,7 @@ export function drawRectLabel(
  * @param yAxisState
  */
 export function drawPlainLabel(
-	ctx: CanvasRenderingContext2D,
+	canvasModel: CanvasModel,
 	bounds: Bounds,
 	text: string,
 	centralY: number,
@@ -200,8 +204,10 @@ export function drawPlainLabel(
 	yAxisState: YAxisConfig,
 	yAxisColors: FullChartColors['yAxis'],
 	drawOutside: boolean = false,
-	backgroundCtx?: CanvasRenderingContext2D,
+	backgroundCanvasModel?: CanvasModel,
 ) {
+	const ctx = canvasModel.ctx;
+
 	const align = yAxisState.align;
 	const textFont = config.textFont ?? getFontFromConfig(yAxisState);
 	const bgColor = config.bgColor;
@@ -239,7 +245,19 @@ export function drawPlainLabel(
 
 	const textX = align === 'right' ? bounds.x + bounds.width - textWidth - xTextOffset : xTextOffset;
 
-	backgroundCtx && redrawBackgroundArea(backgroundCtx, ctx, x, labelBoxTopY, width, labelBoxHeight);
+	if (isOffscreenCanvasModel(canvasModel) && backgroundCanvasModel) {
+		canvasModel.ctx.redrawBackgroundArea(
+			backgroundCanvasModel.idx,
+			canvasModel.idx,
+			x,
+			labelBoxTopY,
+			width,
+			labelBoxHeight,
+		);
+	} else {
+		const backgroundCtx = backgroundCanvasModel?.ctx;
+		backgroundCtx && redrawBackgroundArea(backgroundCtx, ctx, x, labelBoxTopY, width, labelBoxHeight);
+	}
 
 	ctx.fillStyle = textColor;
 	ctx.fillText(text, textX, centralY + fontHeight / 2 - 1); // -1 for font height adjustment

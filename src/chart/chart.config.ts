@@ -64,6 +64,7 @@ export const isLastBarRedrawAvailable = (type: BarType): boolean =>
  */
 export const getDefaultConfig = (): FullChartConfig => ({
 	devexpertsPromoLink: true,
+	offscreen: false,
 	useUTCTimeOverride: false,
 	shortDays: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
 	shortMonths: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
@@ -858,6 +859,10 @@ export interface FullChartConfig extends TimeFormatterConfig {
 	useUTCTimeOverride: boolean;
 	animation: AnimationConfig;
 	devexpertsPromoLink: boolean;
+	/**
+	 * If set - chart will be rendered in offscreen canvas.
+	 */
+	offscreen: boolean;
 }
 
 // use this to merge partial config with existing

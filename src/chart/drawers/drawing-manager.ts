@@ -3,14 +3,23 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
+import { Remote } from 'comlink';
+import {
+	CanvasOffscreenContext2D,
+	isOffscreenCanvasModel,
+	strsToSync,
+} from '../canvas/offscreen/canvas-offscreen-wrapper';
+import { initOffscreenWorker, isOffscreenWorkerAvailable } from '../canvas/offscreen/init-offscreen';
+import { OffscreenWorker } from '../canvas/offscreen/offscreen-worker';
 import EventBus from '../events/event-bus';
 import { EVENT_DRAW } from '../events/events';
 import { ChartResizeHandler } from '../inputhandlers/chart-resize.handler';
-import { MIN_SUPPORTED_CANVAS_SIZE } from '../model/canvas.model';
+import { CanvasModel, MIN_SUPPORTED_CANVAS_SIZE } from '../model/canvas.model';
 import { arrayIntersect, reorderArray } from '../utils/array.utils';
 import { StringTMap } from '../utils/object.utils';
 import { animationFrameThrottled } from '../utils/performance/request-animation-frame-throttle.utils';
 import { uuid } from '../utils/uuid.utils';
+import { FullChartConfig } from '../chart.config';
 
 export const HIT_TEST_PREFIX = 'HIT_TEST_';
 
@@ -53,8 +62,27 @@ export class DrawingManager {
 	private readonly drawHitTestCanvas: () => void;
 	private canvasIdsList: Array<string> | undefined = [];
 	private animFrameId = `draw_${uuid()}`;
+	private readyDraw = false;
+	private offscreenWorker?: Remote<OffscreenWorker>;
+	private offscreenCanvases: CanvasModel<CanvasOffscreenContext2D>[] = [];
 
-	constructor(eventBus: EventBus, private chartResizeHandler: ChartResizeHandler) {
+	constructor(
+		private config: FullChartConfig,
+		eventBus: EventBus,
+		private chartResizeHandler: ChartResizeHandler,
+		canvases: CanvasModel[],
+	) {
+		if (config.offscreen && isOffscreenWorkerAvailable) {
+			initOffscreenWorker(canvases).then(worker => {
+				this.offscreenCanvases = canvases.filter(isOffscreenCanvasModel);
+				this.offscreenWorker = worker;
+				this.readyDraw = true;
+				eventBus.fireDraw();
+			});
+		} else {
+			this.readyDraw = true;
+			eventBus.fireDraw();
+		}
 		// eventBus.on(EVENT_DRAW_LAST_CANDLE, () => animationFrameThrottled(this.animFrameId + 'last', () => this.drawLastBar()));
 		this.drawHitTestCanvas = () => {
 			this.drawingOrder.forEach(drawer => {
@@ -74,13 +102,34 @@ export class DrawingManager {
 						this.canvasIdsList = undefined;
 					}
 				}
-				animationFrameThrottled(this.animFrameId, () => {
-					this.forceDraw(this.canvasIdsList);
-					this.canvasIdsList = [];
+				animationFrameThrottled(this.animFrameId, async () => {
+					if (!this.isDrawable()) {
+						// previous rendering cycle is not finished yet, schedule another draw
+						eventBus.fireDraw();
+						return;
+					}
+					this.forceDraw();
 					this.drawHitTestCanvas();
+					await this.drawOffscreen();
+					this.readyDraw = true;
+					this.canvasIdsList = [];
 				});
 			}
 		});
+	}
+
+	private async drawOffscreen() {
+		if (this.offscreenWorker === undefined) {
+			return;
+		}
+		// commit method exists only in offscreen context class and adds END_OF_FILE marker to the buffer
+		// so worker knows where is the end of commands
+		this.offscreenCanvases.forEach(canvas => canvas.ctx.commit());
+		if (strsToSync.length) {
+			await this.offscreenWorker.syncStrings(strsToSync);
+			strsToSync.length = 0;
+		}
+		await this.offscreenWorker.executeCanvasCommands(this.offscreenCanvases.map(canvas => canvas.idx));
 	}
 
 	/**
@@ -89,9 +138,16 @@ export class DrawingManager {
 	 * If all canvases update in separate animation frames - we see visual lag. Instead we should do all updates and then redraw.
 	 * @doc-tags tricky,canvas,resize
 	 */
-	public redrawCanvasesImmediate() {
+	public async redrawCanvasesImmediate() {
+		// not safe and meaningless to use in offscreen mode
+		// I'm not sure if it's even possible because of async nature of offscreen
+		// of course we can implement some kind of spinlock, but it's insane
+		if (this.config.offscreen) {
+			return;
+		}
 		this.chartResizeHandler.fireUpdates();
 		this.forceDraw();
+		this.readyDraw = true;
 	}
 
 	drawLastBar() {
@@ -107,6 +163,7 @@ export class DrawingManager {
 		if (!this.isDrawable()) {
 			return;
 		}
+		this.readyDraw = false;
 		this.drawingOrder.forEach(drawerName => {
 			if (drawerName.indexOf(HIT_TEST_PREFIX) === -1) {
 				const drawer = this.drawersMap[drawerName];
@@ -129,6 +186,7 @@ export class DrawingManager {
 	 */
 	public isDrawable(): boolean {
 		return (
+			this.readyDraw &&
 			(this.chartResizeHandler.previousBCR?.height ?? 0) > MIN_SUPPORTED_CANVAS_SIZE.width &&
 			(this.chartResizeHandler.previousBCR?.width ?? 0) > MIN_SUPPORTED_CANVAS_SIZE.height
 		);

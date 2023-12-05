@@ -4,6 +4,7 @@
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 import { CanvasBoundsContainer, CanvasElement, CHART_UUID } from '../../../canvas/canvas-bounds-container';
+import { isOffscreenCanvasModel } from '../../../canvas/offscreen/canvas-offscreen-wrapper';
 import {
 	YAxisConfig,
 	FullChartColors,
@@ -13,6 +14,7 @@ import {
 } from '../../../chart.config';
 import { redrawBackgroundArea } from '../../../drawers/chart-background.drawer';
 import { Bounds } from '../../../model/bounds.model';
+import { CanvasModel } from '../../../model/canvas.model';
 import { avoidAntialiasing, drawLine } from '../../../utils/canvas/canvas-drawing-functions.utils';
 import { calculateSymbolHeight, calculateTextWidth } from '../../../utils/canvas/canvas-font-measure-tool.utils';
 import { floor } from '../../../utils/math.utils';
@@ -40,8 +42,8 @@ export const priceLabelDrawersMap: Record<YAxisVisualLabelType, LabelDrawer> = {
  * @param config
  */
 export function drawLabel(
-	ctx: CanvasRenderingContext2D,
-	backgroundCtx: CanvasRenderingContext2D,
+	canvasModel: CanvasModel,
+	backgroundCanvasModel: CanvasModel,
 	bounds: Bounds,
 	paneBounds: Bounds,
 	visualLabel: VisualYAxisLabel,
@@ -49,6 +51,7 @@ export function drawLabel(
 	config: YAxisConfig,
 	colors: FullChartColors['yAxis'],
 ) {
+	const ctx = canvasModel.ctx;
 	const centralY = visualLabel.y;
 	const text = visualLabel.labelText;
 	const mode = visualLabel.mode ?? 'label';
@@ -76,7 +79,8 @@ export function drawLabel(
 	const showLine = isLineVisible(bounds, labelY, labelBoxHeight);
 
 	const _drawDescription = () =>
-		showDescription && drawDescription(backgroundCtx, ctx, bounds, paneBounds, visualLabel, config.align, config);
+		showDescription &&
+		drawDescription(backgroundCanvasModel, canvasModel, bounds, paneBounds, visualLabel, config.align, config);
 
 	let lineXStart: number;
 	let lineXEnd: number;
@@ -94,7 +98,7 @@ export function drawLabel(
 	const lineY = visualLabel.lineY ?? visualLabel.y;
 	const _drawLine = () =>
 		showLine && avoidAntialiasing(ctx, () => drawLine(ctx, lineXStart, lineY, lineXEnd, lineY, 1));
-	const _drawLabel = () => drawLabel(ctx, bounds, text, centralY, visualLabel, config, colors, false, backgroundCtx);
+	const _drawLabel = () => drawLabel(canvasModel, bounds, text, centralY, visualLabel, config, colors, false, backgroundCanvasModel);
 
 	switch (mode) {
 		case 'line':
@@ -121,8 +125,8 @@ const isLineVisible = (bounds: Bounds, labelY: number, labelBoxHeight: number) =
 	labelY > bounds.y + labelBoxHeight / 2 && labelY < bounds.y + bounds.height - labelBoxHeight / 2;
 
 function drawDescription(
-	backgroundCtx: CanvasRenderingContext2D,
-	ctx: CanvasRenderingContext2D,
+	backgroundCanvasModel: CanvasModel,
+	canvasModel: CanvasModel,
 	labelBounds: Bounds,
 	paneBounds: Bounds,
 	visualLabel: VisualYAxisLabel,
@@ -133,6 +137,8 @@ function drawDescription(
 	if (!description || description.length === 0) {
 		return;
 	}
+	const ctx = canvasModel.ctx;
+	const backgroundCtx = backgroundCanvasModel.ctx;
 	const centralY = visualLabel.y;
 	const textFont = getFontFromConfig(yAxisState);
 	const descriptionWidth = calculateTextWidth(description, ctx, textFont);
@@ -160,7 +166,19 @@ function drawDescription(
 	const boundsEnd = paneBounds.x + paneBounds.width;
 	const x = align === 'right' ? boundsEnd - rectWidth : paneBounds.x + descriptionPadding;
 
-	redrawBackgroundArea(backgroundCtx, ctx, x, labelBoxY, width, labelBoxHeight, 0.8);
+	if (isOffscreenCanvasModel(canvasModel)) {
+		canvasModel.ctx.redrawBackgroundArea(
+			backgroundCanvasModel.idx,
+			canvasModel.idx,
+			x,
+			labelBoxY,
+			width,
+			labelBoxHeight,
+			0.8,
+		);
+	} else {
+		redrawBackgroundArea(backgroundCtx, ctx, x, labelBoxY, width, labelBoxHeight, 0.8);
+	}
 
 	ctx.fillStyle = visualLabel.descColor ?? visualLabel.bgColor;
 	ctx.font = textFont;

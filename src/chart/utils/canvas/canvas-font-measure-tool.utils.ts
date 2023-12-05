@@ -3,6 +3,9 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
+
+import { ctxForMeasure } from "../../canvas/offscreen/canvas-offscreen-wrapper";
+
 /**
  * Calculates max symbol height for provided font on canvas.
  * @doc-tags tricky,chart-core,canvas
@@ -49,11 +52,8 @@ export function calculateTextWidth(text: string, ctx: CanvasRenderingContext2D, 
 	const key = font + text;
 	let result = textWidthCache.get(key);
 	if (!result) {
-		ctx.save();
-		ctx.font = font;
-		result = ctx.measureText(text).width;
-		textWidthCache.set(key, result);
-		ctx.restore();
+		ctxForMeasure.font = font;
+		result = ctxForMeasure.measureText(text).width;
 	}
 	return result;
 }

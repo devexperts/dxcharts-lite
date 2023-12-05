@@ -7,11 +7,12 @@ import { merge, Observable, Subject, Subscription } from 'rxjs';
 import { map, throttleTime } from 'rxjs/operators';
 import { CanvasBoundsContainer, CanvasElement } from '../canvas/canvas-bounds-container';
 import { CursorType, FullChartConfig } from '../chart.config';
-import { CanvasModel, initCanvasWithConfig } from './canvas.model';
-import { DrawingManager } from '../drawers/drawing-manager';
 import EventBus from '../events/event-bus';
 import { CanvasInputListenerComponent, Point } from '../inputlisteners/canvas-input-listener.component';
 import { animationFrameId } from '../utils/performance/request-animation-frame-throttle.utils';
+import { CanvasModel, getCanvasContext, initCanvasWithConfig } from './canvas.model';
+import { offscreenWorker } from '../canvas/offscreen/init-offscreen';
+import { isOffscreenCanvasModel } from '../canvas/offscreen/canvas-offscreen-wrapper';
 
 const bigPrimeNumber = 317;
 
@@ -46,15 +47,17 @@ export class HitTestCanvasModel extends CanvasModel {
 		canvas: HTMLCanvasElement,
 		private canvasInputListener: CanvasInputListenerComponent,
 		private canvasBoundsContainer: CanvasBoundsContainer,
-		drawingManager: DrawingManager,
 		chartConfig: FullChartConfig,
 		canvasModels: CanvasModel[],
 		resizer?: HTMLElement,
 	) {
-		super(eventBus, canvas, drawingManager, canvasModels, resizer, {
+		const options = {
 			willReadFrequently: true,
 			desynchronized: true,
-		});
+			offscreen: chartConfig.offscreen,
+			offscreenBufferSize: 15 * 1000000,
+		};
+		super(getCanvasContext(canvas, options), eventBus, canvas, canvasModels, resizer, options);
 		initCanvasWithConfig(this, chartConfig);
 		canvas.style.visibility = 'hidden';
 		this.enableUserControls();
@@ -146,26 +149,6 @@ export class HitTestCanvasModel extends CanvasModel {
 	}
 
 	/**
-	 * Converts a number to a hexadecimal color code.
-	 * @param {number} id - The number to be converted.
-	 * @returns {string} - The hexadecimal color code.
-	 */
-	public idToColor(id: number): string {
-		const hex = (id * bigPrimeNumber).toString(16);
-		return '#000000'.substr(0, 7 - hex.length) + hex;
-	}
-
-	/**
-	 * This function takes a number representing a color and returns the corresponding ID by dividing it by a big prime number.
-	 *
-	 * @param {number} color - The number representing the color.
-	 * @returns {number} - The ID corresponding to the color.
-	 */
-	public colorToId(color: number): number {
-		return color / bigPrimeNumber;
-	}
-
-	/**
 	 * Observes hovered on element event, provides hovered element model when move in.
 	 */
 	public observeHoverOnElement(): Observable<HitTestEvent> {
@@ -193,7 +176,7 @@ export class HitTestCanvasModel extends CanvasModel {
 		return this.rightClickSubject.asObservable();
 	}
 
-	private curImgData: Uint8ClampedArray = new Uint8ClampedArray(4);
+	private lastColorId: number = -1;
 	private prevAnimationFrameId = -1;
 	/**
 	 * Retrieves the pixel data at the specified coordinates.
@@ -203,25 +186,19 @@ export class HitTestCanvasModel extends CanvasModel {
 	 * @param {number} y - The y-coordinate of the pixel.
 	 * @returns {Uint8ClampedArray} - The pixel data at the specified coordinates.
 	 */
-	private getPixel(x: number, y: number): Uint8ClampedArray {
+	public getPixel(x: number, y: number): Uint8ClampedArray {
 		const dpr = window.devicePixelRatio;
-		// it's heavy operation, so use cached value if possible
-		if (this.prevAnimationFrameId !== animationFrameId) {
-			this.curImgData = this.ctx.getImageData(x * dpr, y * dpr, 1, 1).data;
-			this.prevAnimationFrameId = animationFrameId;
-		}
-		return this.curImgData;
+		const data = this.ctx.getImageData(x * dpr, y * dpr, 1, 1).data;
+		return data;
 	}
 
 	/**
 	 * Resolves ht model based on the provided point
 	 * @param point - The point for which to resolve model
 	 */
-	public resolveModel(point: Point): unknown {
-		const data = this.getPixel(point.x, point.y);
-		const id = this.colorToId(data[0] * 65536 + data[1] * 256 + data[2]);
-		const idNumber = Number(id);
-		const [subscriberToHit] = sortSubscribers(this.hitTestSubscribers, idNumber);
+	public async resolveModel(point: Point): Promise<unknown> {
+		const id = await this.getColorId(point);
+		const [subscriberToHit] = sortSubscribers(this.hitTestSubscribers, id);
 		const model = subscriberToHit?.lookup(id);
 		return model;
 	}
@@ -231,18 +208,33 @@ export class HitTestCanvasModel extends CanvasModel {
 	 * @param point - The point for which to resolve cursor type
 	 * @returns - The resolved cursor type, if any
 	 */
-	public resolveCursor(point: Point): CursorType | undefined {
+	public async resolveCursor(point: Point): Promise<CursorType | undefined> {
 		// do not spend time on resolving cursor if there are no subscribers that need it
 		if (!this.hitTestSubscribers.some(s => s.resolveCursor !== undefined)) {
 			return undefined;
 		}
-		const data = this.getPixel(point.x, point.y);
-		const id = this.colorToId(data[0] * 65536 + data[1] * 256 + data[2]);
-		const idNumber = Number(id);
-		const [subscriberToHit] = sortSubscribers(this.hitTestSubscribers, idNumber);
+		const id = await this.getColorId(point);
+		const [subscriberToHit] = sortSubscribers(this.hitTestSubscribers, id);
 
 		const model = subscriberToHit?.lookup(id);
 		return subscriberToHit?.resolveCursor?.(point, model);
+	}
+
+	private getColorIdSync(point: Point): number {
+		const data = this.getPixel(point.x, point.y);
+		const id = colorToId(data[0] * 65536 + data[1] * 256 + data[2]);
+		return id;
+	}
+
+	private async getColorId(point: Point): Promise<number> {
+		// it's heavy operation, so use cached value if possible
+		if (this.prevAnimationFrameId !== animationFrameId) {
+			this.lastColorId = isOffscreenCanvasModel(this) && offscreenWorker
+				? await offscreenWorker.getColorId(this.idx, point.x, point.y)
+				: this.getColorIdSync(point);
+			this.prevAnimationFrameId = animationFrameId;
+		}
+		return this.lastColorId;
 	}
 
 	/**
@@ -251,11 +243,9 @@ export class HitTestCanvasModel extends CanvasModel {
 	 * @param {HitTestEvents} event - The type of event that occurred.
 	 * @returns {void}
 	 */
-	private eventHandler(point: Point, event: HitTestEvents): void {
-		const data = this.getPixel(point.x, point.y);
-		const id = this.colorToId(data[0] * 65536 + data[1] * 256 + data[2]);
-		const idNumber = Number(id);
-		const [subscriberToHit, restSubs] = sortSubscribers(this.hitTestSubscribers, idNumber);
+	private async eventHandler(point: Point, event: HitTestEvents) {
+		const id = await this.getColorId(point);
+		const [subscriberToHit, restSubs] = sortSubscribers(this.hitTestSubscribers, id);
 
 		const model = subscriberToHit?.lookup(id);
 		const hitTestEvent = {
@@ -312,6 +302,24 @@ export interface HitTestSubscriber<T extends unknown = unknown> {
 	onZoom?(model: T, point?: Point): void;
 	resolveCursor?(point: Point, model?: T): CursorType | undefined;
 }
+
+/**
+ * This function takes a number representing a color and returns the corresponding ID by dividing it by a big prime number.
+ *
+ * @param {number} color - The number representing the color.
+ * @returns {number} - The ID corresponding to the color.
+ */
+export const colorToId = (color: number): number => color / bigPrimeNumber;
+
+/**
+ * Converts a number to a hexadecimal color code.
+ * @param {number} id - The number to be converted.
+ * @returns {string} - The hexadecimal color code.
+ */
+export const idToColor = (id: number): string => {
+	const hex = (id * bigPrimeNumber).toString(16);
+	return '#000000'.substr(0, 7 - hex.length) + hex;
+};
 
 export interface HitTestEvent<T = unknown> {
 	readonly point: Point;

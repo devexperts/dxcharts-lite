@@ -4,8 +4,10 @@
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 import { CanvasBoundsContainer, CanvasElement } from '../../canvas/canvas-bounds-container';
+import { isOffscreenCanvasModel } from '../../canvas/offscreen/canvas-offscreen-wrapper';
 import { FullChartConfig } from '../../chart.config';
 import { redrawBackgroundArea } from '../../drawers/chart-background.drawer';
+import { CanvasModel } from '../../model/canvas.model';
 import { XAxisLabel } from './x-axis-labels.model';
 
 const DEFAULT_X_LABEL_PADDING = { x: 4, y: 4 };
@@ -20,8 +22,8 @@ export type LabelAlign = 'start' | 'end' | 'middle';
  * @param label
  */
 export function drawXAxisLabel(
-	backgroundCtx: CanvasRenderingContext2D,
-	ctx: CanvasRenderingContext2D,
+	backgroundCanvasModel: CanvasModel,
+	canvasModel: CanvasModel,
 	canvasBoundsContainer: CanvasBoundsContainer,
 	config: FullChartConfig,
 	label: XAxisLabel,
@@ -30,6 +32,8 @@ export function drawXAxisLabel(
 	const { fontSize, fontFamily, padding } = config.components.xAxis;
 	const offsetTop = padding.top ?? 0;
 
+	const ctx = canvasModel.ctx;
+	const backgroundCtx = backgroundCanvasModel.ctx;
 	const xAxis = canvasBoundsContainer.getBounds(CanvasElement.X_AXIS);
 	ctx.save();
 	ctx.font = `bold ${fontSize}px ${fontFamily}`;
@@ -50,7 +54,18 @@ export function drawXAxisLabel(
 			break;
 	}
 	// label can overlap with regular x-axis label, so we need to hide regular x-axis label
-	redrawBackgroundArea(backgroundCtx, ctx, boxStart, xAxis.y, boxWidth, xAxis.height - 1);
+	if (isOffscreenCanvasModel(canvasModel)) {
+		canvasModel.ctx.redrawBackgroundArea(
+			backgroundCanvasModel.idx,
+			canvasModel.idx,
+			boxStart,
+			xAxis.y,
+			boxWidth,
+			xAxis.height - 1,
+		);
+	} else {
+		redrawBackgroundArea(backgroundCtx, ctx, boxStart, xAxis.y, boxWidth, xAxis.height - 1);
+	}
 
 	if (alignType !== 'middle') {
 		ctx.strokeStyle = label.color;
