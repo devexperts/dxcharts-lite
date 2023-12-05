@@ -9,23 +9,18 @@ import { ChartAreaTheme, FullChartConfig } from '../chart.config';
 import { getDPR } from '../utils/device/device-pixel-ratio.utils';
 import { deepEqual } from '../utils/object.utils';
 import { floor } from '../utils/math.utils';
-import { CanvasBoundsContainer } from '../canvas/canvas-bounds-container';
 
 export class BackgroundDrawer implements Drawer {
-	constructor(
-		private canvasModel: CanvasModel,
-		private config: FullChartConfig,
-		private canvasBoundsContainer: CanvasBoundsContainer,
-	) {}
+	constructor(private canvasModel: CanvasModel, private config: FullChartConfig) {}
 
 	// we need to save previous state to avoid unnecessary redraws
 	private prevState: Partial<ChartAreaTheme> = {};
-	private prevCanvasLocation = {};
 
 	draw(): void {
 		if (
 			deepEqual(this.config.colors.chartAreaTheme, this.prevState) &&
-			this.prevCanvasLocation === this.canvasBoundsContainer.canvasOnPageLocation
+			this.canvasModel.height === this.canvasModel.prevHeight &&
+			this.canvasModel.width === this.canvasModel.prevWidth
 		) {
 			return;
 		}
@@ -40,9 +35,8 @@ export class BackgroundDrawer implements Drawer {
 			ctx.fillStyle = this.config.colors.chartAreaTheme.backgroundColor;
 		}
 		ctx.fillRect(0, 0, this.canvasModel.width, this.canvasModel.height);
-		// save prev state
+		// save prev color state
 		this.prevState = { ...this.config.colors.chartAreaTheme };
-		this.prevCanvasLocation = this.canvasBoundsContainer.canvasOnPageLocation;
 	}
 
 	getCanvasIds(): Array<string> {
