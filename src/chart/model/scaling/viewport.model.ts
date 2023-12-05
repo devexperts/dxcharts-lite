@@ -177,11 +177,12 @@ export abstract class ViewportModel extends ChartBaseElement implements Viewable
 	 * @returns {Pixel} - The pixel value of the given unit value in the Y-axis.
 	 */
 	toY(unit: Unit): Pixel {
+		const bounds = this.getBounds();
 		if (this.inverseY) {
-			return this.getBounds().y + unitToPixels(unit - this.yStart, this.zoomY);
+			return bounds.y + unitToPixels(unit - this.yStart, this.zoomY);
 		} else {
 			// inverse by default because canvas calculation [0,0] point starts from top-left corner
-			return this.getBounds().y + this.getBounds().height - unitToPixels(unit - this.yStart, this.zoomY);
+			return bounds.y + bounds.height - unitToPixels(unit - this.yStart, this.zoomY);
 		}
 	}
 
@@ -210,13 +211,14 @@ export abstract class ViewportModel extends ChartBaseElement implements Viewable
 	 * @returns {void}
 	 */
 	fromY(px: Pixel): Unit {
-		const normalizedPx = px - this.getBounds().y;
+		const bounds = this.getBounds();
+		const normalizedPx = px - bounds.y;
 		if (this.inverseY) {
 			return pixelsToUnits(normalizedPx + unitToPixels(this.yStart, this.zoomY), this.zoomY);
 		} else {
 			// inverse by default because canvas calculation [0,0] point starts from top-left corner
 			return pixelsToUnits(
-				this.getBounds().height - normalizedPx + unitToPixels(this.yStart, this.zoomY),
+				bounds.height - normalizedPx + unitToPixels(this.yStart, this.zoomY),
 				this.zoomY,
 			);
 		}
