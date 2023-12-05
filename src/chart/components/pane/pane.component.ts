@@ -130,6 +130,7 @@ export class PaneComponent extends ChartBaseElement {
 		yAxisLabelsGenerator: NumericYAxisLabelsGenerator,
 		yAxisState: YAxisConfig,
 	) {
+		const chartPaneId = CanvasElement.PANE_UUID(uuid);
 		const gridComponent = new GridComponent(
 			this.mainCanvasModel,
 			scale,
@@ -137,8 +138,8 @@ export class PaneComponent extends ChartBaseElement {
 			yAxisState,
 			`PANE_${uuid}_grid_drawer`,
 			this.drawingManager,
-			() => this.canvasBoundsContainer.getBounds(CanvasElement.PANE_UUID(uuid)),
-			() => this.canvasBoundsContainer.getBounds(CanvasElement.PANE_UUID(uuid)),
+			() => this.canvasBoundsContainer.getBounds(chartPaneId),
+			() => this.canvasBoundsContainer.getBounds(chartPaneId),
 			() => [],
 			() => yAxisLabelsGenerator.generateNumericLabels(),
 		);
@@ -153,9 +154,10 @@ export class PaneComponent extends ChartBaseElement {
 	 * @returns {Unsubscriber}
 	 */
 	private createYPanHandler(uuid: string, scale: ScaleModel): [Unsubscriber, DragNDropYComponent] {
+		const chartPaneId = CanvasElement.PANE_UUID(uuid);
 		const dragNDropComponent = this.chartPanComponent.chartAreaPanHandler.registerChartYPanHandler(
 			scale,
-			this.canvasBoundsContainer.getBoundsHitTest(CanvasElement.PANE_UUID(uuid)),
+			this.canvasBoundsContainer.getBoundsHitTest(chartPaneId),
 		);
 		return [
 			() => {
@@ -174,7 +176,8 @@ export class PaneComponent extends ChartBaseElement {
 
 	public createExtentComponent(options?: AtLeastOne<YExtentCreationOptions>) {
 		const extentIdx = this.yExtentComponents.length;
-		const getBounds = () => this.canvasBoundsContainer.getBounds(CanvasElement.PANE_UUID(this.uuid));
+		const chartPaneId = CanvasElement.PANE_UUID(this.uuid);
+		const getBounds = () => this.canvasBoundsContainer.getBounds(chartPaneId);
 		const scaleModel =
 			options?.scale ??
 			new SyncedByXScaleModel(this.mainScale, this.config, getBounds, this.canvasAnimation);
