@@ -3,11 +3,10 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { HighLowProvider } from './scaling/auto-scale.model';
-import { ViewportModelState } from './scaling/viewport.model';
-import VisualCandle from './visual-candle';
-import { HighLowWithIndex } from './scale.model';
 import { CandleSeriesModel } from './candle-series.model';
+import { HighLowWithIndex } from './scale.model';
+import { HighLowProvider } from './scaling/auto-scale.model';
+import VisualCandle from './visual-candle';
 
 /**
  * Candles high low provider.
@@ -17,15 +16,11 @@ import { CandleSeriesModel } from './candle-series.model';
 export const createCandleSeriesHighLowProvider = (candleSeriesModel: CandleSeriesModel): HighLowProvider => {
 	return {
 		isHighLowActive: () => true,
-		calculateHighLow: (state: ViewportModelState | undefined) => {
-			const xStart = state ? state.xStart : candleSeriesModel.scale.xStart;
-			const xEnd = state ? state.xEnd : candleSeriesModel.scale.xEnd;
-			const { dataIdxStart, dataIdxEnd } = candleSeriesModel.calculateDataViewportIndexes(xStart, xEnd);
-			// +1 because dataIdxEnd candle should be included in the result
-			const visualCandles = candleSeriesModel.visualPoints.slice(dataIdxStart, dataIdxEnd + 1);
-			const highLowWithIndex = calculateCandlesHighLow(visualCandles);
+		calculateHighLow: () => {
 			// to calculate correct high low for percent scale
-			const baseLine = () => candleSeriesModel.visualPoints[dataIdxStart]?.close ?? 1;
+			const baseLine = () => candleSeriesModel.visualPoints[candleSeriesModel.dataIdxStart]?.close ?? 1;
+			// zipped highlow should always contains actual highLow state for candleSeriesModel
+			const highLowWithIndex = candleSeriesModel.zippedHighLow;
 			return {
 				...highLowWithIndex,
 				low: candleSeriesModel.view.toAxisUnits(highLowWithIndex.low, baseLine),
@@ -39,14 +34,20 @@ export const createCandleSeriesHighLowProvider = (candleSeriesModel: CandleSerie
  * Calculates the high and low values for given candles array.
  * @param visualCandles
  */
-export const calculateCandlesHighLow = (visualCandles: VisualCandle[]): HighLowWithIndex => {
+export const calculateCandlesHighLow = (
+	visualCandles: VisualCandle[],
+	start: number,
+	end: number,
+): HighLowWithIndex => {
+	start = Math.max(start, 0);
+	end = Math.min(end, visualCandles.length - 1);
 	const result = {
 		high: Number.MIN_SAFE_INTEGER,
 		low: Number.MAX_SAFE_INTEGER,
 		highIdx: 0,
 		lowIdx: 0,
 	};
-	for (let i = 0; i < visualCandles.length; i++) {
+	for (let i = start; i <= end; i++) {
 		const candle = visualCandles[i];
 		if (candle.high > result.high) {
 			result.high = candle.high;

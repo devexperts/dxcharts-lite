@@ -282,6 +282,30 @@ export class DataSeriesModel<
 	 */
 	public getTextForPoint = (point: VisualSeriesPoint): string => `${point.close}`;
 
+	calculateHighLow(): HighLowWithIndex {
+		this.recalculateDataViewportIndexes()
+		const start = Math.max(this.dataIdxStart, 0);
+		const end = Math.min(this.dataIdxEnd, this.visualPoints.length - 1);
+		const result = {
+			high: Number.MIN_SAFE_INTEGER,
+			low: Number.MAX_SAFE_INTEGER,
+			highIdx: 0,
+			lowIdx: 0,
+		};
+		for (let i = start; i <= end; i++) {
+			const candle = this.visualPoints[i];
+			if (candle.close > result.high) {
+				result.high = candle.close;
+				result.highIdx = i;
+			}
+			if (candle.close < result.low) {
+				result.low = candle.close;
+				result.lowIdx = i;
+			}
+		}
+		return result;
+	}
+
 	/**
 	 * Returns a two-dimensional array of the visual points in the viewport of the DataSeriesView.
 	 * The viewport range can be customized by providing start and end units on the x-axis.
@@ -322,31 +346,10 @@ export class DataSeriesModel<
 	};
 }
 
-export const calculateDataSeriesHighLow = (visualCandles: VisualSeriesPoint[]): HighLowWithIndex => {
-	const result = {
-		high: Number.MIN_SAFE_INTEGER,
-		low: Number.MAX_SAFE_INTEGER,
-		highIdx: 0,
-		lowIdx: 0,
-	};
-	for (let i = 0; i < visualCandles.length; i++) {
-		const candle = visualCandles[i];
-		if (candle.close > result.high) {
-			result.high = candle.close;
-			result.highIdx = i;
-		}
-		if (candle.close < result.low) {
-			result.low = candle.close;
-			result.lowIdx = i;
-		}
-	}
-	return result;
-};
-
 const createDataSeriesModelHighLowProvider = (dataSeries: DataSeriesModel): HighLowProvider => ({
 	isHighLowActive: () => dataSeries.config.highLowActive,
-	calculateHighLow: state => {
-		const highLow = calculateDataSeriesHighLow(dataSeries.getSeriesInViewport(state?.xStart, state?.xEnd).flat());
+	calculateHighLow: () => {
+		const highLow = dataSeries.calculateHighLow();
 		return {
 			...highLow,
 			high: dataSeries.view.toAxisUnits(highLow.high),

@@ -15,7 +15,7 @@ import { lastOf } from '../utils/array.utils';
 import { merge } from '../utils/merge.utils';
 import { DeepPartial } from '../utils/object.utils';
 import { PriceIncrementsUtils } from '../utils/price-increments.utils';
-import { calculateCandlesHighLow, createCandleSeriesHighLowProvider } from './candle-series-high-low.provider';
+import { createCandleSeriesHighLowProvider } from './candle-series-high-low.provider';
 import { BASIC_CANDLE_WIDTH, Candle, nameDirection } from './candle.model';
 import { DataSeriesType } from './data-series.config';
 import { DataSeriesModel } from './data-series.model';
@@ -134,6 +134,29 @@ export class CandleSeriesModel extends DataSeriesModel<Candle, VisualCandle> {
 	// 	}
 	// }
 
+	calculateHighLow(): HighLowWithIndex {
+		const start = Math.max(this.dataIdxStart, 0);
+		const end = Math.min(this.dataIdxEnd, this.visualPoints.length - 1);
+		const result = {
+			high: Number.MIN_SAFE_INTEGER,
+			low: Number.MAX_SAFE_INTEGER,
+			highIdx: 0,
+			lowIdx: 0,
+		};
+		for (let i = start; i <= end; i++) {
+			const candle = this.visualPoints[i];
+			if (candle.high > result.high) {
+				result.high = candle.high;
+				result.highIdx = i;
+			}
+			if (candle.low < result.low) {
+				result.low = candle.low;
+				result.lowIdx = i;
+			}
+		}
+		return result;
+	}
+
 	/**
 	 * Recalculates and returns the zipped high-low values for the visible data range.
 	 * Uses the visualPoints, dataIdxStart, and dataIdxEnd properties of the instance to calculate high-low values.
@@ -141,9 +164,7 @@ export class CandleSeriesModel extends DataSeriesModel<Candle, VisualCandle> {
 	 * @returns {HighLowWithIndex} - An object containing the high-low values along with their corresponding indexes.
 	 */
 	recalculateZippedHighLow(): HighLowWithIndex {
-		return (this.zippedHighLow = calculateCandlesHighLow(
-			this.visualPoints.slice(this.dataIdxStart, this.dataIdxEnd),
-		));
+		return (this.zippedHighLow = this.calculateHighLow());
 	}
 
 	/**
