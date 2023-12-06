@@ -35,7 +35,7 @@ export interface HoverParts {
 
 export interface Hover extends BaseHover, HoverParts {}
 export interface HoverProducerPart<T = unknown> {
-	getData(hover: BaseHover): T;
+	getData(hover: BaseHover): T | undefined;
 }
 
 export interface HoverProducerParts {
