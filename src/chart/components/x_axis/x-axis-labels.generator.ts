@@ -69,7 +69,6 @@ export class XAxisTimeLabelsGenerator implements XAxisLabelsGenerator {
 	private labelsGroupedByWeight: Record<number, XAxisLabelWeighted[]> = {};
 	private weightedCache?: { labels: XAxisLabelWeighted[]; coverUpLevel: number };
 	private levelsCache: Record<number, XAxisLabelWeighted[]> = {};
-	private prevAnimationId = '';
 
 	get labels(): XAxisLabelWeighted[] {
 		return this.filterLabelsInViewport(this.getLabelsFromChartType());
@@ -360,20 +359,14 @@ export class XAxisTimeLabelsGenerator implements XAxisLabelsGenerator {
 	private calculateCoverUpLevel = () => {
 		const animation = this.scale.currentAnimation;
 		const meanCandleWidthInUnits = this.chartModel.mainCandleSeries.meanCandleWidth;
-		let meanCandleWidthInPixels;
 		if (Object.getOwnPropertyNames(this.labelsGroupedByWeight).length === 0) {
 			return -1;
 		}
-
 		// calculate coverUpLevel for target zoomX to prevent extra labels calculations on every animation tick
-		if (animation?.animationInProgress) {
-			if (animation.id !== this.prevAnimationId) {
-				this.prevAnimationId = animation.id;
-			}
-			meanCandleWidthInPixels = unitToPixels(meanCandleWidthInUnits, animation.animationConfig.targetZoomX);
-		} else {
-			meanCandleWidthInPixels = unitToPixels(meanCandleWidthInUnits, this.scale.zoomX);
-		}
+		const meanCandleWidthInPixels = animation?.animationInProgress
+			? unitToPixels(meanCandleWidthInUnits, animation.animationConfig.targetZoomX)
+			: unitToPixels(meanCandleWidthInUnits, this.scale.zoomX);
+
 		if (!isFinite(meanCandleWidthInPixels)) {
 			return -1;
 		}
