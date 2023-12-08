@@ -5,38 +5,68 @@
  */
 import { Drawer } from './drawing-manager';
 import { CanvasModel } from '../model/canvas.model';
-import { ChartAreaTheme, FullChartConfig } from '../chart.config';
+import { FullChartConfig } from '../chart.config';
 import { getDPR } from '../utils/device/device-pixel-ratio.utils';
-import { deepEqual } from '../utils/object.utils';
 import { floor } from '../utils/math.utils';
+import Color from 'color';
 
 export class BackgroundDrawer implements Drawer {
 	constructor(private canvasModel: CanvasModel, private config: FullChartConfig) {}
 
-	// we need to save previous state to avoid unnecessary redraws
-	private prevState: Partial<ChartAreaTheme> = {};
-
 	draw(): void {
-		if (
-			deepEqual(this.config.colors.chartAreaTheme, this.prevState) &&
-			this.canvasModel.height === this.canvasModel.prevHeight &&
-			this.canvasModel.width === this.canvasModel.prevWidth
-		) {
-			return;
-		}
-		this.canvasModel.clear();
 		const ctx = this.canvasModel.ctx;
-		if (this.config.colors.chartAreaTheme.backgroundMode === 'gradient') {
-			const grd = ctx.createLinearGradient(0, 0, this.canvasModel.width, this.canvasModel.height);
-			grd.addColorStop(0, this.config.colors.chartAreaTheme.backgroundGradientTopColor);
-			grd.addColorStop(1, this.config.colors.chartAreaTheme.backgroundGradientBottomColor);
-			ctx.fillStyle = grd;
-		} else {
-			ctx.fillStyle = this.config.colors.chartAreaTheme.backgroundColor;
+		const shouldRedraw = this.shouldRedrawBackground(ctx);
+
+		if (shouldRedraw) {
+			this.canvasModel.clear();
+			if (this.config.colors.chartAreaTheme.backgroundMode === 'gradient') {
+				const grd = ctx.createLinearGradient(0, 0, this.canvasModel.width, this.canvasModel.height);
+				grd.addColorStop(0, this.config.colors.chartAreaTheme.backgroundGradientTopColor);
+				grd.addColorStop(1, this.config.colors.chartAreaTheme.backgroundGradientBottomColor);
+				ctx.fillStyle = grd;
+			} else {
+				ctx.fillStyle = this.config.colors.chartAreaTheme.backgroundColor;
+			}
+			ctx.fillRect(0, 0, this.canvasModel.width, this.canvasModel.height);
 		}
-		ctx.fillRect(0, 0, this.canvasModel.width, this.canvasModel.height);
-		// save prev color state
-		this.prevState = { ...this.config.colors.chartAreaTheme };
+	}
+
+	shouldRedrawBackground(ctx: CanvasRenderingContext2D): boolean {
+		// checking the gradient background
+		// it takes two edge pixels (far left and far right) and compares them with the config values
+		if (this.config.colors.chartAreaTheme.backgroundMode === 'gradient') {
+			const dpr = getDPR();
+
+			const imageDataLeft = ctx.getImageData(1, 1, 1, 1).data;
+			const rgbaLeft = `rgba(${imageDataLeft[0]}, ${imageDataLeft[1]}, ${imageDataLeft[2]}, ${
+				imageDataLeft[3] / 255
+			})`;
+
+			const imageDataRight = ctx.getImageData(
+				this.canvasModel.width * dpr - 1,
+				this.canvasModel.height * dpr - 1,
+				1,
+				1,
+			).data;
+			const rgbaRight = `rgba(${imageDataRight[0]}, ${imageDataRight[1]}, ${imageDataRight[2]}, ${
+				imageDataRight[3] / 255
+			})`;
+
+			if (
+				rgbaLeft === this.config.colors.chartAreaTheme.backgroundGradientTopColor &&
+				rgbaRight === this.config.colors.chartAreaTheme.backgroundGradientBottomColor
+			) {
+				return false;
+			}
+		}
+		// checking the regular background when one color is used
+		if (
+			this.config.colors.chartAreaTheme.backgroundMode === 'regular' &&
+			this.canvasModel.ctx.fillStyle === Color(this.config.colors.chartAreaTheme.backgroundColor).hex()
+		) {
+			return false;
+		}
+		return true;
 	}
 
 	getCanvasIds(): Array<string> {
