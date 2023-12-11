@@ -257,10 +257,11 @@ export default class ChartBootstrap {
 		const canvasAnimation = new CanvasAnimation(eventBus);
 		this.canvasAnimation = canvasAnimation;
 
+		const chartPaneId = CanvasElement.PANE_UUID(CHART_UUID);
 		//#region ScaleModel init
 		const scaleModel = new ScaleModel(
 			config,
-			() => canvasBoundsContainer.getBounds(CanvasElement.PANE_UUID(CHART_UUID)),
+			() => canvasBoundsContainer.getBounds(chartPaneId),
 			canvasAnimation,
 		);
 		this.scaleModel = scaleModel;
@@ -483,7 +484,7 @@ export default class ChartBootstrap {
 			'GRID',
 			drawingManager,
 			() => this.canvasBoundsContainer.getBounds(CanvasElement.ALL_PANES),
-			() => this.canvasBoundsContainer.getBounds(CanvasElement.PANE_UUID(CHART_UUID)),
+			() => this.canvasBoundsContainer.getBounds(chartPaneId),
 			() => this.xAxisComponent.xAxisLabelsGenerator.labels,
 			() => this.yAxisComponent.model.baseLabelsModel.labels,
 			() => mainPane.mainExtent.toY(mainPane.mainExtent.getBaseline()),
