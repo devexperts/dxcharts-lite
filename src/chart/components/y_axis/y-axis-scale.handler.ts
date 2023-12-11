@@ -32,12 +32,12 @@ export class YAxisScaleHandler extends ChartBaseElement {
 
 	constructor(
 		private bus: EventBus,
-		config: YAxisConfig,
+		private config: YAxisConfig,
 		panning: ChartPanComponent,
 		private scale: ScaleModel,
-		canvasInputListener: CanvasInputListenerComponent,
+		private canvasInputListener: CanvasInputListenerComponent,
 		private bounds: CanvasBoundsContainer,
-		hitTest: HitBoundsTest,
+		private hitTest: HitBoundsTest,
 		private autoScaleCallback: (auto: boolean) => void,
 	) {
 		super();
@@ -58,13 +58,17 @@ export class YAxisScaleHandler extends ChartBaseElement {
 				},
 			);
 			this.addChildEntity(dragNDropYComponent);
+		}
+	}
 
-			if (config.customScaleDblClick) {
-				canvasInputListener.observeDbClick(hitTest).subscribe(() => {
-					autoScaleCallback(true);
+	protected doActivate(): void {
+		if (this.config.customScaleDblClick) {
+			this.addRxSubscription(
+				this.canvasInputListener.observeDbClick(this.hitTest).subscribe(() => {
+					this.autoScaleCallback(true);
 					this.bus.fireDraw();
-				});
-			}
+				}),
+			);
 		}
 	}
 

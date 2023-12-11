@@ -55,7 +55,7 @@ type Constraints = (initialState: ViewportModelState, state: ViewportModelState)
 export class ScaleModel extends ViewportModel {
 	public scaleInversedSubject: Subject<boolean> = new Subject<boolean>();
 	// y-axis component needs this subject in order to halt prev animation if axis type is percent
-	public beforeStartAnimationSubject = new Subject<void>();
+	public beforeStartAnimationSubject: Subject<void> = new Subject<void>();
 
 	// TODO rework, make a new history based on units
 	history: ScaleHistoryItem[] = [];
@@ -81,6 +81,18 @@ export class ScaleModel extends ViewportModel {
 		this.addXConstraint((initialState, state) =>
 			zoomConstraint(initialState, state, this.config.components.chart, this.getBounds),
 		);
+	}
+
+	protected doActivate(): void {
+		super.doActivate();
+		this.scaleInversedSubject = new Subject();
+		this.beforeStartAnimationSubject = new Subject();
+	}
+
+	protected doDeactivate(): void {
+		super.doDeactivate();
+		this.scaleInversedSubject.complete();
+		this.beforeStartAnimationSubject.complete();
 	}
 
 	/**
