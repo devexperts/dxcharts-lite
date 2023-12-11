@@ -6,7 +6,8 @@
 import { BarType, FullChartConfig } from '../../chart.config';
 import { BoundsProvider } from '../../model/bounds.model';
 import { DataSeriesModel, VisualSeriesPoint } from '../../model/data-series.model';
-import { ChartDrawerConfig, clipToBounds, SeriesDrawer } from '../data-series.drawer';
+import { ChartDrawerConfig, SeriesDrawer } from '../data-series.drawer';
+import { clipToBounds } from '../../utils/canvas/canvas-drawing-functions.utils';
 
 export const candleTypesList: BarType[] = [
 	'candle',
