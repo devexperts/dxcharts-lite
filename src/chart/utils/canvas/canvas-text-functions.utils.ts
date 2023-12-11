@@ -22,7 +22,7 @@ export interface CanvasTextProperties {
 /**
  * Baseline Height in Project
  */
-const __BASELINE__ = 1.33;
+const BASELINE = 1.33;
 
 /**
  * Sets the font, fill style and text alignment of a canvas context based on the provided properties.
@@ -66,7 +66,7 @@ export function getTextLineHeight(ctx: CanvasRenderingContext2D, includeBaseLine
 			textSize = textSizeMatch[0];
 		}
 	}
-	return includeBaseLine ? parseInt(textSize, 10) * __BASELINE__ : parseInt(textSize, 10);
+	return includeBaseLine ? parseInt(textSize, 10) * BASELINE : parseInt(textSize, 10);
 }
 
 /**

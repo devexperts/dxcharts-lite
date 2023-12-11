@@ -5,9 +5,9 @@
  */
 import { DynamicModelDrawer } from '../components/dynamic-objects/dynamic-objects.drawer';
 import { PaneManager } from '../components/pane/pane-manager.component';
-import { Bounds } from '../model/bounds.model';
 import { CanvasModel } from '../model/canvas.model';
 import { DataSeriesModel, VisualSeriesPoint } from '../model/data-series.model';
+import { clipToBounds } from '../utils/canvas/canvas-drawing-functions.utils';
 
 export interface ChartDrawerConfig {
 	singleColor?: string;
@@ -68,13 +68,6 @@ export class DataSeriesDrawer implements DynamicModelDrawer<DataSeriesModel> {
 		}
 	}
 }
-
-export const clipToBounds = (ctx: CanvasRenderingContext2D, bounds: Bounds) => {
-	ctx.beginPath();
-	ctx.rect(bounds.x, bounds.y, bounds.width, bounds.height);
-	ctx.clip();
-	ctx.closePath();
-};
 
 export const setLineWidth = (
 	ctx: CanvasRenderingContext2D,
