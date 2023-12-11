@@ -12,7 +12,7 @@ import { CanvasBoundsContainer, CanvasElement } from '../../canvas/canvas-bounds
 import { Drawer } from '../../drawers/drawing-manager';
 import { ChartModel } from '../chart/chart.model';
 import { unitToPixels } from '../../model/scaling/viewport.model';
-import { clipToBounds } from '../../drawers/data-series.drawer';
+import { clipToBounds } from '../../utils/canvas/canvas-drawing-functions.utils';
 
 const LABEL_PADDINGS = [20, 10];
 

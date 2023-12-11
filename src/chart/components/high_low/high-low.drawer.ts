@@ -9,7 +9,7 @@ import { FullChartConfig } from '../../chart.config';
 import { ChartModel } from '../chart/chart.model';
 import { CanvasModel } from '../../model/canvas.model';
 import { getTextLineHeight } from '../../utils/canvas/canvas-text-functions.utils';
-import { clipToBounds } from '../../drawers/data-series.drawer';
+import { clipToBounds } from '../../utils/canvas/canvas-drawing-functions.utils';
 
 type MarkerType = 'high' | 'low';
 
@@ -60,6 +60,7 @@ export class HighLowDrawer implements Drawer {
 	private drawMarkerLabel(ctx: CanvasRenderingContext2D, candleIdx: number, yValue: number, type: MarkerType): void {
 		const y = this.getMarkerY(ctx, yValue, type === 'low');
 		const fontSize = getTextLineHeight(ctx, false);
+		// we need to measure fit into the bounds for low label by its top point
 		const yForBoundsTrack = type === 'low' ? y - fontSize : y;
 		if (!this.checkMarkerInBounds(yForBoundsTrack)) {
 			return;
