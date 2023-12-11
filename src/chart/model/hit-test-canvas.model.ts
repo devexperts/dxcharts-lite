@@ -3,7 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { merge, Observable, Subject, Subscription } from 'rxjs';
+import { merge, Observable, Subject, Subscription, animationFrameScheduler } from 'rxjs';
 import { map, throttleTime } from 'rxjs/operators';
 import { CanvasBoundsContainer, CanvasElement } from '../canvas/canvas-bounds-container';
 import { CursorType, FullChartConfig } from '../chart.config';
@@ -69,7 +69,7 @@ export class HitTestCanvasModel extends CanvasModel {
 
 			const hoverSub = this.canvasInputListener
 				.observeMouseMove()
-				.pipe(throttleTime(100, undefined, { trailing: true }))
+				.pipe(throttleTime(100, animationFrameScheduler, { trailing: true }))
 				.subscribe(point => this.eventHandler(point, 'hover'));
 
 			const touchStartSub = this.canvasInputListener
