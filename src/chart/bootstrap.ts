@@ -363,6 +363,7 @@ export default class ChartBootstrap {
 			paneManager,
 			this.cursorHandler,
 			this.dynamicObjects,
+			this.chartResizeHandler,
 		);
 		this.chartComponents.push(chartComponent);
 		this.chartComponent = chartComponent;

@@ -6,7 +6,8 @@
 import { PaneManager } from '../components/pane/pane-manager.component';
 import { DataSeriesModel } from '../model/data-series.model';
 import { HitTestCanvasModel } from '../model/hit-test-canvas.model';
-import { ChartDrawerConfig, clipToBounds, SeriesDrawer } from './data-series.drawer';
+import { ChartDrawerConfig, SeriesDrawer } from './data-series.drawer';
+import { clipToBounds } from '../utils/canvas/canvas-drawing-functions.utils';
 import { Drawer } from './drawing-manager';
 
 /***

@@ -9,6 +9,7 @@ import { FullChartConfig } from '../../chart.config';
 import { ChartModel } from '../chart/chart.model';
 import { CanvasModel } from '../../model/canvas.model';
 import { getTextLineHeight } from '../../utils/canvas/canvas-text-functions.utils';
+import { clipToBounds } from '../../utils/canvas/canvas-drawing-functions.utils';
 
 type MarkerType = 'high' | 'low';
 
@@ -41,7 +42,10 @@ export class HighLowDrawer implements Drawer {
 			ctx.font = this.config.components.highLow.font;
 			this.drawMarkerLabel(ctx, finalHighIdx, high, 'high');
 			this.drawMarkerLabel(ctx, finalLowIdx, low, 'low');
+			const chartBounds = this.canvasBoundsContainer.getBounds('PANE_CHART');
 			ctx.restore();
+			// We need clip here so lowLabel won't overlap other panes
+			clipToBounds(ctx, chartBounds);
 		}
 	}
 
@@ -55,7 +59,10 @@ export class HighLowDrawer implements Drawer {
 	 */
 	private drawMarkerLabel(ctx: CanvasRenderingContext2D, candleIdx: number, yValue: number, type: MarkerType): void {
 		const y = this.getMarkerY(ctx, yValue, type === 'low');
-		if (!this.checkMarkerInBounds(y)) {
+		const fontSize = getTextLineHeight(ctx, false);
+		// we need to measure fit into the bounds for low label by its top point
+		const yForBoundsTrack = type === 'low' ? y - fontSize : y;
+		if (!this.checkMarkerInBounds(yForBoundsTrack)) {
 			return;
 		}
 		const text = this.getMarkerText(yValue, type);
@@ -89,7 +96,7 @@ export class HighLowDrawer implements Drawer {
 	private getMarkerY(ctx: CanvasRenderingContext2D, yValue: number, offset: boolean = false): number {
 		const y = this.chartModel.toY(yValue);
 		if (offset) {
-			const fontSize = getTextLineHeight(ctx);
+			const fontSize = getTextLineHeight(ctx, false);
 			return y + fontSize;
 		}
 		return y;

@@ -7,40 +7,35 @@ import { Drawer } from './drawing-manager';
 import { CanvasModel } from '../model/canvas.model';
 import { ChartAreaTheme, FullChartConfig } from '../chart.config';
 import { getDPR } from '../utils/device/device-pixel-ratio.utils';
-import { deepEqual } from '../utils/object.utils';
 import { floor } from '../utils/math.utils';
+import { deepEqual } from '../utils/object.utils';
 
 export class BackgroundDrawer implements Drawer {
-	constructor(private canvasModel: CanvasModel, private config: FullChartConfig) {}
+	constructor(
+		private canvasModel: CanvasModel,
+		private config: FullChartConfig,
+		private backgroundDrawPredicate: () => boolean = () => true,
+	) {}
 
 	// we need to save previous state to avoid unnecessary redraws
 	private prevState: Partial<ChartAreaTheme> = {};
-	private prevWidth = 0;
-	private prevHeight = 0;
 
 	draw(): void {
-		if (
-			deepEqual(this.config.colors.chartAreaTheme, this.prevState) &&
-			this.prevHeight === this.canvasModel.height &&
-			this.prevWidth === this.canvasModel.width
-		) {
-			return;
+		if (this.backgroundDrawPredicate() || !deepEqual(this.config.colors.chartAreaTheme, this.prevState)) {
+			this.canvasModel.clear();
+			const ctx = this.canvasModel.ctx;
+			if (this.config.colors.chartAreaTheme.backgroundMode === 'gradient') {
+				const grd = ctx.createLinearGradient(0, 0, this.canvasModel.width, this.canvasModel.height);
+				grd.addColorStop(0, this.config.colors.chartAreaTheme.backgroundGradientTopColor);
+				grd.addColorStop(1, this.config.colors.chartAreaTheme.backgroundGradientBottomColor);
+				ctx.fillStyle = grd;
+			} else {
+				ctx.fillStyle = this.config.colors.chartAreaTheme.backgroundColor;
+			}
+			ctx.fillRect(0, 0, this.canvasModel.width, this.canvasModel.height);
 		}
-		this.canvasModel.clear();
-		const ctx = this.canvasModel.ctx;
-		if (this.config.colors.chartAreaTheme.backgroundMode === 'gradient') {
-			const grd = ctx.createLinearGradient(0, 0, this.canvasModel.width, this.canvasModel.height);
-			grd.addColorStop(0, this.config.colors.chartAreaTheme.backgroundGradientTopColor);
-			grd.addColorStop(1, this.config.colors.chartAreaTheme.backgroundGradientBottomColor);
-			ctx.fillStyle = grd;
-		} else {
-			ctx.fillStyle = this.config.colors.chartAreaTheme.backgroundColor;
-		}
-		ctx.fillRect(0, 0, this.canvasModel.width, this.canvasModel.height);
 		// save prev state
 		this.prevState = { ...this.config.colors.chartAreaTheme };
-		this.prevWidth = this.canvasModel.width;
-		this.prevHeight = this.canvasModel.height;
 	}
 
 	getCanvasIds(): Array<string> {

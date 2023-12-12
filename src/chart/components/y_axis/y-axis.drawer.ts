@@ -4,7 +4,7 @@
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 import { FullChartConfig, YAxisAlign, getFontFromConfig } from '../../chart.config';
-import { clipToBounds } from '../../drawers/data-series.drawer';
+import { clipToBounds } from '../../utils/canvas/canvas-drawing-functions.utils';
 import { Drawer } from '../../drawers/drawing-manager';
 import { Bounds } from '../../model/bounds.model';
 import { CanvasModel } from '../../model/canvas.model';

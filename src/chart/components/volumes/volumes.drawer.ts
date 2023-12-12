@@ -4,7 +4,7 @@
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 import { BarType, FullChartConfig } from '../../chart.config';
-import { clipToBounds } from '../../drawers/data-series.drawer';
+import { clipToBounds } from '../../utils/canvas/canvas-drawing-functions.utils';
 import { PriceMovement } from '../../model/candle-series.model';
 import { CanvasModel } from '../../model/canvas.model';
 import { Pixel, ViewportModel, unitToPixels } from '../../model/scaling/viewport.model';

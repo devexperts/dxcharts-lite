@@ -3,7 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { Observable } from 'rxjs';
+import { Observable, BehaviorSubject } from 'rxjs';
 import { CHART_UUID, CanvasBoundsContainer, CanvasElement } from '../../canvas/canvas-bounds-container';
 import { CursorHandler } from '../../canvas/cursor.handler';
 import { ChartBaseElement } from '../../model/chart-base-element';
@@ -51,6 +51,7 @@ import { CandleWidthCalculator, ChartModel, LastCandleLabelHandler, VisualCandle
 import { PrependedCandlesData } from './chart-base.model';
 import { TrendHistogramDrawer } from '../../drawers/data-series-drawers/trend-histogram.drawer';
 import { DynamicObjectsComponent } from '../dynamic-objects/dynamic-objects.component';
+import { ChartResizeHandler } from '../../inputhandlers/chart-resize.handler';
 
 /**
  * Represents a financial instrument to be displayed on a chart
@@ -81,6 +82,7 @@ export class ChartComponent extends ChartBaseElement {
 	private readonly backgroundDrawer: BackgroundDrawer;
 	private readonly _dataSeriesDrawers: Record<DataSeriesType, SeriesDrawer> = {};
 	private readonly dataSeriesDrawer: DataSeriesDrawer;
+	private backgroundDrawPredicateSubj = new BehaviorSubject<boolean>(true);
 
 	constructor(
 		public readonly chartModel: ChartModel,
@@ -96,6 +98,7 @@ export class ChartComponent extends ChartBaseElement {
 		private paneManager: PaneManager,
 		cursorHandler: CursorHandler,
 		private dynamicObjects: DynamicObjectsComponent,
+		private chartResizeHandler: ChartResizeHandler,
 	) {
 		super();
 		this.addChildEntity(this.chartModel);
@@ -117,7 +120,11 @@ export class ChartComponent extends ChartBaseElement {
 		//#region data series drawers
 		this.registerDefaultDataSeriesDrawers();
 		//#endregion
-		this.backgroundDrawer = new BackgroundDrawer(backgroundCanvasModel, this.config);
+		this.backgroundDrawer = new BackgroundDrawer(
+			backgroundCanvasModel,
+			this.config,
+			() => this.backgroundDrawPredicateSubj.getValue(),
+		);
 		drawingManager.addDrawer(this.backgroundDrawer, 'MAIN_BACKGROUND');
 		cursorHandler.setCursorForCanvasEl(CanvasElement.PANE_UUID(CHART_UUID), config.components.chart.cursor);
 
@@ -152,6 +159,17 @@ export class ChartComponent extends ChartBaseElement {
 		this.addRxSubscription(
 			this.paneManager.dataSeriesRemovedSubject.subscribe(series => {
 				this.dynamicObjects.model.removeObject(series.id);
+			}),
+		);
+		// redraw background only when chart is resized
+		this.addRxSubscription(
+			this.canvasBoundsContainer.observeAnyBoundsChanged().subscribe(() => {
+				this.backgroundDrawPredicateSubj.next(false);
+			}),
+		);
+		this.addRxSubscription(
+			this.chartResizeHandler.canvasResized.subscribe(() => {
+				this.backgroundDrawPredicateSubj.next(true);
 			}),
 		);
 	}
