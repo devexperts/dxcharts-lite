@@ -73,6 +73,8 @@ export class YAxisScaleHandler extends ChartBaseElement {
 	}
 
 	private onYDragStart = () => {
+		// halt previous scale animation if drag is started
+		this.scale.haltAnimation();
 		this.lastYStart = this.scale.yStart;
 		this.lastYEnd = this.scale.yEnd;
 		this.lastYHeight = this.scale.yEnd - this.scale.yStart;

@@ -16,7 +16,7 @@ import {
 	isSunday,
 	startOfMonth,
 	endOfMonth,
-} from 'date-fns/esm';
+} from 'date-fns';
 import {
 	ParsedCTimeFormat,
 	ParsedNCTimeFormat,

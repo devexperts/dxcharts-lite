@@ -30,12 +30,9 @@ const getWeightByDate = (
 	currentDate: Date,
 	previousDate: Date,
 	sortedWeights: [number, TimeFormatMatcher][],
-	tzOffset: (time: number) => Date,
 ): number => {
-	const offsetCurrentDate = tzOffset(currentDate.getTime());
-	const offsetPrevDate = tzOffset(previousDate.getTime());
 	for (const [weight, timeMatcher] of sortedWeights) {
-		if (timeMatcher(offsetCurrentDate, offsetPrevDate)) {
+		if (timeMatcher(currentDate, previousDate)) {
 			return weight;
 		}
 	}
@@ -52,16 +49,15 @@ export function mapCandlesToWeightedPoints(
 	tzOffset: (time: number) => Date,
 ): WeightedPoint[] {
 	const result: WeightedPoint[] = new Array(visualCandles.length);
-
 	// assume that candles` timestamp before the first visual candle is unreachable
-	let prevDate = new Date(0);
+	let prevDate = tzOffset(0);
 
 	for (let i = 0; i < visualCandles.length; i++) {
 		const currentCandle = visualCandles[i];
-		const currentDate = new Date(currentCandle.candle.timestamp);
-
+		// calculate timstamp to Date in acordance with provided timezone and time
+		const currentDate = tzOffset(currentCandle.candle.timestamp);
 		const currentWeightedPoint: WeightedPoint = {
-			weight: getWeightByDate(currentDate, prevDate, sortedWeights, tzOffset),
+			weight: getWeightByDate(currentDate, prevDate, sortedWeights),
 		};
 		result[i] = currentWeightedPoint;
 		prevDate = currentDate;

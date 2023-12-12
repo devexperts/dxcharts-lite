@@ -87,6 +87,11 @@ export class ScaleModel extends ViewportModel {
 		super.doActivate();
 		this.scaleInversedSubject = new Subject();
 		this.beforeStartAnimationSubject = new Subject();
+		this.addRxSubscription(
+			this.scaleInversedSubject.subscribe(() => {
+				this.fireChanged();
+			}),
+		);
 	}
 
 	protected doDeactivate(): void {
@@ -193,10 +198,10 @@ export class ScaleModel extends ViewportModel {
 	 * @param fireChanged
 	 * @param forceNoAutoScale - force NOT apply auto-scaling (for lazy loading)
 	 */
-	public setXScale(xStart: Unit, xEnd: Unit) {
+	public setXScale(xStart: Unit, xEnd: Unit, forceNoAnimation: boolean = true) {
 		const initialState = this.export();
-		super.setXScale(xStart, xEnd, false);
-		const state = this.export();
+		const zoomX = this.calculateZoomX(xStart, xEnd);
+		const state = { ...initialState, zoomX, xStart, xEnd };
 		const constrainedState = this.scalePostProcessor(initialState, state);
 		if (this.state.lockPriceToBarRatio) {
 			changeYToKeepRatio(constrainedState, this.zoomXYRatio);
@@ -204,8 +209,12 @@ export class ScaleModel extends ViewportModel {
 		if (this.state.auto) {
 			this.autoScaleModel.doAutoYScale(constrainedState);
 		}
-
-		this.apply(constrainedState);
+		if (forceNoAnimation || this.config.scale.disableAnimations) {
+			this.haltAnimation();
+			this.apply(constrainedState);
+		} else {
+			startViewportModelAnimation(this.canvasAnimation, this, constrainedState);
+		}
 	}
 
 	public setYScale(yStart: Unit, yEnd: Unit, fire = false) {
