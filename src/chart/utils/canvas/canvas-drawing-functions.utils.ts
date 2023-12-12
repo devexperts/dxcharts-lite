@@ -4,6 +4,7 @@
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 import { YAxisAlign } from '../../chart.config';
+import { Bounds } from '../../model/bounds.model';
 
 /**
  * Draws a rounded rectangle on a canvas context
@@ -171,7 +172,7 @@ export function avoidAntialiasing(ctx: CanvasRenderingContext2D, draw: () => voi
  * @param {{x: number, y: number}} a - The first point of the rectangle.
  * @param {{x: number, y: number}} b - The second point of the rectangle.
  * @returns {void}
- 
+
 */
 export function fillRect(
 	ctx: CanvasRenderingContext2D,
@@ -190,3 +191,19 @@ export function fillRect(
 	const h = Math.abs(a.y - b.y);
 	ctx.fillRect(x, y, w, h);
 }
+
+/**
+ * Sets clipping region for a Canvas 2D context according to the provided bounds.
+ *
+ * @param {CanvasRenderingContext2D} ctx - The canvas 2D context which will get the new clip region.
+ * @param {object} bounds - The bounds of the clipping region. Object containing x, y, width and height properties.
+ *
+ * @example
+ * clipToBounds(ctx, {x: 50, y: 50, width: 100, height: 100});
+ */
+export const clipToBounds = (ctx: CanvasRenderingContext2D, bounds: Bounds) => {
+	ctx.beginPath();
+	ctx.rect(bounds.x, bounds.y, bounds.width, bounds.height);
+	ctx.clip();
+	ctx.closePath();
+};
