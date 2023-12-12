@@ -289,8 +289,8 @@ export class ChartComponent extends ChartBaseElement {
 	 * @param {Timestamp} end - The end timestamp of the range.
 	 * @returns {void}
 	 */
-	public setTimestampRange(start: Timestamp, end: Timestamp): void {
-		return this.chartModel.setTimestampRange(start, end);
+	public setTimestampRange(start: Timestamp, end: Timestamp, forceNoAnimation: boolean = true): void {
+		return this.chartModel.setTimestampRange(start, end, forceNoAnimation);
 	}
 
 	/**
@@ -298,8 +298,8 @@ export class ChartComponent extends ChartBaseElement {
 	 * @param xStart - viewport start in units
 	 * @param xEnd - viewport end in units
 	 */
-	public setXScale(xStart: Unit, xEnd: Unit) {
-		return this.scale.setXScale(xStart, xEnd);
+	public setXScale(xStart: Unit, xEnd: Unit, forceNoAnimation: boolean = true) {
+		return this.scale.setXScale(xStart, xEnd, forceNoAnimation);
 	}
 
 	/**
