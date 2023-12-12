@@ -64,7 +64,6 @@ export class ChartModel extends ChartBaseElement {
 	public readonly nextCandleTimeStampSubject: Subject<void> = new Subject<void>();
 	public readonly chartTypeChanged: Subject<BarType> = new Subject<BarType>();
 	public readonly mainInstrumentChangedSubject: Subject<ChartInstrument> = new Subject<ChartInstrument>();
-	public readonly scaleInversedSubject: Subject<void> = new Subject<void>();
 	public readonly offsetsChanged = new Subject<void>();
 	private candlesTransformersByChartType: Partial<Record<BarType, VisualCandleCalculator>> = {};
 	lastCandleLabelsByChartType: Partial<Record<BarType, LastCandleLabelHandler>> = {};
@@ -802,11 +801,11 @@ export class ChartModel extends ChartBaseElement {
 	 * @param {Timestamp} end - The end timestamp of the range.
 	 * @returns {void}
 	 */
-	setTimestampRange(start: Timestamp, end: Timestamp): void {
+	setTimestampRange(start: Timestamp, end: Timestamp, forceNoAnimation: boolean = true): void {
 		const startUnit = this.candleFromTimestamp(start).startUnit;
 		const endCandle = this.candleFromTimestamp(end);
 		const endUnit = endCandle.startUnit + endCandle.width;
-		return this.scale.setXScale(startUnit, endUnit);
+		return this.scale.setXScale(startUnit, endUnit, forceNoAnimation);
 	}
 
 	/**

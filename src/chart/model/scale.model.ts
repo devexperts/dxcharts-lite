@@ -55,7 +55,7 @@ type Constraints = (initialState: ViewportModelState, state: ViewportModelState)
 export class ScaleModel extends ViewportModel {
 	public scaleInversedSubject: Subject<boolean> = new Subject<boolean>();
 	// y-axis component needs this subject in order to halt prev animation if axis type is percent
-	public beforeStartAnimationSubject = new Subject<void>();
+	public beforeStartAnimationSubject: Subject<void> = new Subject<void>();
 
 	// TODO rework, make a new history based on units
 	history: ScaleHistoryItem[] = [];
@@ -81,6 +81,23 @@ export class ScaleModel extends ViewportModel {
 		this.addXConstraint((initialState, state) =>
 			zoomConstraint(initialState, state, this.config.components.chart, this.getBounds),
 		);
+	}
+
+	protected doActivate(): void {
+		super.doActivate();
+		this.scaleInversedSubject = new Subject();
+		this.beforeStartAnimationSubject = new Subject();
+		this.addRxSubscription(
+			this.scaleInversedSubject.subscribe(() => {
+				this.fireChanged();
+			}),
+		);
+	}
+
+	protected doDeactivate(): void {
+		super.doDeactivate();
+		this.scaleInversedSubject.complete();
+		this.beforeStartAnimationSubject.complete();
 	}
 
 	/**
@@ -181,10 +198,10 @@ export class ScaleModel extends ViewportModel {
 	 * @param fireChanged
 	 * @param forceNoAutoScale - force NOT apply auto-scaling (for lazy loading)
 	 */
-	public setXScale(xStart: Unit, xEnd: Unit) {
+	public setXScale(xStart: Unit, xEnd: Unit, forceNoAnimation: boolean = true) {
 		const initialState = this.export();
-		super.setXScale(xStart, xEnd, false);
-		const state = this.export();
+		const zoomX = this.calculateZoomX(xStart, xEnd);
+		const state = { ...initialState, zoomX, xStart, xEnd };
 		const constrainedState = this.scalePostProcessor(initialState, state);
 		if (this.state.lockPriceToBarRatio) {
 			changeYToKeepRatio(constrainedState, this.zoomXYRatio);
@@ -192,8 +209,12 @@ export class ScaleModel extends ViewportModel {
 		if (this.state.auto) {
 			this.autoScaleModel.doAutoYScale(constrainedState);
 		}
-
-		this.apply(constrainedState);
+		if (forceNoAnimation || this.config.scale.disableAnimations) {
+			this.haltAnimation();
+			this.apply(constrainedState);
+		} else {
+			startViewportModelAnimation(this.canvasAnimation, this, constrainedState);
+		}
 	}
 
 	public setYScale(yStart: Unit, yEnd: Unit, fire = false) {
