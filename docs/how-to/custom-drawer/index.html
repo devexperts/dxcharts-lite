@@ -24,7 +24,7 @@
 		</div>
 		<div id="chart" class="chart"></div>
 		<script type="module">
-			import { clipToBounds } from '@devexperts/dxcharts-lite/dist/chart/drawers/data-series.drawer';
+			import { clipToBounds } from  '@devexperts/dxcharts-lite/dist/chart/utils/canvas/canvas-drawing-functions.utils';
 			import generateCandlesData from '@devexperts/dxcharts-lite/dist/chart/utils/candles-generator.utils';
 			const container = document.getElementById('chart');
 			const chart = DXChart.createChart(container);
