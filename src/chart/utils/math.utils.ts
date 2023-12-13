@@ -86,6 +86,10 @@ export class MathUtils {
 		};
 		return cutMap[amountToCut](value).toFixed(zeros) + amountToCut;
 	}
+
+	public static isExponential(a: number): boolean {
+		return /\de(\-|\+)\d/.test(a.toString());
+	}
 }
 
 /**
