@@ -7,7 +7,7 @@ import { FullChartConfig, YAxisConfig } from '../../../chart.config';
 import { CandleSeriesModel } from '../../../model/candle-series.model';
 import { DataSeriesType } from '../../../model/data-series.config';
 import { ChartModel, LastCandleLabelHandler } from '../../chart/chart.model';
-import { getPlainLabelTextColor, getPrimaryLabelTextColor } from '../label-color.functions';
+import { getPrimaryLabelTextColor } from '../label-color.functions';
 import { YAxisLabelDrawConfig } from '../y-axis-labels.drawer';
 import { LabelGroup, VisualYAxisLabel, YAxisLabelsProvider } from './y-axis-labels.model';
 import { lastOf } from '../../../utils/array.utils';
@@ -113,7 +113,7 @@ export class LastCandleLabelsProvider implements YAxisLabelsProvider {
 		const colors = series.colors.labels;
 		const { rectLabelTextColor = 'white', rectLabelInvertedTextColor = 'black' } = this.chartConfig.colors.yAxis;
 
-		const getLabelBoxColor = this.resolveLabelColorFn(series.config.type);
+		const getLabelColorBySeries = this.resolveLabelColorFn(series.config.type);
 
 		if (!colors) {
 			return {
@@ -123,7 +123,7 @@ export class LastCandleLabelsProvider implements YAxisLabelsProvider {
 			};
 		}
 
-		const boxColor = getLabelBoxColor(series.lastPriceMovement, series.colors);
+		const boxColor = getLabelColorBySeries(series.lastPriceMovement, series.colors);
 
 		// if the label is for the main candle series
 		if (primary) {
@@ -132,12 +132,7 @@ export class LastCandleLabelsProvider implements YAxisLabelsProvider {
 				bgColor: boxColor,
 				textColor:
 					appearanceType === 'plain'
-						? getPlainLabelTextColor(
-								this.chartConfig.colors,
-								textColor,
-								rectLabelInvertedTextColor,
-								this.yAxisConfig,
-						  )
+						? getLabelColorBySeries(series.lastPriceMovement, series.colors)
 						: getLabelTextColorByBackgroundColor(boxColor, textColor, rectLabelInvertedTextColor),
 				rounded: true,
 			};
@@ -148,12 +143,7 @@ export class LastCandleLabelsProvider implements YAxisLabelsProvider {
 			bgColor: boxColor,
 			textColor:
 				appearanceType === 'plain'
-					? getPlainLabelTextColor(
-							this.chartConfig.colors,
-							rectLabelTextColor,
-							rectLabelInvertedTextColor,
-							this.yAxisConfig,
-					  )
+					? getLabelColorBySeries(series.lastPriceMovement, series.colors)
 					: getLabelTextColorByBackgroundColor(boxColor, rectLabelTextColor, rectLabelInvertedTextColor),
 			rounded: true,
 		};
