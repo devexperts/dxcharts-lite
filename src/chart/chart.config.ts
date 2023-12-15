@@ -498,7 +498,7 @@ export const getDefaultConfig = (): FullChartConfig => ({
 			},
 		],
 		yAxis: {
-			backgroundColor: 'transparent',
+			backgroundColor: 'rgba(20,20,19,1)',
 			labelBoxColor: 'rgba(20,20,19,1)',
 			labelTextColor: 'rgba(128,128,128,1)',
 			labelInvertedTextColor: 'rgba(20,20,19,1)',
@@ -538,7 +538,7 @@ export const getDefaultConfig = (): FullChartConfig => ({
 			prevDayClose: { boxColor: 'rgba(107,96,86,1)', textColor: 'rgba(255,255,255,1)' },
 		},
 		xAxis: {
-			backgroundColor: 'transparent',
+			backgroundColor: 'rgba(20,20,19,1)',
 			labelTextColor: 'rgba(128,128,128,1)',
 		},
 		navigationMap: {

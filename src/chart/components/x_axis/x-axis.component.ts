@@ -51,7 +51,6 @@ export class XAxisComponent extends ChartBaseElement {
 		private timeZoneModel: TimeZoneModel,
 		chartPanComponent: ChartPanComponent,
 		cursorHandler: CursorHandler,
-		backgroundCanvasModel: CanvasModel,
 	) {
 		super();
 		const xAxisLabelsGenerator = new XAxisTimeLabelsGenerator(
@@ -79,7 +78,6 @@ export class XAxisComponent extends ChartBaseElement {
 		);
 		xAxisCompositeDrawer.addDrawer(this.xAxisDrawer);
 		this.xAxisLabelsDrawer = new XAxisLabelsDrawer(
-			backgroundCanvasModel,
 			config,
 			canvasModel,
 			canvasBoundsContainer,

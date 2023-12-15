@@ -20,7 +20,6 @@ import { LabelGroup, VisualYAxisLabel } from './y-axis-labels.model';
 export class YAxisPriceLabelsDrawer implements Drawer {
 	constructor(
 		private yAxisLabelsCanvasModel: CanvasModel,
-		private backgroundCanvasModel: CanvasModel,
 		private canvasBoundsContainer: CanvasBoundsContainer,
 		private fullConfig: FullChartConfig,
 		private paneManager: PaneManager,
@@ -28,7 +27,6 @@ export class YAxisPriceLabelsDrawer implements Drawer {
 
 	draw() {
 		const ctx = this.yAxisLabelsCanvasModel.ctx;
-		const backgroundCtx = this.backgroundCanvasModel.ctx;
 
 		this.paneManager.yExtents.forEach(extent => {
 			if (extent.yAxis.state.visible) {
@@ -41,13 +39,12 @@ export class YAxisPriceLabelsDrawer implements Drawer {
 					l.labels.forEach(vl =>
 						drawLabel(
 							ctx,
-							backgroundCtx,
 							bounds,
 							paneBounds,
 							vl,
 							this.canvasBoundsContainer,
 							extent.yAxis.state,
-							this.fullConfig.colors.yAxis,
+							this.fullConfig.colors,
 						),
 					);
 				});
@@ -55,13 +52,12 @@ export class YAxisPriceLabelsDrawer implements Drawer {
 				Object.values(extent.yAxis.model.fancyLabelsModel.customLabels).forEach(l =>
 					drawLabel(
 						ctx,
-						backgroundCtx,
 						yAxisBounds,
 						paneBounds,
 						l,
 						this.canvasBoundsContainer,
 						extent.yAxis.state,
-						this.fullConfig.colors.yAxis,
+						this.fullConfig.colors,
 					),
 				);
 			}

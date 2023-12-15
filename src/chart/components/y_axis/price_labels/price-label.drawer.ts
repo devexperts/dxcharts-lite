@@ -11,7 +11,6 @@ import {
 	YAxisAlign,
 	YAxisLabelAppearanceType, YAxisLabelMode,
 } from '../../../chart.config';
-import { redrawBackgroundArea } from '../../../drawers/chart-background.drawer';
 import { Bounds } from '../../../model/bounds.model';
 import { avoidAntialiasing, drawLine } from '../../../utils/canvas/canvas-drawing-functions.utils';
 import { calculateSymbolHeight, calculateTextWidth } from '../../../utils/canvas/canvas-font-measure-tool.utils';
@@ -41,13 +40,12 @@ export const priceLabelDrawersMap: Record<YAxisVisualLabelType, LabelDrawer> = {
  */
 export function drawLabel(
 	ctx: CanvasRenderingContext2D,
-	backgroundCtx: CanvasRenderingContext2D,
 	bounds: Bounds,
 	paneBounds: Bounds,
 	visualLabel: VisualYAxisLabel,
 	canvasBoundsContainer: CanvasBoundsContainer,
 	config: YAxisConfig,
-	colors: FullChartColors['yAxis'],
+	colors: FullChartColors,
 ) {
 	const centralY = visualLabel.y;
 	const text = visualLabel.labelText;
@@ -76,7 +74,7 @@ export function drawLabel(
 	const showLine = isLineVisible(bounds, labelY, labelBoxHeight);
 
 	const _drawDescription = () =>
-		showDescription && drawDescription(backgroundCtx, ctx, bounds, paneBounds, visualLabel, config.align, config);
+		showDescription && drawDescription(ctx, paneBounds, visualLabel, config, colors);
 
 	let lineXStart: number;
 	let lineXEnd: number;
@@ -94,7 +92,7 @@ export function drawLabel(
 	const lineY = visualLabel.lineY ?? visualLabel.y;
 	const _drawLine = () =>
 		showLine && avoidAntialiasing(ctx, () => drawLine(ctx, lineXStart, lineY, lineXEnd, lineY, 1));
-	const _drawLabel = () => drawLabel(ctx, bounds, text, centralY, visualLabel, config, colors, false, backgroundCtx);
+	const _drawLabel = () => drawLabel(ctx, bounds, text, centralY, visualLabel, config, colors.yAxis, false);
 
 	const drawLineLabel = () => {
 		_drawLine();
@@ -129,14 +127,13 @@ const isLineVisible = (bounds: Bounds, labelY: number, labelBoxHeight: number) =
 	labelY > bounds.y + labelBoxHeight / 2 && labelY < bounds.y + bounds.height - labelBoxHeight / 2;
 
 function drawDescription(
-	backgroundCtx: CanvasRenderingContext2D,
 	ctx: CanvasRenderingContext2D,
-	labelBounds: Bounds,
 	paneBounds: Bounds,
 	visualLabel: VisualYAxisLabel,
-	align: YAxisAlign = 'right',
 	yAxisState: YAxisConfig,
+	colors: FullChartColors,
 ): void {
+	const align: YAxisAlign = yAxisState.align || 'right';
 	const description = visualLabel.description;
 	if (!description || description.length === 0) {
 		return;
@@ -160,8 +157,19 @@ function drawDescription(
 	const boundsEnd = paneBounds.x + paneBounds.width;
 	const x = align === 'right' ? boundsEnd - rectWidth : paneBounds.x + descriptionPadding;
 
-	redrawBackgroundArea(backgroundCtx, ctx, x, labelBoxY, width, labelBoxHeight, 0.8);
-
+	if (colors.chartAreaTheme.backgroundMode === 'gradient' && align === 'right') {
+		ctx.fillStyle = colors.chartAreaTheme.backgroundGradientBottomColor;
+		ctx.strokeStyle = colors.chartAreaTheme.backgroundGradientBottomColor;
+	}
+	if (colors.chartAreaTheme.backgroundMode === 'gradient' && align === 'left') {
+		ctx.fillStyle = colors.chartAreaTheme.backgroundGradientTopColor;
+		ctx.strokeStyle = colors.chartAreaTheme.backgroundGradientTopColor;
+	}
+	if (colors.chartAreaTheme.backgroundMode === 'regular') {
+		ctx.fillStyle = colors.chartAreaTheme.backgroundColor;
+		ctx.strokeStyle = colors.chartAreaTheme.backgroundColor;
+	}
+	ctx.fillRect(x, labelBoxY, width, labelBoxHeight);
 	ctx.fillStyle = visualLabel.descColor ?? visualLabel.bgColor;
 	ctx.font = textFont;
 	const xTextBounds =
@@ -170,6 +178,5 @@ function drawDescription(
 			: paneBounds.x + descriptionPadding * 2;
 
 	ctx.fillText(description, xTextBounds, centralY + fontHeight / 2 - 1); // -1 for font height adjustment
-
 	ctx.restore();
 }
