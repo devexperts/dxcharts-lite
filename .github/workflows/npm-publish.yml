@@ -10,8 +10,6 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v3
-              with:
-                 ref: ${{ github.ref }}
             - uses: actions/setup-node@v3
               with:
                   node-version: '18.x'
@@ -20,9 +18,9 @@ jobs:
             - run: yarn install --frozen-lockfile
             - run: git config user.email "pmalyshev@devexperts.com"
             - run: git config user.name "dxpm"
-            - run: npm version minor --no-git-tag-version
-            - run: git commit -a -m "Bump package version"
-            - run: git push origin ${{ github.ref }}
+            - run: npm version from-git --no-git-tag-version
+            - run: git commit -am "Bump package version"
+            - run: git push origin master
             - run: npm publish --access public
               env:
                   NODE_AUTH_TOKEN: ${{secrets.NPMJS_DEVEXPERTS_BOT_PUBLISH_TOKEN}}
