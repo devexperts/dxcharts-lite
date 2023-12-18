@@ -21,6 +21,7 @@ jobs:
             - run: npm version minor --no-git-tag-version
             - run: git add --all
             - run: git commit -m "Bump package version"
+            - run: git push
             - run: npm publish --access public
               env:
                   NODE_AUTH_TOKEN: ${{secrets.NPMJS_DEVEXPERTS_BOT_PUBLISH_TOKEN}}
