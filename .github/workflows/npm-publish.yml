@@ -20,7 +20,7 @@ jobs:
             - run: git config user.name "dxpm"
             - run: npm version from-git --no-git-tag-version
             - run: git commit -a -m "Bump package version"
-            - run: git push origin HEAD
+            - run: git push origin HEAD:refs/heads/HEAD
             - run: npm publish --access public
               env:
                   NODE_AUTH_TOKEN: ${{secrets.NPMJS_DEVEXPERTS_BOT_PUBLISH_TOKEN}}
