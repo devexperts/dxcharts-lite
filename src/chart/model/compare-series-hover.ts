@@ -5,6 +5,7 @@
  */
 import { ChartModel } from '../components/chart/chart.model';
 import { BaseHover, HoverProducerPart } from '../inputhandlers/hover-producer.component';
+import { MainCandleSeriesModel } from './main-candle-series.model';
 
 export interface CompareSeriesHover {
 	instrument: string;
@@ -21,7 +22,14 @@ export class CompareSeriesHoverProducerPart implements HoverProducerPart<Compare
 	 * @param {BaseHover} hover - The hover object containing the x-coordinate.
 	 * @returns {CompareSeriesHover[]} An array of objects containing the instrument symbol, price and id of each series of candles.
 	 */
-	getData(hover: BaseHover): CompareSeriesHover[] {
+	getData(hover: BaseHover): CompareSeriesHover[] | undefined {
+		if (
+			this.chartModel.candleSeries.length === 1 &&
+			this.chartModel.candleSeries[0] instanceof MainCandleSeriesModel
+		) {
+			return;
+		}
+
 		const { x } = hover;
 
 		const candle = this.chartModel.candleFromX(x);
