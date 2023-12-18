@@ -87,6 +87,7 @@ export class ScaleModel extends ViewportModel {
 		super.doActivate();
 		this.scaleInversedSubject = new Subject();
 		this.beforeStartAnimationSubject = new Subject();
+
 		this.addRxSubscription(
 			this.scaleInversedSubject.subscribe(() => {
 				this.fireChanged();

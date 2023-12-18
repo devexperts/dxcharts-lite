@@ -155,7 +155,6 @@ export abstract class ViewportModel extends ChartBaseElement implements Viewable
 
 	protected doActivate(): void {
 		super.doActivate();
-		this.changed = new Subject();
 	}
 
 	protected doDeactivate(): void {
