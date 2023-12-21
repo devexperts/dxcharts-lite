@@ -561,6 +561,7 @@ export default class ChartBootstrap {
 
 		const yAxisLabelsDrawer = new YAxisPriceLabelsDrawer(
 			yAxisLabelsCanvasModel,
+			this.backgroundCanvasModel,
 			this.canvasBoundsContainer,
 			this.config,
 			this.paneManager,
