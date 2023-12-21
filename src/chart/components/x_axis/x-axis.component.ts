@@ -28,6 +28,7 @@ import { XAxisTimeLabelsDrawer } from './x-axis-time-labels.drawer';
 import { lastOf } from '../../utils/array.utils';
 import { notEmpty } from '../../utils/function.utils';
 import { availableBarTypes } from '../../chart.config';
+import { HitTestCanvasModel } from '../../model/hit-test-canvas.model';
 /**
  * X-axis component, contains all x-axis calculation and rendering logic.
  */
@@ -52,6 +53,7 @@ export class XAxisComponent extends ChartBaseElement {
 		chartPanComponent: ChartPanComponent,
 		cursorHandler: CursorHandler,
 		backgroundCanvasModel: CanvasModel,
+		hitTestCanvasModel: HitTestCanvasModel,
 	) {
 		super();
 		const xAxisLabelsGenerator = new XAxisTimeLabelsGenerator(
@@ -93,6 +95,7 @@ export class XAxisComponent extends ChartBaseElement {
 			canvasBoundsContainer,
 			chartPanComponent,
 			this.chartComponent.chartModel,
+			hitTestCanvasModel,
 		);
 		this.addChildEntity(this.xAxisScaleHandler);
 		cursorHandler.setCursorForCanvasEl(CanvasElement.X_AXIS, config.components.xAxis.cursor);

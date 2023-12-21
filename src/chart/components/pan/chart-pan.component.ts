@@ -12,6 +12,7 @@ import { CanvasInputListenerComponent } from '../../inputlisteners/canvas-input-
 import { ScaleModel } from '../../model/scale.model';
 import { ChartAreaPanHandler } from '../chart/chart-area-pan.handler';
 import { BaseType, ChartBaseModel } from '../chart/chart-base.model';
+import { HitTestCanvasModel } from '../../model/hit-test-canvas.model';
 
 export class ChartPanComponent extends ChartBaseElement {
 	public chartPanComponents: Array<ChartEntity> = [];
@@ -25,6 +26,7 @@ export class ChartPanComponent extends ChartBaseElement {
 		private canvasInputListener: CanvasInputListenerComponent,
 		private mainCanvasParent: Element,
 		public chartBaseModel: ChartBaseModel<BaseType>,
+		private hitTestCanvasModel: HitTestCanvasModel,
 	) {
 		super();
 		this.chartAreaPanHandler = new ChartAreaPanHandler(
@@ -36,6 +38,7 @@ export class ChartPanComponent extends ChartBaseElement {
 			this.canvasBoundsContainer,
 			this.canvasAnimation,
 			this,
+			this.hitTestCanvasModel,
 		);
 		this.chartPanComponents.push(this.chartAreaPanHandler);
 	}

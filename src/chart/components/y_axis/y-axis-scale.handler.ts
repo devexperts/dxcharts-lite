@@ -14,6 +14,7 @@ import { DragInfo } from '../dran-n-drop_helper/drag-n-drop.component';
 import { DragNDropYComponent } from '../dran-n-drop_helper/drag-n-drop-y.component';
 import { ChartPanComponent } from '../pan/chart-pan.component';
 import { ScaleModel } from '../../model/scale.model';
+import { HitTestCanvasModel } from '../../model/hit-test-canvas.model';
 
 // if you drag full Y height from top to bottom - you will have x3 zoom, and vice-versa
 const FULL_Y_HEIGHT_ZOOM_FACTOR = 10;
@@ -39,6 +40,7 @@ export class YAxisScaleHandler extends ChartBaseElement {
 		private bounds: CanvasBoundsContainer,
 		private hitTest: HitBoundsTest,
 		private autoScaleCallback: (auto: boolean) => void,
+		private hitTestCanvasModel: HitTestCanvasModel,
 	) {
 		super();
 		// drag to Y-scale and double click to auto scale
@@ -79,6 +81,7 @@ export class YAxisScaleHandler extends ChartBaseElement {
 		this.lastYEnd = this.scale.yEnd;
 		this.lastYHeight = this.scale.yEnd - this.scale.yStart;
 		this.lastYPxHeight = this.bounds.getBounds(CanvasElement.Y_AXIS).height;
+		this.hitTestCanvasModel.hitTestDrawersPredicateSubject.next(false);
 	};
 
 	private onYDragTick = (dragInfo: DragInfo) => {
@@ -106,6 +109,7 @@ export class YAxisScaleHandler extends ChartBaseElement {
 
 	private onYDragEnd = () => {
 		this.yAxisDragEndSubject.next();
+		this.hitTestCanvasModel.hitTestDrawersPredicateSubject.next(true);
 	};
 }
 

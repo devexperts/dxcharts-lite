@@ -29,10 +29,21 @@ import { cloneUnsafe } from '../../utils/object.utils';
 import { uuid } from '../../utils/uuid.utils';
 import { PriceAxisType } from '../labels_generator/numeric-axis-labels.generator';
 import { ChartPanComponent } from '../pan/chart-pan.component';
-import { resolveColorForArea, resolveColorForBar, resolveColorForBaseLine, resolveColorForCandle, resolveColorForHistogram, resolveColorForLine, resolveColorForScatterPlot, resolveColorForTrendAndHollow, resolveDefaultColorForLabel } from './label-color.functions';
+import {
+	resolveColorForArea,
+	resolveColorForBar,
+	resolveColorForBaseLine,
+	resolveColorForCandle,
+	resolveColorForHistogram,
+	resolveColorForLine,
+	resolveColorForScatterPlot,
+	resolveColorForTrendAndHollow,
+	resolveDefaultColorForLabel,
+} from './label-color.functions';
 import { LabelsGroups, VisualYAxisLabel, YAxisLabelsProvider } from './price_labels/y-axis-labels.model';
 import { YAxisScaleHandler } from './y-axis-scale.handler';
 import { YAxisModel } from './y-axis.model';
+import { HitTestCanvasModel } from '../../model/hit-test-canvas.model';
 
 export type LabelColorResolver = (priceMovement: PriceMovement, colors: FullChartColors) => string;
 
@@ -59,6 +70,7 @@ export class YAxisComponent extends ChartBaseElement {
 		dataSeriesProvider: () => DataSeriesModel | undefined,
 		public paneUUID: string,
 		public extentIdx: number,
+		hitTestCanvasModel: HitTestCanvasModel,
 	) {
 		super();
 		this.state = cloneUnsafe(config.components.yAxis);
@@ -73,6 +85,7 @@ export class YAxisComponent extends ChartBaseElement {
 			canvasBoundsContainer,
 			canvasBoundsContainer.getBoundsHitTest(CanvasElement.PANE_UUID_Y_AXIS(paneUUID, extentIdx)),
 			auto => scale.autoScale(auto),
+			hitTestCanvasModel,
 		);
 		this.addChildEntity(this.yAxisScaleHandler);
 		//#endregion

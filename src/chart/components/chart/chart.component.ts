@@ -114,16 +114,19 @@ export class ChartComponent extends ChartBaseElement {
 		);
 		this.addChildEntity(this.baselineModel);
 		//#region main chart drawers
-		const hTChartDrawer = new HTDataSeriesDrawer(this._dataSeriesDrawers, this.hitTestCanvasModel, paneManager);
+		const hTChartDrawer = new HTDataSeriesDrawer(
+			this._dataSeriesDrawers,
+			this.hitTestCanvasModel,
+			paneManager,
+			() => this.hitTestCanvasModel.hitTestDrawersPredicateSubject.getValue(),
+		);
 		this.drawingManager.addDrawerBefore(hTChartDrawer, HIT_TEST_PREFIX + 'DATA_SERIES', 'HIT_TEST_EVENTS');
 		//#endregion
 		//#region data series drawers
 		this.registerDefaultDataSeriesDrawers();
 		//#endregion
-		this.backgroundDrawer = new BackgroundDrawer(
-			backgroundCanvasModel,
-			this.config,
-			() => this.backgroundDrawPredicateSubj.getValue(),
+		this.backgroundDrawer = new BackgroundDrawer(backgroundCanvasModel, this.config, () =>
+			this.backgroundDrawPredicateSubj.getValue(),
 		);
 		drawingManager.addDrawer(this.backgroundDrawer, 'MAIN_BACKGROUND');
 		cursorHandler.setCursorForCanvasEl(CanvasElement.PANE_UUID(CHART_UUID), config.components.chart.cursor);

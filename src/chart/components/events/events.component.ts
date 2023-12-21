@@ -62,6 +62,7 @@ export class EventsComponent extends ChartBaseElement {
 			config,
 			canvasBoundsContainer,
 			eventsModel,
+			() => hitTestCanvasModel.hitTestDrawersPredicateSubject.getValue(),
 		);
 		this.drawingManager.addDrawerBefore(eventsHitTestDrawer, 'HIT_TEST_EVENTS', 'HIT_TEST_DRAWINGS');
 		cursorHandler.setCursorForCanvasEl(CanvasElement.EVENTS, config.components.events.cursor);

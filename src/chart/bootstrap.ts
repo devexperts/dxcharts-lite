@@ -259,11 +259,7 @@ export default class ChartBootstrap {
 
 		const chartPaneId = CanvasElement.PANE_UUID(CHART_UUID);
 		//#region ScaleModel init
-		const scaleModel = new ScaleModel(
-			config,
-			() => canvasBoundsContainer.getBounds(chartPaneId),
-			canvasAnimation,
-		);
+		const scaleModel = new ScaleModel(config, () => canvasBoundsContainer.getBounds(chartPaneId), canvasAnimation);
 		this.scaleModel = scaleModel;
 		//#endregion
 
@@ -302,6 +298,7 @@ export default class ChartBootstrap {
 			canvasInputListener,
 			mainCanvasParent,
 			chartBaseModel,
+			hitTestCanvasModel,
 		);
 		this.chartPanComponent = chartPanComponent;
 		this.chartComponents.push(chartPanComponent);
@@ -323,6 +320,7 @@ export default class ChartBootstrap {
 			chartPanComponent,
 			mainCanvasModel,
 			yAxisLabelsCanvasModel,
+			this.hitTestCanvasModel,
 		);
 		this.paneManager = paneManager;
 
@@ -386,6 +384,7 @@ export default class ChartBootstrap {
 			chartPanComponent,
 			this.cursorHandler,
 			backgroundCanvasModel,
+			this.hitTestCanvasModel,
 		);
 		this.chartComponents.push(this.xAxisComponent);
 		this.userInputListenerComponents.push(this.xAxisComponent.xAxisScaleHandler);
