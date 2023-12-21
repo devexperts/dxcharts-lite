@@ -98,8 +98,10 @@ export class YAxisScaleHandler extends ChartBaseElement {
 		const newYStart = this.lastYStart - delta;
 		const newYEnd = this.lastYEnd + delta;
 		this.autoScaleCallback(false);
-		this.scale.setYScale(newYStart, newYEnd);
-		this.bus.fireDraw();
+		if (this.lastYStart !== newYStart || this.lastYEnd !== newYEnd) {
+			this.scale.setYScale(newYStart, newYEnd);
+			this.bus.fireDraw();
+		}
 	};
 
 	private onYDragEnd = () => {
