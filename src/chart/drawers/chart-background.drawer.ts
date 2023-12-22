@@ -25,7 +25,7 @@ export class BackgroundDrawer implements Drawer {
 			this.canvasModel.clear();
 			const ctx = this.canvasModel.ctx;
 			if (this.config.colors.chartAreaTheme.backgroundMode === 'gradient') {
-				const grd = ctx.createLinearGradient(0, 0, this.canvasModel.width, this.canvasModel.height);
+				const grd = ctx.createLinearGradient(0, 0 + this.canvasModel.height / 2, this.canvasModel.width, 0 + this.canvasModel.height / 2);
 				grd.addColorStop(0, this.config.colors.chartAreaTheme.backgroundGradientTopColor);
 				grd.addColorStop(1, this.config.colors.chartAreaTheme.backgroundGradientBottomColor);
 				ctx.fillStyle = grd;
@@ -45,6 +45,7 @@ export class BackgroundDrawer implements Drawer {
 
 // this function in used in case when
 // some entity can overlap with another chart entity, so we need to hide the another entity
+// it has very (!!!) poor perfomance, use it carefully
 export const redrawBackgroundArea = (
 	backgroundCtx: CanvasRenderingContext2D,
 	ctx: CanvasRenderingContext2D,

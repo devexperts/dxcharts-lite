@@ -9,7 +9,8 @@ import {
 	FullChartColors,
 	getFontFromConfig,
 	YAxisAlign,
-	YAxisLabelAppearanceType, YAxisLabelMode,
+	YAxisLabelAppearanceType,
+	YAxisLabelMode,
 } from '../../../chart.config';
 import { redrawBackgroundArea } from '../../../drawers/chart-background.drawer';
 import { Bounds } from '../../../model/bounds.model';
@@ -47,7 +48,7 @@ export function drawLabel(
 	visualLabel: VisualYAxisLabel,
 	canvasBoundsContainer: CanvasBoundsContainer,
 	config: YAxisConfig,
-	colors: FullChartColors['yAxis'],
+	colors: FullChartColors,
 ) {
 	const centralY = visualLabel.y;
 	const text = visualLabel.labelText;
@@ -76,7 +77,7 @@ export function drawLabel(
 	const showLine = isLineVisible(bounds, labelY, labelBoxHeight);
 
 	const _drawDescription = () =>
-		showDescription && drawDescription(backgroundCtx, ctx, bounds, paneBounds, visualLabel, config.align, config);
+	showDescription && drawDescription(backgroundCtx, ctx, bounds, paneBounds, visualLabel, config);
 
 	let lineXStart: number;
 	let lineXEnd: number;
@@ -94,29 +95,29 @@ export function drawLabel(
 	const lineY = visualLabel.lineY ?? visualLabel.y;
 	const _drawLine = () =>
 		showLine && avoidAntialiasing(ctx, () => drawLine(ctx, lineXStart, lineY, lineXEnd, lineY, 1));
-	const _drawLabel = () => drawLabel(ctx, bounds, text, centralY, visualLabel, config, colors, false, backgroundCtx);
+	const _drawLabel = () => drawLabel(ctx, bounds, text, centralY, visualLabel, config, colors.yAxis, false);
 
 	const drawLineLabel = () => {
 		_drawLine();
 		_drawDescription();
-	}
+	};
 
 	const drawLineLabelLabel = () => {
 		_drawLine();
 		_drawLabel();
 		_drawDescription();
-	}
+	};
 
 	const drawLabelLabel = () => {
 		_drawDescription();
 		_drawLabel();
-	}
+	};
 
 	const labelDrawerByMode: Record<Exclude<YAxisLabelMode, 'none'>, () => void> = {
-		'line': drawLineLabel,
+		line: drawLineLabel,
 		'line-label': drawLineLabelLabel,
-		'label': drawLabelLabel,
-	}
+		label: drawLabelLabel,
+	};
 
 	if (mode !== 'none' && checkLabelInBoundaries(centralY, bounds, labelBoxHeight)) {
 		labelDrawerByMode[mode]();
@@ -134,9 +135,9 @@ function drawDescription(
 	labelBounds: Bounds,
 	paneBounds: Bounds,
 	visualLabel: VisualYAxisLabel,
-	align: YAxisAlign = 'right',
 	yAxisState: YAxisConfig,
 ): void {
+	const align: YAxisAlign = yAxisState.align || 'right';
 	const description = visualLabel.description;
 	if (!description || description.length === 0) {
 		return;
@@ -170,6 +171,5 @@ function drawDescription(
 			: paneBounds.x + descriptionPadding * 2;
 
 	ctx.fillText(description, xTextBounds, centralY + fontHeight / 2 - 1); // -1 for font height adjustment
-
 	ctx.restore();
 }
