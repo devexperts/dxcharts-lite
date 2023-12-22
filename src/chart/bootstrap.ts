@@ -257,10 +257,11 @@ export default class ChartBootstrap {
 		const canvasAnimation = new CanvasAnimation(eventBus);
 		this.canvasAnimation = canvasAnimation;
 
+		const chartPaneId = CanvasElement.PANE_UUID(CHART_UUID);
 		//#region ScaleModel init
 		const scaleModel = new ScaleModel(
 			config,
-			() => canvasBoundsContainer.getBounds(CanvasElement.PANE_UUID(CHART_UUID)),
+			() => canvasBoundsContainer.getBounds(chartPaneId),
 			canvasAnimation,
 		);
 		this.scaleModel = scaleModel;
@@ -362,6 +363,7 @@ export default class ChartBootstrap {
 			paneManager,
 			this.cursorHandler,
 			this.dynamicObjects,
+			this.chartResizeHandler,
 		);
 		this.chartComponents.push(chartComponent);
 		this.chartComponent = chartComponent;
@@ -383,7 +385,6 @@ export default class ChartBootstrap {
 			timeZoneModel,
 			chartPanComponent,
 			this.cursorHandler,
-			backgroundCanvasModel,
 		);
 		this.chartComponents.push(this.xAxisComponent);
 		this.userInputListenerComponents.push(this.xAxisComponent.xAxisScaleHandler);
@@ -482,7 +483,7 @@ export default class ChartBootstrap {
 			'GRID',
 			drawingManager,
 			() => this.canvasBoundsContainer.getBounds(CanvasElement.ALL_PANES),
-			() => this.canvasBoundsContainer.getBounds(CanvasElement.PANE_UUID(CHART_UUID)),
+			() => this.canvasBoundsContainer.getBounds(chartPaneId),
 			() => this.xAxisComponent.xAxisLabelsGenerator.labels,
 			() => this.yAxisComponent.model.baseLabelsModel.labels,
 			() => mainPane.mainExtent.toY(mainPane.mainExtent.getBaseline()),
@@ -510,7 +511,6 @@ export default class ChartBootstrap {
 			paneManager,
 			this.crossEventProducer,
 			this.hoverProducer,
-			this.backgroundCanvasModel,
 		);
 
 		this.chartComponents.push(this.crossToolComponent);
@@ -536,7 +536,6 @@ export default class ChartBootstrap {
 			drawingManager,
 			formatterFactory,
 			this.cursorHandler,
-			backgroundCanvasModel,
 		);
 		this.eventsComponent = eventsComponent;
 		this.chartComponents.push(eventsComponent);

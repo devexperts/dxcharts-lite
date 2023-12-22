@@ -75,10 +75,6 @@ export class XAxisTimeLabelsDrawer implements Drawer {
 		ctx.fillStyle = color;
 		for (const label of labels) {
 			const x = this.viewportModel.toX(label.value) - calculateTextWidth(label.text, ctx, font) / 2;
-			// skip labels outside viewport
-			if (x < 0 || x > bounds.width) {
-				continue;
-			}
 			const y = bounds.y + fontHeight - 1 + offsetTop; // -1 for font drawing inconsistency
 			const labelText = label.text;
 			ctx.font = font;

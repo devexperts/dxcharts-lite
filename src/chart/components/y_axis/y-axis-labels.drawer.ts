@@ -4,7 +4,6 @@
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 import { YAxisConfig, FullChartColors, getFontFromConfig } from '../../chart.config';
-import { redrawBackgroundArea } from '../../drawers/chart-background.drawer';
 import { Bounds } from '../../model/bounds.model';
 import { drawPriceLabel, drawRoundedRect } from '../../utils/canvas/canvas-drawing-functions.utils';
 import { calculateSymbolHeight, calculateTextWidth } from '../../utils/canvas/canvas-font-measure-tool.utils';
@@ -189,7 +188,6 @@ export function drawRectLabel(
  * @param yAxisState
  * @param yAxisColors
  * @param checkBoundaries
- * @param backgroundCtx
  */
 export function drawPlainLabel(
 	ctx: CanvasRenderingContext2D,
@@ -200,11 +198,10 @@ export function drawPlainLabel(
 	yAxisState: YAxisConfig,
 	yAxisColors: FullChartColors['yAxis'],
 	checkBoundaries: boolean = true,
-	backgroundCtx?: CanvasRenderingContext2D,
 ) {
 	const align = yAxisState.align;
 	const textFont = config.textFont ?? getFontFromConfig(yAxisState);
-	const bgColor = config.bgColor;
+	const bgColor = yAxisColors.backgroundColor;
 	const textColor =
 		config.textColor ??
 		getLabelTextColorByBackgroundColor(bgColor, yAxisColors.labelTextColor, yAxisColors.labelInvertedTextColor);
@@ -230,14 +227,15 @@ export function drawPlainLabel(
 	const xTextOffset = yAxisState.labelBoxMargin.end;
 	ctx.font = textFont;
 	const textWidth = calculateTextWidth(text, ctx, textFont);
-
 	const marginEnd = xTextOffset - paddingEnd;
 	const width = paddingStart !== undefined ? textWidth + paddingStart + paddingEnd : bounds.width - marginEnd;
 	const x = align === 'right' ? bounds.x + bounds.width - marginEnd - width : bounds.x + marginEnd;
-
 	const textX = align === 'right' ? bounds.x + bounds.width - textWidth - xTextOffset : xTextOffset;
 
-	backgroundCtx && redrawBackgroundArea(backgroundCtx, ctx, x, labelBoxTopY, width, labelBoxHeight);
+	// label can overlap with regular price y-axis label, so we need to hide regular y-axis label
+	ctx.fillStyle = bgColor;
+	ctx.strokeStyle = bgColor;
+	ctx.fillRect(x, labelBoxTopY, width, labelBoxHeight);
 
 	ctx.fillStyle = textColor;
 	ctx.fillText(text, textX, centralY + fontHeight / 2 - 1); // -1 for font height adjustment

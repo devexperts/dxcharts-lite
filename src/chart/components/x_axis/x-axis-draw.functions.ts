@@ -5,7 +5,6 @@
  */
 import { CanvasBoundsContainer, CanvasElement } from '../../canvas/canvas-bounds-container';
 import { FullChartConfig } from '../../chart.config';
-import { redrawBackgroundArea } from '../../drawers/chart-background.drawer';
 import { XAxisLabel } from './x-axis-labels.model';
 
 const DEFAULT_X_LABEL_PADDING = { x: 4, y: 4 };
@@ -20,7 +19,6 @@ export type LabelAlign = 'start' | 'end' | 'middle';
  * @param label
  */
 export function drawXAxisLabel(
-	backgroundCtx: CanvasRenderingContext2D,
 	ctx: CanvasRenderingContext2D,
 	canvasBoundsContainer: CanvasBoundsContainer,
 	config: FullChartConfig,
@@ -28,9 +26,10 @@ export function drawXAxisLabel(
 ): void {
 	const alignType = label.alignType ?? 'middle';
 	const { fontSize, fontFamily, padding } = config.components.xAxis;
+	const xAxisColors = config.colors.xAxis;
 	const offsetTop = padding.top ?? 0;
 
-	const xAxis = canvasBoundsContainer.getBounds(CanvasElement.X_AXIS);
+	const xAxisBounds = canvasBoundsContainer.getBounds(CanvasElement.X_AXIS);
 	ctx.save();
 	ctx.font = `bold ${fontSize}px ${fontFamily}`;
 	const labelWidth = ctx.measureText(label.text).width;
@@ -50,19 +49,21 @@ export function drawXAxisLabel(
 			break;
 	}
 	// label can overlap with regular x-axis label, so we need to hide regular x-axis label
-	redrawBackgroundArea(backgroundCtx, ctx, boxStart, xAxis.y, boxWidth, xAxis.height - 1);
+	ctx.fillStyle = xAxisColors.backgroundColor;
+	ctx.strokeStyle = xAxisColors.backgroundColor;
+	ctx.fillRect(boxStart, xAxisBounds.y, boxWidth, xAxisBounds.height);
 
 	if (alignType !== 'middle') {
 		ctx.strokeStyle = label.color;
 		ctx.beginPath();
-		ctx.moveTo(x, xAxis.y);
-		ctx.lineTo(x, xAxis.y + xAxis.height);
+		ctx.moveTo(x, xAxisBounds.y);
+		ctx.lineTo(x, xAxisBounds.y + xAxisBounds.height);
 		ctx.stroke();
 	}
 
 	ctx.fillStyle = label.color;
 	const xTextPos = boxStart + DEFAULT_X_LABEL_PADDING.x;
-	const yTextPos = xAxis.y + offsetTop + fontSize; // -2 for vertical adjustment
+	const yTextPos = xAxisBounds.y + offsetTop + fontSize; // -2 for vertical adjustment
 	ctx.fillText(label.text, xTextPos, yTextPos);
 	ctx.restore();
 }

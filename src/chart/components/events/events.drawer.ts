@@ -7,7 +7,6 @@ import { Bounds } from '../../model/bounds.model';
 import { CanvasBoundsContainer, CanvasElement } from '../../canvas/canvas-bounds-container';
 import { CustomIcon, FullChartConfig } from '../../chart.config';
 import { CanvasModel } from '../../model/canvas.model';
-import { redrawBackgroundArea } from '../../drawers/chart-background.drawer';
 import { Drawer } from '../../drawers/drawing-manager';
 import { DateTimeFormatter } from '../../model/date-time.formatter';
 import { ChartModel } from '../chart/chart.model';
@@ -31,7 +30,6 @@ export class EventsDrawer implements Drawer {
 	private customIcons: Record<string, CreatedCustomIcon> = {};
 
 	constructor(
-		private backgroundCanvas: CanvasModel,
 		private canvasModel: CanvasModel,
 		private chartModel: ChartModel,
 		private config: FullChartConfig,
@@ -185,7 +183,7 @@ export class EventsDrawer implements Drawer {
 	/**
 	 * This function is responsible for drawing a label on the canvas at a given x coordinate. The label contains a formatted timestamp of a given event. The function takes two parameters: x, which is the x coordinate where the label will be drawn, and event, which is an object containing information about the event, including its timestamp and type.
 	 * The function first gets the canvas context and the bounds of the x-axis. It then retrieves the font family, font height, and top padding from the configuration object. The y coordinate of the label is calculated based on the font height, top padding, and the y coordinate of the x-axis bounds. The font is set using the retrieved font family and font height.
-	 * The timestamp of the event is formatted using a formatter provider function. The width of the label is calculated using the canvas context's measureText() method. The function then calls another function, redrawBackgroundArea(), to hide the regular x-axis label that may overlap with the event label.
+	 * The timestamp of the event is formatted using a formatter provider function. The width of the label is calculated using the canvas context's measureText() method. The function then draws rectangle with xAxis background, to be on to hide the regular x-axis label that may overlap with the event label.
 	 * Finally, the function sets the fill style of the canvas context to the color associated with the event type in the configuration object. The label text is then drawn on the canvas context at the calculated x and y coordinates.
 	 */
 	drawLabel(x: number, event: EventWithId) {
@@ -199,14 +197,10 @@ export class EventsDrawer implements Drawer {
 		const labelText = this.formatterProvider()(event.timestamp);
 		const width = ctx.measureText(labelText).width;
 		// label can overlap with regular x-axis label, so we need to hide regular x-axis label
-		redrawBackgroundArea(
-			this.backgroundCanvas.ctx,
-			ctx,
-			x - width / 2,
-			xAxisBounds.y + 1,
-			width,
-			xAxisBounds.height - 1,
-		);
+		ctx.fillStyle = this.config.colors.xAxis.backgroundColor;
+		ctx.strokeStyle = this.config.colors.xAxis.backgroundColor;
+		ctx.fillRect(x - width / 2, xAxisBounds.y + 1, width, xAxisBounds.height - 1);
+
 
 		ctx.fillStyle = this.config.colors.events[event.type].color;
 		ctx.fillText(labelText, x - width / 2, y);

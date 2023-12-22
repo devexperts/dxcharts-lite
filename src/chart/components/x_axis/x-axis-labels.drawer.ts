@@ -18,7 +18,6 @@ import { fillRect } from '../../utils/canvas/canvas-drawing-functions.utils';
  */
 export class XAxisLabelsDrawer implements Drawer {
 	constructor(
-		private backgroundCanvasModel: CanvasModel,
 		private config: FullChartConfig,
 		private canvasModel: CanvasModel,
 		private canvasBoundsContainer: CanvasBoundsContainer,
@@ -36,7 +35,7 @@ export class XAxisLabelsDrawer implements Drawer {
 		const ctx = this.canvasModel.ctx;
 		this.drawHighlightedBackgroundBetweenLabels();
 		this.xAxisLabelsModel.labels.forEach(l => {
-			drawXAxisLabel(this.backgroundCanvasModel.ctx, ctx, this.canvasBoundsContainer, this.config, l);
+			drawXAxisLabel(ctx, this.canvasBoundsContainer, this.config, l);
 		});
 	}
 

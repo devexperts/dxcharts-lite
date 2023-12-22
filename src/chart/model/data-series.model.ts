@@ -147,7 +147,7 @@ export class DataSeriesModel<
 
 	protected doActivate(): void {
 		this.addRxSubscription(this.scale.xChanged.subscribe(() => this.recalculateDataViewportIndexes()));
-		this.addRxSubscription(this.scale.scaleInversedSubject.subscribe(() => this.recalculateVisualPoints()));
+		this.addRxSubscription(this.scale.scaleInversedSubject.subscribe(() => { this.recalculateVisualPoints(); }));
 	}
 
 	/**
