@@ -42,10 +42,8 @@ export class HighLowDrawer implements Drawer {
 			ctx.font = this.config.components.highLow.font;
 			this.drawMarkerLabel(ctx, finalHighIdx, high, 'high');
 			this.drawMarkerLabel(ctx, finalLowIdx, low, 'low');
-			const chartBounds = this.canvasBoundsContainer.getBounds('PANE_CHART');
+
 			ctx.restore();
-			// We need clip here so lowLabel won't overlap other panes
-			clipToBounds(ctx, chartBounds);
 		}
 	}
 
@@ -70,6 +68,10 @@ export class HighLowDrawer implements Drawer {
 		ctx.fillStyle =
 			type === 'high' ? this.config.colors.highLowTheme.highColor : this.config.colors.highLowTheme.lowColor;
 		ctx.fillText(text, x, y);
+
+		const chartBounds = this.canvasBoundsContainer.getBounds('PANE_CHART');
+		// We need clip here so lowLabel won't overlap other panes
+		clipToBounds(ctx, chartBounds);
 	}
 
 	/**

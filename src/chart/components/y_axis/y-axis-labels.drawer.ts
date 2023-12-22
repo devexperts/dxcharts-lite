@@ -188,7 +188,6 @@ export function drawRectLabel(
  * @param yAxisState
  * @param yAxisColors
  * @param checkBoundaries
- * @param backgroundCtx
  */
 export function drawPlainLabel(
 	ctx: CanvasRenderingContext2D,
