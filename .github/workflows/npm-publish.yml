@@ -18,8 +18,6 @@ jobs:
             - run: yarn install --frozen-lockfile
             - run: git config user.email "pmalyshev@devexperts.com"
             - run: git config user.name "dxpm"
-            - run: npm version from-git --no-git-tag-version
-            - run: git commit -a -m "ci:bump package version"
             - run: git checkout ${{ github.ref_name }}
             - run: npm version from-git --no-git-tag-version
             - run: git commit -a -m "ci:bump package version"
