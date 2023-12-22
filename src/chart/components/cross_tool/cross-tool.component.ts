@@ -34,7 +34,6 @@ export class CrossToolComponent extends ChartBaseElement {
 		private paneManager: PaneManager,
 		crossEventProducer: CrossEventProducerComponent,
 		hoverProducer: HoverProducerComponent,
-		private backgroundCanvasModel: CanvasModel,
 	) {
 		super();
 		this.model = new CrossToolModel(
@@ -68,7 +67,6 @@ export class CrossToolComponent extends ChartBaseElement {
 				this.config,
 				this.canvasBoundsContainer,
 				this.paneManager,
-				this.backgroundCanvasModel,
 				() => true,
 			),
 		);
@@ -78,7 +76,6 @@ export class CrossToolComponent extends ChartBaseElement {
 				this.config,
 				this.canvasBoundsContainer,
 				this.paneManager,
-				this.backgroundCanvasModel,
 				() => true,
 				true,
 			),
