@@ -385,7 +385,6 @@ export default class ChartBootstrap {
 			timeZoneModel,
 			chartPanComponent,
 			this.cursorHandler,
-			backgroundCanvasModel,
 		);
 		this.chartComponents.push(this.xAxisComponent);
 		this.userInputListenerComponents.push(this.xAxisComponent.xAxisScaleHandler);
@@ -512,7 +511,6 @@ export default class ChartBootstrap {
 			paneManager,
 			this.crossEventProducer,
 			this.hoverProducer,
-			this.backgroundCanvasModel,
 		);
 
 		this.chartComponents.push(this.crossToolComponent);
@@ -538,7 +536,6 @@ export default class ChartBootstrap {
 			drawingManager,
 			formatterFactory,
 			this.cursorHandler,
-			backgroundCanvasModel,
 		);
 		this.eventsComponent = eventsComponent;
 		this.chartComponents.push(eventsComponent);

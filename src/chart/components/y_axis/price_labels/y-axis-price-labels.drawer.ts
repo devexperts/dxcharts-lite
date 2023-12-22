@@ -47,7 +47,7 @@ export class YAxisPriceLabelsDrawer implements Drawer {
 							vl,
 							this.canvasBoundsContainer,
 							extent.yAxis.state,
-							this.fullConfig.colors.yAxis,
+							this.fullConfig.colors,
 						),
 					);
 				});
@@ -61,7 +61,7 @@ export class YAxisPriceLabelsDrawer implements Drawer {
 						l,
 						this.canvasBoundsContainer,
 						extent.yAxis.state,
-						this.fullConfig.colors.yAxis,
+						this.fullConfig.colors,
 					),
 				);
 			}
