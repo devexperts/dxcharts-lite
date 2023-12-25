@@ -100,9 +100,9 @@ export class YAxisScaleHandler extends ChartBaseElement {
 		const delta = (newYHeight - this.lastYHeight) / 2;
 		const newYStart = this.lastYStart - delta;
 		const newYEnd = this.lastYEnd + delta;
-		this.autoScaleCallback(false);
 		if (this.lastYStart !== newYStart || this.lastYEnd !== newYEnd) {
 			this.scale.setYScale(newYStart, newYEnd);
+			this.autoScaleCallback(false);
 			this.bus.fireDraw();
 		}
 	};

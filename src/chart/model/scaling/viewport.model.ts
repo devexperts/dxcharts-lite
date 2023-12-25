@@ -417,7 +417,7 @@ export abstract class ViewportModel extends ChartBaseElement implements Viewable
 	 * @returns {boolean} - Returns true if the viewport is valid, false otherwise.
 	 */
 	isViewportValid() {
-		return this.xStart !== this.xEnd && this.yStart !== this.yEnd && isFinite(this.yStart) && isFinite(this.yEnd);
+		return this.xStart !== this.xEnd && this.yStart !== this.yEnd && isFinite(this.yStart) && isFinite(this.yEnd) && this.zoomX > 0 && this.zoomY > 0;
 	}
 }
 
