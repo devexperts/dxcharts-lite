@@ -20,6 +20,7 @@ import { DragNDropXComponent } from '../dran-n-drop_helper/drag-n-drop-x.compone
 import { DragNDropYComponent } from '../dran-n-drop_helper/drag-n-drop-y.component';
 import { DragInfo } from '../dran-n-drop_helper/drag-n-drop.component';
 import { ChartPanComponent } from '../pan/chart-pan.component';
+import { HitTestCanvasModel } from '../../model/hit-test-canvas.model';
 
 export interface ChartWheelEvent {
 	readonly originalEvent: WheelEvent;
@@ -63,6 +64,7 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 		private canvasBoundsContainer: CanvasBoundsContainer,
 		private canvasAnimation: CanvasAnimation,
 		private chartPanComponent: ChartPanComponent,
+		private hitTestCanvasModel: HitTestCanvasModel,
 	) {
 		super();
 		this.touchHandler = new MainCanvasTouchHandler(this.scale, this.canvasInputListener, this.mainCanvasParent);
@@ -75,6 +77,7 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 			{
 				onDragStart: this.onXDragStart,
 				onDragTick: this.onXDragTick,
+				onDragEnd: this.onXDragEnd,
 			},
 			this.canvasInputListener,
 			this.chartPanComponent,
@@ -213,11 +216,17 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 			}
 		};
 
+		const onYDragEnd = () => {
+			// Continue redrawing hit test
+			this.hitTestCanvasModel.hitTestDrawersPredicateSubject.next(true);
+		};
+
 		const dragNDropYComponent = new DragNDropYComponent(
 			hitTest,
 			{
 				onDragTick: onYDragTick,
 				onDragStart: onYDragStart,
+				onDragEnd: onYDragEnd,
 			},
 			this.canvasInputListener,
 			this.chartPanComponent,
@@ -233,6 +242,8 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 		this.canvasAnimation.forceStopAnimation(VIEWPORT_ANIMATION_ID);
 		this.xDraggedCandlesDelta = 0;
 		this.lastXStart = this.scale.xStart;
+		// Stop redrawing hit test
+		this.hitTestCanvasModel.hitTestDrawersPredicateSubject.next(false);
 	};
 
 	private onXDragTick = (dragInfo: DragInfo) => {
@@ -241,6 +252,11 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 		const unitsDelta = pixelsToUnits(absoluteXDelta, this.scale.zoomX);
 		this.scale.moveXStart(this.lastXStart - unitsDelta);
 		this.bus.fireDraw();
+	};
+
+	private onXDragEnd = () => {
+		// Continue redrawing hit test
+		this.hitTestCanvasModel.hitTestDrawersPredicateSubject.next(true);
 	};
 }
 

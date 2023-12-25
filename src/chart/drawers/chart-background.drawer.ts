@@ -14,14 +14,14 @@ export class BackgroundDrawer implements Drawer {
 	constructor(
 		private canvasModel: CanvasModel,
 		private config: FullChartConfig,
-		private backgroundDrawPredicate: () => boolean = () => true,
+		private drawPredicate: () => boolean = () => true,
 	) {}
 
 	// we need to save previous state to avoid unnecessary redraws
 	private prevState: Partial<ChartAreaTheme> = {};
 
 	draw(): void {
-		if (this.backgroundDrawPredicate() || !deepEqual(this.config.colors.chartAreaTheme, this.prevState)) {
+		if (this.drawPredicate() || !deepEqual(this.config.colors.chartAreaTheme, this.prevState)) {
 			this.canvasModel.clear();
 			const ctx = this.canvasModel.ctx;
 			if (this.config.colors.chartAreaTheme.backgroundMode === 'gradient') {

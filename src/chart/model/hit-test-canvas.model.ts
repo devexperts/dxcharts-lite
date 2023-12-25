@@ -3,7 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { merge, Observable, Subject, Subscription, animationFrameScheduler } from 'rxjs';
+import { merge, Observable, Subject, Subscription, animationFrameScheduler, BehaviorSubject } from 'rxjs';
 import { map, throttleTime } from 'rxjs/operators';
 import { CanvasBoundsContainer, CanvasElement } from '../canvas/canvas-bounds-container';
 import { CursorType, FullChartConfig } from '../chart.config';
@@ -40,6 +40,8 @@ export class HitTestCanvasModel extends CanvasModel {
 	private touchStartSubject: Subject<HitTestEvent> = new Subject();
 	private dblClickSubject: Subject<HitTestEvent> = new Subject();
 	private rightClickSubject: Subject<HitTestEvent> = new Subject();
+	// This predicate is used to detect whenever hit test should or shouldn't redraw hit test canvas image objects
+	public hitTestDrawersPredicateSubject: BehaviorSubject<boolean> = new BehaviorSubject(true);
 
 	constructor(
 		eventBus: EventBus,
@@ -53,6 +55,7 @@ export class HitTestCanvasModel extends CanvasModel {
 	) {
 		super(eventBus, canvas, drawingManager, canvasModels, resizer, {
 			willReadFrequently: true,
+			// set to false to visually see hit test drawers objects (the canvas should also be visible)
 			desynchronized: true,
 		});
 		initCanvasWithConfig(this, chartConfig);

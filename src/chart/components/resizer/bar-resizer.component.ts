@@ -17,6 +17,7 @@ import { DragNDropYComponent } from '../dran-n-drop_helper/drag-n-drop-y.compone
 import { ChartPanComponent } from '../pan/chart-pan.component';
 import { BarResizerDrawer } from './bar-resizer.drawer';
 import { BoundsProvider } from '../../model/bounds.model';
+import { HitTestCanvasModel } from '../../model/hit-test-canvas.model';
 
 /**
  * Bar separator between panes.
@@ -41,6 +42,7 @@ export class BarResizerComponent extends ChartBaseElement {
 		private canvasAnimation: CanvasAnimation,
 		private config: FullChartConfig,
 		private canvasBoundsContainer: CanvasBoundsContainer,
+		private hitTestCanvasModel: HitTestCanvasModel,
 	) {
 		super();
 		this.animationId = `${this.id}_RESIZER`;
@@ -106,12 +108,16 @@ export class BarResizerComponent extends ChartBaseElement {
 	private onYDragStart = () => {
 		this.config.components.crossTool.type = 'none';
 		this.initialY = this.boundsProvider().y;
+		// Stop redrawing hit test
+		this.hitTestCanvasModel.hitTestDrawersPredicateSubject.next(false);
 	};
 
 	private onYDragEnd = () => {
 		this.config.components.crossTool.type = 'cross-and-labels';
 		this.initialY = this.boundsProvider().y;
 		this.canvasBoundsContainer.graphsHeightRatioChangedSubject.next(this.canvasBoundsContainer.graphsHeightRatio);
+		// Continue redrawing hit test
+		this.hitTestCanvasModel.hitTestDrawersPredicateSubject.next(true);
 	};
 
 	private onYDragTick = (dragInfo: DragInfo) => {

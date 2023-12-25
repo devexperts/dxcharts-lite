@@ -18,16 +18,19 @@ export class HTDataSeriesDrawer implements Drawer {
 		private readonly seriesDrawers: Record<string, SeriesDrawer>,
 		private canvasModel: HitTestCanvasModel,
 		private paneManager: PaneManager,
+		private drawPredicate: () => boolean = () => true,
 	) {}
 
 	draw() {
-		const ctx = this.canvasModel.ctx;
-		this.paneManager.yExtents.forEach(comp => {
-			ctx.save();
-			clipToBounds(ctx, comp.getBounds());
-			comp.dataSeries.forEach(series => this.drawSeries(ctx, series));
-			ctx.restore();
-		});
+		if (this.drawPredicate()) {
+			const ctx = this.canvasModel.ctx;
+			this.paneManager.yExtents.forEach(comp => {
+				ctx.save();
+				clipToBounds(ctx, comp.getBounds());
+				comp.dataSeries.forEach(series => this.drawSeries(ctx, series));
+				ctx.restore();
+			});
+		}
 	}
 
 	public drawSeries(ctx: CanvasRenderingContext2D, series: DataSeriesModel) {
