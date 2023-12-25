@@ -10,6 +10,9 @@ import { CanvasInputListenerComponent } from '../inputlisteners/canvas-input-lis
 import { ChartBaseElement } from '../model/chart-base-element';
 import { Unsubscriber } from '../utils/function.utils';
 
+/**
+ * [x, y, uuid - Unique identifier for the subscription]
+ */
 export type CrossEvent = [number, number, string];
 export class CrossEventProducerComponent extends ChartBaseElement {
 	panesSubscriptions: Partial<Record<string, Subscription>> = {};

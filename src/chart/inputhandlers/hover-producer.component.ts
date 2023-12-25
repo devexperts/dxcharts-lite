@@ -126,8 +126,9 @@ export class HoverProducerComponent extends ChartBaseElement {
 				const x = event.touches[0].clientX - this.canvasBoundsContainer.canvasOnPageLocation.x;
 				const y = event.touches[0].clientY - this.canvasBoundsContainer.canvasOnPageLocation.y;
 				const candle = this.chartModel.candleFromX(x, true);
+				const paneId = this.paneManager.getPaneIfHit({ x, y })?.uuid || '';
 				if (candle) {
-					this.createAndFireHover([x, y, '']);
+					this.createAndFireHover([x, y, paneId]);
 				}
 			}),
 		);
@@ -141,8 +142,9 @@ export class HoverProducerComponent extends ChartBaseElement {
 				this.longTouchActivatedSubject.next(true);
 				const x = event.touches[0].clientX - this.canvasBoundsContainer.canvasOnPageLocation.x;
 				const y = event.touches[0].clientY - this.canvasBoundsContainer.canvasOnPageLocation.y;
-				this.createAndFireHover([x, y, '']);
-				this.crossEventProducer.crossSubject.next([x, y, '']);
+				const paneId = this.paneManager.getPaneIfHit({ x, y })?.uuid || '';
+				this.createAndFireHover([x, y, paneId]);
+				this.crossEventProducer.crossSubject.next([x, y, paneId]);
 			}),
 		);
 		this.addRxSubscription(
