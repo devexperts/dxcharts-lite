@@ -108,6 +108,7 @@ export class BarResizerComponent extends ChartBaseElement {
 	private onYDragStart = () => {
 		this.config.components.crossTool.type = 'none';
 		this.initialY = this.boundsProvider().y;
+		// Stop redrawing hit test
 		this.hitTestCanvasModel.hitTestDrawersPredicateSubject.next(false);
 	};
 
@@ -115,6 +116,7 @@ export class BarResizerComponent extends ChartBaseElement {
 		this.config.components.crossTool.type = 'cross-and-labels';
 		this.initialY = this.boundsProvider().y;
 		this.canvasBoundsContainer.graphsHeightRatioChangedSubject.next(this.canvasBoundsContainer.graphsHeightRatio);
+		// Continue redrawing hit test
 		this.hitTestCanvasModel.hitTestDrawersPredicateSubject.next(true);
 	};
 

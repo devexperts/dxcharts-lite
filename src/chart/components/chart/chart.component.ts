@@ -82,7 +82,7 @@ export class ChartComponent extends ChartBaseElement {
 	private readonly backgroundDrawer: BackgroundDrawer;
 	private readonly _dataSeriesDrawers: Record<DataSeriesType, SeriesDrawer> = {};
 	private readonly dataSeriesDrawer: DataSeriesDrawer;
-	private backgroundDrawPredicateSubj = new BehaviorSubject<boolean>(true);
+	private backgroundDrawerPredicateSubject= new BehaviorSubject<boolean>(true);
 
 	constructor(
 		public readonly chartModel: ChartModel,
@@ -126,7 +126,7 @@ export class ChartComponent extends ChartBaseElement {
 		this.registerDefaultDataSeriesDrawers();
 		//#endregion
 		this.backgroundDrawer = new BackgroundDrawer(backgroundCanvasModel, this.config, () =>
-			this.backgroundDrawPredicateSubj.getValue(),
+			this.backgroundDrawerPredicateSubject.getValue(),
 		);
 		drawingManager.addDrawer(this.backgroundDrawer, 'MAIN_BACKGROUND');
 		cursorHandler.setCursorForCanvasEl(CanvasElement.PANE_UUID(CHART_UUID), config.components.chart.cursor);
@@ -167,12 +167,12 @@ export class ChartComponent extends ChartBaseElement {
 		// redraw background only when chart is resized
 		this.addRxSubscription(
 			this.canvasBoundsContainer.observeAnyBoundsChanged().subscribe(() => {
-				this.backgroundDrawPredicateSubj.next(false);
+				this.backgroundDrawerPredicateSubject.next(false);
 			}),
 		);
 		this.addRxSubscription(
 			this.chartResizeHandler.canvasResized.subscribe(() => {
-				this.backgroundDrawPredicateSubj.next(true);
+				this.backgroundDrawerPredicateSubject.next(true);
 			}),
 		);
 	}

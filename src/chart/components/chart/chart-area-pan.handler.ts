@@ -217,6 +217,7 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 		};
 
 		const onYDragEnd = () => {
+			// Continue redrawing hit test
 			this.hitTestCanvasModel.hitTestDrawersPredicateSubject.next(true);
 		};
 
@@ -241,6 +242,7 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 		this.canvasAnimation.forceStopAnimation(VIEWPORT_ANIMATION_ID);
 		this.xDraggedCandlesDelta = 0;
 		this.lastXStart = this.scale.xStart;
+		// Stop redrawing hit test
 		this.hitTestCanvasModel.hitTestDrawersPredicateSubject.next(false);
 	};
 
@@ -253,6 +255,7 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 	};
 
 	private onXDragEnd = () => {
+		// Continue redrawing hit test
 		this.hitTestCanvasModel.hitTestDrawersPredicateSubject.next(true);
 	};
 }

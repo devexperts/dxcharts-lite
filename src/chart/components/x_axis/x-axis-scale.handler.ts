@@ -78,6 +78,7 @@ export class XAxisScaleHandler extends ChartBaseElement {
 		this.lastXWidth = this.scale.xEnd - this.scale.xStart;
 		const bounds = this.canvasBoundsContainer.getBounds(CanvasElement.X_AXIS);
 		this.lastXPxWidth = bounds.width - this.canvasInputListener.currentPoint.x;
+		// Stop redrawing hit test
 		this.hitTestCanvasModel.hitTestDrawersPredicateSubject.next(false);
 	};
 
@@ -95,6 +96,7 @@ export class XAxisScaleHandler extends ChartBaseElement {
 	};
 
 	private onXDragEnd = () => {
+		// Continue redrawing hit test
 		this.hitTestCanvasModel.hitTestDrawersPredicateSubject.next(true);
 	};
 }

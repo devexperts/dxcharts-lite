@@ -81,6 +81,7 @@ export class YAxisScaleHandler extends ChartBaseElement {
 		this.lastYEnd = this.scale.yEnd;
 		this.lastYHeight = this.scale.yEnd - this.scale.yStart;
 		this.lastYPxHeight = this.bounds.getBounds(CanvasElement.Y_AXIS).height;
+		// Stop redrawing hit test
 		this.hitTestCanvasModel.hitTestDrawersPredicateSubject.next(false);
 	};
 
@@ -109,6 +110,7 @@ export class YAxisScaleHandler extends ChartBaseElement {
 
 	private onYDragEnd = () => {
 		this.yAxisDragEndSubject.next();
+		// Continue redrawing hit test
 		this.hitTestCanvasModel.hitTestDrawersPredicateSubject.next(true);
 	};
 }

@@ -40,6 +40,7 @@ export class HitTestCanvasModel extends CanvasModel {
 	private touchStartSubject: Subject<HitTestEvent> = new Subject();
 	private dblClickSubject: Subject<HitTestEvent> = new Subject();
 	private rightClickSubject: Subject<HitTestEvent> = new Subject();
+	// This predicate is used to detect whenever hit test should or shouldn't redraw hit test canvas image objects
 	public hitTestDrawersPredicateSubject: BehaviorSubject<boolean> = new BehaviorSubject(true);
 
 	constructor(
