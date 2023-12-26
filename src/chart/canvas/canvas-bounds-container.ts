@@ -259,6 +259,7 @@ export class CanvasBoundsContainer {
 		// panes
 		this.panesOrder.forEach((uuid, index) => {
 			const paneHeightRatio = this.graphsHeightRatio[this.panesOrder[index]];
+			// hide resizer for first pane with index === 0
 			const resizerVisible = this.config.components.paneResizer.visible && index !== 0;
 			const resizerUUID = CanvasElement.PANE_UUID_RESIZER(uuid);
 			const paneUUID = CanvasElement.PANE_UUID(uuid);
@@ -418,10 +419,11 @@ export class CanvasBoundsContainer {
 	private getXAxisBounds(nMap: Bounds, canvas: Bounds): Bounds {
 		const xAxis = this.getBounds(CanvasElement.X_AXIS);
 		if (this.config.components.xAxis.visible) {
+			const xAxisHeight = this.getXAxisHeight();
 			xAxis.x = 0;
-			xAxis.y = canvas.height - this.getXAxisHeight() - nMap.height;
+			xAxis.y = canvas.height - xAxisHeight - nMap.height;
 			xAxis.width = canvas.width;
-			xAxis.height = this.getXAxisHeight();
+			xAxis.height = xAxisHeight;
 		} else {
 			this.applyDefaultBounds(xAxis);
 		}
