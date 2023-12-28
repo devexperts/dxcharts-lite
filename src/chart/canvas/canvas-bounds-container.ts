@@ -259,39 +259,33 @@ export class CanvasBoundsContainer {
 		// panes
 		this.panesOrder.forEach((uuid, index) => {
 			const paneHeightRatio = this.graphsHeightRatio[this.panesOrder[index]];
-			const resizerVisible = this.config.components.paneResizer.visible;
+			// hide resizer for first pane with index === 0
+			const resizerVisible = this.config.components.paneResizer.visible && index !== 0;
+			const resizerUUID = CanvasElement.PANE_UUID_RESIZER(uuid);
+			const paneUUID = CanvasElement.PANE_UUID(uuid);
 			if (resizerVisible) {
-				if (index !== 0) {
-					upsertBounds(
-						this.bounds,
-						CanvasElement.PANE_UUID_RESIZER(uuid),
-						0,
-						nextY,
-						canvas.width,
-						paneResizerHeight,
-						this.canvasOnPageLocation,
-					);
-				} else {
-					upsertBounds(
-						this.bounds,
-						CanvasElement.PANE_UUID_RESIZER(uuid),
-						0,
-						0,
-						0,
-						0,
-						this.canvasOnPageLocation,
-					);
-				}
+				upsertBounds(
+					this.bounds,
+					resizerUUID,
+					0,
+					nextY,
+					canvas.width,
+					paneResizerHeight,
+					this.canvasOnPageLocation,
+				);
+			} else {
+				upsertBounds(this.bounds, resizerUUID, 0, 0, 0, 0, this.canvasOnPageLocation);
 			}
+
+			const paneYStart =  nextY + (resizerVisible ? paneResizerHeight : 0);
+
 			const paneBounds = upsertBounds(
 				this.bounds,
-				CanvasElement.PANE_UUID(uuid),
+				paneUUID,
 				paneXStart,
-				resizerVisible ? nextY + paneResizerHeight : nextY,
+				paneYStart,
 				chartWidth,
-				resizerVisible
-					? chartHeight * paneHeightRatio - this.config.components.paneResizer.height
-					: chartHeight * paneHeightRatio,
+				chartHeight * paneHeightRatio - (resizerVisible ? this.config.components.paneResizer.height : 0),
 				this.canvasOnPageLocation,
 			);
 			// y axis
@@ -301,11 +295,7 @@ export class CanvasBoundsContainer {
 					return;
 				}
 
-				const y = resizerVisible ? nextY + paneResizerHeight : nextY;
-				const height = resizerVisible
-					? chartHeight * paneHeightRatio - paneResizerHeight
-					: chartHeight * paneHeightRatio;
-
+				const height = chartHeight * paneHeightRatio - (resizerVisible ? paneResizerHeight : 0);
 				let startXLeft = paneXStart - (yAxisWidths.left[0] ?? 0); // we need to provide right to left order on the left y-axis side
 				let startXRight = yAxisXRight;
 
@@ -314,7 +304,7 @@ export class CanvasBoundsContainer {
 						this.bounds,
 						CanvasElement.PANE_UUID_Y_AXIS(uuid, extentIdx),
 						startXLeft,
-						y,
+						paneYStart,
 						yAxisWidths.left[i],
 						height,
 						this.canvasOnPageLocation,
@@ -326,7 +316,7 @@ export class CanvasBoundsContainer {
 						this.bounds,
 						CanvasElement.PANE_UUID_Y_AXIS(uuid, extentIdx),
 						startXRight,
-						y,
+						paneYStart,
 						yAxisWidths.right[i],
 						height,
 						this.canvasOnPageLocation,
@@ -345,7 +335,7 @@ export class CanvasBoundsContainer {
 		allPanesBounds.height = nextY;
 		// chart with Y axis
 		const chartWithYAxis = this.getBounds(CanvasElement.CHART_WITH_Y_AXIS);
-		const chartBounds = this.getBounds(CanvasElement.PANE_UUID(CHART_UUID));
+		const chartBounds = this.getBounds(CanvasElement.CHART);
 		this.getEventsBounds(chartBounds);
 		this.copyBounds(chartBounds, chartWithYAxis);
 		chartWithYAxis.width = canvas.width;
@@ -429,10 +419,11 @@ export class CanvasBoundsContainer {
 	private getXAxisBounds(nMap: Bounds, canvas: Bounds): Bounds {
 		const xAxis = this.getBounds(CanvasElement.X_AXIS);
 		if (this.config.components.xAxis.visible) {
+			const xAxisHeight = this.getXAxisHeight();
 			xAxis.x = 0;
-			xAxis.y = canvas.height - this.getXAxisHeight() - nMap.height;
+			xAxis.y = canvas.height - xAxisHeight - nMap.height;
 			xAxis.width = canvas.width;
-			xAxis.height = this.getXAxisHeight();
+			xAxis.height = xAxisHeight;
 		} else {
 			this.applyDefaultBounds(xAxis);
 		}
