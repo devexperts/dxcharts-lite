@@ -247,8 +247,8 @@ export class DataSeriesModel<
 	 * @returns {DataSeriesViewportIndexes} An object containing the calculated start and end indexes of the data viewport.
 	 */
 	public calculateDataViewportIndexes(xStart: Unit, xEnd: Unit): DataSeriesViewportIndexes {
-		const dataIdxStart = binarySearch(this.visualPoints, xStart, i => i.centerUnit).index;
-		const dataIdxEnd = binarySearch(this.visualPoints, xEnd, i => i.centerUnit).index;
+		const dataIdxStart = binarySearch(this.visualPoints, Math.ceil(xStart), i => i.centerUnit).index;
+		const dataIdxEnd = binarySearch(this.visualPoints, Math.ceil(xEnd), i => i.centerUnit).index;
 		return {
 			dataIdxStart,
 			dataIdxEnd,
