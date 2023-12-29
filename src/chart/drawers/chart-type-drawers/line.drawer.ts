@@ -30,7 +30,9 @@ export class LineDrawer implements SeriesDrawer {
 			if (drawerConfig.singleColor) {
 				ctx.strokeStyle = drawerConfig.singleColor;
 			}
-			for (let i = 1; i < visualCandles.length; i++) {
+			// start Idx is 2 because we shouldn't use the first viewport candle, otherwise the line would be out of canvas
+			// end Idx is length -1 for the same reason, don't use last candle, to correctly display on the right
+			for (let i = 2; i < visualCandles.length - 1; i++) {
 				const prev = visualCandles[i - 1];
 				const vc = visualCandles[i];
 				const direction = vc.name;
