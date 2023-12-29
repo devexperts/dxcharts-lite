@@ -802,8 +802,7 @@ export class ChartModel extends ChartBaseElement {
 	 * @returns {void}
 	 */
 	setTimestampRange(start: Timestamp, end: Timestamp, forceNoAnimation: boolean = true): void {
-		// Move initial viewport startUnit insignificantly to the right to make correct recalculations based on viewport candles
-		const startUnit = this.candleFromTimestamp(start).startUnit + 0.01;
+		const startUnit = this.candleFromTimestamp(start).startUnit;
 		const endCandle = this.candleFromTimestamp(end);
 		const endUnit = endCandle.startUnit + endCandle.width;
 		return this.scale.setXScale(startUnit, endUnit, forceNoAnimation);
