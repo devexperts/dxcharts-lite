@@ -95,6 +95,7 @@ export class PaneManager extends ChartBaseElement {
 		const resizerHT = this.canvasBoundsContainer.getBoundsHitTest(CanvasElement.PANE_UUID_RESIZER(uuid), {
 			extensionY: this.config.components.paneResizer.dragZone,
 		});
+		const dragPredicate = () => this.chartBaseModel.mainVisualPoints.length !== 0;
 		const dragTick = () => {
 			this.canvasBoundsContainer.resizePaneVertically(uuid, this.canvasInputListener.getCurrentPoint().y);
 			this.eventBus.fireDraw([this.mainCanvasModel.canvasId, 'dynamicObjectsCanvas']);
@@ -105,6 +106,7 @@ export class PaneManager extends ChartBaseElement {
 			() => this.canvasBoundsContainer.getBounds(resizerId),
 			resizerHT,
 			dragTick,
+			dragPredicate,
 			this.chartPanComponent,
 			this.mainCanvasModel,
 			this.drawingManager,
