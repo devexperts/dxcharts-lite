@@ -10,6 +10,7 @@ import { ColorTransitionAnimationConfig, ColorTransitionAnimation } from './type
 import { ViewportMovementAnimationConfig, ViewportMovementAnimation } from './types/viewport-movement-animation';
 import { ViewportModel } from '../model/scaling/viewport.model';
 import { StringTMap } from '../utils/object.utils';
+import { BehaviorSubject } from 'rxjs';
 
 const DEFAULT_ANIMATION_TIME = 10;
 
@@ -32,7 +33,7 @@ export const VIEWPORT_ANIMATION_ID = 'VIEWPORT_ANIMATION';
  * @doc-tags chart-core,animation
  */
 export class CanvasAnimation {
-	animationIntervalId?: number;
+	animationIntervalIdSubject = new BehaviorSubject<number | undefined>(undefined);
 	animations: StringTMap<Animation> = {};
 
 	constructor(private eventBus: EventBus) {}
@@ -144,8 +145,8 @@ export class CanvasAnimation {
 	 * This method ensures that the animation interval is started. If the animation interval ID is not set, it sets it to a new interval ID using `window.setInterval()` with a callback function of `this.tick()` and a delay of 20 milliseconds.
 	 */
 	private ensureIntervalStarted() {
-		if (!this.animationIntervalId) {
-			this.animationIntervalId = window.setInterval(() => this.tick(), 20);
+		if (!this.animationIntervalIdSubject.getValue()) {
+			this.animationIntervalIdSubject.next(window.setInterval(() => this.tick(), 20));
 		}
 	}
 
@@ -172,7 +173,7 @@ export class CanvasAnimation {
 	 * Stops the interval for the animation.
 	 */
 	private stopInterval() {
-		clearInterval(this.animationIntervalId);
-		this.animationIntervalId = undefined;
+		clearInterval(this.animationIntervalIdSubject.getValue());
+		this.animationIntervalIdSubject.next(undefined);
 	}
 }
