@@ -238,6 +238,11 @@ export default class ChartBootstrap {
 		this.canvasInputListener = canvasInputListener;
 		this.chartComponents.push(this.canvasInputListener);
 		//#endregion
+		
+		// canvas animation container
+		const canvasAnimation = new CanvasAnimation(eventBus);
+		this.canvasAnimation = canvasAnimation;
+
 		const hitTestCanvasModel = new HitTestCanvasModel(
 			eventBus,
 			elements.hitTestCanvas,
@@ -246,16 +251,13 @@ export default class ChartBootstrap {
 			drawingManager,
 			config,
 			this.canvasModels,
+			this.canvasAnimation,
 			elements.chartResizer,
 		);
 		this.hitTestCanvasModel = hitTestCanvasModel;
 		const hitTestClearCanvas = new ClearCanvasDrawer(hitTestCanvasModel);
 		drawingManager.addDrawer(hitTestClearCanvas, 'HIT_TEST_CLEAR');
 		//#endregion
-
-		// canvas animation container
-		const canvasAnimation = new CanvasAnimation(eventBus);
-		this.canvasAnimation = canvasAnimation;
 
 		const chartPaneId = CanvasElement.PANE_UUID(CHART_UUID);
 		//#region ScaleModel init
