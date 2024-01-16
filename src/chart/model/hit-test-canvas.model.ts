@@ -12,7 +12,6 @@ import { DrawingManager } from '../drawers/drawing-manager';
 import EventBus from '../events/event-bus';
 import { CanvasInputListenerComponent, Point } from '../inputlisteners/canvas-input-listener.component';
 import { animationFrameId } from '../utils/performance/request-animation-frame-throttle.utils';
-import { CanvasAnimation, VIEWPORT_ANIMATION_ID } from '../animation/canvas-animation';
 
 const bigPrimeNumber = 317;
 
@@ -52,7 +51,6 @@ export class HitTestCanvasModel extends CanvasModel {
 		drawingManager: DrawingManager,
 		chartConfig: FullChartConfig,
 		canvasModels: CanvasModel[],
-		private canvasAnimation: CanvasAnimation,
 		resizer?: HTMLElement,
 	) {
 		super(eventBus, canvas, drawingManager, canvasModels, resizer, {
@@ -63,14 +61,6 @@ export class HitTestCanvasModel extends CanvasModel {
 		initCanvasWithConfig(this, chartConfig);
 		canvas.style.visibility = 'hidden';
 		this.enableUserControls();
-		this.canvasAnimation.animationIntervalIdSubject.subscribe(() => {
-			const viewportAnimation = this.canvasAnimation.getAnimation(VIEWPORT_ANIMATION_ID);
-			const shouldRedrawHittest =
-				viewportAnimation && viewportAnimation.animationTimeLeft > 0
-					? !this.canvasAnimation.animationIntervalIdSubject.getValue()
-					: true;
-			this.hitTestDrawersPredicateSubject.next(shouldRedrawHittest);
-		});
 	}
 
 	/**

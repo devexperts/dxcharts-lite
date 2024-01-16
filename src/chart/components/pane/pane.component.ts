@@ -181,7 +181,14 @@ export class PaneComponent extends ChartBaseElement {
 		const chartPaneId = CanvasElement.PANE_UUID(this.uuid);
 		const getBounds = () => this.canvasBoundsContainer.getBounds(chartPaneId);
 		const scaleModel =
-			options?.scale ?? new SyncedByXScaleModel(this.mainScale, this.config, getBounds, this.canvasAnimation);
+			options?.scale ??
+			new SyncedByXScaleModel(
+				this.mainScale,
+				this.config,
+				getBounds,
+				this.canvasAnimation,
+				this.hitTestCanvasModel,
+			);
 
 		const [unsub, dragNDrop] = this.createYPanHandler(this.uuid, scaleModel);
 
