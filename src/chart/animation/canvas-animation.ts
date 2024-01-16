@@ -20,6 +20,7 @@ export interface AnimationConfig {
 }
 
 export const VIEWPORT_ANIMATION_ID = 'VIEWPORT_ANIMATION';
+type AnimationsStatus = 'inProgress' | 'finished';
 
 /**
  * Singleton animation container for all chart animations.
@@ -33,8 +34,9 @@ export const VIEWPORT_ANIMATION_ID = 'VIEWPORT_ANIMATION';
  * @doc-tags chart-core,animation
  */
 export class CanvasAnimation {
-	animationIntervalIdSubject = new BehaviorSubject<number | undefined>(undefined);
+	animationIntervalId?: number;
 	animations: StringTMap<Animation> = {};
+	animationsStatusSubject = new BehaviorSubject<AnimationsStatus>('finished');
 
 	constructor(private eventBus: EventBus) {}
 
@@ -145,8 +147,8 @@ export class CanvasAnimation {
 	 * This method ensures that the animation interval is started. If the animation interval ID is not set, it sets it to a new interval ID using `window.setInterval()` with a callback function of `this.tick()` and a delay of 20 milliseconds.
 	 */
 	private ensureIntervalStarted() {
-		if (!this.animationIntervalIdSubject.getValue()) {
-			this.animationIntervalIdSubject.next(window.setInterval(() => this.tick(), 20));
+		if (!this.animationIntervalId) {
+			this.animationIntervalId = window.setInterval(() => this.tick(), 20);
 		}
 	}
 
@@ -162,6 +164,7 @@ export class CanvasAnimation {
 				allCompleted = false;
 			}
 		}
+		this.animationsStatusSubject.next(allCompleted ? 'finished' : 'inProgress');
 		if (!allCompleted) {
 			this.eventBus.fireDraw();
 		} else {
@@ -173,7 +176,7 @@ export class CanvasAnimation {
 	 * Stops the interval for the animation.
 	 */
 	private stopInterval() {
-		clearInterval(this.animationIntervalIdSubject.getValue());
-		this.animationIntervalIdSubject.next(undefined);
+		clearInterval(this.animationIntervalId);
+		this.animationIntervalId = undefined;
 	}
 }
