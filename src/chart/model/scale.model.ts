@@ -96,9 +96,9 @@ export class ScaleModel extends ViewportModel {
 			}),
 		);
 		this.addRxSubscription(
-			this.canvasAnimation.animationsStatusSubject.subscribe(() => {
-				const animationsStatus = this.canvasAnimation.animationsStatusSubject.getValue();
-				this.hitTestCanvasModel.hitTestDrawersPredicateSubject.next(animationsStatus === 'finished');
+			this.canvasAnimation.animationInProgressSubject.subscribe(() => {
+				const animationInProgress = this.canvasAnimation.animationInProgressSubject.getValue();
+				this.hitTestCanvasModel.hitTestDrawersPredicateSubject.next(!animationInProgress);
 			}),
 		);
 	}

@@ -20,7 +20,7 @@ export interface AnimationConfig {
 }
 
 export const VIEWPORT_ANIMATION_ID = 'VIEWPORT_ANIMATION';
-type AnimationsStatus = 'inProgress' | 'finished';
+type AnimationsStatus = boolean;
 
 /**
  * Singleton animation container for all chart animations.
@@ -36,7 +36,7 @@ type AnimationsStatus = 'inProgress' | 'finished';
 export class CanvasAnimation {
 	animationIntervalId?: number;
 	animations: StringTMap<Animation> = {};
-	animationsStatusSubject = new BehaviorSubject<AnimationsStatus>('finished');
+	animationInProgressSubject = new BehaviorSubject<AnimationsStatus>(false);
 
 	constructor(private eventBus: EventBus) {}
 
@@ -164,7 +164,7 @@ export class CanvasAnimation {
 				allCompleted = false;
 			}
 		}
-		this.animationsStatusSubject.next(allCompleted ? 'finished' : 'inProgress');
+		this.animationInProgressSubject.next(!allCompleted);
 		if (!allCompleted) {
 			this.eventBus.fireDraw();
 		} else {
