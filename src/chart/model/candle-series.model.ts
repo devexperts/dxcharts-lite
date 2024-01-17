@@ -210,7 +210,7 @@ export class CandleSeriesModel extends DataSeriesModel<Candle, VisualCandle> {
 			// x - middle of candle
 			const x = accumulatedWidth + width / 2;
 			const transformer = this.candlesTransformersByChartType[type] ?? defaultCandleTransformer;
-			visualCandles.push(transformer(candle, { x, width, prevCandle, activeCandle: this.activeCandle }));
+			visualCandles.push(transformer(candle, { x, width, prevCandle, activeCandle: this.activeCandle }, visualCandles[i - 1]));
 			accumulatedWidth += width;
 		}
 		return visualCandles;
