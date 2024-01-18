@@ -90,7 +90,7 @@ export class CandleSeriesModel extends DataSeriesModel<Candle, VisualCandle> {
 	 * @returns {void}
 	 */
 	recalculateDataViewportIndexes(xStart = this.scale.xStart, xEnd = this.scale.xEnd) {
-		super.recalculateDataViewportIndexes(xStart, xEnd);
+		super.recalculateDataViewportIndexes(xStart, xEnd, (i: VisualCandle) => i.startUnit);
 		this.recalculateZippedHighLow();
 		this.eventBus.fireDraw();
 	}
