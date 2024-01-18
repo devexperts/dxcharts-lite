@@ -232,8 +232,12 @@ export class DataSeriesModel<
 	 * @param {number} [xStart=this.scale.xStart] - The start value of the viewport on the x-axis. Defaults to the current xStart value of the scale model.
 	 * @param {number} [xEnd=this.scale.xEnd] - The end value of the viewport on the x-axis. Defaults to the current xEnd value of the scale model.
 	 */
-	public recalculateDataViewportIndexes(xStart = this.scale.xStart, xEnd = this.scale.xEnd) {
-		const { dataIdxStart, dataIdxEnd } = this.calculateDataViewportIndexes(xStart, xEnd);
+	public recalculateDataViewportIndexes(
+		xStart = this.scale.xStart,
+		xEnd = this.scale.xEnd,
+		getter = (i: V) => i.centerUnit,
+	) {
+		const { dataIdxStart, dataIdxEnd } = this.calculateDataViewportIndexes(xStart, xEnd, getter);
 		this.dataIdxStart = dataIdxStart;
 		this.dataIdxEnd = dataIdxEnd;
 	}
@@ -246,10 +250,14 @@ export class DataSeriesModel<
 	 * @param {Unit} xEnd - The end value of the viewport on the x-axis.
 	 * @returns {DataSeriesViewportIndexes} An object containing the calculated start and end indexes of the data viewport.
 	 */
-	public calculateDataViewportIndexes(xStart: Unit, xEnd: Unit): DataSeriesViewportIndexes {
+	public calculateDataViewportIndexes(
+		xStart: Unit,
+		xEnd: Unit,
+		getter = (i: V) => i.centerUnit,
+	): DataSeriesViewportIndexes {
 		// Move initial viewport startUnit insignificantly to the right to make correct recalculations based on viewport candles
-		const dataIdxStart = binarySearch(this.visualPoints, Math.ceil(xStart + 0.01), i => i.centerUnit).index;
-		const dataIdxEnd = binarySearch(this.visualPoints, Math.ceil(xEnd), i => i.centerUnit).index;
+		const dataIdxStart = binarySearch(this.visualPoints, xStart, getter).index;
+		const dataIdxEnd = binarySearch(this.visualPoints, xEnd, getter).index;
 		return {
 			dataIdxStart,
 			dataIdxEnd,

@@ -20,7 +20,11 @@ export const createCandleSeriesHighLowProvider = (candleSeriesModel: CandleSerie
 		calculateHighLow: (state: ViewportModelState | undefined) => {
 			const xStart = state ? state.xStart : candleSeriesModel.scale.xStart;
 			const xEnd = state ? state.xEnd : candleSeriesModel.scale.xEnd;
-			const { dataIdxStart, dataIdxEnd } = candleSeriesModel.calculateDataViewportIndexes(xStart, xEnd);
+			const { dataIdxStart, dataIdxEnd } = candleSeriesModel.calculateDataViewportIndexes(
+				xStart,
+				xEnd,
+				(i: VisualCandle) => i.startUnit,
+			);
 			// +1 because dataIdxEnd candle should be included in the result
 			const visualCandles = candleSeriesModel.visualPoints.slice(dataIdxStart, dataIdxEnd + 1);
 			const highLowWithIndex = calculateCandlesHighLow(visualCandles);

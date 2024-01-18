@@ -82,7 +82,7 @@ export class ChartComponent extends ChartBaseElement {
 	private readonly backgroundDrawer: BackgroundDrawer;
 	private readonly _dataSeriesDrawers: Record<DataSeriesType, SeriesDrawer> = {};
 	private readonly dataSeriesDrawer: DataSeriesDrawer;
-	private backgroundDrawerPredicateSubject= new BehaviorSubject<boolean>(true);
+	private backgroundDrawerPredicateSubject = new BehaviorSubject<boolean>(true);
 
 	constructor(
 		public readonly chartModel: ChartModel,
