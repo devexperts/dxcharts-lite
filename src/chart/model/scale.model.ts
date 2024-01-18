@@ -15,7 +15,6 @@ import { moveXStart, moveYStart } from './scaling/move-chart.functions';
 import { Price, Unit, ViewportModel, ViewportModelState, Zoom, compareStates } from './scaling/viewport.model';
 import { zoomXToEndViewportCalculator, zoomXToPercentViewportCalculator } from './scaling/x-zooming.functions';
 import { BoundsProvider } from './bounds.model';
-import { HitTestCanvasModel } from './hit-test-canvas.model';
 
 export interface HighLowWithIndex {
 	high: Price;
@@ -73,8 +72,7 @@ export class ScaleModel extends ViewportModel {
 	constructor(
 		public config: FullChartConfig,
 		public getBounds: BoundsProvider,
-		public canvasAnimation: CanvasAnimation,
-		public hitTestCanvasModel: HitTestCanvasModel,
+		private canvasAnimation: CanvasAnimation,
 	) {
 		super();
 		this.state = cloneUnsafe(config.scale);
@@ -93,12 +91,6 @@ export class ScaleModel extends ViewportModel {
 		this.addRxSubscription(
 			this.scaleInversedSubject.subscribe(() => {
 				this.fireChanged();
-			}),
-		);
-		this.addRxSubscription(
-			this.canvasAnimation.animationInProgressSubject.subscribe(() => {
-				const animationInProgress = this.canvasAnimation.animationInProgressSubject.getValue();
-				this.hitTestCanvasModel.hitTestDrawersPredicateSubject.next(!animationInProgress);
 			}),
 		);
 	}
@@ -412,10 +404,9 @@ export class SyncedByXScaleModel extends ScaleModel {
 		private delegate: ViewportModel,
 		public config: FullChartConfig,
 		public getBounds: BoundsProvider,
-		public canvasAnimation: CanvasAnimation,
-		public hitTestCanvasModel: HitTestCanvasModel
+		canvasAnimation: CanvasAnimation,
 	) {
-		super(config, getBounds, canvasAnimation, hitTestCanvasModel);
+		super(config, getBounds, canvasAnimation);
 	}
 
 	protected doActivate(): void {
