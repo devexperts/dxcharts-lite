@@ -38,13 +38,21 @@ export interface DataSeriesConfig {
 	labelPaddingEnd?: number;
 }
 
+type NegativeColor = string;
+type PositiveColor = string;
+type NegativeAndDownColor = string;
+type NegativeAndUpColor = string;
+type PositiveAndDownColor = string;
+type PositiveAndUpColor = string;
+
 export interface DataSeriesPaintConfig {
 	color: string;
 	lineWidth: number;
 	hoveredLineWidth: number;
-	//add this for TREND_HISTOGRAM study type
-	// this way not add breaking change
-	aditionalColor?: string;
+	// add this for TREND_HISTOGRAM study type
+	multiplyColors?:
+		| [NegativeColor, PositiveColor]
+		| [NegativeAndDownColor, NegativeAndUpColor, PositiveAndDownColor, PositiveAndUpColor];
 }
 
 export const DEFAULT_DATA_SERIES_PAINT_CONFIG: DataSeriesPaintConfig = {
