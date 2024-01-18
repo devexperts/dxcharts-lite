@@ -43,6 +43,7 @@ import { uuid } from '../../utils/uuid.utils';
 export type VisualCandleCalculator = (
 	candle: Candle,
 	options: { width: Unit; x: Unit; prevCandle?: Candle; activeCandle?: Candle },
+	previousVisualCandle: VisualCandle,
 ) => VisualCandle;
 export type LastCandleLabelHandler = (labels: LabelGroup, candleSeries: CandleSeriesModel) => void;
 export type CandleWidthCalculator = (candle: Candle) => Unit;
