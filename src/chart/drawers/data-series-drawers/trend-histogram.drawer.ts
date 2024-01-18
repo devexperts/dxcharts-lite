@@ -14,25 +14,61 @@ export class TrendHistogramDrawer implements SeriesDrawer {
 
 	draw(ctx: CanvasRenderingContext2D, allPoints: VisualSeriesPoint[][], model: DataSeriesModel): void {
 		const zero = model.view.toY(0);
-		// here I do flat, thinks that there is no more that 1 series
+		//  here I do flat, thinks that there is no more that 1 series
 		const allPointsFlat = flat(allPoints);
-		const items: [VisualSeriesPoint[], VisualSeriesPoint[]] = [[], []];
-		allPointsFlat.forEach((item, idx, array) => {
-			items[item.close < this.previousValue(array, idx) ? 1 : 0].push(item);
-		});
+		const config = model.getPaintConfig(0);
 
-		items.forEach((points, idx) => {
+		allPointsFlat.forEach((point, idx) => {
 			// odd width is crucial to draw histogram without antialiasing
-			const config = model.getPaintConfig(idx);
-			ctx.strokeStyle = idx === 0 ? config.color : config.aditionalColor || '#FF00FF';
-			ctx.lineWidth = config.lineWidth;
-			ctx.beginPath();
-			points.forEach(p => {
-				const x = model.view.toX(p.centerUnit);
-				const y = model.view.toY(p.close);
+			// 2 colors: Negative and Positive
+			if (config.multiplyColors?.length === 2) {
+				ctx.strokeStyle =
+					(point.close < this.previousValue(allPointsFlat, idx)
+						? config.multiplyColors[1]
+						: config.multiplyColors[0]) ||
+					config.color ||
+					'#FF00FF';
+				ctx.lineWidth = config.lineWidth;
+				ctx.beginPath();
+				const x = model.view.toX(point.centerUnit);
+				const y = model.view.toY(point.close);
 				ctx.moveTo(x, floor(zero));
 				ctx.lineTo(x, floor(y));
-			});
+				ctx.stroke();
+				return;
+			}
+			// 4 colors: Negative and Down, Negative and Up, Positive and Down, Positive and Up
+			if (config.multiplyColors?.length === 4) {
+				const prevPointClose = this.previousValue(allPointsFlat, idx);
+				if (point.close < prevPointClose && point.close < 0) {
+					ctx.strokeStyle = config.multiplyColors[0] || config.color || '#FF00FF';
+				}
+				if (point.close > prevPointClose && point.close < 0) {
+					ctx.strokeStyle = config.multiplyColors[1] || config.color || '#FF00FF';
+				}
+				if (point.close < prevPointClose && point.close > 0) {
+					ctx.strokeStyle = config.multiplyColors[2] || config.color || '#FF00FF';
+				}
+				if (point.close > prevPointClose && point.close > 0) {
+					ctx.strokeStyle = config.multiplyColors[3] || config.color || '#FF00FF';
+				}
+				ctx.lineWidth = config.lineWidth;
+				ctx.beginPath();
+				const x = model.view.toX(point.centerUnit);
+				const y = model.view.toY(point.close);
+				ctx.moveTo(x, floor(zero));
+				ctx.lineTo(x, floor(y));
+				ctx.stroke();
+				return;
+			}
+			// 1 color
+			ctx.strokeStyle = config.color || '#FF00FF';
+			ctx.lineWidth = config.lineWidth;
+			ctx.beginPath();
+			const x = model.view.toX(point.centerUnit);
+			const y = model.view.toY(point.close);
+			ctx.moveTo(x, floor(zero));
+			ctx.lineTo(x, floor(y));
 			ctx.stroke();
 		});
 	}
