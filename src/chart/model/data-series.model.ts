@@ -255,7 +255,6 @@ export class DataSeriesModel<
 		xEnd: Unit,
 		getter = (i: V) => i.centerUnit,
 	): DataSeriesViewportIndexes {
-		// Move initial viewport startUnit insignificantly to the right to make correct recalculations based on viewport candles
 		const dataIdxStart = binarySearch(this.visualPoints, xStart, getter).index;
 		const dataIdxEnd = binarySearch(this.visualPoints, xEnd, getter).index;
 		return {
