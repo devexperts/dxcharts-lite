@@ -4,7 +4,7 @@
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 import { Subject } from 'rxjs';
-import { distinctUntilChanged, skip, startWith } from 'rxjs/operators';
+import { distinctUntilChanged, skip, startWith, filter } from 'rxjs/operators';
 import { CanvasAnimation } from '../../animation/canvas-animation';
 import { CanvasBoundsContainer, HitBoundsTest } from '../../canvas/canvas-bounds-container';
 import { FullChartConfig } from '../../chart.config';
@@ -35,6 +35,7 @@ export class BarResizerComponent extends ChartBaseElement {
 		private boundsProvider: BoundsProvider,
 		private hitTest: HitBoundsTest,
 		private dragTickCb: (yDelta: number) => void,
+		private dragPredicate: () => boolean,
 		private chartPanComponent: ChartPanComponent,
 		private canvasModel: CanvasModel,
 		private drawingManager: DrawingManager,
@@ -66,9 +67,9 @@ export class BarResizerComponent extends ChartBaseElement {
 			const dragNDropYComponent = new DragNDropYComponent(
 				this.hitTest,
 				{
-					onDragTick: this.onYDragTick,
-					onDragStart: this.onYDragStart,
-					onDragEnd: this.onYDragEnd,
+					onDragTick: callIfPredicateTrue(this.onYDragTick, this.dragPredicate),
+					onDragStart: callIfPredicateTrue(this.onYDragStart, this.dragPredicate),
+					onDragEnd: callIfPredicateTrue(this.onYDragEnd, this.dragPredicate)
 				},
 				this.canvasInputListener,
 				this.chartPanComponent,
@@ -81,6 +82,7 @@ export class BarResizerComponent extends ChartBaseElement {
 						.pipe(
 							// set initial pipe state to false, so animation will play for the first time only for appearing
 							startWith(false),
+							filter(this.dragPredicate),
 							distinctUntilChanged(),
 							skip(1),
 						)
@@ -183,3 +185,8 @@ export class BarResizerComponent extends ChartBaseElement {
 		}
 	}
 }
+
+const callIfPredicateTrue =
+	(fun: (...args: any[]) => void, predicate: () => boolean) =>
+	(...args: unknown[]) =>
+		predicate() && fun(...args);
