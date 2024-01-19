@@ -10,7 +10,7 @@ import { Index, Timestamp } from '../../model/scaling/viewport.model';
 import VisualCandle from '../../model/visual-candle';
 import { autoDetectPeriod } from '../../utils/auto-period-detector.utils';
 import { searchCandleIndex } from '../../utils/candles.utils';
-import { fakeVisualCandle, fakeVisualPoint } from './fake-candles';
+import { fakeVisualCandle, fakeVisualPoint } from './fake-visual-candle';
 
 export type BaseType = 'candle' | 'point';
 
