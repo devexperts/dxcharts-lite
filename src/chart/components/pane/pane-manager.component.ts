@@ -201,6 +201,33 @@ export class PaneManager extends ChartBaseElement {
 	}
 
 	/**
+	 * Hides pane from the chart and all related components
+	 * @param uuid
+	 */
+	public hidePane(uuid: string) {
+		const pane = this.panes[uuid];
+		if (pane !== undefined) {
+			const heightRatio = this.canvasBoundsContainer.graphsHeightRatio;
+			const paneHeightRatio = heightRatio[uuid];
+			const ratioToAdd = paneHeightRatio / (Object.keys(this.panes).length - 1);
+
+			const newHeightRatio: Record<string, number> = {};
+			for (const key in this.panes) {
+				if (Object.getOwnPropertyDescriptor(this.panes, key)) {
+					if (key === uuid) {
+						newHeightRatio[key] = 0;
+						continue;
+					}
+					newHeightRatio[key] = heightRatio[key] + ratioToAdd;
+				}
+			}
+
+			this.canvasBoundsContainer.graphsHeightRatio = newHeightRatio;
+			this.canvasBoundsContainer.recalculatePanesHeightRatios();
+		}
+	}
+
+	/**
 	 * Adds cursors to the chart elements based on the provided uuid and cursor type.
 	 * @private
 	 * @param {string} uuid - The unique identifier for the chart element.

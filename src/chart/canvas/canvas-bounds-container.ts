@@ -99,6 +99,9 @@ export class CanvasBoundsContainer {
 	get graphsHeightRatio(): Record<string, number> {
 		return this._graphsHeightRatio;
 	}
+	set graphsHeightRatio(ratio) {
+    this._graphsHeightRatio = ratio
+  }
 	graphsHeightRatioChangedSubject = new Subject<Record<string, number>>();
 
 	private boundsChangedSubscriptions: Record<string, BehaviorSubject<Bounds>> = {};
