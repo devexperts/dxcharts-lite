@@ -13,7 +13,7 @@ import { TimeZoneModel } from '../../model/time-zone.model';
 import VisualCandle from '../../model/visual-candle';
 import { cloneUnsafe, typedEntries_UNSAFE } from '../../utils/object.utils';
 import { ChartModel } from '../chart/chart.model';
-import { fakeVisualCandle } from '../chart/fake-candles';
+import { fakeVisualCandle } from '../chart/fake-visual-candle';
 import { NumericAxisLabel } from '../labels_generator/numeric-axis-labels.generator';
 import { TimeFormatMatcher } from './time/parser/time-formats-matchers.functions';
 import { parseTimeFormatsFromKey } from './time/parser/time-formats-parser.functions';
