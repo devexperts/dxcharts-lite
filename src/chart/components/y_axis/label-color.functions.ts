@@ -73,7 +73,7 @@ export const resolveColorForScatterPlot = (priceMovement: PriceMovement, colors:
 };
 
 export const resolveColorForHistogram = (priceMovement: PriceMovement, colors: FullChartColors): string => {
-	const resolvedColor = colors.histogram[`${priceMovement}Cap`];
+	const resolvedColor = colors.histogram[`${priceMovement}Bright`];
 	return resolvedColor ?? DEFAULT_LABEL_COLOR;
 };
 
