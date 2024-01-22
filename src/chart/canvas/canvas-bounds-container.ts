@@ -606,22 +606,35 @@ export class CanvasBoundsContainer {
 			nMapBtnR.width = N_MAP_BUTTON_W;
 			nMapBtnR.height = nMap.height;
 			// knots
+			const navMapChartStart = nMapBtnL.x + nMapBtnL.width;
+			const navMapChartWidth = nMapBtnR.x - navMapChartStart;
+			const navMapChartEnd = navMapChartStart + navMapChartWidth;
+			const minSliderW = this.config.components.navigationMap.minSliderWindowWidth;
+			const knotW = knotWidthFromConfig ?? N_MAP_KNOT_W;
+			const knotH = knotHeightFromConfig ?? nMap.height;
+			const minDistanceBetweenKnotsX = knotW + minSliderW;
 			// Left drag button
 			const knotL = this.getBounds(CanvasElement.N_MAP_KNOT_L);
-			knotL.x = (nMapBtnR.x - nMapBtnL.x - nMapBtnL.width) * this.leftRatio + nMapBtnL.x + nMapBtnL.width;
+			knotL.x = navMapChartStart + navMapChartWidth * this.leftRatio;
+			// limit left knot to min distance from right border
+			knotL.x = Math.min(knotL.x, navMapChartEnd - minDistanceBetweenKnotsX);
 			knotL.y = knotY;
-			knotL.width = knotWidthFromConfig ?? N_MAP_KNOT_W;
-			knotL.height = knotHeightFromConfig ?? nMap.height;
+			knotL.width = knotW;
+			knotL.height = knotH;
 			// Right drag button
 			const knotR = this.getBounds(CanvasElement.N_MAP_KNOT_R);
-			knotR.x =
-				(nMapBtnR.x - nMapBtnL.x - nMapBtnL.width) * this.rightRatio +
-				nMapBtnL.x +
-				nMapBtnL.width -
-				N_MAP_KNOT_W;
+			knotR.x = navMapChartStart + navMapChartWidth * this.rightRatio - N_MAP_KNOT_W;
+			// limit right knot to min distance from left border
+			knotR.x = Math.max(knotR.x, navMapChartStart + minDistanceBetweenKnotsX);
 			knotR.y = knotY;
-			knotR.width = knotWidthFromConfig ?? N_MAP_KNOT_W;
-			knotR.height = knotHeightFromConfig ?? nMap.height;
+			knotR.width = knotW;
+			knotR.height = knotH;
+
+			const distanceDiff = minDistanceBetweenKnotsX - (knotR.x - knotL.x);
+			// if distance between knots is less than min distance - move left knot start
+			if (distanceDiff > 0) {
+				knotL.x -= distanceDiff;
+			}
 			// slider
 			const slider = this.getBounds(CanvasElement.N_MAP_SLIDER_WINDOW);
 			slider.x = knotL.x + knotL.width;
@@ -630,9 +643,9 @@ export class CanvasBoundsContainer {
 			slider.height = nMap.height;
 			// chart
 			const nMapChart = this.getBounds(CanvasElement.N_MAP_CHART);
-			nMapChart.x = nMapBtnL.x + nMapBtnL.width;
+			nMapChart.x = navMapChartStart;
 			nMapChart.y = nMap.y;
-			nMapChart.width = nMapBtnR.x - nMapChart.x;
+			nMapChart.width = navMapChartWidth;
 			nMapChart.height = nMap.height;
 		}
 	}
