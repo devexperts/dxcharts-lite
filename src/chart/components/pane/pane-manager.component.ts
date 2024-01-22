@@ -5,7 +5,12 @@
  */
 import { Subject } from 'rxjs';
 import { CanvasAnimation } from '../../animation/canvas-animation';
-import { CHART_UUID, CanvasBoundsContainer, CanvasElement } from '../../canvas/canvas-bounds-container';
+import {
+	CHART_UUID,
+	CanvasBoundsContainer,
+	CanvasElement,
+	getHeightRatios,
+} from '../../canvas/canvas-bounds-container';
 import { CursorHandler } from '../../canvas/cursor.handler';
 import { FullChartConfig } from '../../chart.config';
 import { DrawingManager } from '../../drawers/drawing-manager';
@@ -237,7 +242,7 @@ export class PaneManager extends ChartBaseElement {
 	/**
 	 * Shows chart pane, use if chart is hidden
 	 */
-	public showChartPane(heightRatio: Record<string, number>) {
+	public showChartPane(): Record<string, number> {
 		const chartPane = this.panes[CHART_UUID];
 		if (chartPane !== undefined) {
 			this.canvasBoundsContainer.moveToTop(CHART_UUID);
@@ -245,9 +250,23 @@ export class PaneManager extends ChartBaseElement {
 				el => el instanceof BarResizerComponent && el.id === CanvasElement.PANE_UUID_RESIZER(CHART_UUID),
 			);
 			resizer?.enable();
-			this.canvasBoundsContainer.overrideChartHeightRatios(heightRatio);
+			const defaultHeightRatio = getHeightRatios(Object.keys(this.panes).length - 1);
+			const newHeightRatio: Record<string, number> = {};
+			for (const key in this.panes) {
+				if (Object.getOwnPropertyDescriptor(this.panes, key)) {
+					if (key === CHART_UUID) {
+						newHeightRatio[key] = defaultHeightRatio[0];
+						continue;
+					}
+					newHeightRatio[key] = defaultHeightRatio[1];
+				}
+			}
+
+			this.canvasBoundsContainer.graphsHeightRatio = newHeightRatio;
+			this.canvasBoundsContainer.recalculatePanesHeightRatios();
 			chartPane.isHidden = false;
 		}
+		return this.canvasBoundsContainer.graphsHeightRatio;
 	}
 
 	/**
