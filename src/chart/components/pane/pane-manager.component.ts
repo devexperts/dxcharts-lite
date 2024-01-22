@@ -201,20 +201,21 @@ export class PaneManager extends ChartBaseElement {
 	}
 
 	/**
-	 * Hides pane from the chart and all related components
-	 * @param uuid
+	 * Hides chart pane from the chart and all related components
 	 */
-	public hidePane(uuid: string) {
-		const pane = this.panes[uuid];
-		if (pane !== undefined) {
+	public hideChartPane() {
+		const chartPane = this.panes[CHART_UUID];
+		if (chartPane !== undefined) {
+			this.canvasBoundsContainer.moveToBottom(CHART_UUID);
+			
 			const heightRatio = this.canvasBoundsContainer.graphsHeightRatio;
-			const paneHeightRatio = heightRatio[uuid];
-			const ratioToAdd = paneHeightRatio / (Object.keys(this.panes).length - 1);
+			const chartHeightRatio = heightRatio[CHART_UUID];
+			const ratioToAdd = chartHeightRatio / (Object.keys(this.panes).length - 1);
 
 			const newHeightRatio: Record<string, number> = {};
 			for (const key in this.panes) {
 				if (Object.getOwnPropertyDescriptor(this.panes, key)) {
-					if (key === uuid) {
+					if (key === CHART_UUID) {
 						newHeightRatio[key] = 0;
 						continue;
 					}

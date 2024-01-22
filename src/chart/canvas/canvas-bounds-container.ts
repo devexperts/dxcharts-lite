@@ -100,8 +100,8 @@ export class CanvasBoundsContainer {
 		return this._graphsHeightRatio;
 	}
 	set graphsHeightRatio(ratio) {
-    this._graphsHeightRatio = ratio
-  }
+		this._graphsHeightRatio = ratio;
+	}
 	graphsHeightRatioChangedSubject = new Subject<Record<string, number>>();
 
 	private boundsChangedSubscriptions: Record<string, BehaviorSubject<Bounds>> = {};
@@ -165,6 +165,34 @@ export class CanvasBoundsContainer {
 			this.recalculateBounds();
 		} else {
 			console.error(`Result ratio should be equal 1, but equal ${ratioSum}`);
+		}
+	}
+	/**
+	 * Moves a pane up to the top in the panesOrder array.
+	 * @param {string} uuid - The unique identifier of the pane to be moved.
+	 * @returns {void}
+	 */
+	public moveToTop(uuid: string) {
+		const idx = this.panesOrder.indexOf(uuid);
+		if (idx !== -1) {
+			moveInArrayMutable(this.panesOrder, idx, 0);
+			this.recalculateBounds();
+			this.eventBus.fireDraw();
+			this.panesOrderChangedSubject.next(this.panesOrder);
+		}
+	}
+	/**
+	 * Moves a pane up to the bottom in the panesOrder array.
+	 * @param {string} uuid - The unique identifier of the pane to be moved.
+	 * @returns {void}
+	 */
+	public moveToBottom(uuid: string) {
+		const idx = this.panesOrder.indexOf(uuid);
+		if (idx !== -1) {
+			moveInArrayMutable(this.panesOrder, idx, this.panesOrder.length - 1);
+			this.recalculateBounds();
+			this.eventBus.fireDraw();
+			this.panesOrderChangedSubject.next(this.panesOrder);
 		}
 	}
 	/**
@@ -280,7 +308,7 @@ export class CanvasBoundsContainer {
 				upsertBounds(this.bounds, resizerUUID, 0, 0, 0, 0, this.canvasOnPageLocation);
 			}
 
-			const paneYStart =  nextY + (resizerVisible ? paneResizerHeight : 0);
+			const paneYStart = nextY + (resizerVisible ? paneResizerHeight : 0);
 
 			const paneBounds = upsertBounds(
 				this.bounds,
