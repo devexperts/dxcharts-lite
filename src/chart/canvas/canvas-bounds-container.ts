@@ -316,7 +316,8 @@ export class CanvasBoundsContainer {
 				paneXStart,
 				paneYStart,
 				chartWidth,
-				chartHeight * paneHeightRatio - (resizerVisible ? this.config.components.paneResizer.height : 0),
+				chartHeight * paneHeightRatio -
+					(resizerVisible && this.bounds[paneUUID].height > 0 ? paneResizerHeight : 0),
 				this.canvasOnPageLocation,
 			);
 			// y axis
