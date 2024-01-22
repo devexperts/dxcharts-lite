@@ -942,7 +942,7 @@ const DEFAULT_RATIOS: Record<number, number> = {
 };
 
 // NOTE: pec stands for panes except main chart
-const getHeightRatios = (pecLength: number): [number, number] => {
+export const getHeightRatios = (pecLength: number): [number, number] => {
 	const chartHeightRatio = DEFAULT_RATIOS[pecLength] ?? 0.4;
 	const singlePecHeightRatio = (1 - chartHeightRatio) / pecLength;
 	return [chartHeightRatio, singlePecHeightRatio];
