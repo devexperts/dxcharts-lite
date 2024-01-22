@@ -50,6 +50,8 @@ export class PaneComponent extends ChartBaseElement {
 	public ht: HitBoundsTest;
 
 	public yExtentComponents: YExtentComponent[] = [];
+	// currently used for chart pane only
+	public isHidden: boolean = false;
 
 	get scale() {
 		return this.mainExtent.scale;
@@ -379,9 +381,10 @@ export class PaneComponent extends ChartBaseElement {
 	 * Checks if the current pane can move up.
 	 * @returns {boolean} - Returns true if the current pane can move up, otherwise false.
 	 */
-	public canMoveUp(): boolean {
-		const firstPane = firstOf(this.canvasBoundsContainer.panesOrder);
-		return this.uuid !== firstPane;
+	public canMoveUp(panes: PaneComponent[]): boolean {
+		const visiblePanesIds = panes.filter(p => !p.isHidden).map(p => p.uuid);
+		const firstPane = firstOf(this.canvasBoundsContainer.panesOrder.filter(id => visiblePanesIds.includes(id)));
+		return this.uuid !== firstPane && !this.isHidden;
 	}
 
 	/**
@@ -389,9 +392,10 @@ export class PaneComponent extends ChartBaseElement {
 	 *
 	 * @returns {boolean} - Returns true if the current pane is not the last one in the canvasBoundsContainer, otherwise returns false.
 	 */
-	public canMoveDown(): boolean {
-		const lastPane = lastOf(this.canvasBoundsContainer.panesOrder);
-		return this.uuid !== lastPane;
+	public canMoveDown(panes: PaneComponent[]): boolean {
+		const visiblePanesIds = panes.filter(p => !p.isHidden).map(p => p.uuid);
+		const lastPane = lastOf(this.canvasBoundsContainer.panesOrder.filter(id => visiblePanesIds.includes(id)));
+		return this.uuid !== lastPane && !this.isHidden;
 	}
 
 	public valueFormatter = (value: Unit, dataSeries?: DataSeriesModel) => {

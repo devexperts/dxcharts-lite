@@ -207,7 +207,11 @@ export class PaneManager extends ChartBaseElement {
 		const chartPane = this.panes[CHART_UUID];
 		if (chartPane !== undefined) {
 			this.canvasBoundsContainer.moveToBottom(CHART_UUID);
-			
+			const resizer = this.userInputListenerComponents.find(
+				el => el instanceof BarResizerComponent && el.id === CanvasElement.PANE_UUID_RESIZER(CHART_UUID),
+			);
+			resizer?.disable();
+
 			const heightRatio = this.canvasBoundsContainer.graphsHeightRatio;
 			const chartHeightRatio = heightRatio[CHART_UUID];
 			const ratioToAdd = chartHeightRatio / (Object.keys(this.panes).length - 1);
@@ -225,6 +229,24 @@ export class PaneManager extends ChartBaseElement {
 
 			this.canvasBoundsContainer.graphsHeightRatio = newHeightRatio;
 			this.canvasBoundsContainer.recalculatePanesHeightRatios();
+			this.canvasBoundsContainer.bounds[CanvasElement.CHART].height = 0;
+			chartPane.isHidden = true;
+		}
+	}
+
+	/**
+	 * Shows chart pane, use if chart is hidden
+	 */
+	public showChartPane(heightRatio: Record<string, number>) {
+		const chartPane = this.panes[CHART_UUID];
+		if (chartPane !== undefined) {
+			this.canvasBoundsContainer.moveToTop(CHART_UUID);
+			const resizer = this.userInputListenerComponents.find(
+				el => el instanceof BarResizerComponent && el.id === CanvasElement.PANE_UUID_RESIZER(CHART_UUID),
+			);
+			resizer?.enable();
+			this.canvasBoundsContainer.overrideChartHeightRatios(heightRatio);
+			chartPane.isHidden = false;
 		}
 	}
 

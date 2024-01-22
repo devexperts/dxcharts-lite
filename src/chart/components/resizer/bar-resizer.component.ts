@@ -31,7 +31,7 @@ export class BarResizerComponent extends ChartBaseElement {
 	initialY: number = 0;
 	resizeEvent$: Subject<void> = new Subject<void>();
 	constructor(
-		private id: string,
+		public id: string,
 		private boundsProvider: BoundsProvider,
 		private hitTest: HitBoundsTest,
 		private dragTickCb: (yDelta: number) => void,
