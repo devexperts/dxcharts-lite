@@ -53,7 +53,7 @@ export class CanvasElement {
 
 export const DEFAULT_BOUNDS: Bounds = { x: 0, y: 0, pageX: 0, pageY: 0, width: 0, height: 0 };
 
-const DEFAULT_MIN_PANE_HEIGHT = 20;
+export const DEFAULT_MIN_PANE_HEIGHT = 20;
 
 const N_MAP_H = 35;
 const N_MAP_BUTTON_W = 15;
