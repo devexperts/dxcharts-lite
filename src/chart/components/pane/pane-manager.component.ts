@@ -236,6 +236,7 @@ export class PaneManager extends ChartBaseElement {
 			this.canvasBoundsContainer.recalculatePanesHeightRatios();
 			this.canvasBoundsContainer.bounds[CanvasElement.CHART].height = 0;
 			chartPane.isHidden = true;
+			this.recalculateState();
 		}
 	}
 

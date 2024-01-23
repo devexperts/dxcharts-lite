@@ -4,7 +4,7 @@
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 import { Subject } from 'rxjs';
-import { CanvasBoundsContainer, CanvasElement, HitBoundsTest } from '../../canvas/canvas-bounds-container';
+import { CanvasBoundsContainer, CanvasElement, DEFAULT_MIN_PANE_HEIGHT, HitBoundsTest } from '../../canvas/canvas-bounds-container';
 import { YAxisConfig } from '../../chart.config';
 import EventBus from '../../events/event-bus';
 import { ChartBaseElement } from '../../model/chart-base-element';
@@ -79,7 +79,7 @@ export class YAxisScaleHandler extends ChartBaseElement {
 		this.lastYStart = this.scale.yStart;
 		this.lastYEnd = this.scale.yEnd;
 		this.lastYHeight = this.scale.yEnd - this.scale.yStart;
-		this.lastYPxHeight = this.bounds.getBounds(CanvasElement.Y_AXIS).height;
+		this.lastYPxHeight = Math.max(this.bounds.getBounds(CanvasElement.Y_AXIS).height, DEFAULT_MIN_PANE_HEIGHT);
 		// Stop redrawing hit test
 		this.hitTestCanvasModel.hitTestDrawersPredicateSubject.next(false);
 	};
