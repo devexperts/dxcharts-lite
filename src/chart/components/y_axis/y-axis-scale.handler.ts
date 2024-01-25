@@ -56,7 +56,7 @@ export class YAxisScaleHandler extends ChartBaseElement {
 				canvasInputListener,
 				panning,
 				{
-					disableChartPanning: false,
+					disableChartPanning: () => false,
 				},
 			);
 			this.addChildEntity(dragNDropYComponent);

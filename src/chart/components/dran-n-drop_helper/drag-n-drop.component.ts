@@ -14,7 +14,7 @@ export interface DragInfo {
 }
 
 export interface DragComponentOptions {
-	disableChartPanning: boolean;
+	disableChartPanning: () => boolean;
 }
 
 export interface DragNDropComponentCallbacks {
@@ -24,7 +24,7 @@ export interface DragNDropComponentCallbacks {
 }
 
 export const defaultDragComponentOptions: DragComponentOptions = {
-	disableChartPanning: true,
+	disableChartPanning: () => false,
 };
 
 export class DragNDropComponent extends ChartBaseElement {
@@ -58,10 +58,12 @@ export class DragNDropComponent extends ChartBaseElement {
 	}
 
 	protected onDragStart = (point: Point) => {
+		if (this.dragComponentOptions.disableChartPanning()) {
+			return;
+		}
 		this.dragging = true;
 		this.draggedPixels = 0;
 		this.dragCallbacks.onDragStart && this.dragCallbacks.onDragStart(point);
-		this.dragComponentOptions.disableChartPanning && this.chartPanComponent.deactivatePanHandlers();
 	};
 
 	protected onDragTick = (yDelta: number) => {
@@ -75,10 +77,13 @@ export class DragNDropComponent extends ChartBaseElement {
 	};
 
 	protected onDragEnd = () => {
+		if (this.dragComponentOptions.disableChartPanning()) {
+			return;
+		}
 		if (this.dragging) {
 			this.dragging = false;
 			this.dragCallbacks.onDragEnd && this.dragCallbacks.onDragEnd(this.draggedPixels);
-			this.dragComponentOptions.disableChartPanning && this.chartPanComponent.activateChartPanHandlers();
+			this.dragComponentOptions.disableChartPanning() && this.chartPanComponent.activateChartPanHandlers();
 		}
 	};
 }

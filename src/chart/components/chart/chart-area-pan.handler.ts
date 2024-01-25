@@ -53,7 +53,8 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 	// number of candles delta changed during X dragging: 1, 5 or -3 for ex.
 	xDraggedCandlesDelta = 0;
 	lastXStart = 0;
-	wheelTrottleTime = 15; // in ms
+	wheelThrottleTime = 15; // in ms
+	private disableChartPanning = { horizontal: false, vertical: false };
 
 	constructor(
 		private bus: EventBus,
@@ -82,12 +83,16 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 			this.canvasInputListener,
 			this.chartPanComponent,
 			{
-				disableChartPanning: false,
+				disableChartPanning: () => this.disableChartPanning.horizontal,
 			},
 		);
 
 		this.addChildEntity(dragNDropXComponent);
 		//#endregion
+	}
+
+	setDisableChartPanning(horizontal: boolean, vertical: boolean) {
+		this.disableChartPanning = { horizontal, vertical };
 	}
 
 	/**
@@ -133,7 +138,7 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 				this.canvasInputListener.observeWheel(allPanesHitTest),
 				this.canvasInputListener.observePinch(allPanesHitTest),
 			)
-				.pipe(throttleTime(this.wheelTrottleTime, animationFrameScheduler, { trailing: true, leading: true }))
+				.pipe(throttleTime(this.wheelThrottleTime, animationFrameScheduler, { trailing: true, leading: true }))
 				.subscribe(e => {
 					const isTouchpad = touchpadDetector(e);
 					const zoomSensitivity = isTouchpad
@@ -149,7 +154,7 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 		this.addRxSubscription(
 			this.canvasInputListener
 				.observeScrollGesture()
-				.pipe(throttleTime(this.wheelTrottleTime, animationFrameScheduler, { trailing: true, leading: true }))
+				.pipe(throttleTime(this.wheelThrottleTime, animationFrameScheduler, { trailing: true, leading: true }))
 				.subscribe((e: WheelEvent) => {
 					let direction = -1;
 					const device = deviceDetector();
@@ -231,7 +236,7 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 			this.canvasInputListener,
 			this.chartPanComponent,
 			{
-				disableChartPanning: false,
+				disableChartPanning: () => this.disableChartPanning.vertical,
 			},
 		);
 		this.addChildEntity(dragNDropYComponent);
