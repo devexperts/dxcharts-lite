@@ -27,6 +27,11 @@ export interface ChartWheelEvent {
 	readonly candleIdx: number;
 }
 
+interface ChartPanningOptions {
+	horizontal: boolean;
+	vertical: boolean;
+}
+
 /**
  * ChartAreaPanHandler is a class that handles the panning and zooming of the chart area.
  * It extends the ChartBaseElement class and has the following properties:
@@ -51,10 +56,10 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 	private readonly touchHandler: MainCanvasTouchHandler;
 	private currentPoint: Point = { x: 0, y: 0 };
 	// number of candles delta changed during X dragging: 1, 5 or -3 for ex.
-	xDraggedCandlesDelta = 0;
-	lastXStart = 0;
-	wheelThrottleTime = 15; // in ms
-	public disableChartPanning = { horizontal: false, vertical: false };
+	public xDraggedCandlesDelta: number = 0;
+	public lastXStart: number = 0;
+	public wheelThrottleTime: number = 15; // in ms
+	public chartPanningOptions: ChartPanningOptions = { horizontal: true, vertical: true };
 
 	constructor(
 		private bus: EventBus,
@@ -83,16 +88,12 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 			this.canvasInputListener,
 			this.chartPanComponent,
 			{
-				disableChartPanning: () => this.disableChartPanning.horizontal,
+				dragPredicate: () => this.chartPanningOptions.horizontal,
 			},
 		);
 
 		this.addChildEntity(dragNDropXComponent);
 		//#endregion
-	}
-
-	setDisableChartPanning(horizontal: boolean, vertical: boolean) {
-		this.disableChartPanning = { horizontal, vertical };
 	}
 
 	/**
@@ -236,7 +237,7 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 			this.canvasInputListener,
 			this.chartPanComponent,
 			{
-				disableChartPanning: () => this.disableChartPanning.vertical,
+				dragPredicate: () => this.chartPanningOptions.vertical,
 			},
 		);
 		this.addChildEntity(dragNDropYComponent);

@@ -67,12 +67,15 @@ export class BarResizerComponent extends ChartBaseElement {
 			const dragNDropYComponent = new DragNDropYComponent(
 				this.hitTest,
 				{
-					onDragTick: callIfPredicateTrue(this.onYDragTick, this.dragPredicate),
-					onDragStart: callIfPredicateTrue(this.onYDragStart, this.dragPredicate),
-					onDragEnd: callIfPredicateTrue(this.onYDragEnd, this.dragPredicate)
+					onDragTick: this.onYDragTick,
+					onDragStart: this.onYDragStart,
+					onDragEnd: this.onYDragEnd
 				},
 				this.canvasInputListener,
 				this.chartPanComponent,
+				{
+					dragPredicate: this.dragPredicate,
+				}
 			);
 			this.addChildEntity(dragNDropYComponent);
 			if (this.config.animation.paneResizer.enabled) {
@@ -185,8 +188,3 @@ export class BarResizerComponent extends ChartBaseElement {
 		}
 	}
 }
-
-const callIfPredicateTrue =
-	(fun: (...args: any[]) => void, predicate: () => boolean) =>
-	(...args: unknown[]) =>
-		predicate() && fun(...args);

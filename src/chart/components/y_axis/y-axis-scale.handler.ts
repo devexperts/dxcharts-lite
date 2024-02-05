@@ -45,18 +45,17 @@ export class YAxisScaleHandler extends ChartBaseElement {
 		super();
 		// drag to Y-scale and double click to auto scale
 		if (config.customScale) {
-			const dragPredicate = () => config.type !== 'percent' && config.visible;
 			const dragNDropYComponent = new DragNDropYComponent(
 				hitTest,
 				{
-					onDragTick: callIfPredicateTrue(this.onYDragTick, dragPredicate),
-					onDragStart: callIfPredicateTrue(this.onYDragStart, dragPredicate),
-					onDragEnd: callIfPredicateTrue(this.onYDragEnd, dragPredicate),
+					onDragTick: this.onYDragTick,
+					onDragStart: this.onYDragStart,
+					onDragEnd: this.onYDragEnd,
 				},
 				canvasInputListener,
 				panning,
 				{
-					disableChartPanning: () => panning.chartAreaPanHandler.disableChartPanning.vertical,
+					dragPredicate: () => panning.chartAreaPanHandler.chartPanningOptions.vertical && config.type !== 'percent' && config.visible,
 				},
 			);
 			this.addChildEntity(dragNDropYComponent);
@@ -114,8 +113,3 @@ export class YAxisScaleHandler extends ChartBaseElement {
 		this.hitTestCanvasModel.hitTestDrawersPredicateSubject.next(true);
 	};
 }
-
-const callIfPredicateTrue =
-	(fun: (...args: any[]) => void, predicate: () => boolean) =>
-	(...args: unknown[]) =>
-		predicate() && fun(...args);
