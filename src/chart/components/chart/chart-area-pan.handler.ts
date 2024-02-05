@@ -54,7 +54,7 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 	xDraggedCandlesDelta = 0;
 	lastXStart = 0;
 	wheelThrottleTime = 15; // in ms
-	private disableChartPanning = { horizontal: false, vertical: false };
+	public disableChartPanning = { horizontal: false, vertical: false };
 
 	constructor(
 		private bus: EventBus,
