@@ -140,7 +140,7 @@ export class DataSeriesModel<
 			extentComponent.getYAxisBounds,
 			extentComponent.yAxis?.state,
 		);
-		this.highLowProvider = createDataSeriesModelHighLowProvider(this);
+		this.highLowProvider = createDataSeriesModelHighLowProvider(this, this.config.highLowActive);
 		extentComponent.addDataSeries(this);
 		this.activate();
 	}
@@ -347,8 +347,11 @@ export const calculateDataSeriesHighLow = (visualCandles: VisualSeriesPoint[]): 
 	return result;
 };
 
-const createDataSeriesModelHighLowProvider = (dataSeries: DataSeriesModel): HighLowProvider => ({
-	isHighLowActive: () => dataSeries.config.highLowActive,
+const createDataSeriesModelHighLowProvider = (
+	dataSeries: DataSeriesModel,
+	highLowActive: boolean,
+): HighLowProvider => ({
+	isHighLowActive: () => highLowActive,
 	calculateHighLow: state => {
 		const highLow = calculateDataSeriesHighLow(dataSeries.getSeriesInViewport(state?.xStart, state?.xEnd).flat());
 		return {
