@@ -58,6 +58,7 @@ import { TimeZoneModel } from './model/time-zone.model';
 import { clearerSafe } from './utils/function.utils';
 import { merge } from './utils/merge.utils';
 import { DeepPartial } from './utils/object.utils';
+import { HitTestComponent } from './components/hit-test/hit-test.component';
 
 export type FitType = 'studies' | 'orders' | 'positions';
 
@@ -143,6 +144,7 @@ export default class ChartBootstrap {
 	 * @deprecated use {panning} instead
 	 */
 	public chartPanComponent: ChartPanComponent;
+	public hitTestComponent: HitTestComponent;
 	public paneManager: PaneManager;
 	/**
 	 * @deprecated use {hover} instead
@@ -238,6 +240,7 @@ export default class ChartBootstrap {
 		this.canvasInputListener = canvasInputListener;
 		this.chartComponents.push(this.canvasInputListener);
 		//#endregion
+
 		const hitTestCanvasModel = new HitTestCanvasModel(
 			eventBus,
 			elements.hitTestCanvas,
@@ -303,6 +306,10 @@ export default class ChartBootstrap {
 		this.chartPanComponent = chartPanComponent;
 		this.chartComponents.push(chartPanComponent);
 		this.userInputListenerComponents.push(chartPanComponent.chartAreaPanHandler);
+
+		const hitTestComponent = new HitTestComponent(hitTestCanvasModel, canvasAnimation);
+		this.hitTestComponent = hitTestComponent;
+		this.chartComponents.push(hitTestComponent);
 
 		const paneManager = new PaneManager(
 			chartBaseModel,
