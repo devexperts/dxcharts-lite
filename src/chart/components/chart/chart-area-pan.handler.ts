@@ -4,7 +4,7 @@
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 import { merge, animationFrameScheduler } from 'rxjs';
-import { throttleTime } from 'rxjs/operators';
+import { throttleTime, filter } from 'rxjs/operators';
 import { CanvasAnimation, VIEWPORT_ANIMATION_ID } from '../../animation/canvas-animation';
 import { CanvasBoundsContainer, CanvasElement, HitBoundsTest } from '../../canvas/canvas-bounds-container';
 import { AutoScaleDisableOnDrag, FullChartConfig } from '../../chart.config';
@@ -139,7 +139,10 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 				this.canvasInputListener.observeWheel(allPanesHitTest),
 				this.canvasInputListener.observePinch(allPanesHitTest),
 			)
-				.pipe(throttleTime(this.wheelThrottleTime, animationFrameScheduler, { trailing: true, leading: true }))
+				.pipe(
+					filter(() => this.chartPanningOptions.horizontal && this.chartPanningOptions.vertical),
+					throttleTime(this.wheelThrottleTime, animationFrameScheduler, { trailing: true, leading: true }),
+				)
 				.subscribe(e => {
 					const isTouchpad = touchpadDetector(e);
 					const zoomSensitivity = isTouchpad
