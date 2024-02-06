@@ -43,7 +43,7 @@ export class XAxisScaleHandler extends ChartBaseElement {
 			this.canvasInputListener,
 			this.chartPanComponent,
 			{
-				disableChartPanning: false,
+				dragPredicate: () => chartPanComponent.chartAreaPanHandler.chartPanningOptions.horizontal,
 			},
 		);
 
