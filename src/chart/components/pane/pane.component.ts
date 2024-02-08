@@ -50,7 +50,6 @@ export class PaneComponent extends ChartBaseElement {
 	public ht: HitBoundsTest;
 
 	public yExtentComponents: YExtentComponent[] = [];
-	// currently used for chart pane only
 	public isHidden: boolean = false;
 
 	get scale() {
