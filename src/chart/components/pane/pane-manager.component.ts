@@ -206,25 +206,25 @@ export class PaneManager extends ChartBaseElement {
 	}
 
 	/**
-	 * Hides chart pane from the chart and all related components
+	 * Hides a pane from the chart and all related components
 	 */
-	public hideChartPane() {
-		const chartPane = this.panes[CHART_UUID];
-		if (chartPane !== undefined) {
-			this.canvasBoundsContainer.moveToBottom(CHART_UUID);
+	public hidePane(paneUUID: string) {
+		const pane = this.panes[paneUUID];
+		if (pane !== undefined) {
+			this.canvasBoundsContainer.moveToBottom(paneUUID);
 			const resizer = this.userInputListenerComponents.find(
-				el => el instanceof BarResizerComponent && el.id === CanvasElement.PANE_UUID_RESIZER(CHART_UUID),
+				el => el instanceof BarResizerComponent && el.id === CanvasElement.PANE_UUID_RESIZER(paneUUID),
 			);
 			resizer?.disable();
 
 			const heightRatio = this.canvasBoundsContainer.graphsHeightRatio;
-			const chartHeightRatio = heightRatio[CHART_UUID];
-			const ratioToAdd = chartHeightRatio / (Object.keys(this.panes).length - 1);
+			const paneHeightRatio = heightRatio[paneUUID];
+			const ratioToAdd = paneHeightRatio / (Object.keys(this.panes).length - 1);
 
 			const newHeightRatio: Record<string, number> = {};
 			for (const key in this.panes) {
 				if (Object.getOwnPropertyDescriptor(this.panes, key)) {
-					if (key === CHART_UUID) {
+					if (key === paneUUID) {
 						newHeightRatio[key] = 0;
 						continue;
 					}
@@ -234,21 +234,24 @@ export class PaneManager extends ChartBaseElement {
 
 			this.canvasBoundsContainer.graphsHeightRatio = newHeightRatio;
 			this.canvasBoundsContainer.recalculatePanesHeightRatios();
-			this.canvasBoundsContainer.bounds[CanvasElement.CHART].height = 0;
-			chartPane.isHidden = true;
+			this.canvasBoundsContainer.bounds[CanvasElement.PANE_UUID(paneUUID)].height = 0;
+			this.canvasBoundsContainer.bounds[CanvasElement.PANE_UUID_RESIZER(paneUUID)].height = 0;
+			pane.isHidden = true;
 			this.recalculateState();
 		}
 	}
 
 	/**
-	 * Shows chart pane, use if chart is hidden
+	 * Shows a pane, use if the pane is hidden
 	 */
-	public showChartPane(): Record<string, number> {
-		const chartPane = this.panes[CHART_UUID];
-		if (chartPane !== undefined) {
-			this.canvasBoundsContainer.moveToTop(CHART_UUID);
+	public showPane(paneUUID: string): Record<string, number> {
+		const pane = this.panes[paneUUID];
+		if (pane !== undefined) {
+			if (paneUUID === CHART_UUID) {
+				this.canvasBoundsContainer.moveToTop(paneUUID);
+			}
 			const resizer = this.userInputListenerComponents.find(
-				el => el instanceof BarResizerComponent && el.id === CanvasElement.PANE_UUID_RESIZER(CHART_UUID),
+				el => el instanceof BarResizerComponent && el.id === CanvasElement.PANE_UUID_RESIZER(paneUUID),
 			);
 			resizer?.enable();
 			const defaultHeightRatio = getHeightRatios(Object.keys(this.panes).length - 1);
@@ -265,7 +268,7 @@ export class PaneManager extends ChartBaseElement {
 
 			this.canvasBoundsContainer.graphsHeightRatio = newHeightRatio;
 			this.canvasBoundsContainer.recalculatePanesHeightRatios();
-			chartPane.isHidden = false;
+			pane.isHidden = false;
 		}
 		return this.canvasBoundsContainer.graphsHeightRatio;
 	}
