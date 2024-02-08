@@ -147,7 +147,11 @@ export class DataSeriesModel<
 
 	protected doActivate(): void {
 		this.addRxSubscription(this.scale.xChanged.subscribe(() => this.recalculateDataViewportIndexes()));
-		this.addRxSubscription(this.scale.scaleInversedSubject.subscribe(() => { this.recalculateVisualPoints(); }));
+		this.addRxSubscription(
+			this.scale.scaleInversedSubject.subscribe(() => {
+				this.recalculateVisualPoints();
+			}),
+		);
 	}
 
 	/**
@@ -232,12 +236,8 @@ export class DataSeriesModel<
 	 * @param {number} [xStart=this.scale.xStart] - The start value of the viewport on the x-axis. Defaults to the current xStart value of the scale model.
 	 * @param {number} [xEnd=this.scale.xEnd] - The end value of the viewport on the x-axis. Defaults to the current xEnd value of the scale model.
 	 */
-	public recalculateDataViewportIndexes(
-		xStart = this.scale.xStart,
-		xEnd = this.scale.xEnd,
-		getter = (i: V) => i.centerUnit,
-	) {
-		const { dataIdxStart, dataIdxEnd } = this.calculateDataViewportIndexes(xStart, xEnd, getter);
+	public recalculateDataViewportIndexes(xStart = this.scale.xStart, xEnd = this.scale.xEnd) {
+		const { dataIdxStart, dataIdxEnd } = this.calculateDataViewportIndexes(xStart, xEnd);
 		this.dataIdxStart = dataIdxStart;
 		this.dataIdxEnd = dataIdxEnd;
 	}
@@ -250,13 +250,9 @@ export class DataSeriesModel<
 	 * @param {Unit} xEnd - The end value of the viewport on the x-axis.
 	 * @returns {DataSeriesViewportIndexes} An object containing the calculated start and end indexes of the data viewport.
 	 */
-	public calculateDataViewportIndexes(
-		xStart: Unit,
-		xEnd: Unit,
-		getter = (i: V) => i.centerUnit,
-	): DataSeriesViewportIndexes {
-		const dataIdxStart = binarySearch(this.visualPoints, xStart, getter).index;
-		const dataIdxEnd = binarySearch(this.visualPoints, xEnd, getter).index;
+	public calculateDataViewportIndexes(xStart: Unit, xEnd: Unit): DataSeriesViewportIndexes {
+		const dataIdxStart = binarySearch(this.visualPoints, xStart, (i: V) => i.centerUnit).index;
+		const dataIdxEnd = binarySearch(this.visualPoints, xEnd, (i: V) => i.centerUnit).index;
 		return {
 			dataIdxStart,
 			dataIdxEnd,
