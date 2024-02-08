@@ -538,11 +538,6 @@ export class CanvasBoundsContainer {
 		// NOTE: pec stands for panesExceptMainChart
 		const pec: Array<string> = [];
 		pec.push(...this.panesOrder.filter(p => p !== CHART_UUID));
-		this.panesOrder.forEach(pane => {
-			if (this.graphsHeightRatio[pane] === 0) {
-				delete this.graphsHeightRatio[pane];
-			}
-		});
 		const pecRatios = pec.map(graph =>
 			this.graphsHeightRatio[graph] === undefined ? undefined : this.graphsHeightRatio[graph],
 		);
@@ -556,6 +551,7 @@ export class CanvasBoundsContainer {
 			[ratioForOldPec, ratioForNewPec] = getHeightRatios(pec.length);
 			chartRatio *= ratioForOldPec;
 		}
+
 		if (oldPecNumber === 0) {
 			chartRatio = 1 - ratioForNewPec * newPecNumber;
 		}
