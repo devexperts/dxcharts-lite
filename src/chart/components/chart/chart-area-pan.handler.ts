@@ -4,7 +4,7 @@
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 import { merge, animationFrameScheduler } from 'rxjs';
-import { throttleTime } from 'rxjs/operators';
+import { throttleTime, filter } from 'rxjs/operators';
 import { CanvasAnimation, VIEWPORT_ANIMATION_ID } from '../../animation/canvas-animation';
 import { CanvasBoundsContainer, CanvasElement, HitBoundsTest } from '../../canvas/canvas-bounds-container';
 import { AutoScaleDisableOnDrag, FullChartConfig } from '../../chart.config';
@@ -25,6 +25,11 @@ import { HitTestCanvasModel } from '../../model/hit-test-canvas.model';
 export interface ChartWheelEvent {
 	readonly originalEvent: WheelEvent;
 	readonly candleIdx: number;
+}
+
+interface ChartPanningOptions {
+	horizontal: boolean;
+	vertical: boolean;
 }
 
 /**
@@ -51,9 +56,10 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 	private readonly touchHandler: MainCanvasTouchHandler;
 	private currentPoint: Point = { x: 0, y: 0 };
 	// number of candles delta changed during X dragging: 1, 5 or -3 for ex.
-	xDraggedCandlesDelta = 0;
-	lastXStart = 0;
-	wheelTrottleTime = 15; // in ms
+	public xDraggedCandlesDelta: number = 0;
+	public lastXStart: number = 0;
+	public wheelThrottleTime: number = 15; // in ms
+	public chartPanningOptions: ChartPanningOptions = { horizontal: true, vertical: true };
 
 	constructor(
 		private bus: EventBus,
@@ -82,7 +88,7 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 			this.canvasInputListener,
 			this.chartPanComponent,
 			{
-				disableChartPanning: false,
+				dragPredicate: () => this.chartPanningOptions.horizontal,
 			},
 		);
 
@@ -133,7 +139,10 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 				this.canvasInputListener.observeWheel(allPanesHitTest),
 				this.canvasInputListener.observePinch(allPanesHitTest),
 			)
-				.pipe(throttleTime(this.wheelTrottleTime, animationFrameScheduler, { trailing: true, leading: true }))
+				.pipe(
+					filter(() => this.chartPanningOptions.horizontal && this.chartPanningOptions.vertical),
+					throttleTime(this.wheelThrottleTime, animationFrameScheduler, { trailing: true, leading: true }),
+				)
 				.subscribe(e => {
 					const isTouchpad = touchpadDetector(e);
 					const zoomSensitivity = isTouchpad
@@ -149,7 +158,7 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 		this.addRxSubscription(
 			this.canvasInputListener
 				.observeScrollGesture()
-				.pipe(throttleTime(this.wheelTrottleTime, animationFrameScheduler, { trailing: true, leading: true }))
+				.pipe(throttleTime(this.wheelThrottleTime, animationFrameScheduler, { trailing: true, leading: true }))
 				.subscribe((e: WheelEvent) => {
 					let direction = -1;
 					const device = deviceDetector();
@@ -231,7 +240,7 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 			this.canvasInputListener,
 			this.chartPanComponent,
 			{
-				disableChartPanning: false,
+				dragPredicate: () => this.chartPanningOptions.vertical,
 			},
 		);
 		this.addChildEntity(dragNDropYComponent);
