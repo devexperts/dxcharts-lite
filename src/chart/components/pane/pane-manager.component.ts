@@ -42,6 +42,7 @@ export class PaneManager extends ChartBaseElement {
 	public panes: Record<string, PaneComponent> = {};
 	public paneRemovedSubject: Subject<PaneComponent> = new Subject();
 	public paneAddedSubject: Subject<Record<string, PaneComponent>> = new Subject();
+	public paneVisibilityChangedSubject: Subject<void> = new Subject();
 	public hitTestController: PaneHitTestController;
 	public dataSeriesAddedSubject: Subject<DataSeriesModel> = new Subject();
 	public dataSeriesRemovedSubject: Subject<DataSeriesModel> = new Subject();
@@ -233,12 +234,13 @@ export class PaneManager extends ChartBaseElement {
 				}
 			}
 
+			pane.isHidden = true;
 			this.canvasBoundsContainer.graphsHeightRatio = newHeightRatio;
 			this.canvasBoundsContainer.recalculatePanesHeightRatios();
 			this.canvasBoundsContainer.bounds[CanvasElement.PANE_UUID(paneUUID)].height = 0;
 			this.canvasBoundsContainer.bounds[CanvasElement.PANE_UUID_RESIZER(paneUUID)].height = 0;
-			pane.isHidden = true;
 			this.recalculateState();
+			this.paneVisibilityChangedSubject.next();
 		}
 	}
 
@@ -278,9 +280,10 @@ export class PaneManager extends ChartBaseElement {
 						newHeightRatio[paneUUID] / visiblePanes.length),
 			);
 
+			pane.isHidden = false;
 			this.canvasBoundsContainer.graphsHeightRatio = newHeightRatio;
 			this.canvasBoundsContainer.recalculatePanesHeightRatios();
-			pane.isHidden = false;
+			this.paneVisibilityChangedSubject.next();
 		}
 		return this.canvasBoundsContainer.graphsHeightRatio;
 	}
