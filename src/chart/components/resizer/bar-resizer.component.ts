@@ -67,7 +67,7 @@ export class BarResizerComponent extends ChartBaseElement {
 			const dragNDropYComponent = new DragNDropYComponent(
 				this.hitTest,
 				{
-					onDragTick: this.onYDragTick,
+          onDragTick: this.onYDragTick,
 					onDragStart: this.onYDragStart,
 					onDragEnd: this.onYDragEnd
 				},
