@@ -6,7 +6,7 @@
 import { Subscription } from 'rxjs/internal/Subscription';
 import { Unsubscriber } from '../utils/function.utils';
 
-export type ChartEntityState = 'initial' | 'active' | 'deactivated' | 'disabled';
+export type ChartEntityState = 'initial' | 'active' | 'deactivated' | 'disabled' | 'hidden';
 
 /**
  * Chart entity has the following lifecycle: initial -> active <=> deactivated -> disposed.
@@ -25,6 +25,11 @@ export interface ChartEntity {
 	getState(): ChartEntityState;
 }
 
+export interface VisibleChartEntity extends ChartEntity {
+	/** Make entity enabled & active & hidden */
+	hide(): void;
+}
+
 /**
  * Base class for chart elements. Contains lifecycle support, utility methods.
  *
@@ -32,7 +37,7 @@ export interface ChartEntity {
  */
 export abstract class ChartBaseElement implements ChartEntity {
 	private subscriptions: Array<() => void> = [];
-	private _state: ChartEntityState = 'initial';
+	protected _state: ChartEntityState = 'initial';
 	// substitute entities which cascade activate/deactivate
 	private entities: Array<ChartEntity> = [];
 

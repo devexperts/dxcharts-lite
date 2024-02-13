@@ -212,8 +212,7 @@ export class PaneManager extends ChartBaseElement {
 	public hidePane(paneUUID: string) {
 		const pane = this.panes[paneUUID];
 		// hide pane only if we have more than one visible pane
-		if (pane !== undefined && Object.values(this.panes).filter(p => !p.isHidden).length > 1) {
-			this.canvasBoundsContainer.moveToBottom(paneUUID);
+		if (pane !== undefined && Object.values(this.panes).filter(p => p.getState() !== 'hidden').length > 1) {
 			const resizer = this.userInputListenerComponents.find(
 				el => el instanceof BarResizerComponent && el.id === CanvasElement.PANE_UUID_RESIZER(paneUUID),
 			);
@@ -221,12 +220,13 @@ export class PaneManager extends ChartBaseElement {
 
 			const heightRatio = this.canvasBoundsContainer.graphsHeightRatio;
 			const paneHeightRatio = heightRatio[paneUUID];
-			const ratioToAdd = paneHeightRatio / (Object.values(this.panes).filter(p => !p.isHidden).length - 1);
+			const ratioToAdd =
+				paneHeightRatio / (Object.values(this.panes).filter(p => p.getState() !== 'hidden').length - 1);
 
 			const newHeightRatio: Record<string, number> = {};
 			for (const key in this.panes) {
 				if (Object.getOwnPropertyDescriptor(this.panes, key)) {
-					if (key === paneUUID || this.panes[key].isHidden) {
+					if (key === paneUUID || this.panes[key].getState() === 'hidden') {
 						newHeightRatio[key] = 0;
 						continue;
 					}
@@ -234,7 +234,7 @@ export class PaneManager extends ChartBaseElement {
 				}
 			}
 
-			pane.isHidden = true;
+			pane.hide();
 			this.canvasBoundsContainer.graphsHeightRatio = newHeightRatio;
 			this.canvasBoundsContainer.recalculatePanesHeightRatios();
 			this.canvasBoundsContainer.bounds[CanvasElement.PANE_UUID(paneUUID)].height = 0;
@@ -251,10 +251,7 @@ export class PaneManager extends ChartBaseElement {
 	 */
 	public showPane(paneUUID: string): Record<string, number> {
 		const pane = this.panes[paneUUID];
-		if (pane !== undefined && pane.isHidden) {
-			if (paneUUID === CHART_UUID) {
-				this.canvasBoundsContainer.moveToTop(paneUUID);
-			}
+		if (pane !== undefined && pane.getState() === 'hidden') {
 			const resizer = this.userInputListenerComponents.find(
 				el => el instanceof BarResizerComponent && el.id === CanvasElement.PANE_UUID_RESIZER(paneUUID),
 			);
@@ -263,7 +260,7 @@ export class PaneManager extends ChartBaseElement {
 			const newHeightRatio: Record<string, number> = {};
 			for (const key in this.panes) {
 				if (Object.getOwnPropertyDescriptor(this.panes, key)) {
-					if (key !== paneUUID && this.panes[key].isHidden) {
+					if (key !== paneUUID && this.panes[key].getState() === 'hidden') {
 						newHeightRatio[key] = 0;
 						continue;
 					}
@@ -273,7 +270,7 @@ export class PaneManager extends ChartBaseElement {
 				}
 			}
 
-			const visiblePanes = Object.values(this.panes).filter(p => !p.isHidden);
+			const visiblePanes = Object.values(this.panes).filter(p => p.getState() !== 'hidden');
 			// remove space from other visible panes if any
 			visiblePanes.forEach(
 				p =>
@@ -282,7 +279,7 @@ export class PaneManager extends ChartBaseElement {
 						newHeightRatio[paneUUID] / visiblePanes.length),
 			);
 
-			pane.isHidden = false;
+			pane.show();
 			this.canvasBoundsContainer.graphsHeightRatio = newHeightRatio;
 			this.canvasBoundsContainer.recalculatePanesHeightRatios();
 			this.paneVisibilityChangedSubject.next();

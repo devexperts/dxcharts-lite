@@ -19,7 +19,7 @@ import EventBus from '../../events/event-bus';
 import { CanvasInputListenerComponent } from '../../inputlisteners/canvas-input-listener.component';
 import { Bounds } from '../../model/bounds.model';
 import { CanvasModel } from '../../model/canvas.model';
-import { ChartBaseElement } from '../../model/chart-base-element';
+import { ChartBaseElement, VisibleChartEntity } from '../../model/chart-base-element';
 import { DataSeriesModel } from '../../model/data-series.model';
 import { ScaleModel, SyncedByXScaleModel } from '../../model/scale.model';
 import { Pixel, Price, Unit } from '../../model/scaling/viewport.model';
@@ -42,15 +42,13 @@ import {
 import { PaneHitTestController } from './pane-hit-test.controller';
 import { HitTestCanvasModel } from '../../model/hit-test-canvas.model';
 
-export class PaneComponent extends ChartBaseElement {
-	private _paneOrder = 0;
+export class PaneComponent extends ChartBaseElement implements VisibleChartEntity {
 	/**
 	 * Pane hit test (without Y-Axis and resizer)
 	 */
 	public ht: HitBoundsTest;
 
 	public yExtentComponents: YExtentComponent[] = [];
-	public isHidden: boolean = false;
 
 	get scale() {
 		return this.mainExtent.scale;
@@ -109,9 +107,10 @@ export class PaneComponent extends ChartBaseElement {
 			this.canvasBoundsContainer
 				.observeBoundsChanged(CanvasElement.PANE_UUID(this.uuid))
 				.pipe(distinctUntilChanged(areBoundsChanged))
-				.subscribe(() => {
+				.subscribe(bounds => {
 					this.yExtentComponents.forEach(c => c.scale.recalculateZoomY());
 					this.dynamicObjectsCanvasModel.fireDraw();
+					bounds.height <= 0 ? this.hide() : this.show();
 				}),
 		);
 	}
@@ -296,28 +295,28 @@ export class PaneComponent extends ChartBaseElement {
 	}
 
 	/**
-	 * Hides the pane by removing its bounds from the canvasBoundsContainer and firing a draw event.
+	 * Hides the pane
 	 * @function
 	 * @name hide
 	 * @memberof PaneComponent
 	 * @returns {void}
 	 */
 	public hide(): void {
-		this._paneOrder = this.canvasBoundsContainer.panesOrder.indexOf(this.uuid);
-		this.canvasBoundsContainer.removedPaneBounds(this.uuid);
-		this.eventBus.fireDraw();
+		if (this._state !== 'hidden') {
+			this._state = 'hidden';
+		}
 	}
 
 	/**
-	 * Adds the bounds of the pane to the canvas bounds container and fires a draw event.
 	 * @function
 	 * @name show
 	 * @memberof PaneComponent
 	 * @returns {void}
 	 */
 	public show(): void {
-		this.canvasBoundsContainer.addPaneBounds(this.uuid, this._paneOrder);
-		this.eventBus.fireDraw();
+		if (this._state === 'hidden') {
+			this._state = 'active';
+		}
 	}
 
 	/**
@@ -381,9 +380,9 @@ export class PaneComponent extends ChartBaseElement {
 	 * @returns {boolean} - Returns true if the current pane can move up, otherwise false.
 	 */
 	public canMoveUp(panes: PaneComponent[]): boolean {
-		const visiblePanesIds = panes.filter(p => !p.isHidden).map(p => p.uuid);
+		const visiblePanesIds = panes.filter(p => p.getState() !== 'hidden').map(p => p.uuid);
 		const firstPane = firstOf(this.canvasBoundsContainer.panesOrder.filter(id => visiblePanesIds.includes(id)));
-		return this.uuid !== firstPane && !this.isHidden;
+		return this.uuid !== firstPane && this.getState() !== 'hidden';
 	}
 
 	/**
@@ -392,9 +391,9 @@ export class PaneComponent extends ChartBaseElement {
 	 * @returns {boolean} - Returns true if the current pane is not the last one in the canvasBoundsContainer, otherwise returns false.
 	 */
 	public canMoveDown(panes: PaneComponent[]): boolean {
-		const visiblePanesIds = panes.filter(p => !p.isHidden).map(p => p.uuid);
+		const visiblePanesIds = panes.filter(p => p.getState() !== 'hidden').map(p => p.uuid);
 		const lastPane = lastOf(this.canvasBoundsContainer.panesOrder.filter(id => visiblePanesIds.includes(id)));
-		return this.uuid !== lastPane && !this.isHidden;
+		return this.uuid !== lastPane && this.getState() !== 'hidden';
 	}
 
 	public valueFormatter = (value: Unit, dataSeries?: DataSeriesModel) => {

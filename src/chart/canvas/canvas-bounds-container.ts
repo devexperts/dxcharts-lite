@@ -168,34 +168,6 @@ export class CanvasBoundsContainer {
 		}
 	}
 	/**
-	 * Moves a pane up to the top in the panesOrder array.
-	 * @param {string} uuid - The unique identifier of the pane to be moved.
-	 * @returns {void}
-	 */
-	public moveToTop(uuid: string) {
-		const idx = this.panesOrder.indexOf(uuid);
-		if (idx !== -1) {
-			moveInArrayMutable(this.panesOrder, idx, 0);
-			this.recalculateBounds();
-			this.eventBus.fireDraw();
-			this.panesOrderChangedSubject.next(this.panesOrder);
-		}
-	}
-	/**
-	 * Moves a pane up to the bottom in the panesOrder array.
-	 * @param {string} uuid - The unique identifier of the pane to be moved.
-	 * @returns {void}
-	 */
-	public moveToBottom(uuid: string) {
-		const idx = this.panesOrder.indexOf(uuid);
-		if (idx !== -1) {
-			moveInArrayMutable(this.panesOrder, idx, this.panesOrder.length - 1);
-			this.recalculateBounds();
-			this.eventBus.fireDraw();
-			this.panesOrderChangedSubject.next(this.panesOrder);
-		}
-	}
-	/**
 	 * Moves a pane up in the panesOrder array.
 	 * @param {string} uuid - The unique identifier of the pane to be moved.
 	 * @returns {void}
@@ -288,10 +260,11 @@ export class CanvasBoundsContainer {
 		const chartWidth = canvas.width - totalYAxisWidthLeft - totalYAxisWidthRight;
 		let nextY = initialY;
 		// panes
+		const firstVisiblePaneIdx = Object.values(this.graphsHeightRatio).findIndex(ratio => ratio > 0);
 		this.panesOrder.forEach((uuid, index) => {
 			const paneHeightRatio = this.graphsHeightRatio[this.panesOrder[index]];
-			// hide resizer for first pane with index === 0
-			const resizerVisible = this.config.components.paneResizer.visible && index !== 0;
+			// hide resizer for the first visible pane
+			const resizerVisible = this.config.components.paneResizer.visible && index !== firstVisiblePaneIdx;
 			const resizerUUID = CanvasElement.PANE_UUID_RESIZER(uuid);
 			const paneUUID = CanvasElement.PANE_UUID(uuid);
 			if (resizerVisible) {
@@ -561,11 +534,13 @@ export class CanvasBoundsContainer {
 				freeRatio -= ratio * ratioForOldPec;
 			}
 		});
-		freeRatioForPec = freeRatio / (pec.length + 1);
+		freeRatioForPec = freeRatio / pec.length;
 		const proportions = pecRatios.map(ratio =>
 			ratio ? ratio * ratioForOldPec + freeRatioForPec : ratioForNewPec + freeRatioForPec,
 		);
-		chartRatio += freeRatioForPec;
+		if (chartRatio > 0) {
+			chartRatio += freeRatioForPec;
+		}
 		this._graphsHeightRatio = {};
 		this.graphsHeightRatio[CHART_UUID] = chartRatio;
 		proportions.forEach((ratio, index) => {
@@ -815,11 +790,19 @@ export class CanvasBoundsContainer {
 	 * @returns {void}
 	 */
 	private doResizePaneVertically(idx: number, yDeltaPixels: number): void {
-		const prevPaneIdx = idx - 1;
+		let prevVisiblePaneIdx = idx - 1;
+		const prevPaneUUID = this.panesOrder[prevVisiblePaneIdx];
+		if (this._graphsHeightRatio[prevPaneUUID] <= 0) {
+			for (let i = 0; i < idx; i++) {
+				if (this._graphsHeightRatio[this.panesOrder[i]] > 0) {
+					prevVisiblePaneIdx = i;
+				}
+			}
+		}
 		const allPanesHeight = this.getBounds(CanvasElement.ALL_PANES).height;
-		const minAllowedPaneHeight = this.config.components.paneResizer.height + DEFAULT_MIN_PANE_HEIGHT;
+		const minAllowedPaneHeight = 0;
 		const resultPaneHeight = allPanesHeight * this.graphsHeightRatio[this.panesOrder[idx]];
-		const dependResultPaneHeight = allPanesHeight * this.graphsHeightRatio[this.panesOrder[prevPaneIdx]];
+		const dependResultPaneHeight = allPanesHeight * this.graphsHeightRatio[this.panesOrder[prevVisiblePaneIdx]];
 		// check if changes fit allowed minimal pane height
 		const fitPane = resultPaneHeight + yDeltaPixels > minAllowedPaneHeight;
 		const fitDependPane = dependResultPaneHeight - yDeltaPixels > minAllowedPaneHeight;
@@ -827,7 +810,7 @@ export class CanvasBoundsContainer {
 			// convert pixels to percent
 			const yDeltaPercent = yDeltaPixels / allPanesHeight;
 			this.graphsHeightRatio[this.panesOrder[idx]] += yDeltaPercent;
-			this.graphsHeightRatio[this.panesOrder[prevPaneIdx]] -= yDeltaPercent;
+			this.graphsHeightRatio[this.panesOrder[prevVisiblePaneIdx]] -= yDeltaPercent;
 			this.recalculateBounds();
 		}
 	}
