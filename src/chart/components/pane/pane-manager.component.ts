@@ -242,6 +242,8 @@ export class PaneManager extends ChartBaseElement {
 			this.recalculateState();
 			this.paneVisibilityChangedSubject.next();
 		}
+
+		return this.canvasBoundsContainer.graphsHeightRatio;
 	}
 
 	/**
