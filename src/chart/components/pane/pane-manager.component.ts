@@ -42,7 +42,6 @@ export class PaneManager extends ChartBaseElement {
 	public panes: Record<string, PaneComponent> = {};
 	public paneRemovedSubject: Subject<PaneComponent> = new Subject();
 	public paneAddedSubject: Subject<Record<string, PaneComponent>> = new Subject();
-	public paneVisibilityChangedSubject: Subject<void> = new Subject();
 	public hitTestController: PaneHitTestController;
 	public dataSeriesAddedSubject: Subject<DataSeriesModel> = new Subject();
 	public dataSeriesRemovedSubject: Subject<DataSeriesModel> = new Subject();
@@ -212,9 +211,11 @@ export class PaneManager extends ChartBaseElement {
 	public hidePane(paneUUID: string) {
 		const pane = this.panes[paneUUID];
 		// hide pane only if we have more than one visible pane
-		if (pane !== undefined && Object.values(this.panes).filter(p => p.getState() !== 'hidden').length > 1) {
+		if (pane !== undefined && pane.getState() !== 'hidden') {
+			const paneId = CanvasElement.PANE_UUID(paneUUID);
+			const paneResizerId = CanvasElement.PANE_UUID_RESIZER(paneUUID);
 			const resizer = this.userInputListenerComponents.find(
-				el => el instanceof BarResizerComponent && el.id === CanvasElement.PANE_UUID_RESIZER(paneUUID),
+				el => el instanceof BarResizerComponent && el.id === paneResizerId,
 			);
 			resizer?.disable();
 
@@ -237,10 +238,10 @@ export class PaneManager extends ChartBaseElement {
 			pane.hide();
 			this.canvasBoundsContainer.graphsHeightRatio = newHeightRatio;
 			this.canvasBoundsContainer.recalculatePanesHeightRatios();
-			this.canvasBoundsContainer.bounds[CanvasElement.PANE_UUID(paneUUID)].height = 0;
-			this.canvasBoundsContainer.bounds[CanvasElement.PANE_UUID_RESIZER(paneUUID)].height = 0;
+			this.canvasBoundsContainer.bounds[paneId].height = 0;
+			this.canvasBoundsContainer.bounds[paneResizerId].height = 0;
 			this.recalculateState();
-			this.paneVisibilityChangedSubject.next();
+			this.canvasBoundsContainer.paneVisibilityChangedSubject.next();
 		}
 
 		return this.canvasBoundsContainer.graphsHeightRatio;
@@ -251,9 +252,10 @@ export class PaneManager extends ChartBaseElement {
 	 */
 	public showPane(paneUUID: string): Record<string, number> {
 		const pane = this.panes[paneUUID];
+		const paneResizerId = CanvasElement.PANE_UUID_RESIZER(paneUUID);
 		if (pane !== undefined && pane.getState() === 'hidden') {
 			const resizer = this.userInputListenerComponents.find(
-				el => el instanceof BarResizerComponent && el.id === CanvasElement.PANE_UUID_RESIZER(paneUUID),
+				el => el instanceof BarResizerComponent && el.id === paneResizerId,
 			);
 			resizer?.enable();
 			const defaultHeightRatio = getHeightRatios(Object.keys(this.panes).length - 1);
@@ -282,7 +284,7 @@ export class PaneManager extends ChartBaseElement {
 			pane.show();
 			this.canvasBoundsContainer.graphsHeightRatio = newHeightRatio;
 			this.canvasBoundsContainer.recalculatePanesHeightRatios();
-			this.paneVisibilityChangedSubject.next();
+			this.canvasBoundsContainer.paneVisibilityChangedSubject.next();
 		}
 		return this.canvasBoundsContainer.graphsHeightRatio;
 	}

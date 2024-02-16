@@ -82,6 +82,7 @@ export class CanvasBoundsContainer {
 	// holds ordered "top to bottom" array of panes UUID's (studies in past)
 	panesOrder: Array<string> = [];
 	panesOrderChangedSubject = new Subject<string[]>();
+	paneVisibilityChangedSubject: Subject<void> = new Subject();
 
 	// both will be calculated based on font/content size
 	xAxisHeight: number | undefined = undefined;
@@ -534,7 +535,7 @@ export class CanvasBoundsContainer {
 				freeRatio -= ratio * ratioForOldPec;
 			}
 		});
-		freeRatioForPec = freeRatio / pec.length;
+		freeRatioForPec = freeRatio / (pec.length + 1);
 		const proportions = pecRatios.map(ratio =>
 			ratio ? ratio * ratioForOldPec + freeRatioForPec : ratioForNewPec + freeRatioForPec,
 		);
@@ -800,7 +801,7 @@ export class CanvasBoundsContainer {
 			}
 		}
 		const allPanesHeight = this.getBounds(CanvasElement.ALL_PANES).height;
-		const minAllowedPaneHeight = 0;
+		const minAllowedPaneHeight = DEFAULT_MIN_PANE_HEIGHT;
 		const resultPaneHeight = allPanesHeight * this.graphsHeightRatio[this.panesOrder[idx]];
 		const dependResultPaneHeight = allPanesHeight * this.graphsHeightRatio[this.panesOrder[prevVisiblePaneIdx]];
 		// check if changes fit allowed minimal pane height
