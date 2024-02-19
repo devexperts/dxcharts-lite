@@ -107,10 +107,9 @@ export class PaneComponent extends ChartBaseElement implements VisibleChartEntit
 			this.canvasBoundsContainer
 				.observeBoundsChanged(CanvasElement.PANE_UUID(this.uuid))
 				.pipe(distinctUntilChanged(areBoundsChanged))
-				.subscribe(bounds => {
+				.subscribe(() => {
 					this.yExtentComponents.forEach(c => c.scale.recalculateZoomY());
 					this.dynamicObjectsCanvasModel.fireDraw();
-					bounds.height <= 0 ? this.hide() : this.show();
 				}),
 		);
 	}
