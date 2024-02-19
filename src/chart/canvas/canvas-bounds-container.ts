@@ -100,9 +100,6 @@ export class CanvasBoundsContainer {
 	get graphsHeightRatio(): Record<string, number> {
 		return this._graphsHeightRatio;
 	}
-	set graphsHeightRatio(ratio) {
-		this._graphsHeightRatio = ratio;
-	}
 	graphsHeightRatioChangedSubject = new Subject<Record<string, number>>();
 
 	private boundsChangedSubscriptions: Record<string, BehaviorSubject<Bounds>> = {};
@@ -149,12 +146,11 @@ export class CanvasBoundsContainer {
 		}
 	}
 	/**
-     * Overrides the height ratios of the chart with the provided height ratios.
-     * @param {Record<string, number>} heightRatios - An object containing the height ratios to be set.
-     * @returns {void}
-     * @throws {Error} If the sum of the height ratios is not equal to 1.
-     
-    */
+	 * Overrides the height ratios of the chart with the provided height ratios.
+	 * @param {Record<string, number>} heightRatios - An object containing the height ratios to be set.
+	 * @returns {void}
+	 * @throws {Error} If the sum of the height ratios is not equal to 1.
+	 */
 	public overrideChartHeightRatios(heightRatios: Record<string, number>) {
 		const resultRatio = {
 			...this.graphsHeightRatio,
@@ -211,12 +207,24 @@ export class CanvasBoundsContainer {
 		this.panesOrderChangedSubject.next(this.panesOrder);
 	}
 
+	public hidePaneBounds(uuid: string) {
+		this.graphsHeightRatio[uuid] = 0;
+		this.recalculatePanesHeightRatios();
+	}
+
+	public showPaneBounds(uuid: string) {
+		const defaultHeightRatio = getHeightRatios(this.panesOrder.length - 1);
+		const paneHeightRatio = uuid === CHART_UUID ? defaultHeightRatio[0] : defaultHeightRatio[1];
+		this.graphsHeightRatio[uuid] = paneHeightRatio;
+		this.recalculatePanesHeightRatios();
+	}
+
 	/**
 	 * Removes the bounds of a pane with the given uuid from the canvas element.
 	 * @param {string} uuid - The uuid of the pane to remove.
 	 * @returns {void}
 	 */
-	public removedPaneBounds(uuid: string) {
+	public removePaneBounds(uuid: string) {
 		arrayRemove2(this.panesOrder, uuid);
 		delete this.graphsHeightRatio[uuid];
 		delete this.bounds[CanvasElement.PANE_UUID(uuid)];
@@ -535,12 +543,15 @@ export class CanvasBoundsContainer {
 				freeRatio -= ratio * ratioForOldPec;
 			}
 		});
-		freeRatioForPec = freeRatio / (pec.length + 1);
+
+		freeRatioForPec = freeRatio / pec.length;
 		const proportions = pecRatios.map(ratio =>
 			ratio ? ratio * ratioForOldPec + freeRatioForPec : ratioForNewPec + freeRatioForPec,
 		);
 		if (chartRatio > 0) {
-			chartRatio += freeRatioForPec;
+			const initialValue = 0;
+			const proportionsValue = proportions.reduce((acc, currentValue) => acc + currentValue, initialValue);
+			chartRatio = chartRatio + (1 - chartRatio - proportionsValue);
 		}
 		this._graphsHeightRatio = {};
 		this.graphsHeightRatio[CHART_UUID] = chartRatio;

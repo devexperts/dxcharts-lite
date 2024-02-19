@@ -5,12 +5,7 @@
  */
 import { Subject } from 'rxjs';
 import { CanvasAnimation } from '../../animation/canvas-animation';
-import {
-	CHART_UUID,
-	CanvasBoundsContainer,
-	CanvasElement,
-	getHeightRatios,
-} from '../../canvas/canvas-bounds-container';
+import { CHART_UUID, CanvasBoundsContainer, CanvasElement } from '../../canvas/canvas-bounds-container';
 import { CursorHandler } from '../../canvas/cursor.handler';
 import { FullChartConfig } from '../../chart.config';
 import { DrawingManager } from '../../drawers/drawing-manager';
@@ -88,7 +83,7 @@ export class PaneManager extends ChartBaseElement {
 
 	private addBounds(uuid: string, order?: number): Unsubscriber {
 		this.canvasBoundsContainer.addPaneBounds(uuid, order);
-		return () => this.canvasBoundsContainer.removedPaneBounds(uuid);
+		return () => this.canvasBoundsContainer.removePaneBounds(uuid);
 	}
 
 	/**
@@ -212,81 +207,38 @@ export class PaneManager extends ChartBaseElement {
 		const pane = this.panes[paneUUID];
 		// hide pane only if we have more than one visible pane
 		if (pane !== undefined && pane.getState() !== 'hidden') {
-			const paneId = CanvasElement.PANE_UUID(paneUUID);
 			const paneResizerId = CanvasElement.PANE_UUID_RESIZER(paneUUID);
 			const resizer = this.userInputListenerComponents.find(
 				el => el instanceof BarResizerComponent && el.id === paneResizerId,
 			);
 			resizer?.disable();
 
-			const heightRatio = this.canvasBoundsContainer.graphsHeightRatio;
-			const paneHeightRatio = heightRatio[paneUUID];
-			const ratioToAdd =
-				paneHeightRatio / (Object.values(this.panes).filter(p => p.getState() !== 'hidden').length - 1);
-
-			const newHeightRatio: Record<string, number> = {};
-			for (const key in this.panes) {
-				if (Object.getOwnPropertyDescriptor(this.panes, key)) {
-					if (key === paneUUID || this.panes[key].getState() === 'hidden') {
-						newHeightRatio[key] = 0;
-						continue;
-					}
-					newHeightRatio[key] = heightRatio[key] + ratioToAdd;
-				}
-			}
-
 			pane.hide();
-			this.canvasBoundsContainer.graphsHeightRatio = newHeightRatio;
-			this.canvasBoundsContainer.recalculatePanesHeightRatios();
-			this.canvasBoundsContainer.bounds[paneId].height = 0;
-			this.canvasBoundsContainer.bounds[paneResizerId].height = 0;
+			this.canvasBoundsContainer.hidePaneBounds(paneUUID);
 			this.recalculateState();
+
 			this.canvasBoundsContainer.paneVisibilityChangedSubject.next();
 		}
-
-		return this.canvasBoundsContainer.graphsHeightRatio;
 	}
 
 	/**
 	 * Shows a pane, use if the pane is hidden
 	 */
-	public showPane(paneUUID: string): Record<string, number> {
+	public showPane(paneUUID: string) {
 		const pane = this.panes[paneUUID];
 		const paneResizerId = CanvasElement.PANE_UUID_RESIZER(paneUUID);
-		if (pane !== undefined && pane.getState() === 'hidden') {
+		if (pane !== undefined) {
 			const resizer = this.userInputListenerComponents.find(
 				el => el instanceof BarResizerComponent && el.id === paneResizerId,
 			);
 			resizer?.enable();
-			const defaultHeightRatio = getHeightRatios(Object.keys(this.panes).length - 1);
-			const newHeightRatio: Record<string, number> = {};
-			for (const key in this.panes) {
-				if (Object.getOwnPropertyDescriptor(this.panes, key)) {
-					if (key !== paneUUID && this.panes[key].getState() === 'hidden') {
-						newHeightRatio[key] = 0;
-						continue;
-					}
-					if (key === paneUUID) {
-						newHeightRatio[key] = key === CHART_UUID ? defaultHeightRatio[0] : defaultHeightRatio[1];
-					}
-				}
-			}
-
-			const visiblePanes = Object.values(this.panes).filter(p => p.getState() !== 'hidden');
-			// remove space from other visible panes if any
-			visiblePanes.forEach(
-				p =>
-					(newHeightRatio[p.uuid] =
-						this.canvasBoundsContainer.graphsHeightRatio[p.uuid] -
-						newHeightRatio[paneUUID] / visiblePanes.length),
-			);
 
 			pane.show();
-			this.canvasBoundsContainer.graphsHeightRatio = newHeightRatio;
-			this.canvasBoundsContainer.recalculatePanesHeightRatios();
+			this.canvasBoundsContainer.showPaneBounds(paneUUID);
+			this.recalculateState();
+
 			this.canvasBoundsContainer.paneVisibilityChangedSubject.next();
 		}
-		return this.canvasBoundsContainer.graphsHeightRatio;
 	}
 
 	/**
