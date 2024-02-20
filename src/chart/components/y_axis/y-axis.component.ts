@@ -75,7 +75,7 @@ export class YAxisComponent extends ChartBaseElement {
 	) {
 		super();
 		this.state = mergeObj(initialState ?? {}, config.components.yAxis, {
-			overrideExisting: true,
+			overrideExisting: false,
 			addIfMissing: true,
 		});
 
