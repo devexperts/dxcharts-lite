@@ -182,7 +182,7 @@ export class PaneComponent extends ChartBaseElement {
 		const getBounds = () => this.canvasBoundsContainer.getBounds(chartPaneId);
 		const scaleModel =
 			options?.scale ?? new SyncedByXScaleModel(this.mainScale, this.config, getBounds, this.canvasAnimation);
-
+		const initialYAxisState = options?.initialYAxisState;
 		const [unsub, dragNDrop] = this.createYPanHandler(this.uuid, scaleModel);
 
 		// creating partially resolved constructor except formatter & dataSeriesProvider - bcs it's not possible to provide formatter
@@ -205,6 +205,7 @@ export class PaneComponent extends ChartBaseElement {
 				this.uuid,
 				extentIdx,
 				this.hitTestCanvasModel,
+				initialYAxisState,
 			);
 
 		const yExtentComponent = new YExtentComponent(
