@@ -52,12 +52,7 @@ export class MainCanvasTouchHandler extends ChartBaseElement {
      * Handles touch move event
      * @param {TouchEvent} e - The touch event object
      * @returns {void}
-     
-    private handleTouchMoveEvent(e: TouchEvent): void {
-        if (e.touches.length === 2) {
-            this.pinchHandler(this.touchedCandleIndexes, this.getXPositions(e));
-        }
-    }*/
+    */
 	private handleTouchMoveEvent(e: TouchEvent): void {
 		if (e.touches.length === 2) {
 			this.pinchHandler(this.touchedCandleIndexes, this.getXPositions(e));
