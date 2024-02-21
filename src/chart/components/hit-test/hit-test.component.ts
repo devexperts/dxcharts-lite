@@ -14,7 +14,6 @@ export class HitTestComponent extends ChartBaseElement {
 	}
 
 	protected doActivate(): void {
-		this.eventBus.fireDraw([this.hitTestCanvasModel.canvasId]);
 		super.doActivate();
 		this.addRxSubscription(
 			this.canvasAnimation.animationInProgressSubject.subscribe(() => {
