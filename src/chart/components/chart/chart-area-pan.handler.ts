@@ -230,7 +230,6 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 		const onYDragEnd = () => {
 			// Continue redrawing hit test
 			this.hitTestCanvasModel.hitTestDrawersPredicateSubject.next(true);
-			this.bus.fireDraw();
 		};
 
 		const dragNDropYComponent = new DragNDropYComponent(
@@ -269,7 +268,6 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 	private onXDragEnd = () => {
 		// Continue redrawing hit test
 		this.hitTestCanvasModel.hitTestDrawersPredicateSubject.next(true);
-		this.bus.fireDraw();
 	};
 }
 
