@@ -307,7 +307,7 @@ export default class ChartBootstrap {
 		this.chartComponents.push(chartPanComponent);
 		this.userInputListenerComponents.push(chartPanComponent.chartAreaPanHandler);
 
-		const hitTestComponent = new HitTestComponent(hitTestCanvasModel, canvasAnimation);
+		const hitTestComponent = new HitTestComponent(hitTestCanvasModel, canvasAnimation, eventBus);
 		this.hitTestComponent = hitTestComponent;
 		this.chartComponents.push(hitTestComponent);
 
