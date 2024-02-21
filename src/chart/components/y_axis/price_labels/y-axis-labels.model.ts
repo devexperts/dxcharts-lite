@@ -87,11 +87,9 @@ export class FancyYAxisLabelsModel extends ChartBaseElement {
 	/**
 	 * This method is used to activate the chart and subscribe to the observables that will trigger the update of the labels.
 	 * It calls the parent method doActivate() and adds a new Rx subscription to the merge of the following observables:
-	 * - chartModel.observeCandlesChanged()
 	 * - canvasBoundsContainer.observeBoundsChanged(CanvasElement.CHART)
-	 * - chartModel.nextCandleTimeStampSubject
 	 * - canvasBoundsContainer.barResizerChangedSubject
-	 * - chartModel.scale.changed
+	 * - scale changed
 	 * When any of these observables emit a new value, the updateLabels() method is called.
 	 * @protected
 	 */
