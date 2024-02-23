@@ -12,6 +12,7 @@ import { ChartModel } from '../chart/chart.model';
 import { DragInfo } from '../dran-n-drop_helper/drag-n-drop.component';
 import { DragNDropXComponent } from '../dran-n-drop_helper/drag-n-drop-x.component';
 import { ChartPanComponent } from '../pan/chart-pan.component';
+import { HitTestCanvasModel } from '../../model/hit-test-canvas.model';
 
 /**
  * Handles the mouse drag on X axis - to zoom the viewport horizontally.
@@ -28,6 +29,7 @@ export class XAxisScaleHandler extends ChartBaseElement {
 		private canvasBoundsContainer: CanvasBoundsContainer,
 		private chartPanComponent: ChartPanComponent,
 		private chartModel: ChartModel,
+		private hitTestCanvasModel: HitTestCanvasModel,
 	) {
 		super();
 
@@ -36,11 +38,12 @@ export class XAxisScaleHandler extends ChartBaseElement {
 			{
 				onDragStart: this.onXDragStart,
 				onDragTick: this.onXDragTick,
+				onDragEnd: this.onXDragEnd,
 			},
 			this.canvasInputListener,
 			this.chartPanComponent,
 			{
-				disableChartPanning: false,
+				dragPredicate: () => chartPanComponent.chartAreaPanHandler.chartPanningOptions.horizontal,
 			},
 		);
 
@@ -75,6 +78,8 @@ export class XAxisScaleHandler extends ChartBaseElement {
 		this.lastXWidth = this.scale.xEnd - this.scale.xStart;
 		const bounds = this.canvasBoundsContainer.getBounds(CanvasElement.X_AXIS);
 		this.lastXPxWidth = bounds.width - this.canvasInputListener.currentPoint.x;
+		// Stop redrawing hit test
+		this.hitTestCanvasModel.hitTestDrawersPredicateSubject.next(false);
 	};
 
 	private onXDragTick = (dragInfo: DragInfo) => {
@@ -88,5 +93,10 @@ export class XAxisScaleHandler extends ChartBaseElement {
 		const newWidth = this.lastXWidth * xZoomMult;
 		const newXStart = this.lastXStart + (this.lastXWidth - newWidth);
 		this.scale.setXScale(newXStart, this.scale.xEnd);
+	};
+
+	private onXDragEnd = () => {
+		// Continue redrawing hit test
+		this.hitTestCanvasModel.hitTestDrawersPredicateSubject.next(true);
 	};
 }

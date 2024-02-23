@@ -22,7 +22,6 @@ export class CrossAndLabelsDrawerType implements CrossToolTypeDrawer {
 		private config: FullChartConfig,
 		private canvasBoundsContainer: CanvasBoundsContainer,
 		private paneManager: PaneManager,
-		private backgroundCanvasModel: CanvasModel,
 		private crossDrawPredicate: () => boolean = () => true,
 		private noLines?: boolean,
 	) {}
@@ -139,6 +138,7 @@ export class CrossAndLabelsDrawerType implements CrossToolTypeDrawer {
 		if (this.config.components.yAxis.visible) {
 			const pane = this.paneManager.panes[point.paneId];
 			const y = point.y;
+			const type = this.config.components.crossTool.yLabel.type;
 			if (!pane) {
 				return;
 			}
@@ -148,14 +148,15 @@ export class CrossAndLabelsDrawerType implements CrossToolTypeDrawer {
 				const bounds = this.canvasBoundsContainer.getBounds(
 					CanvasElement.PANE_UUID_Y_AXIS(pane.uuid, extent.idx),
 				);
-				const drawYLabel = priceLabelDrawersMap[this.config.components.crossTool.yLabel.type];
+				const drawYLabel = priceLabelDrawersMap[type];
+				const textColor = type === 'plain' ? crossToolColors.lineColor : crossToolColors.labelTextColor;
 				drawYLabel(
 					canvasModel,
 					bounds,
 					label,
 					y,
 					{
-						textColor: crossToolColors.labelTextColor,
+						textColor,
 						bgColor: crossToolColors.labelBoxColor,
 						paddingBottom: yLabelPadding?.bottom,
 						paddingEnd: yLabelPadding?.end,
@@ -164,7 +165,6 @@ export class CrossAndLabelsDrawerType implements CrossToolTypeDrawer {
 					extent.yAxis.state,
 					this.config.colors.yAxis,
 					true,
-					this.backgroundCanvasModel,
 				);
 			}
 		}

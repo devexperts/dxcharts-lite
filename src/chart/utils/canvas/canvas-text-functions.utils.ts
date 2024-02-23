@@ -20,6 +20,11 @@ export interface CanvasTextProperties {
 }
 
 /**
+ * Baseline Height in Project
+ */
+const BASELINE = 1.33;
+
+/**
  * Sets the font, fill style and text alignment of a canvas context based on the provided properties.
  * @param {CanvasRenderingContext2D} ctx - The canvas context to modify.
  * @param {CanvasTextProperties} properties - An object containing the properties to apply to the canvas context.
@@ -47,9 +52,10 @@ export function prepareTextForFill(ctx: CanvasRenderingContext2D, properties: Ca
 /**
  * Calculates the line height of a text based on the font size of the provided CanvasRenderingContext2D.
  * @param {CanvasRenderingContext2D} ctx - The CanvasRenderingContext2D object used to draw the text.
+ * @param includeBaseLine
  * @returns {number} The calculated line height of the text.
  */
-export function getTextLineHeight(ctx: CanvasRenderingContext2D): number {
+export function getTextLineHeight(ctx: CanvasRenderingContext2D, includeBaseLine: boolean = true): number {
 	const textSizeMatch = ctx.font.match(/(\d+.)?\d+(px|pt)/gi);
 	let textSize = '10px';
 	if (textSizeMatch && textSizeMatch.length) {
@@ -60,7 +66,7 @@ export function getTextLineHeight(ctx: CanvasRenderingContext2D): number {
 			textSize = textSizeMatch[0];
 		}
 	}
-	return parseInt(textSize, 10) * 1.33; // Base Line Height in Project
+	return includeBaseLine ? parseInt(textSize, 10) * BASELINE : parseInt(textSize, 10);
 }
 
 /**
@@ -106,7 +112,7 @@ export function getTextLines(text: string): string[] {
  * @param {number} y - The y-coordinate of the starting position of the text.
  * @param {CanvasTextProperties} properties - An object containing properties for the text, such as font size, style, and alignment.
  * @returns {void}
- 
+
 */
 export function drawText(
 	ctx: CanvasRenderingContext2D,

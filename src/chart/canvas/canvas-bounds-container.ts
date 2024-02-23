@@ -120,7 +120,7 @@ export class CanvasBoundsContainer {
 			this.updateCanvasOnPageLocation(calculatedBCR);
 			this.recalculateBounds();
 		});
-		this.yAxisBoundsContainer = new YAxisBoundsContainer(this.config, this.canvasModel);
+		this.yAxisBoundsContainer = new YAxisBoundsContainer(this.config);
 	}
 
 	public updateYAxisWidths() {
@@ -259,39 +259,33 @@ export class CanvasBoundsContainer {
 		// panes
 		this.panesOrder.forEach((uuid, index) => {
 			const paneHeightRatio = this.graphsHeightRatio[this.panesOrder[index]];
-			const resizerVisible = this.config.components.paneResizer.visible;
+			// hide resizer for first pane with index === 0
+			const resizerVisible = this.config.components.paneResizer.visible && index !== 0;
+			const resizerUUID = CanvasElement.PANE_UUID_RESIZER(uuid);
+			const paneUUID = CanvasElement.PANE_UUID(uuid);
 			if (resizerVisible) {
-				if (index !== 0) {
-					upsertBounds(
-						this.bounds,
-						CanvasElement.PANE_UUID_RESIZER(uuid),
-						0,
-						nextY,
-						canvas.width,
-						paneResizerHeight,
-						this.canvasOnPageLocation,
-					);
-				} else {
-					upsertBounds(
-						this.bounds,
-						CanvasElement.PANE_UUID_RESIZER(uuid),
-						0,
-						0,
-						0,
-						0,
-						this.canvasOnPageLocation,
-					);
-				}
+				upsertBounds(
+					this.bounds,
+					resizerUUID,
+					0,
+					nextY,
+					canvas.width,
+					paneResizerHeight,
+					this.canvasOnPageLocation,
+				);
+			} else {
+				upsertBounds(this.bounds, resizerUUID, 0, 0, 0, 0, this.canvasOnPageLocation);
 			}
+
+			const paneYStart =  nextY + (resizerVisible ? paneResizerHeight : 0);
+
 			const paneBounds = upsertBounds(
 				this.bounds,
-				CanvasElement.PANE_UUID(uuid),
+				paneUUID,
 				paneXStart,
-				resizerVisible ? nextY + paneResizerHeight : nextY,
+				paneYStart,
 				chartWidth,
-				resizerVisible
-					? chartHeight * paneHeightRatio - this.config.components.paneResizer.height
-					: chartHeight * paneHeightRatio,
+				chartHeight * paneHeightRatio - (resizerVisible ? this.config.components.paneResizer.height : 0),
 				this.canvasOnPageLocation,
 			);
 			// y axis
@@ -301,11 +295,7 @@ export class CanvasBoundsContainer {
 					return;
 				}
 
-				const y = resizerVisible ? nextY + paneResizerHeight : nextY;
-				const height = resizerVisible
-					? chartHeight * paneHeightRatio - paneResizerHeight
-					: chartHeight * paneHeightRatio;
-
+				const height = chartHeight * paneHeightRatio - (resizerVisible ? paneResizerHeight : 0);
 				let startXLeft = paneXStart - (yAxisWidths.left[0] ?? 0); // we need to provide right to left order on the left y-axis side
 				let startXRight = yAxisXRight;
 
@@ -314,7 +304,7 @@ export class CanvasBoundsContainer {
 						this.bounds,
 						CanvasElement.PANE_UUID_Y_AXIS(uuid, extentIdx),
 						startXLeft,
-						y,
+						paneYStart,
 						yAxisWidths.left[i],
 						height,
 						this.canvasOnPageLocation,
@@ -326,7 +316,7 @@ export class CanvasBoundsContainer {
 						this.bounds,
 						CanvasElement.PANE_UUID_Y_AXIS(uuid, extentIdx),
 						startXRight,
-						y,
+						paneYStart,
 						yAxisWidths.right[i],
 						height,
 						this.canvasOnPageLocation,
@@ -345,7 +335,7 @@ export class CanvasBoundsContainer {
 		allPanesBounds.height = nextY;
 		// chart with Y axis
 		const chartWithYAxis = this.getBounds(CanvasElement.CHART_WITH_Y_AXIS);
-		const chartBounds = this.getBounds(CanvasElement.PANE_UUID(CHART_UUID));
+		const chartBounds = this.getBounds(CanvasElement.CHART);
 		this.getEventsBounds(chartBounds);
 		this.copyBounds(chartBounds, chartWithYAxis);
 		chartWithYAxis.width = canvas.width;
@@ -429,10 +419,11 @@ export class CanvasBoundsContainer {
 	private getXAxisBounds(nMap: Bounds, canvas: Bounds): Bounds {
 		const xAxis = this.getBounds(CanvasElement.X_AXIS);
 		if (this.config.components.xAxis.visible) {
+			const xAxisHeight = this.getXAxisHeight();
 			xAxis.x = 0;
-			xAxis.y = canvas.height - this.getXAxisHeight() - nMap.height;
+			xAxis.y = canvas.height - xAxisHeight - nMap.height;
 			xAxis.width = canvas.width;
-			xAxis.height = this.getXAxisHeight();
+			xAxis.height = xAxisHeight;
 		} else {
 			this.applyDefaultBounds(xAxis);
 		}
@@ -447,7 +438,7 @@ export class CanvasBoundsContainer {
 	getXAxisHeight() {
 		if (!this.xAxisHeight) {
 			const font = this.config.components.xAxis.fontSize + 'px ' + this.config.components.xAxis.fontFamily;
-			const fontHeight = calculateSymbolHeight(font, this.canvasModel.ctx);
+			const fontHeight = calculateSymbolHeight(font);
 			this.xAxisHeight =
 				fontHeight +
 				(this.config.components.xAxis.padding.top ?? 0) +
@@ -615,22 +606,35 @@ export class CanvasBoundsContainer {
 			nMapBtnR.width = N_MAP_BUTTON_W;
 			nMapBtnR.height = nMap.height;
 			// knots
+			const navMapChartStart = nMapBtnL.x + nMapBtnL.width;
+			const navMapChartWidth = nMapBtnR.x - navMapChartStart;
+			const navMapChartEnd = navMapChartStart + navMapChartWidth;
+			const minSliderW = this.config.components.navigationMap.minSliderWindowWidth;
+			const knotW = knotWidthFromConfig ?? N_MAP_KNOT_W;
+			const knotH = knotHeightFromConfig ?? nMap.height;
+			const minDistanceBetweenKnotsX = knotW + minSliderW;
 			// Left drag button
 			const knotL = this.getBounds(CanvasElement.N_MAP_KNOT_L);
-			knotL.x = (nMapBtnR.x - nMapBtnL.x - nMapBtnL.width) * this.leftRatio + nMapBtnL.x + nMapBtnL.width;
+			knotL.x = navMapChartStart + navMapChartWidth * this.leftRatio;
+			// limit left knot to min distance from right border
+			knotL.x = Math.min(knotL.x, navMapChartEnd - minDistanceBetweenKnotsX);
 			knotL.y = knotY;
-			knotL.width = knotWidthFromConfig ?? N_MAP_KNOT_W;
-			knotL.height = knotHeightFromConfig ?? nMap.height;
+			knotL.width = knotW;
+			knotL.height = knotH;
 			// Right drag button
 			const knotR = this.getBounds(CanvasElement.N_MAP_KNOT_R);
-			knotR.x =
-				(nMapBtnR.x - nMapBtnL.x - nMapBtnL.width) * this.rightRatio +
-				nMapBtnL.x +
-				nMapBtnL.width -
-				N_MAP_KNOT_W;
+			knotR.x = navMapChartStart + navMapChartWidth * this.rightRatio - N_MAP_KNOT_W;
+			// limit right knot to min distance from left border
+			knotR.x = Math.max(knotR.x, navMapChartStart + minDistanceBetweenKnotsX);
 			knotR.y = knotY;
-			knotR.width = knotWidthFromConfig ?? N_MAP_KNOT_W;
-			knotR.height = knotHeightFromConfig ?? nMap.height;
+			knotR.width = knotW;
+			knotR.height = knotH;
+
+			const distanceDiff = minDistanceBetweenKnotsX - (knotR.x - knotL.x);
+			// if distance between knots is less than min distance - move left knot start
+			if (distanceDiff > 0) {
+				knotL.x -= distanceDiff;
+			}
 			// slider
 			const slider = this.getBounds(CanvasElement.N_MAP_SLIDER_WINDOW);
 			slider.x = knotL.x + knotL.width;
@@ -639,9 +643,9 @@ export class CanvasBoundsContainer {
 			slider.height = nMap.height;
 			// chart
 			const nMapChart = this.getBounds(CanvasElement.N_MAP_CHART);
-			nMapChart.x = nMapBtnL.x + nMapBtnL.width;
+			nMapChart.x = navMapChartStart;
 			nMapChart.y = nMap.y;
-			nMapChart.width = nMapBtnR.x - nMapChart.x;
+			nMapChart.width = navMapChartWidth;
 			nMapChart.height = nMap.height;
 		}
 	}

@@ -5,6 +5,7 @@
  */
 import { ChartConfigComponentsHistogram } from '../../chart.config';
 import { CandleSeriesModel } from '../../model/candle-series.model';
+import { CanvasModel } from '../../model/canvas.model';
 import { DataSeriesModel, VisualSeriesPoint } from '../../model/data-series.model';
 import VisualCandle from '../../model/visual-candle';
 import { floorToDPR } from '../../utils/device/device-pixel-ratio.utils';
@@ -14,11 +15,12 @@ export class HistogramDrawer implements SeriesDrawer {
 	constructor(private config: ChartConfigComponentsHistogram) {}
 
 	public draw(
-		ctx: CanvasRenderingContext2D,
+		canvasModel: CanvasModel,
 		points: VisualSeriesPoint[][],
 		model: DataSeriesModel,
 		drawerConfig: ChartDrawerConfig,
 	) {
+		const ctx = canvasModel.ctx;
 		if (model instanceof CandleSeriesModel) {
 			// @ts-ignore
 			const visualCandles: VisualCandle[] = points.flat();

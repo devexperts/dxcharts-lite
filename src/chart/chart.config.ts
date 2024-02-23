@@ -64,11 +64,25 @@ export const isLastBarRedrawAvailable = (type: BarType): boolean =>
  */
 export const getDefaultConfig = (): FullChartConfig => ({
 	devexpertsPromoLink: true,
-	offscreen: false,
 	useUTCTimeOverride: false,
 	shortDays: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
 	shortMonths: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
 	rtl: false,
+	experimental: {
+		offscreen: {
+			enabled: false,
+			fonts: [],
+			bufferSizes: {
+				mainCanvas: 50_000,
+				hitTestCanvas: 15 * 50_000,
+				dynamicObjectsCanvas: 16 * 100_000,
+				yAxisLabelsCanvas: 50_000,
+				crossToolCanvas: 8000,
+				backgroundCanvas: 4000,
+				snapshotCanvas: 12 * 100_000,
+			}
+		},
+	},
 	scale: {
 		keepZoomXOnYAxisChange: true,
 		auto: true,
@@ -499,7 +513,7 @@ export const getDefaultConfig = (): FullChartConfig => ({
 			},
 		],
 		yAxis: {
-			backgroundColor: 'transparent',
+			backgroundColor: 'rgba(20,20,19,1)',
 			labelBoxColor: 'rgba(20,20,19,1)',
 			labelTextColor: 'rgba(128,128,128,1)',
 			labelInvertedTextColor: 'rgba(20,20,19,1)',
@@ -539,7 +553,7 @@ export const getDefaultConfig = (): FullChartConfig => ({
 			prevDayClose: { boxColor: 'rgba(107,96,86,1)', textColor: 'rgba(255,255,255,1)' },
 		},
 		xAxis: {
-			backgroundColor: 'transparent',
+			backgroundColor: 'rgba(20,20,19,1)',
 			labelTextColor: 'rgba(128,128,128,1)',
 		},
 		navigationMap: {
@@ -859,10 +873,34 @@ export interface FullChartConfig extends TimeFormatterConfig {
 	useUTCTimeOverride: boolean;
 	animation: AnimationConfig;
 	devexpertsPromoLink: boolean;
+	experimental: ExperimentalFeatures;
+}
+
+export interface ExperimentalFeatures {
+	offscreen: OffscreenFeature;
+}
+
+export interface OffscreenFeature {
 	/**
-	 * If set - chart will be rendered in offscreen canvas.
+	 * Enables chart's drawing in the offscreen canvas worker.
 	 */
-	offscreen: boolean;
+	enabled: boolean;
+	// if you use custom fonts for canvas objects, then you need to provide them here
+	fonts: Array<{
+		// example: 'Open Sans Semibold'
+		fontFamily: string;
+		// example: url('../fonts/OpenSans-Bold.ttf'), url('../fonts/OpenSans-Bold.ttf') format('truetype')
+		url: string;
+	}>;
+	bufferSizes: {
+		mainCanvas: number;
+		snapshotCanvas: number;
+		crossToolCanvas: number;
+		dynamicObjectsCanvas: number;
+		backgroundCanvas: number;
+		hitTestCanvas: number;
+		yAxisLabelsCanvas: number;
+	};
 }
 
 // use this to merge partial config with existing

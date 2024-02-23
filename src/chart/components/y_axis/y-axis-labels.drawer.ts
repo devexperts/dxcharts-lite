@@ -3,9 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { isOffscreenCanvasModel } from '../../canvas/offscreen/canvas-offscreen-wrapper';
-import { YAxisConfig, FullChartColors, getFontFromConfig } from '../../chart.config';
-import { redrawBackgroundArea } from '../../drawers/chart-background.drawer';
+import { FullChartColors, YAxisConfig, getFontFromConfig } from '../../chart.config';
 import { Bounds } from '../../model/bounds.model';
 import { CanvasModel } from '../../model/canvas.model';
 import { drawPriceLabel, drawRoundedRect } from '../../utils/canvas/canvas-drawing-functions.utils';
@@ -45,8 +43,9 @@ export const DEFAULT_PRICE_LABEL_PADDING = 4;
  * @param text - text to draw
  * @param centralY - y
  * @param config - label styles config
- * @param align
  * @param yAxisState
+ * @param yAxisColors
+ * @param checkBoundaries
  */
 export function drawBadgeLabel(
 	canvasModel: CanvasModel,
@@ -56,7 +55,7 @@ export function drawBadgeLabel(
 	config: YAxisLabelDrawConfig,
 	yAxisState: YAxisConfig,
 	yAxisColors: FullChartColors['yAxis'],
-	drawOutside: boolean = false,
+	checkBoundaries: boolean = true,
 ): void {
 	const ctx = canvasModel.ctx;
 	const align = yAxisState.align;
@@ -68,18 +67,16 @@ export function drawBadgeLabel(
 	const paddingTop = config.paddingTop ?? DEFAULT_PRICE_LABEL_PADDING;
 	const paddingBottom = config.paddingBottom ?? DEFAULT_PRICE_LABEL_PADDING;
 	const paddingEnd = config.paddingEnd ?? DEFAULT_PRICE_LABEL_PADDING;
-	const halfFontHeight = round(calculateSymbolHeight(textFont, ctx) / 2);
+	const halfFontHeight = round(calculateSymbolHeight(textFont) / 2);
 	const labelBoxTopY = centralY - halfFontHeight - paddingTop;
 	const labelBoxBottomY = centralY + halfFontHeight + paddingBottom;
 	const labelBoxHeight = labelBoxBottomY - labelBoxTopY;
 
 	// do not draw, if label is out of bounds
-	if (
-		(centralY < bounds.y + labelBoxHeight / 2 || centralY > bounds.y + bounds.height - labelBoxHeight / 2) &&
-		!drawOutside
-	) {
+	if (checkBoundaries && !checkLabelInBoundaries(centralY, bounds, labelBoxHeight)) {
 		return;
 	}
+
 	ctx.save();
 	ctx.fillStyle = bgColor;
 	ctx.strokeStyle = bgColor;
@@ -109,7 +106,7 @@ export function drawBadgeLabel(
 	ctx.font = textFont;
 	const textX =
 		align === 'right'
-			? bounds.x + bounds.width - calculateTextWidth(text, ctx, textFont) - xTextOffset
+			? bounds.x + bounds.width - calculateTextWidth(text, textFont) - xTextOffset
 			: bounds.x + xTextOffset;
 	ctx.fillText(text, textX, centralY + halfFontHeight - 1); // -1 for font height adjustment
 	ctx.restore();
@@ -122,8 +119,9 @@ export function drawBadgeLabel(
  * @param text - text to draw
  * @param centralY - y
  * @param config - label styles config
- * @param align
  * @param yAxisState
+ * @param yAxisColors
+ * @param checkBoundaries
  */
 export function drawRectLabel(
 	canvasModel: CanvasModel,
@@ -133,7 +131,7 @@ export function drawRectLabel(
 	config: YAxisLabelDrawConfig,
 	yAxisState: YAxisConfig,
 	yAxisColors: FullChartColors['yAxis'],
-	drawOutside: boolean = false,
+	checkBoundaries: boolean = true,
 ) {
 	const ctx = canvasModel.ctx;
 	const align = yAxisState.align;
@@ -147,26 +145,24 @@ export function drawRectLabel(
 	const paddingBottom = config.paddingBottom ?? paddings?.bottom ?? DEFAULT_PRICE_LABEL_PADDING;
 	const paddingEnd = config.paddingEnd ?? paddings?.end ?? DEFAULT_PRICE_LABEL_PADDING;
 	const paddingStart = config.paddingStart;
-	const fontHeight = calculateSymbolHeight(textFont, ctx);
+	const fontHeight = calculateSymbolHeight(textFont);
 	const labelBoxTopY = centralY - fontHeight / 2 - paddingTop;
 	const labelBoxBottomY = centralY + fontHeight / 2 + paddingBottom;
 	const labelBoxHeight = labelBoxBottomY - labelBoxTopY;
 	const rounded = config.rounded ?? yAxisState.typeConfig.rectangle?.rounded;
 
 	// do not draw, if label is out of bounds
-	if (
-		(centralY < bounds.y + labelBoxHeight / 2 || centralY > bounds.y + bounds.height - labelBoxHeight / 2) &&
-		!drawOutside
-	) {
+	if (checkBoundaries && !checkLabelInBoundaries(centralY, bounds, labelBoxHeight)) {
 		return;
 	}
+
 	ctx.save();
 	ctx.fillStyle = bgColor;
 	ctx.strokeStyle = bgColor;
 
 	const xTextOffset = yAxisState.labelBoxMargin.end;
 	ctx.font = textFont;
-	const textWidth = calculateTextWidth(text, ctx, textFont);
+	const textWidth = calculateTextWidth(text, textFont);
 
 	const marginEnd = xTextOffset - paddingEnd;
 	const width = paddingStart !== undefined ? textWidth + paddingStart + paddingEnd : bounds.width - marginEnd;
@@ -192,8 +188,9 @@ export function drawRectLabel(
  * @param text - text to draw
  * @param centralY - y
  * @param config - label styles config
- * @param align
  * @param yAxisState
+ * @param yAxisColors
+ * @param checkBoundaries
  */
 export function drawPlainLabel(
 	canvasModel: CanvasModel,
@@ -203,14 +200,13 @@ export function drawPlainLabel(
 	config: YAxisLabelDrawConfig,
 	yAxisState: YAxisConfig,
 	yAxisColors: FullChartColors['yAxis'],
-	drawOutside: boolean = false,
-	backgroundCanvasModel?: CanvasModel,
+	checkBoundaries: boolean = true,
 ) {
 	const ctx = canvasModel.ctx;
 
 	const align = yAxisState.align;
 	const textFont = config.textFont ?? getFontFromConfig(yAxisState);
-	const bgColor = config.bgColor;
+	const bgColor = yAxisColors.backgroundColor;
 	const textColor =
 		config.textColor ??
 		getLabelTextColorByBackgroundColor(bgColor, yAxisColors.labelTextColor, yAxisColors.labelInvertedTextColor);
@@ -219,45 +215,32 @@ export function drawPlainLabel(
 	const paddingBottom = config.paddingBottom ?? paddings?.bottom ?? DEFAULT_PRICE_LABEL_PADDING;
 	const paddingEnd = config.paddingEnd ?? paddings?.end ?? DEFAULT_PRICE_LABEL_PADDING;
 	const paddingStart = config.paddingStart;
-	const fontHeight = calculateSymbolHeight(textFont, ctx);
+	const fontHeight = calculateSymbolHeight(textFont);
 	const labelBoxTopY = centralY - fontHeight / 2 - paddingTop;
 	const labelBoxBottomY = centralY + fontHeight / 2 + paddingBottom;
 	const labelBoxHeight = labelBoxBottomY - labelBoxTopY;
 
 	// do not draw, if label is out of bounds
-	if (
-		(centralY < bounds.y + labelBoxHeight / 2 || centralY > bounds.y + bounds.height - labelBoxHeight / 2) &&
-		!drawOutside
-	) {
+	if (checkBoundaries && !checkLabelInBoundaries(centralY, bounds, labelBoxHeight)) {
 		return;
 	}
+
 	ctx.save();
 	ctx.fillStyle = bgColor;
 	ctx.strokeStyle = bgColor;
 
 	const xTextOffset = yAxisState.labelBoxMargin.end;
 	ctx.font = textFont;
-	const textWidth = calculateTextWidth(text, ctx, textFont);
-
+	const textWidth = calculateTextWidth(text, textFont);
 	const marginEnd = xTextOffset - paddingEnd;
 	const width = paddingStart !== undefined ? textWidth + paddingStart + paddingEnd : bounds.width - marginEnd;
 	const x = align === 'right' ? bounds.x + bounds.width - marginEnd - width : bounds.x + marginEnd;
-
 	const textX = align === 'right' ? bounds.x + bounds.width - textWidth - xTextOffset : xTextOffset;
 
-	if (isOffscreenCanvasModel(canvasModel) && backgroundCanvasModel) {
-		canvasModel.ctx.redrawBackgroundArea(
-			backgroundCanvasModel.idx,
-			canvasModel.idx,
-			x,
-			labelBoxTopY,
-			width,
-			labelBoxHeight,
-		);
-	} else {
-		const backgroundCtx = backgroundCanvasModel?.ctx;
-		backgroundCtx && redrawBackgroundArea(backgroundCtx, ctx, x, labelBoxTopY, width, labelBoxHeight);
-	}
+	// label can overlap with regular price y-axis label, so we need to hide regular y-axis label
+	ctx.fillStyle = bgColor;
+	ctx.strokeStyle = bgColor;
+	ctx.fillRect(x, labelBoxTopY, width, labelBoxHeight);
 
 	ctx.fillStyle = textColor;
 	ctx.fillText(text, textX, centralY + fontHeight / 2 - 1); // -1 for font height adjustment
@@ -276,6 +259,17 @@ export function getLabelYOffset(
 	ctx: CanvasRenderingContext2D,
 	paddingTop: number = DEFAULT_PRICE_LABEL_PADDING,
 ) {
-	const fontHeight = calculateSymbolHeight(font, ctx);
+	const fontHeight = calculateSymbolHeight(font);
 	return fontHeight / 2 + paddingTop;
+}
+
+/**
+ * Checks if label fits in chart scale boundaries
+ * @param centralY
+ * @param bounds
+ * @param labelBoxHeight
+ * returns true if label fits
+ */
+export function checkLabelInBoundaries(centralY: number, bounds: Bounds, labelBoxHeight: number) {
+	return !(centralY < bounds.y + labelBoxHeight / 2 || centralY > bounds.y + bounds.height - labelBoxHeight / 2);
 }

@@ -86,6 +86,10 @@ export class MathUtils {
 		};
 		return cutMap[amountToCut](value).toFixed(zeros) + amountToCut;
 	}
+
+	public static isExponential(a: number): boolean {
+		return /\de(\-|\+)\d/.test(a.toString());
+	}
 }
 
 /**
@@ -105,7 +109,7 @@ export function clamp(value: number, min: number, max: number) {
 }
 
 export function easeExpOut(value: number) {
-	return 1 - (Math.pow(2, -10 * value) - 0.0009765625) * 1.0009775171065494;
+	return 1 - (Math.pow(2, -5 * value) - 0.0009765625) * 1.0009775171065494;
 }
 
 /**

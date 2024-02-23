@@ -3,7 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { merge, Observable, Subject, Subscription } from 'rxjs';
+import { merge, Observable, Subject, Subscription, animationFrameScheduler, BehaviorSubject } from 'rxjs';
 import { map, throttleTime } from 'rxjs/operators';
 import { CanvasBoundsContainer, CanvasElement } from '../canvas/canvas-bounds-container';
 import { CursorType, FullChartConfig } from '../chart.config';
@@ -11,7 +11,7 @@ import EventBus from '../events/event-bus';
 import { CanvasInputListenerComponent, Point } from '../inputlisteners/canvas-input-listener.component';
 import { animationFrameId } from '../utils/performance/request-animation-frame-throttle.utils';
 import { CanvasModel, getCanvasContext, initCanvasWithConfig } from './canvas.model';
-import { offscreenWorker } from '../canvas/offscreen/init-offscreen';
+import { isOffscreenWorkerAvailable, offscreenWorker } from '../canvas/offscreen/init-offscreen';
 import { isOffscreenCanvasModel } from '../canvas/offscreen/canvas-offscreen-wrapper';
 
 const bigPrimeNumber = 317;
@@ -41,6 +41,8 @@ export class HitTestCanvasModel extends CanvasModel {
 	private touchStartSubject: Subject<HitTestEvent> = new Subject();
 	private dblClickSubject: Subject<HitTestEvent> = new Subject();
 	private rightClickSubject: Subject<HitTestEvent> = new Subject();
+	// This predicate is used to detect whenever hit test should or shouldn't redraw hit test canvas image objects
+	public hitTestDrawersPredicateSubject: BehaviorSubject<boolean> = new BehaviorSubject(true);
 
 	constructor(
 		eventBus: EventBus,
@@ -54,8 +56,8 @@ export class HitTestCanvasModel extends CanvasModel {
 		const options = {
 			willReadFrequently: true,
 			desynchronized: true,
-			offscreen: chartConfig.offscreen,
-			offscreenBufferSize: 15 * 1000000,
+			offscreen: chartConfig.experimental.offscreen.enabled && isOffscreenWorkerAvailable,
+			offscreenBufferSize: chartConfig.experimental.offscreen.bufferSizes.hitTestCanvas,
 		};
 		super(getCanvasContext(canvas, options), eventBus, canvas, canvasModels, resizer, options);
 		initCanvasWithConfig(this, chartConfig);
@@ -72,7 +74,7 @@ export class HitTestCanvasModel extends CanvasModel {
 
 			const hoverSub = this.canvasInputListener
 				.observeMouseMove()
-				.pipe(throttleTime(100, undefined, { trailing: true }))
+				.pipe(throttleTime(100, animationFrameScheduler, { trailing: true }))
 				.subscribe(point => this.eventHandler(point, 'hover'));
 
 			const touchStartSub = this.canvasInputListener

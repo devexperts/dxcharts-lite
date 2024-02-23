@@ -4,9 +4,7 @@
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 import { CanvasBoundsContainer, CanvasElement } from '../../canvas/canvas-bounds-container';
-import { isOffscreenCanvasModel } from '../../canvas/offscreen/canvas-offscreen-wrapper';
 import { FullChartConfig } from '../../chart.config';
-import { redrawBackgroundArea } from '../../drawers/chart-background.drawer';
 import { CanvasModel } from '../../model/canvas.model';
 import { XAxisLabel } from './x-axis-labels.model';
 
@@ -22,7 +20,6 @@ export type LabelAlign = 'start' | 'end' | 'middle';
  * @param label
  */
 export function drawXAxisLabel(
-	backgroundCanvasModel: CanvasModel,
 	canvasModel: CanvasModel,
 	canvasBoundsContainer: CanvasBoundsContainer,
 	config: FullChartConfig,
@@ -30,11 +27,11 @@ export function drawXAxisLabel(
 ): void {
 	const alignType = label.alignType ?? 'middle';
 	const { fontSize, fontFamily, padding } = config.components.xAxis;
+	const xAxisColors = config.colors.xAxis;
 	const offsetTop = padding.top ?? 0;
 
 	const ctx = canvasModel.ctx;
-	const backgroundCtx = backgroundCanvasModel.ctx;
-	const xAxis = canvasBoundsContainer.getBounds(CanvasElement.X_AXIS);
+	const xAxisBounds = canvasBoundsContainer.getBounds(CanvasElement.X_AXIS);
 	ctx.save();
 	ctx.font = `bold ${fontSize}px ${fontFamily}`;
 	const labelWidth = ctx.measureText(label.text).width;
@@ -54,30 +51,21 @@ export function drawXAxisLabel(
 			break;
 	}
 	// label can overlap with regular x-axis label, so we need to hide regular x-axis label
-	if (isOffscreenCanvasModel(canvasModel)) {
-		canvasModel.ctx.redrawBackgroundArea(
-			backgroundCanvasModel.idx,
-			canvasModel.idx,
-			boxStart,
-			xAxis.y,
-			boxWidth,
-			xAxis.height - 1,
-		);
-	} else {
-		redrawBackgroundArea(backgroundCtx, ctx, boxStart, xAxis.y, boxWidth, xAxis.height - 1);
-	}
+	ctx.fillStyle = xAxisColors.backgroundColor;
+	ctx.strokeStyle = xAxisColors.backgroundColor;
+	ctx.fillRect(boxStart, xAxisBounds.y, boxWidth, xAxisBounds.height);
 
 	if (alignType !== 'middle') {
 		ctx.strokeStyle = label.color;
 		ctx.beginPath();
-		ctx.moveTo(x, xAxis.y);
-		ctx.lineTo(x, xAxis.y + xAxis.height);
+		ctx.moveTo(x, xAxisBounds.y);
+		ctx.lineTo(x, xAxisBounds.y + xAxisBounds.height);
 		ctx.stroke();
 	}
 
 	ctx.fillStyle = label.color;
 	const xTextPos = boxStart + DEFAULT_X_LABEL_PADDING.x;
-	const yTextPos = xAxis.y + offsetTop + fontSize; // -2 for vertical adjustment
+	const yTextPos = xAxisBounds.y + offsetTop + fontSize; // -2 for vertical adjustment
 	ctx.fillText(label.text, xTextPos, yTextPos);
 	ctx.restore();
 }

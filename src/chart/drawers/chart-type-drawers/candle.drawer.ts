@@ -11,6 +11,7 @@ import { dpr, floorToDPR } from '../../utils/device/device-pixel-ratio.utils';
 import { ChartDrawerConfig, SeriesDrawer, setLineWidth } from '../data-series.drawer';
 import { DataSeriesModel, VisualSeriesPoint } from '../../model/data-series.model';
 import { flat } from '../../utils/array.utils';
+import { CanvasModel } from '../../model/canvas.model';
 
 export class CandleDrawer implements SeriesDrawer {
 	constructor(private config: ChartConfigComponentsChart) {}
@@ -36,7 +37,7 @@ export class CandleDrawer implements SeriesDrawer {
 	//#endregion
 
 	public draw(
-		ctx: CanvasRenderingContext2D,
+		canvasModel: CanvasModel,
 		/**
 		 * You can pass two-dimension array to divide series into multiple parts
 		 */
@@ -44,6 +45,7 @@ export class CandleDrawer implements SeriesDrawer {
 		model: DataSeriesModel,
 		drawerConfig: ChartDrawerConfig,
 	) {
+		const ctx = canvasModel.ctx;
 		if (model instanceof CandleSeriesModel) {
 			// @ts-ignore
 			const visualCandles: VisualCandle[] = flat(points);

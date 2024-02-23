@@ -11,14 +11,14 @@ import { ChartInstrument } from '../components/chart/chart.component';
 import { CandleWidthCalculator, VisualCandleCalculator } from '../components/chart/chart.model';
 import { YExtentComponent } from '../components/pane/extent/y-extent-component';
 import EventBus from '../events/event-bus';
-import { lastOf } from '../utils/array.utils';
+import { binarySearch, lastOf } from '../utils/array.utils';
 import { merge } from '../utils/merge.utils';
 import { DeepPartial } from '../utils/object.utils';
 import { PriceIncrementsUtils } from '../utils/price-increments.utils';
 import { calculateCandlesHighLow, createCandleSeriesHighLowProvider } from './candle-series-high-low.provider';
 import { BASIC_CANDLE_WIDTH, Candle, nameDirection } from './candle.model';
 import { DataSeriesType } from './data-series.config';
-import { DataSeriesModel } from './data-series.model';
+import { DataSeriesModel, DataSeriesViewportIndexes } from './data-series.model';
 import { HighLowWithIndex, ScaleModel, getDefaultHighLowWithIndex } from './scale.model';
 import { Unit } from './scaling/viewport.model';
 import VisualCandle from './visual-candle';
@@ -90,9 +90,29 @@ export class CandleSeriesModel extends DataSeriesModel<Candle, VisualCandle> {
 	 * @returns {void}
 	 */
 	recalculateDataViewportIndexes(xStart = this.scale.xStart, xEnd = this.scale.xEnd) {
-		super.recalculateDataViewportIndexes(xStart, xEnd);
+		const { dataIdxStart, dataIdxEnd } = this.calculateDataViewportIndexes(xStart, xEnd);
+		this.dataIdxStart = dataIdxStart;
+		this.dataIdxEnd = dataIdxEnd;
+
 		this.recalculateZippedHighLow();
 		this.eventBus.fireDraw();
+	}
+
+	/**
+	 * Calculates and returns the indexes of the start and end points of the data viewport,
+	 * based on the given start and end units on the x-axis.
+	 *
+	 * @param {Unit} xStart - The start value of the viewport on the x-axis.
+	 * @param {Unit} xEnd - The end value of the viewport on the x-axis.
+	 * @returns {DataSeriesViewportIndexes} An object containing the calculated start and end indexes of the data viewport.
+	 */
+	public calculateDataViewportIndexes(xStart: Unit, xEnd: Unit): DataSeriesViewportIndexes {
+		const dataIdxStart = binarySearch(this.visualPoints, xStart, (it: VisualCandle) => it.startUnit).index;
+		const dataIdxEnd = binarySearch(this.visualPoints, xEnd, (it: VisualCandle) => it.startUnit).index;
+		return {
+			dataIdxStart,
+			dataIdxEnd,
+		};
 	}
 
 	/**
@@ -210,7 +230,9 @@ export class CandleSeriesModel extends DataSeriesModel<Candle, VisualCandle> {
 			// x - middle of candle
 			const x = accumulatedWidth + width / 2;
 			const transformer = this.candlesTransformersByChartType[type] ?? defaultCandleTransformer;
-			visualCandles.push(transformer(candle, { x, width, prevCandle, activeCandle: this.activeCandle }));
+			visualCandles.push(
+				transformer(candle, { x, width, prevCandle, activeCandle: this.activeCandle }, visualCandles[i - 1]),
+			);
 			accumulatedWidth += width;
 		}
 		return visualCandles;

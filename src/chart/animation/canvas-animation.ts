@@ -10,6 +10,7 @@ import { ColorTransitionAnimationConfig, ColorTransitionAnimation } from './type
 import { ViewportMovementAnimationConfig, ViewportMovementAnimation } from './types/viewport-movement-animation';
 import { ViewportModel } from '../model/scaling/viewport.model';
 import { StringTMap } from '../utils/object.utils';
+import { BehaviorSubject } from 'rxjs';
 
 const DEFAULT_ANIMATION_TIME = 10;
 
@@ -19,6 +20,7 @@ export interface AnimationConfig {
 }
 
 export const VIEWPORT_ANIMATION_ID = 'VIEWPORT_ANIMATION';
+type AnimationsStatus = boolean;
 
 /**
  * Singleton animation container for all chart animations.
@@ -34,6 +36,7 @@ export const VIEWPORT_ANIMATION_ID = 'VIEWPORT_ANIMATION';
 export class CanvasAnimation {
 	animationIntervalId?: number;
 	animations: StringTMap<Animation> = {};
+	animationInProgressSubject = new BehaviorSubject<AnimationsStatus>(false);
 
 	constructor(private eventBus: EventBus) {}
 
@@ -161,6 +164,7 @@ export class CanvasAnimation {
 				allCompleted = false;
 			}
 		}
+		this.animationInProgressSubject.next(!allCompleted);
 		if (!allCompleted) {
 			this.eventBus.fireDraw();
 		} else {

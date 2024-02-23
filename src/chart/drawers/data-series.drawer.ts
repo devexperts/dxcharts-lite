@@ -5,9 +5,9 @@
  */
 import { DynamicModelDrawer } from '../components/dynamic-objects/dynamic-objects.drawer';
 import { PaneManager } from '../components/pane/pane-manager.component';
-import { Bounds } from '../model/bounds.model';
 import { CanvasModel } from '../model/canvas.model';
 import { DataSeriesModel, VisualSeriesPoint } from '../model/data-series.model';
+import { clipToBounds } from '../utils/canvas/canvas-drawing-functions.utils';
 
 export interface ChartDrawerConfig {
 	singleColor?: string;
@@ -16,7 +16,7 @@ export interface ChartDrawerConfig {
 
 export interface SeriesDrawer {
 	draw: (
-		ctx: CanvasRenderingContext2D,
+		canvasModel: CanvasModel,
 		/**
 		 * You can pass two-dimension array to divide series into multiple parts
 		 */
@@ -47,12 +47,12 @@ export class DataSeriesDrawer implements DynamicModelDrawer<DataSeriesModel> {
 		if (model) {
 			ctx.save();
 			pane && clipToBounds(ctx, pane.getBounds());
-			this.drawSeries(ctx, model);
+			this.drawSeries(canvasModel, model);
 			ctx.restore();
 		}
 	}
 
-	public drawSeries(ctx: CanvasRenderingContext2D, series: DataSeriesModel) {
+	public drawSeries(canvasModel: CanvasModel, series: DataSeriesModel) {
 		if (series.config.visible) {
 			const paintTool = series.config.type;
 			const drawer = this.seriesDrawers[paintTool];
@@ -60,7 +60,7 @@ export class DataSeriesDrawer implements DynamicModelDrawer<DataSeriesModel> {
 				const viewportSeries = series.getSeriesInViewport(series.scale.xStart - 1, series.scale.xEnd + 1);
 				if (viewportSeries && viewportSeries.length >= 1) {
 					// +- 1 to correctly draw points which are partly inside bounds
-					drawer.draw(ctx, viewportSeries, series, {});
+					drawer.draw(canvasModel, viewportSeries, series, {});
 				}
 			} else {
 				console.error(`Data series drawer with type ${paintTool} isn't registered!`);
@@ -68,13 +68,6 @@ export class DataSeriesDrawer implements DynamicModelDrawer<DataSeriesModel> {
 		}
 	}
 }
-
-export const clipToBounds = (ctx: CanvasRenderingContext2D, bounds: Bounds) => {
-	ctx.beginPath();
-	ctx.rect(bounds.x, bounds.y, bounds.width, bounds.height);
-	ctx.clip();
-	ctx.closePath();
-};
 
 export const setLineWidth = (
 	ctx: CanvasRenderingContext2D,

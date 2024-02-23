@@ -649,7 +649,6 @@ __metadata:
     comlink: 4.4.1
     commander: ^10.0.1
     date-fns: ^2.30.0
-    date-fns-tz: ^1.3.8
     esbuild: ^0.17.19
     esbuild-jest: ^0.5.0
     esbuild-loader: ^3.0.1
@@ -3736,15 +3735,6 @@ __metadata:
     whatwg-mimetype: ^2.2.0
     whatwg-url: ^7.0.0
   checksum: dc4bd9621df0dff336d7c4c0517c792488ef3cf11cd37e72ab80f3a7f0a0aa14bad677ac97cf22c87c6eb9518e58b98590e1c8c756b56240940f0e470c81612e
-  languageName: node
-  linkType: hard
-
-"date-fns-tz@npm:^1.3.8":
-  version: 1.3.8
-  resolution: "date-fns-tz@npm:1.3.8"
-  peerDependencies:
-    date-fns: ">=2.0.0"
-  checksum: dbf17cb88de7c7b71a9f86b815ac62ebdbf725c030e78d2421309456b5001a85284a5b6763f4af0ba660183f12e876c165e725a0723f642edb7846407db03133
   languageName: node
   linkType: hard
 

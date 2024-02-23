@@ -34,6 +34,13 @@ export const SET_LINE_DASH_FLAT = 29;
 export const SET_GRADIENT_FILL_STYLE = 30;
 // custom method
 export const REDRAW_BACKGROUND_AREA = 31;
+export const TRANSLATE = 32;
+export const TEXT_BASELINE = 33;
+export const TEXT_ALIGN = 34;
+export const ROTATE = 35;
+export const LINE_JOIN = 36;
+export const DIRECTION = 37;
+export const FONT_KERNING = 38;
 
 // Special command which indicates the end of canvas commands inside the buffer
 export const END_OF_FILE = 0xdead;
@@ -73,4 +80,11 @@ export const num2Ctx = [
 	'setLineDashFlat',
 	'setGradientFillStyle',
 	'redrawBackgroundArea',
+	'translate',
+	'textBaseline',
+	'textAlign',
+	'rotate',
+	'lineJoin',
+	'direction',
+	'fontKerning',
 ];

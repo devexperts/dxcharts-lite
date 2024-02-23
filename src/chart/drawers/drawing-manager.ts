@@ -60,7 +60,7 @@ export class DrawingManager {
 	private drawersMap: StringTMap<Drawer> = {};
 
 	private readonly drawHitTestCanvas: () => void;
-	private canvasIdsList: Array<string> | undefined = [];
+	private canvasIdsList: Record<string, boolean> = {};
 	private animFrameId = `draw_${uuid()}`;
 	private readyDraw = false;
 	private offscreenWorker?: Remote<OffscreenWorker>;
@@ -72,8 +72,11 @@ export class DrawingManager {
 		private chartResizeHandler: ChartResizeHandler,
 		canvases: CanvasModel[],
 	) {
-		if (config.offscreen && isOffscreenWorkerAvailable) {
-			initOffscreenWorker(canvases).then(worker => {
+		for (const canvas of canvases) {
+			this.canvasIdsList[canvas.canvasId] = true;
+		}
+		if (config.experimental.offscreen.enabled && isOffscreenWorkerAvailable) {
+			initOffscreenWorker(canvases, config.experimental.offscreen.fonts).then(worker => {
 				this.offscreenCanvases = canvases.filter(isOffscreenCanvasModel);
 				this.offscreenWorker = worker;
 				this.readyDraw = true;
@@ -93,26 +96,31 @@ export class DrawingManager {
 		};
 		eventBus.on(EVENT_DRAW, (canvasIds: Array<string>) => {
 			if (chartResizeHandler.wasResized()) {
-				// if we fire bus.fireDraw() without arguments(undefined) we need to keep canvasIdsList empty
-				if (this.canvasIdsList) {
-					if (canvasIds && canvasIds.length !== 0) {
-						this.canvasIdsList = this.canvasIdsList.concat(canvasIds);
-					} else {
-						// make this undefined until the end of frame - this will redraw everything
-						this.canvasIdsList = undefined;
+				// if we fire bus.fireDraw() without arguments(undefined) we need to redraw all canvases
+				if (!canvasIds) {
+					for (const canvasId of Object.keys(this.canvasIdsList)) {
+						this.canvasIdsList[canvasId] = true;
+					}
+				} else {
+					for (const canvasId of canvasIds) {
+						this.canvasIdsList[canvasId] = true;
 					}
 				}
-				animationFrameThrottled(this.animFrameId, async () => {
+				animationFrameThrottled(this.animFrameId, async() => {
 					if (!this.isDrawable()) {
 						// previous rendering cycle is not finished yet, schedule another draw
-						eventBus.fireDraw();
+						eventBus.fireDraw([]);
 						return;
 					}
+					const canvasIds = Object.entries(this.canvasIdsList).filter(([, v]) => v).map(([k]) => k);
 					this.forceDraw();
 					this.drawHitTestCanvas();
-					await this.drawOffscreen();
+					for (const canvasId of canvasIds) {
+						this.canvasIdsList[canvasId] = false;
+					}
+					// we use mutex in order to avoid situation when canvas resize happened during offscreen rendering
+					await this.chartResizeHandler.mutex.calculateSafe(() => this.drawOffscreen());
 					this.readyDraw = true;
-					this.canvasIdsList = [];
 				});
 			}
 		});
@@ -142,7 +150,7 @@ export class DrawingManager {
 		// not safe and meaningless to use in offscreen mode
 		// I'm not sure if it's even possible because of async nature of offscreen
 		// of course we can implement some kind of spinlock, but it's insane
-		if (this.config.offscreen) {
+		if (this.config.experimental.offscreen.enabled) {
 			return;
 		}
 		this.chartResizeHandler.fireUpdates();

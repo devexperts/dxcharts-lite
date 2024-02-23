@@ -31,7 +31,6 @@ export class EventsComponent extends ChartBaseElement {
 		private drawingManager: DrawingManager,
 		private formatterFactory: DateTimeFormatterFactory,
 		cursorHandler: CursorHandler,
-		backgroundCanvasModel: CanvasModel,
 	) {
 		super();
 		this.eventsXAxisLabelFormatterProvider = () =>
@@ -46,7 +45,6 @@ export class EventsComponent extends ChartBaseElement {
 		hitTestCanvasModel.addSubscriber(eventsModel);
 
 		const eventsDrawer = new EventsDrawer(
-			backgroundCanvasModel,
 			canvasModel,
 			chartModel,
 			config,
@@ -62,6 +60,7 @@ export class EventsComponent extends ChartBaseElement {
 			config,
 			canvasBoundsContainer,
 			eventsModel,
+			() => hitTestCanvasModel.hitTestDrawersPredicateSubject.getValue(),
 		);
 		this.drawingManager.addDrawerBefore(eventsHitTestDrawer, 'HIT_TEST_EVENTS', 'HIT_TEST_DRAWINGS');
 		cursorHandler.setCursorForCanvasEl(CanvasElement.EVENTS, config.components.events.cursor);

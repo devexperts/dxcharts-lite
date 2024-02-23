@@ -9,16 +9,18 @@ import VisualCandle from '../../model/visual-candle';
 import { ChartDrawerConfig, SeriesDrawer, setLineWidth } from '../data-series.drawer';
 import { DataSeriesModel, VisualSeriesPoint } from '../../model/data-series.model';
 import { flat } from '../../utils/array.utils';
+import { CanvasModel } from '../../model/canvas.model';
 
 export class LineDrawer implements SeriesDrawer {
 	constructor(private config: ChartConfigComponentsChart) {}
 
 	public draw(
-		ctx: CanvasRenderingContext2D,
+		canvasModel: CanvasModel,
 		points: VisualSeriesPoint[][],
 		candleSeries: DataSeriesModel,
 		drawerConfig: ChartDrawerConfig,
 	) {
+		const ctx = canvasModel.ctx;
 		if (candleSeries instanceof CandleSeriesModel) {
 			// @ts-ignore
 			const visualCandles: VisualCandle[] = flat(points);
@@ -45,7 +47,6 @@ export class LineDrawer implements SeriesDrawer {
 				ctx.beginPath();
 				ctx.moveTo(prevX, prevY);
 				ctx.lineTo(x, y);
-
 				ctx.stroke();
 			}
 		}

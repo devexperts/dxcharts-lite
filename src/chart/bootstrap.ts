@@ -58,6 +58,8 @@ import { TimeZoneModel } from './model/time-zone.model';
 import { clearerSafe } from './utils/function.utils';
 import { merge } from './utils/merge.utils';
 import { DeepPartial } from './utils/object.utils';
+import { HitTestComponent } from './components/hit-test/hit-test.component';
+import { isOffscreenWorkerAvailable } from './canvas/offscreen/init-offscreen';
 
 export type FitType = 'studies' | 'orders' | 'positions';
 
@@ -143,6 +145,7 @@ export default class ChartBootstrap {
 	 * @deprecated use {panning} instead
 	 */
 	public chartPanComponent: ChartPanComponent;
+	public hitTestComponent: HitTestComponent;
 	public paneManager: PaneManager;
 	/**
 	 * @deprecated use {hover} instead
@@ -189,6 +192,8 @@ export default class ChartBootstrap {
 			config,
 		);
 
+		const offscreenEnabled = isOffscreenWorkerAvailable && config.experimental.offscreen.enabled;
+
 		const backgroundCanvasModel = createCanvasModel(
 			eventBus,
 			elements.backgroundCanvas,
@@ -196,10 +201,8 @@ export default class ChartBootstrap {
 			this.canvasModels,
 			elements.chartResizer,
 			{
-				// can be read frequently, see {redrawBackgroundArea} function
-				willReadFrequently: true,
-				offscreen: config.offscreen,
-				offscreenBufferSize: 8000,
+				offscreen: offscreenEnabled,
+				offscreenBufferSize: config.experimental.offscreen.bufferSizes.backgroundCanvas,
 			},
 		);
 		this.backgroundCanvasModel = backgroundCanvasModel;
@@ -210,7 +213,7 @@ export default class ChartBootstrap {
 			this.config.components.chart.type,
 			config,
 			this.canvasModels,
-			{ offscreen: config.offscreen, offscreenBufferSize: 8000 },
+			{ offscreen: offscreenEnabled, offscreenBufferSize: config.experimental.offscreen.bufferSizes.mainCanvas },
 		);
 		this.mainCanvasModel = mainCanvasModel;
 		this.dynamicObjectsCanvasModel = createCanvasModel(
@@ -219,7 +222,7 @@ export default class ChartBootstrap {
 			config,
 			this.canvasModels,
 			elements.chartResizer,
-			{ offscreen: config.offscreen, offscreenBufferSize: 20 * 100000 },
+			{ offscreen: offscreenEnabled, offscreenBufferSize: config.experimental.offscreen.bufferSizes.dynamicObjectsCanvas },
 		);
 		const crossToolCanvasModel = createCanvasModel(
 			eventBus,
@@ -227,7 +230,7 @@ export default class ChartBootstrap {
 			config,
 			this.canvasModels,
 			elements.chartResizer,
-			{ offscreen: config.offscreen, offscreenBufferSize: 8000 },
+			{ offscreen: offscreenEnabled, offscreenBufferSize: config.experimental.offscreen.bufferSizes.crossToolCanvas },
 		);
 		const snapshotCanvasModel = createCanvasModel(
 			eventBus,
@@ -235,7 +238,7 @@ export default class ChartBootstrap {
 			config,
 			this.canvasModels,
 			elements.chartResizer,
-			{ offscreen: config.offscreen, offscreenBufferSize: 21 * 100000 },
+			{ offscreen: offscreenEnabled, offscreenBufferSize: config.experimental.offscreen.bufferSizes.snapshotCanvas },
 		);
 		this.chartResizeHandler = chartResizeHandler;
 		chartResizeHandler.subscribeResize();
@@ -251,7 +254,7 @@ export default class ChartBootstrap {
 			config,
 			this.canvasModels,
 			elements.chartResizer,
-			{ offscreen: config.offscreen, offscreenBufferSize: 32000 },
+			{ offscreen: offscreenEnabled, offscreenBufferSize: config.experimental.offscreen.bufferSizes.yAxisLabelsCanvas },
 		);
 		const canvasBoundsContainer = new CanvasBoundsContainer(
 			config,
@@ -270,6 +273,7 @@ export default class ChartBootstrap {
 		this.canvasInputListener = canvasInputListener;
 		this.chartComponents.push(this.canvasInputListener);
 		//#endregion
+
 		const hitTestCanvasModel = new HitTestCanvasModel(
 			eventBus,
 			elements.hitTestCanvas,
@@ -290,11 +294,7 @@ export default class ChartBootstrap {
 
 		const chartPaneId = CanvasElement.PANE_UUID(CHART_UUID);
 		//#region ScaleModel init
-		const scaleModel = new ScaleModel(
-			config,
-			() => canvasBoundsContainer.getBounds(chartPaneId),
-			canvasAnimation,
-		);
+		const scaleModel = new ScaleModel(config, () => canvasBoundsContainer.getBounds(chartPaneId), canvasAnimation);
 		this.scaleModel = scaleModel;
 		//#endregion
 
@@ -319,10 +319,15 @@ export default class ChartBootstrap {
 			canvasInputListener,
 			mainCanvasParent,
 			chartBaseModel,
+			hitTestCanvasModel,
 		);
 		this.chartPanComponent = chartPanComponent;
 		this.chartComponents.push(chartPanComponent);
 		this.userInputListenerComponents.push(chartPanComponent.chartAreaPanHandler);
+
+		const hitTestComponent = new HitTestComponent(hitTestCanvasModel, canvasAnimation, eventBus);
+		this.hitTestComponent = hitTestComponent;
+		this.chartComponents.push(hitTestComponent);
 
 		const paneManager = new PaneManager(
 			chartBaseModel,
@@ -340,6 +345,7 @@ export default class ChartBootstrap {
 			chartPanComponent,
 			mainCanvasModel,
 			yAxisLabelsCanvasModel,
+			this.hitTestCanvasModel,
 		);
 		this.paneManager = paneManager;
 
@@ -380,6 +386,7 @@ export default class ChartBootstrap {
 			paneManager,
 			this.cursorHandler,
 			this.dynamicObjects,
+			this.chartResizeHandler,
 		);
 		this.chartComponents.push(chartComponent);
 		this.chartComponent = chartComponent;
@@ -401,7 +408,7 @@ export default class ChartBootstrap {
 			timeZoneModel,
 			chartPanComponent,
 			this.cursorHandler,
-			backgroundCanvasModel,
+			this.hitTestCanvasModel,
 		);
 		this.chartComponents.push(this.xAxisComponent);
 		this.userInputListenerComponents.push(this.xAxisComponent.xAxisScaleHandler);
@@ -520,7 +527,6 @@ export default class ChartBootstrap {
 			paneManager,
 			this.crossEventProducer,
 			this.hoverProducer,
-			this.backgroundCanvasModel,
 		);
 
 		this.chartComponents.push(this.crossToolComponent);
@@ -538,7 +544,6 @@ export default class ChartBootstrap {
 			drawingManager,
 			formatterFactory,
 			this.cursorHandler,
-			backgroundCanvasModel,
 		);
 		this.eventsComponent = eventsComponent;
 		this.chartComponents.push(eventsComponent);

@@ -3,7 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { merge } from 'rxjs';
+import { merge, animationFrameScheduler } from 'rxjs';
 import { distinctUntilChanged, map, throttleTime, filter } from 'rxjs/operators';
 import { CanvasBoundsContainer, CanvasElement } from '../../canvas/canvas-bounds-container';
 import { CursorHandler } from '../../canvas/cursor.handler';
@@ -28,6 +28,7 @@ import { XAxisTimeLabelsDrawer } from './x-axis-time-labels.drawer';
 import { lastOf } from '../../utils/array.utils';
 import { notEmpty } from '../../utils/function.utils';
 import { availableBarTypes } from '../../chart.config';
+import { HitTestCanvasModel } from '../../model/hit-test-canvas.model';
 /**
  * X-axis component, contains all x-axis calculation and rendering logic.
  */
@@ -51,7 +52,7 @@ export class XAxisComponent extends ChartBaseElement {
 		private timeZoneModel: TimeZoneModel,
 		chartPanComponent: ChartPanComponent,
 		cursorHandler: CursorHandler,
-		backgroundCanvasModel: CanvasModel,
+		hitTestCanvasModel: HitTestCanvasModel,
 	) {
 		super();
 		const xAxisLabelsGenerator = new XAxisTimeLabelsGenerator(
@@ -61,6 +62,7 @@ export class XAxisComponent extends ChartBaseElement {
 			scale,
 			timeZoneModel,
 			this.canvasModel,
+			canvasBoundsContainer,
 		);
 		this.xAxisLabelsGenerator = xAxisLabelsGenerator;
 
@@ -78,7 +80,6 @@ export class XAxisComponent extends ChartBaseElement {
 		);
 		xAxisCompositeDrawer.addDrawer(this.xAxisDrawer);
 		this.xAxisLabelsDrawer = new XAxisLabelsDrawer(
-			backgroundCanvasModel,
 			config,
 			canvasModel,
 			canvasBoundsContainer,
@@ -92,6 +93,7 @@ export class XAxisComponent extends ChartBaseElement {
 			canvasBoundsContainer,
 			chartPanComponent,
 			this.chartComponent.chartModel,
+			hitTestCanvasModel,
 		);
 		this.addChildEntity(this.xAxisScaleHandler);
 		cursorHandler.setCursorForCanvasEl(CanvasElement.X_AXIS, config.components.xAxis.cursor);
@@ -121,25 +123,21 @@ export class XAxisComponent extends ChartBaseElement {
 			this.chartComponent.chartModel.candlesPrependSubject
 				.pipe(
 					filter(({ prependedCandles }) => prependedCandles.length !== 0),
-					map(({ prependedCandles }) => {
-						return this.chartComponent.chartModel.mainCandleSeries.visualPoints.slice(
-							0,
-							prependedCandles.length,
-						);
-					}),
+					map(({ prependedCandles }) =>
+						this.chartComponent.chartModel.mainCandleSeries.visualPoints.slice(0, prependedCandles.length),
+					),
 				)
 				.subscribe(newCandles => {
 					//@ts-ignore
 					if (availableBarTypes.includes(this.config.components.chart.type)) {
-						this.xAxisLabelsGenerator.updateHistoryLabels &&
-							this.xAxisLabelsGenerator.updateHistoryLabels(newCandles);
+						this.xAxisLabelsGenerator.updateHistoryLabels?.(newCandles);
 					}
 				}),
 		);
 
 		this.addRxSubscription(
 			merge(this.scale.xChanged, this.chartResizeHandler.canvasResized)
-				.pipe(throttleTime(50, undefined, { trailing: true, leading: true }))
+				.pipe(throttleTime(50, animationFrameScheduler, { trailing: true, leading: true }))
 				.subscribe(() => {
 					this.xAxisLabelsGenerator.recalculateLabels();
 				}),
@@ -152,9 +150,7 @@ export class XAxisComponent extends ChartBaseElement {
 					distinctUntilChanged((a, b) => a?.candle?.timestamp === b?.candle?.timestamp),
 					filter(notEmpty),
 				)
-				.subscribe(x => {
-					this.xAxisLabelsGenerator.updateLastLabel && this.xAxisLabelsGenerator.updateLastLabel(x);
-				}),
+				.subscribe(x => this.xAxisLabelsGenerator?.updateLastLabel?.(x)),
 		);
 	}
 

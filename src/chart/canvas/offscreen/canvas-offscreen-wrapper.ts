@@ -1,4 +1,5 @@
 import { CanvasModel } from '../../model/canvas.model';
+import { ctxForMeasure } from '../../utils/canvas/canvas-font-measure-tool.utils';
 import {
 	ARC,
 	BEGIN_PATH,
@@ -6,43 +7,46 @@ import {
 	CLEAR_RECT,
 	CLIP,
 	CLOSE_PATH,
+	DIRECTION,
 	END_OF_FILE,
 	FILL,
 	FILL_RECT,
 	FILL_STYLE,
 	FILL_TEXT,
 	FONT,
+	FONT_KERNING,
 	HEIGHT,
 	LINE_CAP,
+	LINE_JOIN,
 	LINE_TO,
 	LINE_WIDTH,
 	MOVE_TO,
 	NOP,
 	QUADRATIC_CURVE_TO,
 	RECT,
+	REDRAW_BACKGROUND_AREA,
 	RESTORE,
+	ROTATE,
 	SAVE,
 	SCALE,
+	SET_GRADIENT_FILL_STYLE,
 	SET_LINE_DASH_FLAT,
 	STROKE,
 	STROKE_RECT,
 	STROKE_STYLE,
 	STROKE_TEXT,
+	TEXT_ALIGN,
+	TEXT_BASELINE,
+	TRANSLATE,
 	WIDTH,
-	SET_GRADIENT_FILL_STYLE,
-	REDRAW_BACKGROUND_AREA,
 } from './canvas-ctx.mapper';
-
-// Regular 2d context is used only for measuring text
-// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-export const ctxForMeasure: CanvasRenderingContext2D = document.createElement('canvas').getContext('2d')!;
 
 /**
  * We use this counter to generate unique ids for strings.
  * I've used Number.MIN_SAFE_INTEGER, because it's unlikely that we will have more than 2^53 strings
  * and it's unlikely to have negative arguments (especially big ones) for canvas commands on chart.
  */
-let curPtr = Number.MIN_SAFE_INTEGER;
+let curPtr = -1_000_000;
 /**
  * Global pool of strings which is used to synchronize strings between main thread and worker thread.
  * It's intentional that this map is global, because we want to have common strings pool between all charts.
@@ -71,8 +75,8 @@ export const strsToSync: Array<string | number> = [];
  * After that, before the draw command we need to perform synchronization of this pool between main thread and worker thread.
  */
 export class CanvasOffscreenContext2D implements CanvasRenderingContext2D {
-	public commands: Float64Array;
-	public buffer: SharedArrayBuffer;
+	public commands!: Float32Array;
+	public buffer!: SharedArrayBuffer;
 	/**
 	 * Current canvas commands pointer which indicates position of the next command in the buffer.
 	 */
@@ -81,7 +85,7 @@ export class CanvasOffscreenContext2D implements CanvasRenderingContext2D {
 	private getStrPtr(str: string): number {
 		let id = stringPtrs.get(str);
 		if (id === undefined) {
-			id = curPtr++;
+			id = --curPtr;
 			strsToSync.push(str, id);
 			stringPtrs.set(str, id);
 		}
@@ -90,14 +94,21 @@ export class CanvasOffscreenContext2D implements CanvasRenderingContext2D {
 
 	private __font: string = '12px Arial';
 
-	constructor(public canvas: HTMLCanvasElement, bufferSize?: number) {
-		this.buffer = new SharedArrayBuffer(bufferSize ?? 10 * 100000);
-		this.commands = new Float64Array(this.buffer);
+	constructor(public canvas: HTMLCanvasElement) {}
+
+	initBuffer(buffer: SharedArrayBuffer) {
+		this.buffer = buffer;
+		this.commands = new Float32Array(this.buffer);
 		this.commit();
 	}
 
 	commit() {
-		this.commands[this.counter] = END_OF_FILE;
+		if (this.counter >= this.commands.length) {
+			console.error('Buffer overflow');
+			this.commands[0] = END_OF_FILE;
+		} else {
+			this.commands[this.counter] = END_OF_FILE;
+		}
 		this.counter = 0;
 	}
 
@@ -110,6 +121,10 @@ export class CanvasOffscreenContext2D implements CanvasRenderingContext2D {
 		this.commands[this.counter++] = FONT;
 		this.commands[this.counter++] = -1;
 		this.commands[this.counter++] = this.getStrPtr(val);
+	}
+
+	get font(): string {
+		return this.__font;
 	}
 
 	set width(val: number) {
@@ -227,11 +242,18 @@ export class CanvasOffscreenContext2D implements CanvasRenderingContext2D {
 	}
 
 	public setLineDash(dash: number[]): void {
+		this.__lineDash = dash;
 		this.commands[this.counter++] = SET_LINE_DASH_FLAT;
 		this.commands[this.counter++] = dash.length;
 		for (const el of dash) {
 			this.commands[this.counter++] = el;
 		}
+	}
+
+	private __lineDash: number[] = [];
+
+	public getLineDash(): number[] {
+		return this.__lineDash;
 	}
 
 	public fillText(text: string, x: number, y: number, maxWidth?: number | undefined): void {
@@ -383,23 +405,96 @@ export class CanvasOffscreenContext2D implements CanvasRenderingContext2D {
 		this.commands[this.counter++] = opacity ?? 1;
 	}
 
+	translate(x: number, y: number): void {
+		this.commands[this.counter++] = TRANSLATE;
+		this.commands[this.counter++] = 2;
+		this.commands[this.counter++] = x;
+		this.commands[this.counter++] = y;
+	}
+
+	private __textBaseline: CanvasTextBaseline = 'alphabetic';
+
+	set textBaseline(val: CanvasTextBaseline) {
+		this.__textBaseline = val;
+		this.commands[this.counter++] = TEXT_BASELINE;
+		this.commands[this.counter++] = -1;
+		this.commands[this.counter++] = this.getStrPtr(val);
+	}
+
+	get textBaseline(): CanvasTextBaseline {
+		return this.__textBaseline;
+	}
+
+	private __textAlign: CanvasTextAlign = 'center';
+
+	set textAlign(val: CanvasTextAlign) {
+		this.__textAlign = val;
+		this.commands[this.counter++] = TEXT_ALIGN;
+		this.commands[this.counter++] = -1;
+		this.commands[this.counter++] = this.getStrPtr(val);
+	}
+
+	get textAlign(): CanvasTextAlign {
+		return this.__textAlign;
+	}
+
+	rotate(val: number): void {
+		this.commands[this.counter++] = ROTATE;
+		this.commands[this.counter++] = 1;
+		this.commands[this.counter++] = val;
+	}
+
+	private __direction: CanvasDirection = 'inherit';
+
+	set direction(val: CanvasDirection) {
+		this.__direction = val;
+		this.commands[this.counter++] = DIRECTION;
+		this.commands[this.counter++] = -1;
+		this.commands[this.counter++] = this.getStrPtr(val);
+	}
+
+	get direction(): CanvasDirection {
+		return this.__direction;
+	}
+
+	private __fontKerning: CanvasFontKerning = 'auto';
+
+	set fontKerning(val: CanvasFontKerning) {
+		this.__fontKerning = val;
+		this.commands[this.counter++] = FONT_KERNING;
+		this.commands[this.counter++] = -1;
+		this.commands[this.counter++] = this.getStrPtr(val);
+	}
+
+	get fontKerning(): CanvasFontKerning {
+		return this.__fontKerning;
+	}
+
+	private __lineJoin: CanvasLineJoin = 'miter';
+
+	set lineJoin(val: CanvasLineJoin) {
+		this.__lineJoin = val;
+		this.commands[this.counter++] = LINE_JOIN;
+		this.commands[this.counter++] = -1;
+		this.commands[this.counter++] = this.getStrPtr(val);
+	}
+
+	get lineJoin(): CanvasLineJoin {
+		return this.__lineJoin;
+	}
+
 	//#region unimplemented
 	globalAlpha = 0;
 	globalCompositeOperation = 'color' as const;
 	imageSmoothingEnabled = false;
 	imageSmoothingQuality = 'high' as const;
 	lineDashOffset = 0;
-	lineJoin = 'round' as const;
 	miterLimit = 0;
 	shadowBlur = 0;
 	shadowColor = '';
 	shadowOffsetX = 0;
 	shadowOffsetY = 0;
-	direction = 'inherit' as const;
-	fontKerning = 'auto' as const;
 	filter = '';
-	textAlign = 'center' as const;
-	textBaseline = 'alphabetic' as const;
 	getContextAttributes(): CanvasRenderingContext2DSettings {
 		throw new Error('Method not implemented.');
 	}
@@ -487,16 +582,10 @@ export class CanvasOffscreenContext2D implements CanvasRenderingContext2D {
 	roundRect(): void {
 		throw new Error('Method not implemented.');
 	}
-	getLineDash(): number[] {
-		throw new Error('Method not implemented.');
-	}
 	getTransform(): DOMMatrix {
 		throw new Error('Method not implemented.');
 	}
 	resetTransform(): void {
-		throw new Error('Method not implemented.');
-	}
-	rotate(): void {
 		throw new Error('Method not implemented.');
 	}
 	setTransform(a: number, b: number, c: number, d: number, e: number, f: number): void;
@@ -507,12 +596,12 @@ export class CanvasOffscreenContext2D implements CanvasRenderingContext2D {
 	transform(): void {
 		throw new Error('Method not implemented.');
 	}
-	translate(): void {
-		throw new Error('Method not implemented.');
-	}
 	drawFocusIfNeeded(element: Element): void;
 	drawFocusIfNeeded(path: Path2D, element: Element): void;
 	drawFocusIfNeeded(): void {
+		throw new Error('Method not implemented.');
+	}
+	reset(): void {
 		throw new Error('Method not implemented.');
 	}
 	//#endregion

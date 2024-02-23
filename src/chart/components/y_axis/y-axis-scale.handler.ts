@@ -14,6 +14,7 @@ import { DragInfo } from '../dran-n-drop_helper/drag-n-drop.component';
 import { DragNDropYComponent } from '../dran-n-drop_helper/drag-n-drop-y.component';
 import { ChartPanComponent } from '../pan/chart-pan.component';
 import { ScaleModel } from '../../model/scale.model';
+import { HitTestCanvasModel } from '../../model/hit-test-canvas.model';
 
 // if you drag full Y height from top to bottom - you will have x3 zoom, and vice-versa
 const FULL_Y_HEIGHT_ZOOM_FACTOR = 10;
@@ -32,47 +33,55 @@ export class YAxisScaleHandler extends ChartBaseElement {
 
 	constructor(
 		private bus: EventBus,
-		config: YAxisConfig,
+		private config: YAxisConfig,
 		panning: ChartPanComponent,
 		private scale: ScaleModel,
-		canvasInputListener: CanvasInputListenerComponent,
+		private canvasInputListener: CanvasInputListenerComponent,
 		private bounds: CanvasBoundsContainer,
-		hitTest: HitBoundsTest,
+		private hitTest: HitBoundsTest,
 		private autoScaleCallback: (auto: boolean) => void,
+		private hitTestCanvasModel: HitTestCanvasModel,
 	) {
 		super();
 		// drag to Y-scale and double click to auto scale
 		if (config.customScale) {
-			const dragPredicate = () => config.type !== 'percent' && config.visible;
 			const dragNDropYComponent = new DragNDropYComponent(
 				hitTest,
 				{
-					onDragTick: callIfPredicateTrue(this.onYDragTick, dragPredicate),
-					onDragStart: callIfPredicateTrue(this.onYDragStart, dragPredicate),
-					onDragEnd: callIfPredicateTrue(this.onYDragEnd, dragPredicate),
+					onDragTick: this.onYDragTick,
+					onDragStart: this.onYDragStart,
+					onDragEnd: this.onYDragEnd,
 				},
 				canvasInputListener,
 				panning,
 				{
-					disableChartPanning: false,
+					dragPredicate: () => panning.chartAreaPanHandler.chartPanningOptions.vertical && config.type !== 'percent' && config.visible,
 				},
 			);
 			this.addChildEntity(dragNDropYComponent);
+		}
+	}
 
-			if (config.customScaleDblClick) {
-				canvasInputListener.observeDbClick(hitTest).subscribe(() => {
-					autoScaleCallback(true);
+	protected doActivate(): void {
+		if (this.config.customScaleDblClick) {
+			this.addRxSubscription(
+				this.canvasInputListener.observeDbClick(this.hitTest).subscribe(() => {
+					this.autoScaleCallback(true);
 					this.bus.fireDraw();
-				});
-			}
+				}),
+			);
 		}
 	}
 
 	private onYDragStart = () => {
+		// halt previous scale animation if drag is started
+		this.scale.haltAnimation();
 		this.lastYStart = this.scale.yStart;
 		this.lastYEnd = this.scale.yEnd;
 		this.lastYHeight = this.scale.yEnd - this.scale.yStart;
 		this.lastYPxHeight = this.bounds.getBounds(CanvasElement.Y_AXIS).height;
+		// Stop redrawing hit test
+		this.hitTestCanvasModel.hitTestDrawersPredicateSubject.next(false);
 	};
 
 	private onYDragTick = (dragInfo: DragInfo) => {
@@ -91,17 +100,16 @@ export class YAxisScaleHandler extends ChartBaseElement {
 		const delta = (newYHeight - this.lastYHeight) / 2;
 		const newYStart = this.lastYStart - delta;
 		const newYEnd = this.lastYEnd + delta;
-		this.autoScaleCallback(false);
-		this.scale.setYScale(newYStart, newYEnd);
-		this.bus.fireDraw();
+		if (this.lastYStart !== newYStart || this.lastYEnd !== newYEnd) {
+			this.scale.setYScale(newYStart, newYEnd);
+			this.autoScaleCallback(false);
+			this.bus.fireDraw();
+		}
 	};
 
 	private onYDragEnd = () => {
 		this.yAxisDragEndSubject.next();
+		// Continue redrawing hit test
+		this.hitTestCanvasModel.hitTestDrawersPredicateSubject.next(true);
 	};
 }
-
-const callIfPredicateTrue =
-	(fun: (...args: any[]) => void, predicate: () => boolean) =>
-	(...args: unknown[]) =>
-		predicate() && fun(...args);

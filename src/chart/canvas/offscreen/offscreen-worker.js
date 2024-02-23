@@ -1,4 +1,4 @@
-import { expose } from 'comlink';
+import { expose, proxy } from 'comlink';
 import { num2Ctx, END_OF_FILE } from './canvas-ctx.mapper';
 
 /**
@@ -9,11 +9,12 @@ import { num2Ctx, END_OF_FILE } from './canvas-ctx.mapper';
  * also on repeated encodings it'll be much faster since we write only one number instead of array of bytes for corresponding string).
  */
 const stringsPool = new Map();
+const STRINGS_BOUNDARY = -1_000_000;
 
 const bigPrimeNumber = 317;
 
 export class OffscreenWorker {
-	constructor(dpr) {
+	constructor(dpr, fonts) {
 		this.dpr = dpr;
 		this.ctxs = new Map();
 		this.buffers = new Map();
@@ -31,6 +32,9 @@ export class OffscreenWorker {
 			new Array(9),
 			new Array(10),
 		];
+		return Promise.all(fonts.map(font => {
+			loadFont(font.fontFamily, font.url);
+		})).then(() => proxy(this));
 	}
 
 	defineCustomCanvasProperties(ctx) {
@@ -65,18 +69,18 @@ export class OffscreenWorker {
 			value(backgroundCtxIdx, ctxIdx, x, y, width, height, opacity) {
 				const backgroundCtx = ctxs.get(backgroundCtxIdx);
 				const ctx = ctxs.get(ctxIdx);
-				ctx &&
-					backgroundCtx &&
-					redrawBackgroundArea(dpr, backgroundCtx, ctx, x, y, width, height, opacity);
+				ctx && backgroundCtx && redrawBackgroundArea(dpr, backgroundCtx, ctx, x, y, width, height, opacity);
 			},
 		});
 	}
 
-	addCanvas(canvasIdx, options, canvas, commandsBuffer) {
-		this.buffers.set(canvasIdx, new Float64Array(commandsBuffer));
+	addCanvas(canvasIdx, options, canvas, bufferSize) {
+		const commandsBuffer = new SharedArrayBuffer(bufferSize);
+		this.buffers.set(canvasIdx, new Float32Array(commandsBuffer));
 		const ctx = canvas.getContext('2d', options);
 		this.defineCustomCanvasProperties(ctx);
 		this.ctxs.set(canvasIdx, ctx);
+		return commandsBuffer;
 	}
 
 	syncStrings(strs) {
@@ -100,13 +104,13 @@ export class OffscreenWorker {
 					for (let i = 0; i < argsLen; i++) {
 						const arg = ctxCommands[counter++];
 						// simple heuristic to detect strings (@see CanvasOffscreenContext2D)
-						args[i] = arg < -1_000_000_000 ? stringsPool.get(arg) : arg;
+						args[i] = arg < STRINGS_BOUNDARY ? stringsPool.get(arg) : arg;
 					}
 					ctx[method].apply(ctx, args);
 				} else {
 					const arg = ctxCommands[counter++];
 					// simple heuristic to detect strings (@see CanvasOffscreenContext2D)
-					ctx[method] = arg < -1_000_000_000 ? stringsPool.get(arg) : arg;
+					ctx[method] = arg < STRINGS_BOUNDARY ? stringsPool.get(arg) : arg;
 				}
 			}
 		}
@@ -161,4 +165,19 @@ export const redrawBackgroundArea = (dpr, backgroundCtx, ctx, x, y, width, heigh
 		);
 	}
 	ctx.putImageData(imageData, xCoord, yCoord);
+};
+
+
+const loadFont = (fontName, url) => {
+	if (self.FontFace) {
+		// first declare our font-face
+		const fontFace = new FontFace(
+			fontName,
+			url,
+		);
+		// add it to the list of fonts our worker supports
+		self.fonts.add(fontFace);
+		return fontFace.load();
+	}
+	return Promise.reject();
 };

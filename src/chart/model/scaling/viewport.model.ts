@@ -152,6 +152,15 @@ export abstract class ViewportModel extends ChartBaseElement implements Viewable
 		share(),
 	);
 	//endregion
+
+	protected doActivate(): void {
+		super.doActivate();
+	}
+
+	protected doDeactivate(): void {
+		super.doDeactivate();
+		this.changed.complete();
+	}
 	//region conversion methods
 	/**
 	 * Converts a unit value to pixels based on the current zoom level and xStart value.
@@ -217,10 +226,7 @@ export abstract class ViewportModel extends ChartBaseElement implements Viewable
 			return pixelsToUnits(normalizedPx + unitToPixels(this.yStart, this.zoomY), this.zoomY);
 		} else {
 			// inverse by default because canvas calculation [0,0] point starts from top-left corner
-			return pixelsToUnits(
-				bounds.height - normalizedPx + unitToPixels(this.yStart, this.zoomY),
-				this.zoomY,
-			);
+			return pixelsToUnits(bounds.height - normalizedPx + unitToPixels(this.yStart, this.zoomY), this.zoomY);
 		}
 	}
 
@@ -411,7 +417,7 @@ export abstract class ViewportModel extends ChartBaseElement implements Viewable
 	 * @returns {boolean} - Returns true if the viewport is valid, false otherwise.
 	 */
 	isViewportValid() {
-		return this.xStart !== this.xEnd && this.yStart !== this.yEnd && isFinite(this.yStart) && isFinite(this.yEnd);
+		return this.xStart !== this.xEnd && this.yStart !== this.yEnd && isFinite(this.yStart) && isFinite(this.yEnd) && this.zoomX > 0 && this.zoomY > 0;
 	}
 }
 

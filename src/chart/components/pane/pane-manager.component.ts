@@ -31,6 +31,7 @@ import { PaneComponent } from './pane.component';
 import { Unsubscriber } from '../../utils/function.utils';
 import { flatMap } from '../../utils/array.utils';
 import { DataSeriesModel } from '../../model/data-series.model';
+import { HitTestCanvasModel } from '../../model/hit-test-canvas.model';
 
 export class PaneManager extends ChartBaseElement {
 	public panes: Record<string, PaneComponent> = {};
@@ -61,6 +62,7 @@ export class PaneManager extends ChartBaseElement {
 		public chartPanComponent: ChartPanComponent,
 		private mainCanvasModel: CanvasModel,
 		private yAxisLabelsCanvasModel: CanvasModel,
+		private hitTestCanvasModel: HitTestCanvasModel,
 	) {
 		super();
 		this.hitTestController = new PaneHitTestController(this.panes, this.dynamicObjectsCanvasModel);
@@ -93,6 +95,7 @@ export class PaneManager extends ChartBaseElement {
 		const resizerHT = this.canvasBoundsContainer.getBoundsHitTest(CanvasElement.PANE_UUID_RESIZER(uuid), {
 			extensionY: this.config.components.paneResizer.dragZone,
 		});
+		const dragPredicate = () => this.chartBaseModel.mainVisualPoints.length !== 0;
 		const dragTick = () => {
 			this.canvasBoundsContainer.resizePaneVertically(uuid, this.canvasInputListener.getCurrentPoint().y);
 			this.eventBus.fireDraw([this.mainCanvasModel.canvasId, 'dynamicObjectsCanvas']);
@@ -103,6 +106,7 @@ export class PaneManager extends ChartBaseElement {
 			() => this.canvasBoundsContainer.getBounds(resizerId),
 			resizerHT,
 			dragTick,
+			dragPredicate,
 			this.chartPanComponent,
 			this.mainCanvasModel,
 			this.drawingManager,
@@ -110,6 +114,7 @@ export class PaneManager extends ChartBaseElement {
 			this.canvasAnimation,
 			this.config,
 			this.canvasBoundsContainer,
+			this.hitTestCanvasModel,
 		);
 		this.userInputListenerComponents.push(barResizerComponent);
 		return barResizerComponent;
@@ -159,6 +164,7 @@ export class PaneManager extends ChartBaseElement {
 			uuid,
 			this.dataSeriesAddedSubject,
 			this.dataSeriesRemovedSubject,
+			this.hitTestCanvasModel,
 			options,
 		);
 

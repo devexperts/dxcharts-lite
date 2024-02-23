@@ -4,7 +4,7 @@
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 import { Subject } from 'rxjs';
-import { distinctUntilChanged, skip, startWith } from 'rxjs/operators';
+import { distinctUntilChanged, skip, startWith, filter } from 'rxjs/operators';
 import { CanvasAnimation } from '../../animation/canvas-animation';
 import { CanvasBoundsContainer, HitBoundsTest } from '../../canvas/canvas-bounds-container';
 import { FullChartConfig } from '../../chart.config';
@@ -17,6 +17,7 @@ import { DragNDropYComponent } from '../dran-n-drop_helper/drag-n-drop-y.compone
 import { ChartPanComponent } from '../pan/chart-pan.component';
 import { BarResizerDrawer } from './bar-resizer.drawer';
 import { BoundsProvider } from '../../model/bounds.model';
+import { HitTestCanvasModel } from '../../model/hit-test-canvas.model';
 
 /**
  * Bar separator between panes.
@@ -34,6 +35,7 @@ export class BarResizerComponent extends ChartBaseElement {
 		private boundsProvider: BoundsProvider,
 		private hitTest: HitBoundsTest,
 		private dragTickCb: (yDelta: number) => void,
+		private dragPredicate: () => boolean,
 		private chartPanComponent: ChartPanComponent,
 		private canvasModel: CanvasModel,
 		private drawingManager: DrawingManager,
@@ -41,6 +43,7 @@ export class BarResizerComponent extends ChartBaseElement {
 		private canvasAnimation: CanvasAnimation,
 		private config: FullChartConfig,
 		private canvasBoundsContainer: CanvasBoundsContainer,
+		private hitTestCanvasModel: HitTestCanvasModel,
 	) {
 		super();
 		this.animationId = `${this.id}_RESIZER`;
@@ -66,10 +69,13 @@ export class BarResizerComponent extends ChartBaseElement {
 				{
 					onDragTick: this.onYDragTick,
 					onDragStart: this.onYDragStart,
-					onDragEnd: this.onYDragEnd,
+					onDragEnd: this.onYDragEnd
 				},
 				this.canvasInputListener,
 				this.chartPanComponent,
+				{
+					dragPredicate: this.dragPredicate,
+				}
 			);
 			this.addChildEntity(dragNDropYComponent);
 			if (this.config.animation.paneResizer.enabled) {
@@ -79,6 +85,7 @@ export class BarResizerComponent extends ChartBaseElement {
 						.pipe(
 							// set initial pipe state to false, so animation will play for the first time only for appearing
 							startWith(false),
+							filter(this.dragPredicate),
 							distinctUntilChanged(),
 							skip(1),
 						)
@@ -106,12 +113,16 @@ export class BarResizerComponent extends ChartBaseElement {
 	private onYDragStart = () => {
 		this.config.components.crossTool.type = 'none';
 		this.initialY = this.boundsProvider().y;
+		// Stop redrawing hit test
+		this.hitTestCanvasModel.hitTestDrawersPredicateSubject.next(false);
 	};
 
 	private onYDragEnd = () => {
 		this.config.components.crossTool.type = 'cross-and-labels';
 		this.initialY = this.boundsProvider().y;
 		this.canvasBoundsContainer.graphsHeightRatioChangedSubject.next(this.canvasBoundsContainer.graphsHeightRatio);
+		// Continue redrawing hit test
+		this.hitTestCanvasModel.hitTestDrawersPredicateSubject.next(true);
 	};
 
 	private onYDragTick = (dragInfo: DragInfo) => {

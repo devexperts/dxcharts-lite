@@ -7,6 +7,7 @@ import { CanvasOffscreenContext2D, isOffscreenCanvasModel } from '../canvas/offs
 import { BarType, FullChartConfig } from '../chart.config';
 import EventBus from '../events/event-bus';
 import { PickedDOMRect } from '../inputhandlers/chart-resize.handler';
+import { constVoid } from '../utils/function.utils';
 
 /**
  * The minimum supported canvas size in chart-core (in pixels).
@@ -35,6 +36,10 @@ export class CanvasModel<T extends CanvasRenderingContext2D = CanvasRenderingCon
 	public idx: number = 0;
 	public readonly _canvasId: string;
 	type: CanvasBarType = CANDLE_TYPE;
+
+	public canvasReady: Promise<void> = Promise.resolve();
+	public fireCanvasReady: () => unknown = constVoid;
+
 	constructor(
 		ctx: T,
 		private eventBus: EventBus,
@@ -43,6 +48,11 @@ export class CanvasModel<T extends CanvasRenderingContext2D = CanvasRenderingCon
 		private resizer?: HTMLElement,
 		public options: CanvasModelOptions = {},
 	) {
+		if (options.offscreen) {
+			this.canvasReady = new Promise(resolve => {
+				this.fireCanvasReady = resolve;
+			});
+		}
 		canvasModels.push(this);
 		this.parent = findHeightParent(canvas);
 
@@ -237,7 +247,7 @@ export function createCanvasModel(
 }
 
 export const getCanvasContext = (canvas: HTMLCanvasElement, options?: CanvasModelOptions): CanvasRenderingContext2D => {
-	const ctx = options?.offscreen ? new CanvasOffscreenContext2D(canvas, options.offscreenBufferSize) : canvas.getContext('2d', options);
+	const ctx = options?.offscreen ? new CanvasOffscreenContext2D(canvas) : canvas.getContext('2d', options);
 	if (ctx === null) {
 		throw new Error("Couldn't get 2d context. Canvas is not supported.");
 	}

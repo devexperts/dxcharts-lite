@@ -40,6 +40,7 @@ import {
 	YExtentCreationOptions,
 } from './extent/y-extent-component';
 import { PaneHitTestController } from './pane-hit-test.controller';
+import { HitTestCanvasModel } from '../../model/hit-test-canvas.model';
 
 export class PaneComponent extends ChartBaseElement {
 	private _paneOrder = 0;
@@ -82,6 +83,7 @@ export class PaneComponent extends ChartBaseElement {
 		public readonly uuid: string,
 		public seriesAddedSubject: Subject<DataSeriesModel>,
 		public seriesRemovedSubject: Subject<DataSeriesModel>,
+		private hitTestCanvasModel: HitTestCanvasModel,
 		options?: AtLeastOne<YExtentCreationOptions>,
 	) {
 		super();
@@ -179,8 +181,7 @@ export class PaneComponent extends ChartBaseElement {
 		const chartPaneId = CanvasElement.PANE_UUID(this.uuid);
 		const getBounds = () => this.canvasBoundsContainer.getBounds(chartPaneId);
 		const scaleModel =
-			options?.scale ??
-			new SyncedByXScaleModel(this.mainScale, this.config, getBounds, this.canvasAnimation);
+			options?.scale ?? new SyncedByXScaleModel(this.mainScale, this.config, getBounds, this.canvasAnimation);
 
 		const [unsub, dragNDrop] = this.createYPanHandler(this.uuid, scaleModel);
 
@@ -203,6 +204,7 @@ export class PaneComponent extends ChartBaseElement {
 				dataSeriesProvider,
 				this.uuid,
 				extentIdx,
+				this.hitTestCanvasModel,
 			);
 
 		const yExtentComponent = new YExtentComponent(

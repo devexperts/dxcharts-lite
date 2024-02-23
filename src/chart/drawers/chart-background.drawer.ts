@@ -3,60 +3,39 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { Drawer } from './drawing-manager';
-import { CanvasModel } from '../model/canvas.model';
 import { ChartAreaTheme, FullChartConfig } from '../chart.config';
+import { CanvasModel } from '../model/canvas.model';
 import { getDPR } from '../utils/device/device-pixel-ratio.utils';
-import { deepEqual } from '../utils/object.utils';
 import { floor } from '../utils/math.utils';
-import { isOffscreenCanvasModel } from '../canvas/offscreen/canvas-offscreen-wrapper';
+import { deepEqual } from '../utils/object.utils';
+import { Drawer } from './drawing-manager';
 
 export class BackgroundDrawer implements Drawer {
-	constructor(private canvasModel: CanvasModel, private config: FullChartConfig) {}
+	constructor(
+		private canvasModel: CanvasModel,
+		private config: FullChartConfig,
+		private drawPredicate: () => boolean = () => true,
+	) {}
 
 	// we need to save previous state to avoid unnecessary redraws
 	private prevState: Partial<ChartAreaTheme> = {};
-	private prevWidth = 0;
-	private prevHeight = 0;
 
 	draw(): void {
-		if (
-			deepEqual(this.config.colors.chartAreaTheme, this.prevState) &&
-			this.prevHeight === this.canvasModel.height &&
-			this.prevWidth === this.canvasModel.width
-		) {
-			return;
-		}
-		this.canvasModel.clear();
-		const ctx = this.canvasModel.ctx;
-		if (this.config.colors.chartAreaTheme.backgroundMode === 'gradient') {
-			if (isOffscreenCanvasModel(this.canvasModel)) {
-				const offscreenCtx = this.canvasModel.ctx;
-				// special method for gradient fill, because we can't transfer CanvasGradient directly to offscreen
-				offscreenCtx.setGradientFillStyle(
-					0,
-					0,
-					this.canvasModel.width,
-					this.canvasModel.height,
-					0,
-					this.config.colors.chartAreaTheme.backgroundGradientTopColor,
-					1,
-					this.config.colors.chartAreaTheme.backgroundGradientBottomColor,
-				);
-			} else {
-				const grd = ctx.createLinearGradient(0, 0, this.canvasModel.width, this.canvasModel.height);
+		if (this.drawPredicate() || !deepEqual(this.config.colors.chartAreaTheme, this.prevState)) {
+			this.canvasModel.clear();
+			const ctx = this.canvasModel.ctx;
+			if (this.config.colors.chartAreaTheme.backgroundMode === 'gradient') {
+				const grd = ctx.createLinearGradient(0, 0 + this.canvasModel.height / 2, this.canvasModel.width, 0 + this.canvasModel.height / 2);
 				grd.addColorStop(0, this.config.colors.chartAreaTheme.backgroundGradientTopColor);
 				grd.addColorStop(1, this.config.colors.chartAreaTheme.backgroundGradientBottomColor);
 				ctx.fillStyle = grd;
+			} else {
+				ctx.fillStyle = this.config.colors.chartAreaTheme.backgroundColor;
 			}
-		} else {
-			ctx.fillStyle = this.config.colors.chartAreaTheme.backgroundColor;
+			ctx.fillRect(0, 0, this.canvasModel.width, this.canvasModel.height);
 		}
-		ctx.fillRect(0, 0, this.canvasModel.width, this.canvasModel.height);
 		// save prev state
 		this.prevState = { ...this.config.colors.chartAreaTheme };
-		this.prevWidth = this.canvasModel.width;
-		this.prevHeight = this.canvasModel.height;
 	}
 
 	getCanvasIds(): Array<string> {
@@ -66,6 +45,7 @@ export class BackgroundDrawer implements Drawer {
 
 // this function in used in case when
 // some entity can overlap with another chart entity, so we need to hide the another entity
+// it has very (!!!) poor perfomance, use it carefully
 export const redrawBackgroundArea = (
 	backgroundCtx: CanvasRenderingContext2D,
 	ctx: CanvasRenderingContext2D,

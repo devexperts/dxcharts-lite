@@ -4,6 +4,7 @@
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 import { ChartModel } from '../../components/chart/chart.model';
+import { CanvasModel } from '../../model/canvas.model';
 import { DataSeriesModel, VisualSeriesPoint } from '../../model/data-series.model';
 import { unitToPixels } from '../../model/scaling/viewport.model';
 import { floorToDPR } from '../../utils/device/device-pixel-ratio.utils';
@@ -18,11 +19,12 @@ export class ColorCandleDrawer implements SeriesDrawer {
 	constructor(private chartModel: ChartModel) {}
 
 	draw(
-		ctx: CanvasRenderingContext2D,
+		canvasModel: CanvasModel,
 		allPoints: VisualSeriesPoint[][],
 		model: DataSeriesModel,
 		drawerConfig: ChartDrawerConfig,
 	): void {
+		const ctx = canvasModel.ctx;
 		allPoints.forEach((points, idx) => {
 			const config = model.getPaintConfig(idx);
 			ctx.fillStyle = drawerConfig.singleColor ?? config.color;

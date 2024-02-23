@@ -6,7 +6,9 @@
 import { BarType, FullChartConfig } from '../../chart.config';
 import { BoundsProvider } from '../../model/bounds.model';
 import { DataSeriesModel, VisualSeriesPoint } from '../../model/data-series.model';
-import { ChartDrawerConfig, clipToBounds, SeriesDrawer } from '../data-series.drawer';
+import { ChartDrawerConfig, SeriesDrawer } from '../data-series.drawer';
+import { clipToBounds } from '../../utils/canvas/canvas-drawing-functions.utils';
+import { CanvasModel } from '../../model/canvas.model';
 
 export const candleTypesList: BarType[] = [
 	'candle',
@@ -27,14 +29,15 @@ export class CandleSeriesWrapper implements SeriesDrawer {
 	constructor(private drawer: SeriesDrawer, private config: FullChartConfig, private chartBounds: BoundsProvider) {}
 
 	draw(
-		ctx: CanvasRenderingContext2D,
+		canvasModel: CanvasModel,
 		allPoints: VisualSeriesPoint[][],
 		model: DataSeriesModel,
 		config: ChartDrawerConfig,
 	): void {
+		const ctx = canvasModel.ctx;
 		if (this.isChartTypeAllowed()) {
 			this.beforeDraw(ctx);
-			this.drawer.draw(ctx, allPoints, model, config);
+			this.drawer.draw(canvasModel, allPoints, model, config);
 			this.afterDraw(ctx, model);
 		}
 	}

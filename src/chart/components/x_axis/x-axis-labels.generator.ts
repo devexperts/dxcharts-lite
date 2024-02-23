@@ -3,6 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
+import { CanvasBoundsContainer, CanvasElement } from '../../canvas/canvas-bounds-container';
 import { FullChartConfig } from '../../chart.config';
 import EventBus from '../../events/event-bus';
 import { CanvasModel } from '../../model/canvas.model';
@@ -12,7 +13,7 @@ import { TimeZoneModel } from '../../model/time-zone.model';
 import VisualCandle from '../../model/visual-candle';
 import { cloneUnsafe, typedEntries_UNSAFE } from '../../utils/object.utils';
 import { ChartModel } from '../chart/chart.model';
-import { fakeVisualCandle } from '../chart/fake-candles';
+import { fakeVisualCandle } from '../chart/fake-visual-candle';
 import { NumericAxisLabel } from '../labels_generator/numeric-axis-labels.generator';
 import { TimeFormatMatcher } from './time/parser/time-formats-matchers.functions';
 import { parseTimeFormatsFromKey } from './time/parser/time-formats-parser.functions';
@@ -70,7 +71,7 @@ export class XAxisTimeLabelsGenerator implements XAxisLabelsGenerator {
 	private levelsCache: Record<number, XAxisLabelWeighted[]> = {};
 
 	get labels(): XAxisLabelWeighted[] {
-		return this.getLabelsFromChartType();
+		return this.filterLabelsInViewport(this.getLabelsFromChartType());
 	}
 
 	private formatsByWeightMap: Record<TimeFormatWithDuration, string>;
@@ -89,6 +90,7 @@ export class XAxisTimeLabelsGenerator implements XAxisLabelsGenerator {
 		private scale: ScaleModel,
 		private timeZoneModel: TimeZoneModel,
 		private canvasModel: CanvasModel,
+		private canvasBoundsContainer: CanvasBoundsContainer,
 	) {
 		this.formatsByWeightMap = config.components.xAxis.formatsForLabelsConfig;
 		const { weightToTimeFormatsDict, weightToTimeFormatMatcherDict } = generateWeightsMapForConfig(
@@ -98,6 +100,21 @@ export class XAxisTimeLabelsGenerator implements XAxisLabelsGenerator {
 			.map<[number, TimeFormatMatcher]>(([k, v]) => [parseInt(k, 10), v])
 			.sort(([a], [b]) => b - a);
 		this.weightToTimeFormatsDict = weightToTimeFormatsDict;
+	}
+
+	private filterLabelsInViewport(labels: XAxisLabelWeighted[]) {
+		const bounds = this.canvasBoundsContainer.getBounds(CanvasElement.X_AXIS);
+		const filteredLabels = [];
+
+		for (const label of labels) {
+			const x = this.scale.toX(label.value);
+			// skip labels outside viewport
+			if (x < 0 || x > bounds.width) {
+				continue;
+			}
+			filteredLabels.push(label);
+		}
+		return filteredLabels;
 	}
 
 	private getLabelsFromChartType() {
@@ -143,7 +160,8 @@ export class XAxisTimeLabelsGenerator implements XAxisLabelsGenerator {
 		allCandlesWithFake: VisualCandle[],
 	): XAxisLabelWeighted[] {
 		const arr = new Array(weightedPoints.length);
-		weightedPoints.forEach((point, index) => {
+		for (let index = 0; index < weightedPoints.length; ++index) {
+			const point = weightedPoints[index];
 			const visualCandle = allCandlesWithFake[index];
 			const labelFormat = this.weightToTimeFormatsDict[point.weight];
 			const formattedLabel = this.timeZoneModel.getDateTimeFormatter(labelFormat)(visualCandle.candle.timestamp);
@@ -155,7 +173,7 @@ export class XAxisTimeLabelsGenerator implements XAxisLabelsGenerator {
 				time: visualCandle.candle.timestamp,
 				text: formattedLabel,
 			};
-		});
+		}
 		return arr;
 	}
 
@@ -334,35 +352,48 @@ export class XAxisTimeLabelsGenerator implements XAxisLabelsGenerator {
 	}
 
 	/**
+	 * Calculates the cover up level based on the maximum label width and the mean candle width.
+	 * Cover up level is based on maximum label width, which is based on the font size and the maximum format length.
+	 * Used to group labels.
+	 */
+	private calculateCoverUpLevel = () => {
+		const animation = this.scale.currentAnimation;
+		const meanCandleWidthInUnits = this.chartModel.mainCandleSeries.meanCandleWidth;
+		if (Object.getOwnPropertyNames(this.labelsGroupedByWeight).length === 0) {
+			return -1;
+		}
+		// calculate coverUpLevel for target zoomX to prevent extra labels calculations on every animation tick
+		const meanCandleWidthInPixels = animation?.animationInProgress
+			? unitToPixels(meanCandleWidthInUnits, animation.animationConfig.targetZoomX)
+			: unitToPixels(meanCandleWidthInUnits, this.scale.zoomX);
+
+		if (!isFinite(meanCandleWidthInPixels)) {
+			return -1;
+		}
+		const fontSize = this.config.components.xAxis.fontSize;
+		const maxFormatLength = Object.values(this.formatsByWeightMap).reduce(
+			(max, item) => Math.max(item.length, max),
+			1,
+		);
+		const maxLabelWidth = fontSize * maxFormatLength;
+		return Math.round(maxLabelWidth / meanCandleWidthInPixels);
+	};
+
+	/**
 	 * Recalculates cached labels based on the current configuration and zoom level.
 	 * If there are no grouped labels, the cache is not set.
-	 * Calculates the maximum label width based on the font size and the maximum format length.
-	 * Calculates the cover up level based on the maximum label width and the mean candle width.
+	 * Recalculating depends on cover up level.
 	 * If the cover up level is negative, the cache is not updated.
 	 * If the cover up level has not changed, the cached labels are returned.
 	 * Otherwise, the labels are filtered by extended rules and grouped by cover up level.
 	 * The filtered labels are then cached and returned.
 	 */
 	private recalculateCachedLabels() {
-		// skip cache setting if we don't have grouped labels
-		if (Object.getOwnPropertyNames(this.labelsGroupedByWeight).length === 0) {
-			return;
-		}
-
-		const fontSize = this.config.components.xAxis.fontSize;
-		const maxFormatLength = Object.values(this.formatsByWeightMap).reduce((max, item) => {
-			return Math.max(item.length, max);
-		}, 1);
-		const maxLabelWidth = fontSize * maxFormatLength;
-		const meanCandleWidthPx = unitToPixels(this.chartModel.mainCandleSeries.meanCandleWidth, this.scale.zoomX);
-
-		const coverUpLevel = Math.round(maxLabelWidth / meanCandleWidthPx);
-
+		const coverUpLevel = this.calculateCoverUpLevel();
 		// for some reason sometimes `this.scale.zoomX` is negative so we dont want to update labels
-		if (coverUpLevel < 0 && !isFinite(meanCandleWidthPx)) {
+		if (coverUpLevel < 0) {
 			return;
 		}
-
 		if (this.weightedCache === undefined || coverUpLevel !== this.weightedCache.coverUpLevel) {
 			const labelsFromCache = this.getLabelsFromCache(coverUpLevel);
 			if (labelsFromCache) {

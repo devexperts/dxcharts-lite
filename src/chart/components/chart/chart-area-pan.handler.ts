@@ -3,8 +3,8 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { merge } from 'rxjs';
-import { throttleTime } from 'rxjs/operators';
+import { merge, animationFrameScheduler } from 'rxjs';
+import { throttleTime, filter } from 'rxjs/operators';
 import { CanvasAnimation, VIEWPORT_ANIMATION_ID } from '../../animation/canvas-animation';
 import { CanvasBoundsContainer, CanvasElement, HitBoundsTest } from '../../canvas/canvas-bounds-container';
 import { AutoScaleDisableOnDrag, FullChartConfig } from '../../chart.config';
@@ -20,10 +20,16 @@ import { DragNDropXComponent } from '../dran-n-drop_helper/drag-n-drop-x.compone
 import { DragNDropYComponent } from '../dran-n-drop_helper/drag-n-drop-y.component';
 import { DragInfo } from '../dran-n-drop_helper/drag-n-drop.component';
 import { ChartPanComponent } from '../pan/chart-pan.component';
+import { HitTestCanvasModel } from '../../model/hit-test-canvas.model';
 
 export interface ChartWheelEvent {
 	readonly originalEvent: WheelEvent;
 	readonly candleIdx: number;
+}
+
+interface ChartPanningOptions {
+	horizontal: boolean;
+	vertical: boolean;
 }
 
 /**
@@ -50,9 +56,10 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 	private readonly touchHandler: MainCanvasTouchHandler;
 	private currentPoint: Point = { x: 0, y: 0 };
 	// number of candles delta changed during X dragging: 1, 5 or -3 for ex.
-	xDraggedCandlesDelta = 0;
-	lastXStart = 0;
-	wheelTrottleTime = 15; // in ms
+	public xDraggedCandlesDelta: number = 0;
+	public lastXStart: number = 0;
+	public wheelThrottleTime: number = 15; // in ms
+	public chartPanningOptions: ChartPanningOptions = { horizontal: true, vertical: true };
 
 	constructor(
 		private bus: EventBus,
@@ -63,6 +70,7 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 		private canvasBoundsContainer: CanvasBoundsContainer,
 		private canvasAnimation: CanvasAnimation,
 		private chartPanComponent: ChartPanComponent,
+		private hitTestCanvasModel: HitTestCanvasModel,
 	) {
 		super();
 		this.touchHandler = new MainCanvasTouchHandler(this.scale, this.canvasInputListener, this.mainCanvasParent);
@@ -75,11 +83,12 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 			{
 				onDragStart: this.onXDragStart,
 				onDragTick: this.onXDragTick,
+				onDragEnd: this.onXDragEnd,
 			},
 			this.canvasInputListener,
 			this.chartPanComponent,
 			{
-				disableChartPanning: false,
+				dragPredicate: () => this.chartPanningOptions.horizontal,
 			},
 		);
 
@@ -130,7 +139,10 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 				this.canvasInputListener.observeWheel(allPanesHitTest),
 				this.canvasInputListener.observePinch(allPanesHitTest),
 			)
-				.pipe(throttleTime(this.wheelTrottleTime, undefined, { trailing: true, leading: true }))
+				.pipe(
+					filter(() => this.chartPanningOptions.horizontal && this.chartPanningOptions.vertical),
+					throttleTime(this.wheelThrottleTime, animationFrameScheduler, { trailing: true, leading: true }),
+				)
 				.subscribe(e => {
 					const isTouchpad = touchpadDetector(e);
 					const zoomSensitivity = isTouchpad
@@ -146,7 +158,7 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 		this.addRxSubscription(
 			this.canvasInputListener
 				.observeScrollGesture()
-				.pipe(throttleTime(this.wheelTrottleTime, undefined, { trailing: true, leading: true }))
+				.pipe(throttleTime(this.wheelThrottleTime, animationFrameScheduler, { trailing: true, leading: true }))
 				.subscribe((e: WheelEvent) => {
 					let direction = -1;
 					const device = deviceDetector();
@@ -198,6 +210,8 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 			this.canvasAnimation.forceStopAnimation(VIEWPORT_ANIMATION_ID);
 			this.currentPoint = { x: 0, y: 0 };
 			lastYStart = scale.yStart;
+			// Stop redrawing hit test
+			this.hitTestCanvasModel.hitTestDrawersPredicateSubject.next(false);
 		};
 
 		const onYDragTick = (dragInfo: DragInfo) => {
@@ -213,16 +227,22 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 			}
 		};
 
+		const onYDragEnd = () => {
+			// Continue redrawing hit test
+			this.hitTestCanvasModel.hitTestDrawersPredicateSubject.next(true);
+		};
+
 		const dragNDropYComponent = new DragNDropYComponent(
 			hitTest,
 			{
 				onDragTick: onYDragTick,
 				onDragStart: onYDragStart,
+				onDragEnd: onYDragEnd,
 			},
 			this.canvasInputListener,
 			this.chartPanComponent,
 			{
-				disableChartPanning: false,
+				dragPredicate: () => this.chartPanningOptions.vertical,
 			},
 		);
 		this.addChildEntity(dragNDropYComponent);
@@ -233,6 +253,8 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 		this.canvasAnimation.forceStopAnimation(VIEWPORT_ANIMATION_ID);
 		this.xDraggedCandlesDelta = 0;
 		this.lastXStart = this.scale.xStart;
+		// Stop redrawing hit test
+		this.hitTestCanvasModel.hitTestDrawersPredicateSubject.next(false);
 	};
 
 	private onXDragTick = (dragInfo: DragInfo) => {
@@ -241,6 +263,11 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 		const unitsDelta = pixelsToUnits(absoluteXDelta, this.scale.zoomX);
 		this.scale.moveXStart(this.lastXStart - unitsDelta);
 		this.bus.fireDraw();
+	};
+
+	private onXDragEnd = () => {
+		// Continue redrawing hit test
+		this.hitTestCanvasModel.hitTestDrawersPredicateSubject.next(true);
 	};
 }
 

@@ -3,7 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { Observable, Subject } from 'rxjs';
+import { Observable, Subject, animationFrameScheduler } from 'rxjs';
 import { distinctUntilChanged, throttleTime } from 'rxjs/operators';
 import { CursorType } from '../chart.config';
 import { CanvasInputListenerComponent } from '../inputlisteners/canvas-input-listener.component';
@@ -42,8 +42,8 @@ export class CursorHandler extends ChartBaseElement {
 		super.doActivate();
 		this.canvasInputListener
 			.observeMouseMoveNoDrag()
-			.pipe(throttleTime(100, undefined, { trailing: true }))
-			.subscribe(async (point) => {
+			.pipe(throttleTime(100, animationFrameScheduler, { trailing: true }))
+			.subscribe(async point => {
 				const cursorFromHT = await this.hitTestCanvasModel.resolveCursor(point);
 				if (cursorFromHT !== undefined) {
 					this.updateCursor(cursorFromHT);

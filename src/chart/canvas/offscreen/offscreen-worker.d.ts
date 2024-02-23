@@ -1,5 +1,7 @@
+import { OffscreenFeature } from "../../chart.config";
+
 export declare class OffscreenWorker {
-    constructor(devicePixelRatio: number);
+    constructor(devicePixelRatio: number, fonts: OffscreenFeature['offscreenFonts']);
 	/**
 	 * Adds offscreen canvas to the worker
 	 */
@@ -7,8 +9,13 @@ export declare class OffscreenWorker {
 		idx: number,
 		options: CanvasRenderingContext2DSettings,
 		canvas: OffscreenCanvas,
-		sharedMemory: SharedArrayBuffer,
-	): void;
+		sharedMemorySize: number,
+	): SharedArrayBuffer;
+
+	/**
+	 * Loads font to the worker
+	 */
+	loadFont(fontFamily: string): void;
 
 	/**
 	 * Syncs an array of strings and their ids between main thread and worker thread
