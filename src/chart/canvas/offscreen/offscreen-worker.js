@@ -131,9 +131,14 @@ expose(OffscreenWorker);
 
 // eslint-disable-next-line no-bitwise
 const floor = value => ~~value;
+// redrawing background area is very expensive in offscreen for some reason, so disable it
+const disableRedrawBackgroundArea = true;
 // this function in used in case when
 // some entity can overlap with another chart entity, so we need to hide the another entity
 export const redrawBackgroundArea = (dpr, backgroundCtx, ctx, x, y, width, height, opacity) => {
+	if (disableRedrawBackgroundArea) {
+		return;
+	}
 	const xCoord = x * dpr;
 	const yCoord = y * dpr;
 	const widthCoord = width * dpr;
