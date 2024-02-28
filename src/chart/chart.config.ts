@@ -82,7 +82,7 @@ export const getDefaultConfig = (): FullChartConfig => ({
 		inverse: false,
 		zoomSensitivity: {
 			wheel: 0.25,
-			pinch: 0.05,
+			pinch: 0.005,
 			glide: 0.05,
 		},
 		defaultViewportItems: 100,
@@ -348,8 +348,8 @@ export const getDefaultConfig = (): FullChartConfig => ({
 	},
 	colors: {
 		candleTheme: {
-			upColor: 'rgba(77,153,83,1)',
-			downColor: 'rgba(217,44,64,1)',
+			upColor: 'pink',
+			downColor: 'pink',
 			noneColor: 'rgba(255,255,255,1)',
 			upWickColor: 'rgba(77,153,83,1)',
 			downWickColor: 'rgba(217,44,64,1)',
