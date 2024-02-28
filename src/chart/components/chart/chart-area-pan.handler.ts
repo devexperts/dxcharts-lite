@@ -210,6 +210,8 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 			this.canvasAnimation.forceStopAnimation(VIEWPORT_ANIMATION_ID);
 			this.currentPoint = { x: 0, y: 0 };
 			lastYStart = scale.yStart;
+			// Stop redrawing hit test
+			this.hitTestCanvasModel.hitTestDrawersPredicateSubject.next(false);
 		};
 
 		const onYDragTick = (dragInfo: DragInfo) => {
