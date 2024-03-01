@@ -82,7 +82,7 @@ export const getDefaultConfig = (): FullChartConfig => ({
 		inverse: false,
 		zoomSensitivity: {
 			wheel: 0.25,
-			pinch: 0.005,
+			pinch: 0.5,
 			glide: 0.05,
 		},
 		defaultViewportItems: 100,
@@ -348,8 +348,8 @@ export const getDefaultConfig = (): FullChartConfig => ({
 	},
 	colors: {
 		candleTheme: {
-			upColor: 'pink',
-			downColor: 'pink',
+			upColor: 'rgba(77,153,83,1)',
+			downColor: 'rgba(217,44,64,1)',
 			noneColor: 'rgba(255,255,255,1)',
 			upWickColor: 'rgba(77,153,83,1)',
 			downWickColor: 'rgba(217,44,64,1)',
@@ -897,7 +897,10 @@ export interface ChartScale {
 		wheel: number;
 		/**
 		 * Value is related to pinch touchpad event (zooming chart via touchpad)
-		 * 0..1 ratio of full viewport; 0.5 = middle, 0.75 = 3/4 of viewport
+		 * 0..1 ratio of full viewport; 0.5 = middle
+		 * Pinch sensitivity is dynamic, and based on delta distance event: 
+		 * - if distance is small, zoom sencitivity is minimal, which allows you to zoom in/out on the chart and view each candle in details
+		 * - if distance is big, zoom sencitivity is becomes close to the config value below, which allows you to zoom in/out on the chart and quickly change zoom with big sensitivity
 		 */
 		pinch: number;
 		/**
