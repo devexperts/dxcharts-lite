@@ -3,7 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { merge, animationFrameScheduler } from 'rxjs';
+import { animationFrameScheduler } from 'rxjs';
 import { throttleTime, filter } from 'rxjs/operators';
 import { CanvasAnimation, VIEWPORT_ANIMATION_ID } from '../../animation/canvas-animation';
 import { CanvasBoundsContainer, CanvasElement, HitBoundsTest } from '../../canvas/canvas-bounds-container';
@@ -15,7 +15,7 @@ import { ChartBaseElement } from '../../model/chart-base-element';
 import { ScaleModel } from '../../model/scale.model';
 import { pixelsToUnits } from '../../model/scaling/viewport.model';
 import { deviceDetector } from '../../utils/device/device-detector.utils';
-import { getTouchpadSensitivity, touchpadDetector } from '../../utils/device/touchpad.utils';
+import { getTouchpadSensitivity } from '../../utils/device/touchpad.utils';
 import { DragNDropXComponent } from '../dran-n-drop_helper/drag-n-drop-x.component';
 import { DragNDropYComponent } from '../dran-n-drop_helper/drag-n-drop-y.component';
 import { DragInfo } from '../dran-n-drop_helper/drag-n-drop.component';
@@ -135,22 +135,36 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 		const allPanesHitTest = this.canvasBoundsContainer.getBoundsHitTest(CanvasElement.ALL_PANES);
 		//#endregion
 		this.addRxSubscription(
-			merge(
-				this.canvasInputListener.observeWheel(allPanesHitTest),
-				this.canvasInputListener.observePinch(allPanesHitTest),
-			)
+			this.canvasInputListener
+				.observeWheel(allPanesHitTest)
 				.pipe(
 					filter(() => this.chartPanningOptions.horizontal && this.chartPanningOptions.vertical),
 					throttleTime(this.wheelThrottleTime, animationFrameScheduler, { trailing: true, leading: true }),
 				)
 				.subscribe(e => {
-					const isTouchpad = touchpadDetector(e);
-					const zoomSensitivity = isTouchpad
-						? getTouchpadSensitivity(
-								this.config.components.yAxis.type,
-								this.config.scale.zoomSensitivity.pinch,
-						  )
-						: this.config.scale.zoomSensitivity.wheel;
+					this.zoomXHandler(e, this.config.scale.zoomSensitivity.wheel);
+				}),
+		);
+
+		this.addRxSubscription(
+			this.canvasInputListener
+				.observePinch(allPanesHitTest)
+				.pipe(
+					filter(() => this.chartPanningOptions.horizontal && this.chartPanningOptions.vertical),
+					throttleTime(this.wheelThrottleTime, animationFrameScheduler, { trailing: true, leading: true }),
+				)
+				.subscribe(e => {
+					// max delta distance that touchpad can provide
+					const MAX_POSSIBLE_DELTA = 30;
+					// get max delta
+					const delta = Math.max(Math.abs(e.deltaY), Math.abs(e.deltaX));
+					// calculate sensitivity for max delta based on touchpad it's distance
+					const caclulatedSensitivity =  (this.config.scale.zoomSensitivity.pinch * delta) / MAX_POSSIBLE_DELTA;
+					// adjust sencitivity for percent axis type
+					const zoomSensitivity = getTouchpadSensitivity(
+						this.config.components.yAxis.type,
+						caclulatedSensitivity,
+					);
 					this.zoomXHandler(e, zoomSensitivity);
 				}),
 		);
