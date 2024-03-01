@@ -154,17 +154,7 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 					throttleTime(this.wheelThrottleTime, animationFrameScheduler, { trailing: true, leading: true }),
 				)
 				.subscribe(e => {
-					// max delta distance that touchpad can provide
-					const MAX_POSSIBLE_DELTA = 30;
-					// get max delta
-					const delta = Math.max(Math.abs(e.deltaY), Math.abs(e.deltaX));
-					// calculate sensitivity for max delta based on touchpad it's distance
-					const caclulatedSensitivity =  (this.config.scale.zoomSensitivity.pinch * delta) / MAX_POSSIBLE_DELTA;
-					// adjust sencitivity for percent axis type
-					const zoomSensitivity = getTouchpadSensitivity(
-						this.config.components.yAxis.type,
-						caclulatedSensitivity,
-					);
+					const zoomSensitivity = this.calculateDynamicSesitivity(e, this.config.scale.zoomSensitivity.pinch)
 					this.zoomXHandler(e, zoomSensitivity);
 				}),
 		);
@@ -188,10 +178,7 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 						const unitsDelta = pixelsToUnits(deltaX, this.scale.zoomX);
 						this.scale.moveXStart(this.scale.xStart - unitsDelta);
 					} else if (deltaY !== 0 && Math.abs(deltaY) > Math.abs(deltaX)) {
-						const zoomSensitivity = getTouchpadSensitivity(
-							this.config.components.yAxis.type,
-							this.config.scale.zoomSensitivity.glide,
-						);
+						const zoomSensitivity = this.calculateDynamicSesitivity(e, this.config.scale.zoomSensitivity.glide)
 						this.zoomXHandler(e, zoomSensitivity);
 					}
 					this.bus.fireDraw();
@@ -208,6 +195,18 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 
 		this.touchHandler.activate();
 		this.addSubscription(this.touchHandler.deactivate.bind(this.touchHandler));
+	}
+
+	private calculateDynamicSesitivity(e: WheelEvent, maxSensitivity: number) {
+		// max delta distance that touchpad can provide
+		const MAX_POSSIBLE_DELTA = 25;
+		// get max delta
+		const delta = Math.max(Math.abs(e.deltaY), Math.abs(e.deltaX));
+		// calculate sensitivity for max delta based on touchpad it's distance
+		const caclulatedSensitivity = (maxSensitivity * delta) / MAX_POSSIBLE_DELTA;
+		// adjust sencitivity for percent axis type
+		const zoomSensitivity = getTouchpadSensitivity(this.config.components.yAxis.type, caclulatedSensitivity);
+		return zoomSensitivity;
 	}
 
 	/**

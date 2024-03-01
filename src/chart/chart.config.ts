@@ -82,8 +82,8 @@ export const getDefaultConfig = (): FullChartConfig => ({
 		inverse: false,
 		zoomSensitivity: {
 			wheel: 0.25,
-			pinch: 0.5,
-			glide: 0.05,
+			pinch: 0.25,
+			glide: 0.1,
 		},
 		defaultViewportItems: 100,
 		disableAnimations: false,
