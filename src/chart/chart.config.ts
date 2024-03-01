@@ -906,6 +906,10 @@ export interface ChartScale {
 		/**
 		 * Value is related to glide touchpad event (scrolling chart via touchpad)
 		 * 0..1 ratio of full viewport; 0.5 = middle, 0.75 = 3/4 of viewport
+		 * Glide sensitivity is dynamic, and based on delta distance event: 
+		 * - if distance is small, zoom sencitivity is minimal, which allows you to zoom in/out on the chart and view each candle in details
+		 * - if distance is big, zoom sencitivity is becomes close to the config value below, which allows you to zoom in/out on the chart and quickly change zoom with big sensitivity
+		 * - if glide is going to left/right, it works linearly, without dynamic boost
 		 */
 		glide: number;
 	};
