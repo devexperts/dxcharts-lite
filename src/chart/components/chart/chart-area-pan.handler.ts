@@ -142,28 +142,6 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 					throttleTime(this.wheelThrottleTime, animationFrameScheduler, { trailing: true, leading: true }),
 				)
 				.subscribe(e => {
-					this.zoomXHandler(e, this.config.scale.zoomSensitivity.wheel);
-				}),
-		);
-
-		this.addRxSubscription(
-			this.canvasInputListener
-				.observePinch(allPanesHitTest)
-				.pipe(
-					filter(() => this.chartPanningOptions.horizontal && this.chartPanningOptions.vertical),
-					throttleTime(this.wheelThrottleTime, animationFrameScheduler, { trailing: true, leading: true }),
-				)
-				.subscribe(e => {
-					const zoomSensitivity = this.calculateDynamicSesitivity(e, this.config.scale.zoomSensitivity.pinch)
-					this.zoomXHandler(e, zoomSensitivity);
-				}),
-		);
-
-		this.addRxSubscription(
-			this.canvasInputListener
-				.observeScrollGesture()
-				.pipe(throttleTime(this.wheelThrottleTime, animationFrameScheduler, { trailing: true, leading: true }))
-				.subscribe((e: WheelEvent) => {
 					let direction = -1;
 					const device = deviceDetector();
 					if (device === 'apple' || device === 'mobile') {
@@ -178,12 +156,57 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 						const unitsDelta = pixelsToUnits(deltaX, this.scale.zoomX);
 						this.scale.moveXStart(this.scale.xStart - unitsDelta);
 					} else if (deltaY !== 0 && Math.abs(deltaY) > Math.abs(deltaX)) {
-						const zoomSensitivity = this.calculateDynamicSesitivity(e, this.config.scale.zoomSensitivity.glide)
+						const zoomSensitivity = this.calculateDynamicSesitivity(
+							e,
+							this.config.scale.zoomSensitivity.wheel,
+						);
 						this.zoomXHandler(e, zoomSensitivity);
 					}
 					this.bus.fireDraw();
 				}),
 		);
+
+		this.addRxSubscription(
+			this.canvasInputListener
+				.observePinch(allPanesHitTest)
+				.pipe(
+					filter(() => this.chartPanningOptions.horizontal && this.chartPanningOptions.vertical),
+					throttleTime(this.wheelThrottleTime, animationFrameScheduler, { trailing: true, leading: true }),
+				)
+				.subscribe(e => {
+					const zoomSensitivity = this.calculateDynamicSesitivity(e, this.config.scale.zoomSensitivity.pinch);
+					this.zoomXHandler(e, zoomSensitivity);
+				}),
+		);
+
+		// this.addRxSubscription(
+		// 	this.canvasInputListener
+		// 		.observeScrollGesture()
+		// 		.pipe(throttleTime(this.wheelThrottleTime, animationFrameScheduler, { trailing: true, leading: true }))
+		// 		.subscribe((e: WheelEvent) => {
+		// 			let direction = -1;
+		// 			const device = deviceDetector();
+		// 			if (device === 'apple' || device === 'mobile') {
+		// 				direction = 1;
+		// 			}
+		// 			let deltaX = 0;
+		// 			let deltaY = 0;
+		// 			deltaX += e.deltaX * direction;
+		// 			deltaY += e.deltaY * -direction;
+
+		// 			if (deltaX !== 0 && Math.abs(deltaX) > Math.abs(deltaY)) {
+		// 				const unitsDelta = pixelsToUnits(deltaX, this.scale.zoomX);
+		// 				this.scale.moveXStart(this.scale.xStart - unitsDelta);
+		// 			} else if (deltaY !== 0 && Math.abs(deltaY) > Math.abs(deltaX)) {
+		// 				const zoomSensitivity = this.calculateDynamicSesitivity(
+		// 					e,
+		// 					this.config.scale.zoomSensitivity.glide,
+		// 				);
+		// 				this.zoomXHandler(e, zoomSensitivity);
+		// 			}
+		// 			this.bus.fireDraw();
+		// 		}),
+		// );
 
 		this.addRxSubscription(
 			this.chartPanComponent.chartBaseModel.dataPrependSubject
@@ -199,7 +222,7 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 
 	private calculateDynamicSesitivity(e: WheelEvent, maxSensitivity: number) {
 		// max delta distance that touchpad can provide
-		const MAX_POSSIBLE_DELTA = 25;
+		const MAX_POSSIBLE_DELTA = 30;
 		// get max delta
 		const delta = Math.max(Math.abs(e.deltaY), Math.abs(e.deltaX));
 		// calculate sensitivity for max delta based on touchpad it's distance
