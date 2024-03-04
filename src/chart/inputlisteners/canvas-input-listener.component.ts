@@ -10,7 +10,7 @@ import { ChartBaseElement } from '../model/chart-base-element';
 import { distinctUntilChanged, filter, map, tap } from 'rxjs/operators';
 import { EVENT_RESIZED } from '../events/events';
 import { HitBoundsTest } from '../canvas/canvas-bounds-container';
-import { touchpadDetector } from '../utils/device/touchpad.utils';
+// import { touchpadDetector } from '../utils/device/touchpad.utils';
 import { Bounds } from '../model/bounds.model';
 import { deviceDetector } from '../utils/device/device-detector.utils';
 
@@ -356,12 +356,12 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 						this.pinchSubject.next(e);
 					} else {
 						// mouse wheel or scroll gesture
-						const isTouchpad = touchpadDetector(e);
-						if (isTouchpad) {
-							this.scrollGestureSubject.next(e);
-						} else {
-							this.wheelSubject.next(e);
-						}
+						// const isTouchpad = touchpadDetector(e);
+						// if (isTouchpad) {
+						// this.scrollGestureSubject.next(e);
+						// } else {
+						this.wheelSubject.next(e);
+						// }
 					}
 					e.preventDefault(); // to disable the scroll over the document, if for example chart is used as widget
 				},
