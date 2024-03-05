@@ -4,6 +4,7 @@
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 import { CanvasBoundsContainer, CanvasElement } from '../../../canvas/canvas-bounds-container';
+import { YAxisConfig } from '../../../chart.config';
 import { Bounds } from '../../../model/bounds.model';
 import { CanvasModel } from '../../../model/canvas.model';
 import { ChartBaseElement } from '../../../model/chart-base-element';
@@ -31,6 +32,7 @@ export interface YExtentCreationOptions {
 	cursor: string;
 	paneFormatters: YExtentFormatters;
 	increment: number | null;
+	initialYAxisState: YAxisConfig;
 }
 
 export class YExtentComponent extends ChartBaseElement {

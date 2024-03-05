@@ -82,8 +82,6 @@ export const getDefaultConfig = (): FullChartConfig => ({
 		inverse: false,
 		zoomSensitivity: {
 			wheel: 0.25,
-			pinch: 0.05,
-			glide: 0.05,
 		},
 		defaultViewportItems: 100,
 		disableAnimations: false,
@@ -893,18 +891,12 @@ export interface ChartScale {
 		/**
 		 * Value is related to zoom event (zooming chart via mouse wheel)
 		 * 0..1 ratio of full viewport; 0.5 = middle, 0.75 = 3/4 of viewport
+		 * This value is also related to touchpad.
+		 * Touchpad sensitivity is dynamic, and based on delta distance event:
+		 * - if distance is small, zoom sencitivity is minimal, which allows you to zoom in/out on the chart and view each candle in details
+		 * - if distance is big, zoom sencitivity is becomes close to the config value below, which allows you to zoom in/out on the chart and quickly change zoom with big sensitivity
 		 */
 		wheel: number;
-		/**
-		 * Value is related to pinch touchpad event (zooming chart via touchpad)
-		 * 0..1 ratio of full viewport; 0.5 = middle, 0.75 = 3/4 of viewport
-		 */
-		pinch: number;
-		/**
-		 * Value is related to glide touchpad event (scrolling chart via touchpad)
-		 * 0..1 ratio of full viewport; 0.5 = middle, 0.75 = 3/4 of viewport
-		 */
-		glide: number;
 	};
 	/**
 	 * Defines how much items (candles) will be in viewport when chart applies basic scale
