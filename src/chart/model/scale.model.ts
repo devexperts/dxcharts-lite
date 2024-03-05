@@ -169,7 +169,6 @@ export class ScaleModel extends ViewportModel {
 	}
 
 	public haltAnimation() {
-		console.log('halt');
 		if (this.currentAnimation?.animationInProgress) {
 			this.currentAnimation.finishAnimation();
 			this.doAutoScale();
