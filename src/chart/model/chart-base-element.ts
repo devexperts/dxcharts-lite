@@ -6,7 +6,7 @@
 import { Subscription } from 'rxjs/internal/Subscription';
 import { Unsubscriber } from '../utils/function.utils';
 
-export type ChartEntityState = 'initial' | 'active' | 'deactivated' | 'disabled' | 'hidden';
+export type ChartEntityState = 'initial' | 'active' | 'deactivated' | 'disabled';
 
 /**
  * Chart entity has the following lifecycle: initial -> active <=> deactivated -> disposed.
@@ -25,11 +25,6 @@ export interface ChartEntity {
 	getState(): ChartEntityState;
 }
 
-export interface VisibleChartEntity extends ChartEntity {
-	/** Make entity enabled & active & hidden */
-	hide(): void;
-}
-
 /**
  * Base class for chart elements. Contains lifecycle support, utility methods.
  *
@@ -37,7 +32,7 @@ export interface VisibleChartEntity extends ChartEntity {
  */
 export abstract class ChartBaseElement implements ChartEntity {
 	private subscriptions: Array<() => void> = [];
-	protected _state: ChartEntityState = 'initial';
+	private _state: ChartEntityState = 'initial';
 	// substitute entities which cascade activate/deactivate
 	private entities: Array<ChartEntity> = [];
 
@@ -166,5 +161,60 @@ export abstract class ChartBaseElement implements ChartEntity {
 	 */
 	removeChildEntity(entity: ChartEntity) {
 		this.entities = this.entities.filter(c => c !== entity);
+	}
+}
+
+/**
+ * Represents a visible chart entity.
+ * Extends the ChartEntity interface.
+ */
+export interface VisibleChartEntity extends ChartEntity {
+	/**
+	 * Indicates whether the chart entity is visible or not.
+	 */
+	visible: boolean;
+	/**
+	 * Shows the chart entity.
+	 */
+	show(): void;
+	/**
+	 * Hides the chart entity.
+	 */
+	hide(): void;
+}
+
+/**
+ * Represents a visible chart base element.
+ * Extends the ChartBaseElement class and implements the VisibleChartEntity interface.
+ */
+export abstract class VisibleChartBaseElement extends ChartBaseElement implements VisibleChartEntity {
+	private _visible: boolean = true;
+
+	/**
+	 * Gets the visibility state of the chart entity.
+	 * @returns {boolean} The visibility state of the chart entity.
+	 */
+	get visible() {
+		return this._visible;
+	}
+
+	/**
+	 * Shows the chart entity by setting the visibility state to true.
+	 */
+	show() {
+		if (this._visible === false) {
+			this._visible = true;
+			this.activate();
+		}
+	}
+
+	/**
+	 * Hides the chart entity by setting the visibility state to false.
+	 */
+	hide() {
+		if (this._visible === true) {
+			this._visible = false;
+			this.deactivate();
+		}
 	}
 }

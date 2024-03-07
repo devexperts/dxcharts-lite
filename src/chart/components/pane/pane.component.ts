@@ -19,7 +19,7 @@ import EventBus from '../../events/event-bus';
 import { CanvasInputListenerComponent } from '../../inputlisteners/canvas-input-listener.component';
 import { Bounds } from '../../model/bounds.model';
 import { CanvasModel } from '../../model/canvas.model';
-import { ChartBaseElement, VisibleChartEntity } from '../../model/chart-base-element';
+import { VisibleChartBaseElement } from '../../model/chart-base-element';
 import { DataSeriesModel } from '../../model/data-series.model';
 import { ScaleModel, SyncedByXScaleModel } from '../../model/scale.model';
 import { Pixel, Price, Unit } from '../../model/scaling/viewport.model';
@@ -42,7 +42,7 @@ import {
 import { PaneHitTestController } from './pane-hit-test.controller';
 import { HitTestCanvasModel } from '../../model/hit-test-canvas.model';
 
-export class PaneComponent extends ChartBaseElement implements VisibleChartEntity {
+export class PaneComponent extends VisibleChartBaseElement {
 	/**
 	 * Pane hit test (without Y-Axis and resizer)
 	 */
@@ -294,31 +294,6 @@ export class PaneComponent extends ChartBaseElement implements VisibleChartEntit
 	}
 
 	/**
-	 * Hides the pane
-	 * @function
-	 * @name hide
-	 * @memberof PaneComponent
-	 * @returns {void}
-	 */
-	public hide(): void {
-		if (this._state !== 'hidden') {
-			this._state = 'hidden';
-		}
-	}
-
-	/**
-	 * @function
-	 * @name show
-	 * @memberof PaneComponent
-	 * @returns {void}
-	 */
-	public show(): void {
-		if (this._state === 'hidden') {
-			this._state = 'active';
-		}
-	}
-
-	/**
 	 * Creates a new DataSeriesModel object.
 	 * @returns {DataSeriesModel} - The newly created DataSeriesModel object.
 	 */
@@ -379,9 +354,9 @@ export class PaneComponent extends ChartBaseElement implements VisibleChartEntit
 	 * @returns {boolean} - Returns true if the current pane can move up, otherwise false.
 	 */
 	public canMoveUp(panes: PaneComponent[]): boolean {
-		const visiblePanesIds = panes.filter(p => p.getState() !== 'hidden').map(p => p.uuid);
+		const visiblePanesIds = panes.filter(p => p.visible).map(p => p.uuid);
 		const firstPane = firstOf(this.canvasBoundsContainer.panesOrder.filter(id => visiblePanesIds.includes(id)));
-		return this.uuid !== firstPane && this.getState() !== 'hidden';
+		return this.uuid !== firstPane && this.visible;
 	}
 
 	/**
@@ -390,9 +365,9 @@ export class PaneComponent extends ChartBaseElement implements VisibleChartEntit
 	 * @returns {boolean} - Returns true if the current pane is not the last one in the canvasBoundsContainer, otherwise returns false.
 	 */
 	public canMoveDown(panes: PaneComponent[]): boolean {
-		const visiblePanesIds = panes.filter(p => p.getState() !== 'hidden').map(p => p.uuid);
+		const visiblePanesIds = panes.filter(p => p.visible).map(p => p.uuid);
 		const lastPane = lastOf(this.canvasBoundsContainer.panesOrder.filter(id => visiblePanesIds.includes(id)));
-		return this.uuid !== lastPane && this.getState() !== 'hidden';
+		return this.uuid !== lastPane && this.visible;
 	}
 
 	public valueFormatter = (value: Unit, dataSeries?: DataSeriesModel) => {

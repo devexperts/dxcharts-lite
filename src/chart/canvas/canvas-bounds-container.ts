@@ -210,6 +210,7 @@ export class CanvasBoundsContainer {
 	public hidePaneBounds(uuid: string) {
 		this.graphsHeightRatio[uuid] = 0;
 		this.recalculatePanesHeightRatios();
+		this.paneVisibilityChangedSubject.next();
 	}
 
 	public showPaneBounds(uuid: string) {
@@ -217,6 +218,7 @@ export class CanvasBoundsContainer {
 		const paneHeightRatio = uuid === CHART_UUID ? defaultHeightRatio[0] : defaultHeightRatio[1];
 		this.graphsHeightRatio[uuid] = paneHeightRatio;
 		this.recalculatePanesHeightRatios();
+		this.paneVisibilityChangedSubject.next();
 	}
 
 	/**

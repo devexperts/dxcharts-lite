@@ -191,13 +191,16 @@ export class PaneManager extends ChartBaseElement {
 	 */
 	public removePane(uuid: string) {
 		const pane = this.panes[uuid];
-		if (pane !== undefined) {
-			this.paneRemovedSubject.next(pane);
-			pane.disable();
-			pane.yExtentComponents.forEach(yExtentComponent => yExtentComponent.disable());
-			delete this.panes[uuid];
-			this.recalculateState();
+
+		if (pane === undefined) {
+			return;
 		}
+
+		this.paneRemovedSubject.next(pane);
+		pane.disable();
+		pane.yExtentComponents.forEach(yExtentComponent => yExtentComponent.disable());
+		delete this.panes[uuid];
+		this.recalculateState();
 	}
 
 	/**
@@ -205,20 +208,21 @@ export class PaneManager extends ChartBaseElement {
 	 */
 	public hidePane(paneUUID: string) {
 		const pane = this.panes[paneUUID];
+
 		// hide pane only if we have more than one visible pane
-		if (pane !== undefined && pane.getState() !== 'hidden') {
-			const paneResizerId = CanvasElement.PANE_UUID_RESIZER(paneUUID);
-			const resizer = this.userInputListenerComponents.find(
-				el => el instanceof BarResizerComponent && el.id === paneResizerId,
-			);
-			resizer?.disable();
-
-			pane.hide();
-			this.canvasBoundsContainer.hidePaneBounds(paneUUID);
-			this.recalculateState();
-
-			this.canvasBoundsContainer.paneVisibilityChangedSubject.next();
+		if (pane === undefined || !pane.visible) {
+			return;
 		}
+
+		const paneResizerId = CanvasElement.PANE_UUID_RESIZER(paneUUID);
+		const resizer = this.userInputListenerComponents.find(
+			el => el instanceof BarResizerComponent && el.id === paneResizerId,
+		);
+		resizer?.disable();
+
+		pane.hide();
+		this.canvasBoundsContainer.hidePaneBounds(paneUUID);
+		this.recalculateState();
 	}
 
 	/**
@@ -227,18 +231,19 @@ export class PaneManager extends ChartBaseElement {
 	public showPane(paneUUID: string) {
 		const pane = this.panes[paneUUID];
 		const paneResizerId = CanvasElement.PANE_UUID_RESIZER(paneUUID);
-		if (pane !== undefined) {
-			const resizer = this.userInputListenerComponents.find(
-				el => el instanceof BarResizerComponent && el.id === paneResizerId,
-			);
-			resizer?.enable();
 
-			pane.show();
-			this.canvasBoundsContainer.showPaneBounds(paneUUID);
-			this.recalculateState();
-
-			this.canvasBoundsContainer.paneVisibilityChangedSubject.next();
+		if (pane === undefined) {
+			return;
 		}
+
+		const resizer = this.userInputListenerComponents.find(
+			el => el instanceof BarResizerComponent && el.id === paneResizerId,
+		);
+		resizer?.enable();
+
+		pane.show();
+		this.canvasBoundsContainer.showPaneBounds(paneUUID);
+		this.recalculateState();
 	}
 
 	/**
