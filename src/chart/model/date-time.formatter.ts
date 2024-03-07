@@ -3,6 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
+import { format } from 'date-fns';
 import { FullChartConfig, DateTimeFormatConfig } from '../chart.config';
 
 export interface TimeFormatterConfig {
@@ -46,7 +47,6 @@ export const dateTimeFormatterFactory = (
 	['s', 'm', 'H', 'd', 'M'].forEach(function (k) {
 		patterns[k + k] = 'this.' + 'addZero' + '(' + patterns[k] + ')';
 	});
-	const re = new RegExp(Object.keys(patterns).sort().reverse().join('|'), 'g');
 	/**
 	 * Returns a string that concatenates the result of the function getPrefix with the input string fn and the string '()'.
 	 * @param {string} fn - The input string to concatenate.
@@ -74,14 +74,6 @@ export const dateTimeFormatterFactory = (
 		return fn + '.toUpperCase()';
 	}
 
-	/**
-	 * Returns a string that concatenates a pattern from an object with a string
-	 * @param {string} pattern - The key of the pattern to be concatenated
-	 * @returns {string} - A string that concatenates a pattern from an object with a string
-	 */
-	function applyPattern(pattern: string) {
-		return "' + (" + patterns[pattern] + ") + '";
-	}
 	return function (pattern) {
 		const context = {
 			shortDays: getShortDays(config),
@@ -110,11 +102,25 @@ export const dateTimeFormatterFactory = (
 					return date instanceof Date ? date : new Date(+date);
 				},
 		};
-		// eslint-disable-next-line no-new-func
-		return new Function(
-			'date',
-			'date=this.' + 'tzDate' + "(date); return '" + pattern.replace(re, applyPattern) + "'",
-		).bind(context);
+
+		const tzContextDateParser = (date: number | Date) => {
+			let contextDate: number = 0;
+			if (typeof date === 'number') {
+				contextDate = date;
+			} else if (date instanceof Date) {
+				contextDate = date.getTime();
+			}
+			const tzDate = context.tzDate(contextDate);
+
+			// use additional tokens to prevent this error:
+			// https://github.com/date-fns/date-fns/blob/main/docs/unicodeTokens.md
+			return format(tzDate, pattern, {
+				useAdditionalDayOfYearTokens: true,
+				useAdditionalWeekYearTokens: true,
+			});
+		};
+
+		return tzContextDateParser;
 	};
 };
 
