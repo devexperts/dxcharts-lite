@@ -10,7 +10,7 @@ import { ChartBaseElement } from '../model/chart-base-element';
 import { distinctUntilChanged, filter, map, tap } from 'rxjs/operators';
 import { EVENT_RESIZED } from '../events/events';
 import { HitBoundsTest } from '../canvas/canvas-bounds-container';
-import { touchpadDetector } from '../utils/device/touchpad.utils';
+// import { touchpadDetector } from '../utils/device/touchpad.utils';
 import { Bounds } from '../model/bounds.model';
 import { deviceDetector } from '../utils/device/device-detector.utils';
 
@@ -62,8 +62,6 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 
 	private contextMenuSubject = new Subject<MouseEvent>();
 
-	private pinchSubject = new Subject<WheelEvent>();
-	private scrollGestureSubject = new Subject<WheelEvent>();
 	private fastTouchScroll = new Subject<TouchEvent>();
 
 	mouseLeavesCanvasSubject = new Subject<boolean>();
@@ -351,18 +349,7 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 			subscribeListener(
 				this.element,
 				(e: WheelEvent) => {
-					// pinch gesture, we needs the same behaviour as mouse wheel
-					if (e.ctrlKey) {
-						this.pinchSubject.next(e);
-					} else {
-						// mouse wheel or scroll gesture
-						const isTouchpad = touchpadDetector(e);
-						if (isTouchpad) {
-							this.scrollGestureSubject.next(e);
-						} else {
-							this.wheelSubject.next(e);
-						}
-					}
+					this.wheelSubject.next(e);
 					e.preventDefault(); // to disable the scroll over the document, if for example chart is used as widget
 				},
 				'wheel',
@@ -698,26 +685,6 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 		return this.wheelSubject
 			.asObservable()
 			.pipe(filter(() => hitBoundsTest(this.currentPoint.x, this.currentPoint.y)));
-	}
-
-	/**
-	 * Returns an Observable that emits WheelEvent when a pinch event occurs and the hitBoundsTest function returns true for the current point.
-	 * @param {HitBoundsTest} hitBoundsTest - A function that takes the current point's x and y coordinates as arguments and returns a boolean indicating whether the point is within the desired bounds.
-	 * @returns {Observable<WheelEvent>} - An Observable that emits WheelEvent when a pinch event occurs and the hitBoundsTest function returns true for the current point.
-	 */
-	public observePinch(hitBoundsTest: HitBoundsTest = () => true): Observable<WheelEvent> {
-		return this.pinchSubject
-			.asObservable()
-			.pipe(filter(() => hitBoundsTest(this.currentPoint.x, this.currentPoint.y)));
-	}
-
-	/**
-	 * Returns an Observable that emits a WheelEvent whenever a scroll gesture is detected.
-	 * The Observable is created from a Subject that is subscribed to by the component's template.
-	 * @returns {Observable<WheelEvent>} An Observable that emits a WheelEvent whenever a scroll gesture is detected.
-	 */
-	public observeScrollGesture(): Observable<WheelEvent> {
-		return this.scrollGestureSubject.asObservable();
 	}
 
 	/**

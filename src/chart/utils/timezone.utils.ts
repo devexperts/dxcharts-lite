@@ -31,11 +31,10 @@ export function getDateTimeFormat(timeZone: string) {
 export const getTimezoneOffset = (timeZone: string, timestamp: number = Date.now()) => {
 	const formatter = getDateTimeFormat(timeZone);
 	const dateString = formatter.format(timestamp);
-	// exec() returns  [, fMonth, fDay, fYear, fHour, fMinute]
-	const tokens = /(\d+)\/(\d+)\/(\d+),? (\d+):(\d+)/.exec(dateString);
-
+	// exec() returns  [, fMonth, fDay, fYear, fHour, fMinute, fSeconds]
+	const tokens = /(\d+)\/(\d+)\/(\d+),? (\d+):(\d+):(\d+)/.exec(dateString);
 	if (tokens) {
-		const asUTC = Date.UTC(+tokens[3], +tokens[1] - 1, +tokens[2], +tokens[4] % 24, +tokens[5], 0);
+		const asUTC = Date.UTC(+tokens[3], +tokens[1] - 1, +tokens[2], +tokens[4] % 24, +tokens[5], +tokens[6]);
 		let asTimezone = timestamp;
 		const over = asTimezone % 1000;
 		asTimezone -= over >= 0 ? over : 1000 + over;
