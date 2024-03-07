@@ -248,20 +248,20 @@ export const getDefaultConfig = (): FullChartConfig => ({
 				{
 					format: 'dd.MM.YYYY',
 					showWhen: {
-						periodMoreThen: 84600000,
+						periodMoreThen: 24 * 60 * 60 * 1000,
 					},
 				},
 				{
 					format: 'dd.MM.YYYY HH:mm',
 					showWhen: {
-						periodLessThen: 84600000,
-						periodMoreThen: 6000,
+						periodLessThen: 24 * 60 * 60 * 1000,
+						periodMoreThen: 6 * 1000,
 					},
 				},
 				{
 					format: 'dd.MM.YYYY HH:mm:ss',
 					showWhen: {
-						periodLessThen: 6000,
+						periodLessThen: 6 * 1000,
 					},
 				},
 			],
