@@ -257,6 +257,16 @@ export class PaneComponent extends VisibleChartBaseElement {
 		this.canvasBoundsContainer.updateYAxisWidths();
 	}
 
+	show(): void {
+		super.show();
+		this.chartPanComponent.activate();
+	}
+
+	hide(): void {
+		super.hide();
+		this.chartPanComponent.deactivate();
+	}
+
 	/**
 	 * This method updates the view by calling the doAutoScale method of the scaleModel and firing the Draw event using the eventBus.
 	 * @private

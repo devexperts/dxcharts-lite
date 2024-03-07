@@ -188,7 +188,7 @@ export interface VisibleChartEntity extends ChartEntity {
  * Extends the ChartBaseElement class and implements the VisibleChartEntity interface.
  */
 export abstract class VisibleChartBaseElement extends ChartBaseElement implements VisibleChartEntity {
-	private _visible: boolean = true;
+	protected _visible: boolean = true;
 
 	/**
 	 * Gets the visibility state of the chart entity.
@@ -204,7 +204,6 @@ export abstract class VisibleChartBaseElement extends ChartBaseElement implement
 	show() {
 		if (this._visible === false) {
 			this._visible = true;
-			this.activate();
 		}
 	}
 
@@ -214,7 +213,6 @@ export abstract class VisibleChartBaseElement extends ChartBaseElement implement
 	hide() {
 		if (this._visible === true) {
 			this._visible = false;
-			this.deactivate();
 		}
 	}
 }
