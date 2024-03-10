@@ -56,7 +56,7 @@ export class YAxisDrawer implements Drawer {
 			ctx.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
 
 				const font = getFontFromConfig(yAxisComponent.state);
-			const fontHeight = calculateSymbolHeight(font, ctx);
+			const fontHeight = calculateSymbolHeight(font);
 
 			const textColor = this.getLabelTextColor();
 			ctx.save();
@@ -150,7 +150,7 @@ const drawSimpleLabel = (
 ) => {
 	const xTextBounds =
 		yAxisAlign === 'right'
-			? bounds.x + bounds.width - calculateTextWidth(text, ctx, font) - padding
+			? bounds.x + bounds.width - calculateTextWidth(text, font) - padding
 			: bounds.x + padding;
 	ctx.fillText(text, xTextBounds, centralY + fontHeight / 2 - 1); // -1 for font height adjustment
 };

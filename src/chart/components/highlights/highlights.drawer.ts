@@ -92,7 +92,7 @@ export class HighlightsDrawer implements Drawer {
 								const itemColors = this.config.colors.highlights[item.type];
 								ctx.save();
 								ctx.fillStyle = itemColors?.label ?? '#ffffff';
-								const labelWidth = calculateTextWidth(label, ctx, font);
+								const labelWidth = calculateTextWidth(label, font);
 								const [labelX, labelY] = this.resolveHighlightLabelPosition(
 									item.label.placement ?? 'left-left',
 									chartBounds,

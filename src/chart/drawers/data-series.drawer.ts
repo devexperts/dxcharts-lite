@@ -16,7 +16,7 @@ export interface ChartDrawerConfig {
 
 export interface SeriesDrawer {
 	draw: (
-		ctx: CanvasRenderingContext2D,
+		canvasModel: CanvasModel,
 		/**
 		 * You can pass two-dimension array to divide series into multiple parts
 		 */
@@ -47,12 +47,12 @@ export class DataSeriesDrawer implements DynamicModelDrawer<DataSeriesModel> {
 		if (model) {
 			ctx.save();
 			pane && clipToBounds(ctx, pane.getBounds());
-			this.drawSeries(ctx, model);
+			this.drawSeries(canvasModel, model);
 			ctx.restore();
 		}
 	}
 
-	public drawSeries(ctx: CanvasRenderingContext2D, series: DataSeriesModel) {
+	public drawSeries(canvasModel: CanvasModel, series: DataSeriesModel) {
 		if (series.config.visible) {
 			const paintTool = series.config.type;
 			const drawer = this.seriesDrawers[paintTool];
@@ -60,7 +60,7 @@ export class DataSeriesDrawer implements DynamicModelDrawer<DataSeriesModel> {
 				const viewportSeries = series.getSeriesInViewport(series.scale.xStart - 1, series.scale.xEnd + 1);
 				if (viewportSeries && viewportSeries.length >= 1) {
 					// +- 1 to correctly draw points which are partly inside bounds
-					drawer.draw(ctx, viewportSeries, series, {});
+					drawer.draw(canvasModel, viewportSeries, series, {});
 				}
 			} else {
 				console.error(`Data series drawer with type ${paintTool} isn't registered!`);

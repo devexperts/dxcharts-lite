@@ -3,8 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { YAxisConfig, FullChartConfig, getFontFromConfig } from '../chart.config';
-import { CanvasModel } from '../model/canvas.model';
+import { FullChartConfig, YAxisConfig, getFontFromConfig } from '../chart.config';
 import { calculateTextWidth } from '../utils/canvas/canvas-font-measure-tool.utils';
 
 export interface YAxisWidthContributor {
@@ -29,7 +28,7 @@ export interface YAxisWidths {
 export class YAxisBoundsContainer {
 	public extentsOrder: ExtentsOrder = new Map();
 
-	constructor(private config: FullChartConfig, private mainCanvasModel: CanvasModel) {}
+	constructor(private config: FullChartConfig) {}
 
 	yAxisWidthContributors: YAxisWidthContributor[] = [];
 	/**
@@ -59,7 +58,7 @@ export class YAxisBoundsContainer {
 	 */
 	private getTextWidth(text: string): number {
 		const font = getFontFromConfig(this.config.components.yAxis);
-		return calculateTextWidth(text, this.mainCanvasModel.ctx, font);
+		return calculateTextWidth(text, font);
 	}
 
 	/**

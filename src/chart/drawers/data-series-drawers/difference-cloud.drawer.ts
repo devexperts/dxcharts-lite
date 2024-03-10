@@ -10,6 +10,7 @@ import { buildLinePath } from './data-series-drawers.utils';
 import { Point } from '../../inputlisteners/canvas-input-listener.component';
 import { firstOf, lastOf } from '../../utils/array.utils';
 import { toRGBA } from '../../utils/color.utils';
+import { CanvasModel } from '../../model/canvas.model';
 
 /**
  * Point used to draw difference type indicator (clouds) (e.g. Ichimoku indicator)
@@ -22,11 +23,12 @@ export class DifferenceCloudDrawer implements SeriesDrawer {
 	constructor() {}
 
 	draw(
-		ctx: CanvasRenderingContext2D,
+		canvasModel: CanvasModel,
 		allPoints: VisualSeriesPoint[][],
 		model: DataSeriesModel,
 		drawerConfig: ChartDrawerConfig,
 	): void {
+		const ctx = canvasModel.ctx;
 		if (model.config.visible) {
 			// draw main line
 			allPoints.forEach((points, idx) => {
