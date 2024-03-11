@@ -25,7 +25,7 @@ export const defaultDateTimeFormatter = () => (date: Date | number) => date.toSt
  */
 export const dateTimeFormatterFactory = (
 	config: FullChartConfig,
-	offsetFunction: (timezone: string) => (time: number) => Date,
+	offsetFunction: (timezone: string) => (time: number | Date) => Date,
 ): DateTimeFormatterFactory => {
 	const getPrefix = 'date.get' + (offsetFunction(config.timezone ?? '') ? '' : 'UTC');
 	const patterns: Record<string, string> = {
@@ -102,16 +102,8 @@ export const dateTimeFormatterFactory = (
 				},
 		};
 
-		return (date: number | Date) => {
-			let contextDate: number = 0;
-			if (typeof date === 'number') {
-				contextDate = date;
-			} else if (date instanceof Date) {
-				contextDate = date.getTime();
-			}
-			const tzDate = context.tzDate(contextDate);
-			return formatDate(tzDate, pattern);
-		};
+		return (date: number | Date) =>
+			formatDate(context.tzDate(date), pattern, context.shortDays, context.shortMonths);
 	};
 };
 
@@ -176,22 +168,7 @@ export const recalculateXFormatter = (
 
 //#region Custom date pattern parser, transforms Date object to string by given pattern
 // examples: dd.mm => 15.12, YYYY => 2024, HH:mm => 15:56
-const months = [
-	'January',
-	'February',
-	'March',
-	'April',
-	'May',
-	'June',
-	'July',
-	'August',
-	'September',
-	'October',
-	'November',
-	'December',
-];
-const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-const formatDate = (date: Date, patternStr: string) => {
+const formatDate = (date: Date, patternStr: string, daysOfWeek: string[], months: string[]) => {
 	if (!patternStr) {
 		patternStr = 'M/d/yyyy';
 	}
