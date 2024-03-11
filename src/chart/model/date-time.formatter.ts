@@ -3,7 +3,6 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { format } from 'date-fns';
 import { FullChartConfig, DateTimeFormatConfig } from '../chart.config';
 
 export interface TimeFormatterConfig {
@@ -103,7 +102,7 @@ export const dateTimeFormatterFactory = (
 				},
 		};
 
-		const tzContextDateParser = (date: number | Date) => {
+		return (date: number | Date) => {
 			let contextDate: number = 0;
 			if (typeof date === 'number') {
 				contextDate = date;
@@ -111,16 +110,8 @@ export const dateTimeFormatterFactory = (
 				contextDate = date.getTime();
 			}
 			const tzDate = context.tzDate(contextDate);
-
-			// use additional tokens to prevent this error:
-			// https://github.com/date-fns/date-fns/blob/main/docs/unicodeTokens.md
-			return format(tzDate, pattern, {
-				useAdditionalDayOfYearTokens: true,
-				useAdditionalWeekYearTokens: true,
-			});
+			return formatDate(tzDate, pattern);
 		};
-
-		return tzContextDateParser;
 	};
 };
 
@@ -182,3 +173,76 @@ export const recalculateXFormatter = (
 	}
 	return defaultDateTimeFormatter();
 };
+
+//#region Custom date pattern parser, transforms Date object to string by given pattern
+// examples: dd.mm => 15.12, YYYY => 2024, HH:mm => 15:56
+const months = [
+	'January',
+	'February',
+	'March',
+	'April',
+	'May',
+	'June',
+	'July',
+	'August',
+	'September',
+	'October',
+	'November',
+	'December',
+];
+const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const formatDate = (date: Date, patternStr: string) => {
+	if (!patternStr) {
+		patternStr = 'M/d/yyyy';
+	}
+	const day = date.getDate();
+	const month = date.getMonth();
+	const year = date.getFullYear();
+	const hour = date.getHours();
+	const minute = date.getMinutes();
+	const second = date.getSeconds();
+	const miliseconds = date.getMilliseconds();
+	const h = hour % 12;
+	const hh = twoDigitPad(h);
+	const HH = twoDigitPad(hour);
+	const mm = twoDigitPad(minute);
+	const ss = twoDigitPad(second);
+	const aaa = hour < 12 ? 'AM' : 'PM';
+	const EEEE = daysOfWeek[date.getDay()];
+	const EEE = EEEE.substring(0, 3);
+	const dd = twoDigitPad(day);
+	const M = month + 1;
+	const MM = twoDigitPad(M);
+	const MMMM = months[month];
+	const MMM = MMMM.substring(0, 3);
+	const yyyy = year + '';
+	const yy = yyyy.substring(2, 2);
+	// checks to see if month name will be used
+	patternStr = patternStr
+		.replace('hh', hh + '')
+		.replace('h', h + '')
+		.replace('HH', HH + '')
+		.replace('H', hour + '')
+		.replace('mm', mm + '')
+		.replace('m', minute + '')
+		.replace('ss', ss + '')
+		.replace('s', second + '')
+		.replace('S', miliseconds + '')
+		.replace('dd', dd + '')
+		.replace('d', day + '')
+
+		.replace('EEEE', EEEE)
+		.replace('EEE', EEE)
+		.replace('YYYY', yyyy)
+		.replace('yyyy', yyyy)
+		.replace('yy', yy)
+		.replace('aaa', aaa);
+	if (patternStr.indexOf('MMM') > -1) {
+		patternStr = patternStr.replace('MMMM', MMMM).replace('MMM', MMM);
+	} else {
+		patternStr = patternStr.replace('MM', MM + '').replace('M', M + '');
+	}
+	return patternStr;
+};
+const twoDigitPad = (num: string | number) => (typeof num === 'number' && num < 10 ? '0' + num : num);
+//#endregion
