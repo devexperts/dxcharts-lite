@@ -271,13 +271,16 @@ export class CanvasBoundsContainer {
 		const chartWidth = canvas.width - totalYAxisWidthLeft - totalYAxisWidthRight;
 		let nextY = initialY;
 		// panes
-		const firstVisiblePaneIdx = Object.values(this.graphsHeightRatio).findIndex(ratio => ratio > 0);
+		const firstVisiblePaneIdx = this.panesOrder.findIndex(uuid => this.graphsHeightRatio[uuid] > 0);
 		this.panesOrder.forEach((uuid, index) => {
 			const paneHeightRatio = this.graphsHeightRatio[this.panesOrder[index]];
 			// hide resizer for the first visible pane
-			const resizerVisible = this.config.components.paneResizer.visible && index !== firstVisiblePaneIdx;
 			const resizerUUID = CanvasElement.PANE_UUID_RESIZER(uuid);
 			const paneUUID = CanvasElement.PANE_UUID(uuid);
+			const resizerVisible =
+				this.config.components.paneResizer.visible &&
+				index !== firstVisiblePaneIdx &&
+				this.bounds[paneUUID].height > 0;
 			if (resizerVisible) {
 				upsertBounds(
 					this.bounds,
@@ -300,8 +303,7 @@ export class CanvasBoundsContainer {
 				paneXStart,
 				paneYStart,
 				chartWidth,
-				chartHeight * paneHeightRatio -
-					(resizerVisible && this.bounds[paneUUID].height > 0 ? paneResizerHeight : 0),
+				chartHeight * paneHeightRatio - (resizerVisible ? paneResizerHeight : 0),
 				this.canvasOnPageLocation,
 			);
 			// y axis
@@ -522,9 +524,10 @@ export class CanvasBoundsContainer {
 		// NOTE: pec stands for panesExceptMainChart
 		const pec: Array<string> = [];
 		pec.push(...this.panesOrder.filter(p => p !== CHART_UUID));
-		const pecRatios = pec.map(graph =>
-			this.graphsHeightRatio[graph] === undefined ? undefined : this.graphsHeightRatio[graph],
+		const pecRatios = pec.map(uuid =>
+			this.graphsHeightRatio[uuid] === undefined ? undefined : this.graphsHeightRatio[uuid],
 		);
+		const visiblePecNumber = pecRatios.filter(ratio => ratio !== 0 && ratio !== undefined).length;
 		const oldPecNumber = pecRatios.filter(ratio => ratio !== undefined).length;
 		const newPecNumber = pecRatios.filter(ratio => ratio === undefined).length;
 		let freeRatioForPec = 0;
@@ -532,7 +535,7 @@ export class CanvasBoundsContainer {
 		let ratioForOldPec = 1;
 		let ratioForNewPec = 0;
 		if (newPecNumber > 0) {
-			[ratioForOldPec, ratioForNewPec] = getHeightRatios(pec.length);
+			[ratioForOldPec, ratioForNewPec] = getHeightRatios(visiblePecNumber);
 			chartRatio *= ratioForOldPec;
 		}
 
@@ -546,15 +549,24 @@ export class CanvasBoundsContainer {
 			}
 		});
 
-		freeRatioForPec = freeRatio / pec.length;
-		const proportions = pecRatios.map(ratio =>
-			ratio ? ratio * ratioForOldPec + freeRatioForPec : ratioForNewPec + freeRatioForPec,
-		);
-		if (chartRatio > 0) {
-			const initialValue = 0;
-			const proportionsValue = proportions.reduce((acc, currentValue) => acc + currentValue, initialValue);
-			chartRatio = chartRatio + (1 - chartRatio - proportionsValue);
-		}
+		freeRatioForPec = freeRatio / visiblePecNumber;
+		const proportions = pecRatios.map(ratio => {
+			// if ratio === 0 it means, that it's hidden
+			if (ratio === 0) {
+				return ratio;
+			}
+
+			if (!ratio) {
+				return ratioForNewPec + freeRatioForPec;
+			}
+
+			return ratio * ratioForOldPec + freeRatioForPec;
+		});
+		// if (chartRatio > 0) {
+		// 	const initialValue = 0;
+		// 	const proportionsValue = proportions.reduce((acc, currentValue) => acc + currentValue, initialValue);
+		// 	chartRatio = chartRatio + (1 - chartRatio - proportionsValue);
+		// }
 		this._graphsHeightRatio = {};
 		this.graphsHeightRatio[CHART_UUID] = chartRatio;
 		proportions.forEach((ratio, index) => {
@@ -580,91 +592,93 @@ export class CanvasBoundsContainer {
 	 * The position and size of the slider and chart are calculated based on the position and size of the knots and buttons.
 	 */
 	recalculateNavigationMapElementBounds() {
-		if (this.config.components.navigationMap.visible) {
-			const nMap = this.getBounds(CanvasElement.N_MAP);
-			const { height, width } = this.config.components.navigationMap.knots;
-			const knotHeightFromConfig = height ?? 0;
-			const knotWidthFromConfig = isMobile() ? width * KNOTS_W_MOBILE_MULTIPLIER : width ?? 0;
-			const knotY = !knotHeightFromConfig ? nMap.y : nMap.y + (nMap.height - knotHeightFromConfig) / 2;
-			// time labels
-			const timeLabelsVisible = this.config.components.navigationMap?.timeLabels?.visible;
-			const calcLabelBounds = (timestamp: number): number => {
-				return calcTimeLabelBounds(this.canvasModel.ctx, timestamp, this.formatterFactory, this.config)[0];
-			};
-			const candleSource = flat(this.mainCandleSeries?.getSeriesInViewport() ?? []);
-			const leftTimeLabelWidth =
-				timeLabelsVisible && candleSource.length ? calcLabelBounds(candleSource[0].candle.timestamp) : 0;
-			const rightTimeLabelWidth =
-				timeLabelsVisible && candleSource.length
-					? calcLabelBounds(candleSource[candleSource.length - 1].candle.timestamp)
-					: 0;
-			const timeLabelWidth = Math.max(leftTimeLabelWidth, rightTimeLabelWidth);
-			if (timeLabelsVisible) {
-				const nMapLabelL = this.getBounds(CanvasElement.N_MAP_LABEL_L);
-				nMapLabelL.x = nMap.x;
-				nMapLabelL.y = nMap.y;
-				nMapLabelL.width = timeLabelWidth;
-				nMapLabelL.height = nMap.height;
-				const nMapLabelR = this.getBounds(CanvasElement.N_MAP_LABEL_R);
-				nMapLabelR.x = nMap.x + nMap.width - timeLabelWidth;
-				nMapLabelR.y = nMap.y;
-				nMapLabelR.width = timeLabelWidth;
-				nMapLabelR.height = nMap.height;
-			}
-			// buttons left and right
-			const nMapBtnL = this.getBounds(CanvasElement.N_MAP_BTN_L);
-			nMapBtnL.x = nMap.x + timeLabelWidth;
-			nMapBtnL.y = nMap.y;
-			nMapBtnL.width = N_MAP_BUTTON_W;
-			nMapBtnL.height = nMap.height;
-			const nMapBtnR = this.getBounds(CanvasElement.N_MAP_BTN_R);
-			nMapBtnR.x = nMap.x + nMap.width - N_MAP_BUTTON_W - timeLabelWidth;
-			nMapBtnR.y = nMap.y;
-			nMapBtnR.width = N_MAP_BUTTON_W;
-			nMapBtnR.height = nMap.height;
-			// knots
-			const navMapChartStart = nMapBtnL.x + nMapBtnL.width;
-			const navMapChartWidth = nMapBtnR.x - navMapChartStart;
-			const navMapChartEnd = navMapChartStart + navMapChartWidth;
-			const minSliderW = this.config.components.navigationMap.minSliderWindowWidth;
-			const knotW = knotWidthFromConfig ?? N_MAP_KNOT_W;
-			const knotH = knotHeightFromConfig ?? nMap.height;
-			const minDistanceBetweenKnotsX = knotW + minSliderW;
-			// Left drag button
-			const knotL = this.getBounds(CanvasElement.N_MAP_KNOT_L);
-			knotL.x = navMapChartStart + navMapChartWidth * this.leftRatio;
-			// limit left knot to min distance from right border
-			knotL.x = Math.min(knotL.x, navMapChartEnd - minDistanceBetweenKnotsX);
-			knotL.y = knotY;
-			knotL.width = knotW;
-			knotL.height = knotH;
-			// Right drag button
-			const knotR = this.getBounds(CanvasElement.N_MAP_KNOT_R);
-			knotR.x = navMapChartStart + navMapChartWidth * this.rightRatio - N_MAP_KNOT_W;
-			// limit right knot to min distance from left border
-			knotR.x = Math.max(knotR.x, navMapChartStart + minDistanceBetweenKnotsX);
-			knotR.y = knotY;
-			knotR.width = knotW;
-			knotR.height = knotH;
-
-			const distanceDiff = minDistanceBetweenKnotsX - (knotR.x - knotL.x);
-			// if distance between knots is less than min distance - move left knot start
-			if (distanceDiff > 0) {
-				knotL.x -= distanceDiff;
-			}
-			// slider
-			const slider = this.getBounds(CanvasElement.N_MAP_SLIDER_WINDOW);
-			slider.x = knotL.x + knotL.width;
-			slider.y = nMap.y;
-			slider.width = knotR.x - slider.x;
-			slider.height = nMap.height;
-			// chart
-			const nMapChart = this.getBounds(CanvasElement.N_MAP_CHART);
-			nMapChart.x = navMapChartStart;
-			nMapChart.y = nMap.y;
-			nMapChart.width = navMapChartWidth;
-			nMapChart.height = nMap.height;
+		if (!this.config.components.navigationMap.visible) {
+			return;
 		}
+
+		const nMap = this.getBounds(CanvasElement.N_MAP);
+		const { height, width } = this.config.components.navigationMap.knots;
+		const knotHeightFromConfig = height ?? 0;
+		const knotWidthFromConfig = isMobile() ? width * KNOTS_W_MOBILE_MULTIPLIER : width ?? 0;
+		const knotY = !knotHeightFromConfig ? nMap.y : nMap.y + (nMap.height - knotHeightFromConfig) / 2;
+		// time labels
+		const timeLabelsVisible = this.config.components.navigationMap?.timeLabels?.visible;
+		const calcLabelBounds = (timestamp: number): number => {
+			return calcTimeLabelBounds(this.canvasModel.ctx, timestamp, this.formatterFactory, this.config)[0];
+		};
+		const candleSource = flat(this.mainCandleSeries?.getSeriesInViewport() ?? []);
+		const leftTimeLabelWidth =
+			timeLabelsVisible && candleSource.length ? calcLabelBounds(candleSource[0].candle.timestamp) : 0;
+		const rightTimeLabelWidth =
+			timeLabelsVisible && candleSource.length
+				? calcLabelBounds(candleSource[candleSource.length - 1].candle.timestamp)
+				: 0;
+		const timeLabelWidth = Math.max(leftTimeLabelWidth, rightTimeLabelWidth);
+		if (timeLabelsVisible) {
+			const nMapLabelL = this.getBounds(CanvasElement.N_MAP_LABEL_L);
+			nMapLabelL.x = nMap.x;
+			nMapLabelL.y = nMap.y;
+			nMapLabelL.width = timeLabelWidth;
+			nMapLabelL.height = nMap.height;
+			const nMapLabelR = this.getBounds(CanvasElement.N_MAP_LABEL_R);
+			nMapLabelR.x = nMap.x + nMap.width - timeLabelWidth;
+			nMapLabelR.y = nMap.y;
+			nMapLabelR.width = timeLabelWidth;
+			nMapLabelR.height = nMap.height;
+		}
+		// buttons left and right
+		const nMapBtnL = this.getBounds(CanvasElement.N_MAP_BTN_L);
+		nMapBtnL.x = nMap.x + timeLabelWidth;
+		nMapBtnL.y = nMap.y;
+		nMapBtnL.width = N_MAP_BUTTON_W;
+		nMapBtnL.height = nMap.height;
+		const nMapBtnR = this.getBounds(CanvasElement.N_MAP_BTN_R);
+		nMapBtnR.x = nMap.x + nMap.width - N_MAP_BUTTON_W - timeLabelWidth;
+		nMapBtnR.y = nMap.y;
+		nMapBtnR.width = N_MAP_BUTTON_W;
+		nMapBtnR.height = nMap.height;
+		// knots
+		const navMapChartStart = nMapBtnL.x + nMapBtnL.width;
+		const navMapChartWidth = nMapBtnR.x - navMapChartStart;
+		const navMapChartEnd = navMapChartStart + navMapChartWidth;
+		const minSliderW = this.config.components.navigationMap.minSliderWindowWidth;
+		const knotW = knotWidthFromConfig ?? N_MAP_KNOT_W;
+		const knotH = knotHeightFromConfig ?? nMap.height;
+		const minDistanceBetweenKnotsX = knotW + minSliderW;
+		// Left drag button
+		const knotL = this.getBounds(CanvasElement.N_MAP_KNOT_L);
+		knotL.x = navMapChartStart + navMapChartWidth * this.leftRatio;
+		// limit left knot to min distance from right border
+		knotL.x = Math.min(knotL.x, navMapChartEnd - minDistanceBetweenKnotsX);
+		knotL.y = knotY;
+		knotL.width = knotW;
+		knotL.height = knotH;
+		// Right drag button
+		const knotR = this.getBounds(CanvasElement.N_MAP_KNOT_R);
+		knotR.x = navMapChartStart + navMapChartWidth * this.rightRatio - N_MAP_KNOT_W;
+		// limit right knot to min distance from left border
+		knotR.x = Math.max(knotR.x, navMapChartStart + minDistanceBetweenKnotsX);
+		knotR.y = knotY;
+		knotR.width = knotW;
+		knotR.height = knotH;
+
+		const distanceDiff = minDistanceBetweenKnotsX - (knotR.x - knotL.x);
+		// if distance between knots is less than min distance - move left knot start
+		if (distanceDiff > 0) {
+			knotL.x -= distanceDiff;
+		}
+		// slider
+		const slider = this.getBounds(CanvasElement.N_MAP_SLIDER_WINDOW);
+		slider.x = knotL.x + knotL.width;
+		slider.y = nMap.y;
+		slider.width = knotR.x - slider.x;
+		slider.height = nMap.height;
+		// chart
+		const nMapChart = this.getBounds(CanvasElement.N_MAP_CHART);
+		nMapChart.x = navMapChartStart;
+		nMapChart.y = nMap.y;
+		nMapChart.width = navMapChartWidth;
+		nMapChart.height = nMap.height;
 	}
 
 	/**
@@ -804,6 +818,7 @@ export class CanvasBoundsContainer {
 	 * @returns {void}
 	 */
 	private doResizePaneVertically(idx: number, yDeltaPixels: number): void {
+		// get prev visible pane index
 		let prevVisiblePaneIdx = idx - 1;
 		const prevPaneUUID = this.panesOrder[prevVisiblePaneIdx];
 		if (this._graphsHeightRatio[prevPaneUUID] <= 0) {
