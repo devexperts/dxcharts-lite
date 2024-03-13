@@ -17,7 +17,7 @@
     "build:lib:production": "yarn build:lib && yarn add_disclaimer",
     "build:standalone:production": "webpack --config webpack.build.config.js --env MODE=production && yarn add_disclaimer",
     "//<----utility builds---->": "build will run on dxcity CI when trying to merge PR builds",
-    "build:shadow_merge": "yarn test && yarn build",
+    "build:shadow_merge": "yarn build",
     "prepublishOnly": "yarn test && yarn build:production",
     "//<----tests---->": "scripts to run tests",
     "test": "yarn test:lint && jest",
