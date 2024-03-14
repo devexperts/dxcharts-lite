@@ -71,6 +71,7 @@ export class ChartPanComponent extends ChartBaseElement {
 	 */
 	public activateChartPanHandlers() {
 		this.chartPanComponents.forEach(c => c.activate());
+		this.setChartPanningOptions(true, true);
 	}
 
 	/**
@@ -78,6 +79,7 @@ export class ChartPanComponent extends ChartBaseElement {
 	 */
 	public deactivatePanHandlers() {
 		this.chartPanComponents.forEach(c => c.deactivate());
+		this.setChartPanningOptions(false, false);
 	}
 
 	public setChartPanningOptions(horizontal: boolean, vertical: boolean) {
