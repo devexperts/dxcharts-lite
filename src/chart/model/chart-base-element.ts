@@ -63,6 +63,7 @@ export abstract class ChartBaseElement implements ChartEntity {
 			this._state = 'deactivated';
 			this.activate();
 		}
+		this.entities.forEach(comp => comp.enable());
 	}
 
 	/**
@@ -72,9 +73,9 @@ export abstract class ChartBaseElement implements ChartEntity {
 	 */
 	disable(): void {
 		if (this._state !== 'disabled') {
-			this.deactivate();
 			this._state = 'disabled';
 		}
+		this.entities.forEach(comp => comp.disable());
 	}
 
 	/**
