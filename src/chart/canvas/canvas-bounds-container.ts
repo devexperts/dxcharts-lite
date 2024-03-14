@@ -562,11 +562,6 @@ export class CanvasBoundsContainer {
 
 			return ratio * ratioForOldPec + freeRatioForPec;
 		});
-		// if (chartRatio > 0) {
-		// 	const initialValue = 0;
-		// 	const proportionsValue = proportions.reduce((acc, currentValue) => acc + currentValue, initialValue);
-		// 	chartRatio = chartRatio + (1 - chartRatio - proportionsValue);
-		// }
 		this._graphsHeightRatio = {};
 		this.graphsHeightRatio[CHART_UUID] = chartRatio;
 		proportions.forEach((ratio, index) => {
