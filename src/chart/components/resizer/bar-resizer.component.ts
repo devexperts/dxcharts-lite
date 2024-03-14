@@ -116,6 +116,7 @@ export class BarResizerComponent extends ChartBaseElement {
 		this.initialY = this.boundsProvider().y;
 		// Stop redrawing hit test
 		this.hitTestCanvasModel.hitTestDrawersPredicateSubject.next(false);
+		this.chartPanComponent.deactivatePanHandlers();
 	};
 
 	private onYDragEnd = () => {
@@ -124,6 +125,7 @@ export class BarResizerComponent extends ChartBaseElement {
 		this.canvasBoundsContainer.graphsHeightRatioChangedSubject.next(this.canvasBoundsContainer.graphsHeightRatio);
 		// Continue redrawing hit test
 		this.hitTestCanvasModel.hitTestDrawersPredicateSubject.next(true);
+		this.chartPanComponent.activateChartPanHandlers();
 	};
 
 	private onYDragTick = (dragInfo: DragInfo) => {
