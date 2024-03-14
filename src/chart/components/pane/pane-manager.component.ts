@@ -196,7 +196,6 @@ export class PaneManager extends ChartBaseElement {
 	/**
 	 * Moves the canvas bounds container down by calling the movePaneDown method with the uuid of the current object.
 	 * @returns {void}
-	 * @deprecated Use `paneManager.movePaneDown()` instead
 	 */
 	public movePaneDown(uuid: string): void {
 		this.canvasBoundsContainer.movePaneDown(uuid);
@@ -205,7 +204,6 @@ export class PaneManager extends ChartBaseElement {
 	/**
 	 * Checks if the current pane can move up.
 	 * @returns {boolean} - Returns true if the current pane can move up, otherwise false.
-	 * @deprecated Use `paneManager.canMovePaneUp()` instead
 	 */
 	public canMovePaneUp(uuid: string): boolean {
 		const firstVisiblePane = firstOf(
@@ -218,7 +216,6 @@ export class PaneManager extends ChartBaseElement {
 	 * Checks if the current pane can move down.
 	 *
 	 * @returns {boolean} - Returns true if the current pane is not the last one in the canvasBoundsContainer, otherwise returns false.
-	 * @deprecated Use `paneManager.canMovePaneDown()` instead
 	 */
 	public canMovePaneDown(uuid: string): boolean {
 		const lastVisiblePane = lastOf(
