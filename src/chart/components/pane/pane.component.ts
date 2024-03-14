@@ -19,7 +19,7 @@ import EventBus from '../../events/event-bus';
 import { CanvasInputListenerComponent } from '../../inputlisteners/canvas-input-listener.component';
 import { Bounds } from '../../model/bounds.model';
 import { CanvasModel } from '../../model/canvas.model';
-import { VisibleChartBaseElement } from '../../model/chart-base-element';
+import { ChartBaseElement } from '../../model/chart-base-element';
 import { DataSeriesModel } from '../../model/data-series.model';
 import { ScaleModel, SyncedByXScaleModel } from '../../model/scale.model';
 import { Pixel, Price, Unit } from '../../model/scaling/viewport.model';
@@ -42,7 +42,7 @@ import {
 import { PaneHitTestController } from './pane-hit-test.controller';
 import { HitTestCanvasModel } from '../../model/hit-test-canvas.model';
 
-export class PaneComponent extends VisibleChartBaseElement {
+export class PaneComponent extends ChartBaseElement {
 	/**
 	 * Pane hit test (without Y-Axis and resizer)
 	 */
@@ -60,6 +60,10 @@ export class PaneComponent extends VisibleChartBaseElement {
 
 	get dataSeries() {
 		return flatMap(this.yExtentComponents, c => Array.from(c.dataSeries));
+	}
+
+	get visible() {
+		return this.canvasBoundsContainer.graphsHeightRatio[this.uuid] > 0;
 	}
 
 	public mainExtent: YExtentComponent;
@@ -257,16 +261,6 @@ export class PaneComponent extends VisibleChartBaseElement {
 		this.canvasBoundsContainer.updateYAxisWidths();
 	}
 
-	show(): void {
-		super.show();
-		this.chartPanComponent.activate();
-	}
-
-	hide(): void {
-		super.hide();
-		this.chartPanComponent.deactivate();
-	}
-
 	/**
 	 * This method updates the view by calling the doAutoScale method of the scaleModel and firing the Draw event using the eventBus.
 	 * @private
@@ -347,6 +341,7 @@ export class PaneComponent extends VisibleChartBaseElement {
 	/**
 	 * Moves the canvas bounds container up by calling the movePaneUp method with the uuid of the current object.
 	 * @returns {void}
+	 * @deprecated Use `paneManager.movePaneUp()` instead
 	 */
 	public moveUp(): void {
 		this.canvasBoundsContainer.movePaneUp(this.uuid);
@@ -355,6 +350,7 @@ export class PaneComponent extends VisibleChartBaseElement {
 	/**
 	 * Moves the canvas bounds container down by calling the movePaneDown method with the uuid of the current object.
 	 * @returns {void}
+	 * @deprecated Use `paneManager.movePaneDown()` instead
 	 */
 	public moveDown(): void {
 		this.canvasBoundsContainer.movePaneDown(this.uuid);
@@ -363,22 +359,30 @@ export class PaneComponent extends VisibleChartBaseElement {
 	/**
 	 * Checks if the current pane can move up.
 	 * @returns {boolean} - Returns true if the current pane can move up, otherwise false.
+	 * @deprecated Use `paneManager.canMovePaneUp()` instead
 	 */
-	public canMoveUp(panes: PaneComponent[]): boolean {
-		const visiblePanesIds = panes.filter(p => p.visible).map(p => p.uuid);
-		const firstPane = firstOf(this.canvasBoundsContainer.panesOrder.filter(id => visiblePanesIds.includes(id)));
-		return this.uuid !== firstPane && this.visible;
+	public canMoveUp(): boolean {
+		const firstVisiblePane = firstOf(
+			this.canvasBoundsContainer.panesOrder.filter(
+				uuid => this.canvasBoundsContainer.graphsHeightRatio[uuid] > 0,
+			),
+		);
+		return this.uuid !== firstVisiblePane && this.visible;
 	}
 
 	/**
 	 * Checks if the current pane can move down.
 	 *
 	 * @returns {boolean} - Returns true if the current pane is not the last one in the canvasBoundsContainer, otherwise returns false.
+	 * @deprecated Use `paneManager.canMovePaneDown()` instead
 	 */
-	public canMoveDown(panes: PaneComponent[]): boolean {
-		const visiblePanesIds = panes.filter(p => p.visible).map(p => p.uuid);
-		const lastPane = lastOf(this.canvasBoundsContainer.panesOrder.filter(id => visiblePanesIds.includes(id)));
-		return this.uuid !== lastPane && this.visible;
+	public canMoveDown(): boolean {
+		const lastVisiblePane = lastOf(
+			this.canvasBoundsContainer.panesOrder.filter(
+				uuid => this.canvasBoundsContainer.graphsHeightRatio[uuid] > 0,
+			),
+		);
+		return this.uuid !== lastVisiblePane && this.visible;
 	}
 
 	public valueFormatter = (value: Unit, dataSeries?: DataSeriesModel) => {
