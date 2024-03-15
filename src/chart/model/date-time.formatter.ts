@@ -114,7 +114,7 @@ export const dateTimeFormatterFactory = (
  * @param {TimeFormatterConfig} config - The configuration object containing shortDays property.
  * @returns {string[]} - An array of short day names.
  */
-function getShortDays(config: TimeFormatterConfig) {
+export function getShortDays(config: TimeFormatterConfig) {
 	return config.shortDays ?? ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 }
 /**
@@ -124,7 +124,7 @@ function getShortDays(config: TimeFormatterConfig) {
  * @param {TimeFormatterConfig} config - The configuration object that contains the shortMonths property.
  * @returns {string[]} - An array of short month names.
  */
-function getShortMonths(config: TimeFormatterConfig) {
+export function getShortMonths(config: TimeFormatterConfig) {
 	return config.shortMonths ?? ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 }
 
@@ -167,8 +167,8 @@ export const recalculateXFormatter = (
 };
 
 //#region Custom date pattern parser, transforms Date object to string by given pattern
-// examples: dd.mm => 15.12, YYYY => 2024, HH:mm => 15:56
-const formatDate = (date: Date, patternStr: string, daysOfWeek: string[], months: string[]) => {
+// examples: dd.MM => 15.12, YYYY => 2024, HH:mm => 15:56
+export const formatDate = (date: Date, patternStr: string, daysOfWeek: string[], months: string[]) => {
 	if (!patternStr) {
 		patternStr = 'M/d/yyyy';
 	}
