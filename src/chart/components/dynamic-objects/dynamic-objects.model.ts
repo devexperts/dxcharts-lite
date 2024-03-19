@@ -9,6 +9,7 @@ export type DynamicObjectId = string | number;
 
 export interface DynamicObject<T = unknown> {
 	readonly id: DynamicObjectId;
+	readonly htId: DynamicObjectId;
 	readonly drawer: DynamicModelDrawer<T>;
 	readonly paneId: PaneId;
 	readonly model?: T;
@@ -247,5 +248,21 @@ export class DynamicObjectsModel extends ChartBaseElement {
 	setDynamicObjects(objects: Record<PaneId, LinkedList<DynamicObject>>) {
 		this._objects.next(objects);
 		this.canvasModel.fireDraw();
+	}
+
+	/**
+	 * Unique objects have different hit test id, which means they do not belong to one entity, for example, several linked data series
+	 * @param objects
+	 */
+	getUniqueObjectsSize(paneId: PaneId) {
+		const uniqueObjectIds: DynamicObjectId[] = [];
+
+		for (const obj of this.objects[paneId]) {
+			if (!uniqueObjectIds.includes(obj.htId)) {
+				uniqueObjectIds.push(obj.htId);
+			}
+		}
+
+		return uniqueObjectIds.length;
 	}
 }
