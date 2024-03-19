@@ -252,7 +252,7 @@ export class DynamicObjectsModel extends ChartBaseElement {
 
 	/**
 	 * Unique objects have different hit test id, which means they do not belong to one entity, for example, several linked data series
-	 * @param objects
+	 * @param paneId
 	 */
 	getUniqueObjectsSize(paneId: PaneId) {
 		const uniqueObjectIds: DynamicObjectId[] = [];
