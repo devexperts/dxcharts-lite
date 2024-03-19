@@ -258,7 +258,7 @@ export class DynamicObjectsModel extends ChartBaseElement {
 		const uniqueObjectIds: DynamicObjectId[] = [];
 
 		for (const obj of this.objects[paneId]) {
-			if (!uniqueObjectIds.includes(obj.htId)) {
+			if (obj.htId && !uniqueObjectIds.includes(obj.htId)) {
 				uniqueObjectIds.push(obj.htId);
 			}
 		}

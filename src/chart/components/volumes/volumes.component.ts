@@ -145,7 +145,8 @@ export class VolumesComponent extends ChartBaseElement {
 
 		this.dynamicObjectsComponent.model.addObject({
 			id: this.volumesModel.id,
-			htId: this.volumesModel.id,
+			// TODO: volumes are not a part of dynamic objects reordering, don't set hit test id so far, set after volumes refactor
+			htId: '',
 			paneId: this.config.components.volumes.showSeparately ? VOLUMES_UUID : CHART_UUID,
 			drawer: this.volumesDrawer,
 			model: this.volumesModel,
