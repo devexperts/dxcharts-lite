@@ -35,7 +35,7 @@ export class BaselineModel extends ChartBaseElement {
 	});
 	constructor(
 		private chartModel: ChartModel,
-		chartPanComponent: ChartPanComponent,
+		private chartPanComponent: ChartPanComponent,
 		private canvasModel: CanvasModel,
 		private canvasInputListener: CanvasInputListenerComponent,
 		private config: FullChartConfig,
@@ -47,8 +47,8 @@ export class BaselineModel extends ChartBaseElement {
 			this.ht,
 			{
 				onDragTick: this.dragTickCb,
-				onDragStart: () => this.dragStartCb(chartPanComponent),
-				onDragEnd: () => this.dragEndCb(chartPanComponent),
+				onDragStart: this.dragStartCb,
+				onDragEnd: this.dragEndCb,
 			},
 			canvasInputListener,
 			chartPanComponent,
@@ -78,9 +78,9 @@ export class BaselineModel extends ChartBaseElement {
 		});
 	}
 
-	private dragStartCb = (chartPanComponent: ChartPanComponent) => chartPanComponent.deactivatePanHandlers();
-	private dragEndCb = (chartPanComponent: ChartPanComponent) => chartPanComponent.activateChartPanHandlers();
-	
+	private dragStartCb = () => this.chartPanComponent.deactivatePanHandlers();
+	private dragEndCb = () => this.chartPanComponent.activateChartPanHandlers();
+
 	private dragTickCb = (dragInfo: DragInfo): void => {
 		const { delta: yDelta } = dragInfo;
 		const chart = this.canvasBoundContainer.getBounds(CanvasElement.CHART);
