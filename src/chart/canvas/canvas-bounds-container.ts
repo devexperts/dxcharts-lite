@@ -222,6 +222,7 @@ export class CanvasBoundsContainer {
 			// when we want pane to be visible again we want `recalculatePanesHeightRatios` function
 			// to treat it as a new pane
 			// to do so we need to delete its ratio (which is 0 because it is hidden) from graphsHeightRatio
+			// NOTE: CHART_UUID pane is exception, it is treated differently and should always have some ratio
 			delete this.graphsHeightRatio[uuid];
 		}
 		this.recalculatePanesHeightRatios();
