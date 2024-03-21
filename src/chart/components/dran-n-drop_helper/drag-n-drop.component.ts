@@ -40,23 +40,6 @@ export class DragNDropComponent extends ChartBaseElement {
 		super();
 	}
 
-	/**
-	 * Calls the parent class's doActivate method and performs any additional activation logic.
-	 * This method is protected and can only be accessed by the class itself and its subclasses.
-	 */
-	protected doActivate() {
-		super.doActivate();
-	}
-
-	/**
-	 * This method overrides the doDeactivate method of the parent class and calls it using the super keyword.
-	 * It is a protected method that can only be accessed within the class and its subclasses.
-	 * This method is responsible for deactivating the current object.
-	 */
-	protected doDeactivate() {
-		super.doDeactivate();
-	}
-
 	protected onDragStart = (point: Point) => {
 		if (this.dragComponentOptions.dragPredicate()) {
 			this.dragging = true;
@@ -82,7 +65,6 @@ export class DragNDropComponent extends ChartBaseElement {
 			if (this.dragging) {
 				this.dragging = false;
 				this.dragCallbacks.onDragEnd && this.dragCallbacks.onDragEnd(this.draggedPixels);
-				this.chartPanComponent.activateChartPanHandlers();
 			}
 		}
 	};
