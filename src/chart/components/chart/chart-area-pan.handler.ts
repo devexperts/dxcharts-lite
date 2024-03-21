@@ -148,14 +148,20 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 					const deltaY = 0 + e.deltaY * -direction;
 
 					if (e.ctrlKey) {
-						const zoomSensitivity = this.calculateDynamicSesitivity(e, this.config.scale.zoomSensitivity.wheel);
+						const zoomSensitivity = this.calculateDynamicSesitivity(
+							e,
+							this.config.scale.zoomSensitivity.wheel,
+						);
 						this.zoomXHandler(e, zoomSensitivity);
 						this.bus.fireDraw();
 						return;
 					}
 					// also works for geasture touchpad vertical case
 					if (deltaY !== 0 && Math.abs(deltaY) > Math.abs(deltaX)) {
-						const zoomSensitivity = this.calculateDynamicSesitivity(e, this.config.scale.zoomSensitivity.wheel);
+						const zoomSensitivity = this.calculateDynamicSesitivity(
+							e,
+							this.config.scale.zoomSensitivity.wheel,
+						);
 						this.zoomXHandler(e, zoomSensitivity);
 						this.bus.fireDraw();
 					}
