@@ -55,7 +55,7 @@ export class YAxisScaleHandler extends ChartBaseElement {
 				canvasInputListener,
 				panning,
 				{
-					dragPredicate: () => panning.chartAreaPanHandler.chartPanningOptions.vertical && config.type !== 'percent' && config.visible,
+					dragPredicate: () => panning.chartAreaPanHandler.chartPanningOptions.vertical && config.type !== 'percent',
 				},
 			);
 			this.addChildEntity(dragNDropYComponent);

@@ -72,6 +72,10 @@ export class YAxisBoundsContainer {
 		const right: number[] = [];
 		this.yAxisWidthContributors.forEach(c => {
 			const state = c.getYAxisState();
+			// if YAxis is not visible, do not add it to contributors width
+			if (!state.visible) {
+				return;
+			}
 			const margin = state.labelBoxMargin.start + state.labelBoxMargin.end;
 			const width = this.getTextWidth(c.getLargestLabel()) + margin;
 			const idx = c.getYAxisIndex();
