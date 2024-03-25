@@ -57,6 +57,7 @@ export abstract class ChartBaseElement implements ChartEntity {
 	 * Enables the functionality of an object.
 	 * If the object is not currently active, it sets the state to 'deactivated' and activates it.
 	 * @returns {void}
+	 * @deprecated use `ChartBaseElement.activate()` instead
 	 */
 	enable(): void {
 		if (this._state !== 'active') {
@@ -69,6 +70,7 @@ export abstract class ChartBaseElement implements ChartEntity {
 	 * Disables the current object if it is not already disabled.
 	 * If the object is not disabled, it will be deactivated and its state will be set to 'disabled'.
 	 * @returns {void}
+	 * @deprecated use `ChartBaseElement.deactivate()` instead
 	 */
 	disable(): void {
 		if (this._state !== 'disabled') {

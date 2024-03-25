@@ -43,7 +43,6 @@ import { PaneHitTestController } from './pane-hit-test.controller';
 import { HitTestCanvasModel } from '../../model/hit-test-canvas.model';
 
 export class PaneComponent extends ChartBaseElement {
-	private _paneOrder = 0;
 	/**
 	 * Pane hit test (without Y-Axis and resizer)
 	 */
@@ -61,6 +60,10 @@ export class PaneComponent extends ChartBaseElement {
 
 	get dataSeries() {
 		return flatMap(this.yExtentComponents, c => Array.from(c.dataSeries));
+	}
+
+	get visible() {
+		return this.canvasBoundsContainer.graphsHeightRatio[this.uuid] > 0;
 	}
 
 	public mainExtent: YExtentComponent;
@@ -296,31 +299,6 @@ export class PaneComponent extends ChartBaseElement {
 	}
 
 	/**
-	 * Hides the pane by removing its bounds from the canvasBoundsContainer and firing a draw event.
-	 * @function
-	 * @name hide
-	 * @memberof PaneComponent
-	 * @returns {void}
-	 */
-	public hide(): void {
-		this._paneOrder = this.canvasBoundsContainer.panesOrder.indexOf(this.uuid);
-		this.canvasBoundsContainer.removedPaneBounds(this.uuid);
-		this.eventBus.fireDraw();
-	}
-
-	/**
-	 * Adds the bounds of the pane to the canvas bounds container and fires a draw event.
-	 * @function
-	 * @name show
-	 * @memberof PaneComponent
-	 * @returns {void}
-	 */
-	public show(): void {
-		this.canvasBoundsContainer.addPaneBounds(this.uuid, this._paneOrder);
-		this.eventBus.fireDraw();
-	}
-
-	/**
 	 * Creates a new DataSeriesModel object.
 	 * @returns {DataSeriesModel} - The newly created DataSeriesModel object.
 	 */
@@ -363,6 +341,7 @@ export class PaneComponent extends ChartBaseElement {
 	/**
 	 * Moves the canvas bounds container up by calling the movePaneUp method with the uuid of the current object.
 	 * @returns {void}
+	 * @deprecated Use `paneManager.movePaneUp()` instead
 	 */
 	public moveUp(): void {
 		this.canvasBoundsContainer.movePaneUp(this.uuid);
@@ -371,6 +350,7 @@ export class PaneComponent extends ChartBaseElement {
 	/**
 	 * Moves the canvas bounds container down by calling the movePaneDown method with the uuid of the current object.
 	 * @returns {void}
+	 * @deprecated Use `paneManager.movePaneDown()` instead
 	 */
 	public moveDown(): void {
 		this.canvasBoundsContainer.movePaneDown(this.uuid);
@@ -379,20 +359,30 @@ export class PaneComponent extends ChartBaseElement {
 	/**
 	 * Checks if the current pane can move up.
 	 * @returns {boolean} - Returns true if the current pane can move up, otherwise false.
+	 * @deprecated Use `paneManager.canMovePaneUp()` instead
 	 */
 	public canMoveUp(): boolean {
-		const firstPane = firstOf(this.canvasBoundsContainer.panesOrder);
-		return this.uuid !== firstPane;
+		const firstVisiblePane = firstOf(
+			this.canvasBoundsContainer.panesOrder.filter(
+				uuid => this.canvasBoundsContainer.graphsHeightRatio[uuid] > 0,
+			),
+		);
+		return this.uuid !== firstVisiblePane && this.visible;
 	}
 
 	/**
 	 * Checks if the current pane can move down.
 	 *
 	 * @returns {boolean} - Returns true if the current pane is not the last one in the canvasBoundsContainer, otherwise returns false.
+	 * @deprecated Use `paneManager.canMovePaneDown()` instead
 	 */
 	public canMoveDown(): boolean {
-		const lastPane = lastOf(this.canvasBoundsContainer.panesOrder);
-		return this.uuid !== lastPane;
+		const lastVisiblePane = lastOf(
+			this.canvasBoundsContainer.panesOrder.filter(
+				uuid => this.canvasBoundsContainer.graphsHeightRatio[uuid] > 0,
+			),
+		);
+		return this.uuid !== lastVisiblePane && this.visible;
 	}
 
 	public valueFormatter = (value: Unit, dataSeries?: DataSeriesModel) => {
