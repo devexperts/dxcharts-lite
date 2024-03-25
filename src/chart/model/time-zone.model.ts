@@ -98,18 +98,17 @@ export class TimeZoneModel {
 		return this.formatterCache[format];
 	}
 
-	public tzOffset(timezone: string): (time: number | Date) => Date {
+	public tzOffset(timezone: string): (time: number) => Date {
 		if (!timezone) {
 			return time => new Date(time);
 		} else {
 			// In JS Date object is created with local tz offset,
 			// so we have to subtract localOffset from current time
 			return time => {
-				const timeMs = time instanceof Date ? time.getTime() : time;
 				return new Date(
-					timeMs +
-						getTimezoneOffset(timezone, timeMs) +
-						new Date(timeMs).getTimezoneOffset() * timeMultiplier,
+					time +
+						getTimezoneOffset(timezone, time) +
+						new Date(time).getTimezoneOffset() * timeMultiplier,
 				);
 			};
 		}

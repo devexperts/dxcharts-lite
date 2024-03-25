@@ -11,11 +11,11 @@ export interface TimeFormatterConfig {
 }
 
 export interface DateTimeFormatter {
-	(date: Date | number): string;
+	(date: number): string;
 }
 export type DateTimeFormatterFactory = (format: string) => DateTimeFormatter;
 
-export const defaultDateTimeFormatter = () => (date: Date | number) => date.toString();
+export const defaultDateTimeFormatter = () => (date: number) => date.toString();
 
 /**
  * Default chart-core time formatter.
@@ -25,7 +25,7 @@ export const defaultDateTimeFormatter = () => (date: Date | number) => date.toSt
  */
 export const dateTimeFormatterFactory = (
 	config: FullChartConfig,
-	offsetFunction: (timezone: string) => (time: number | Date) => Date,
+	offsetFunction: (timezone: string) => (time: number) => Date,
 ): DateTimeFormatterFactory => {
 	const getPrefix = 'date.get' + (offsetFunction(config.timezone ?? '') ? '' : 'UTC');
 	const patterns: Record<string, string> = {
@@ -97,13 +97,12 @@ export const dateTimeFormatterFactory = (
 			},
 			tzDate:
 				offsetFunction(config.timezone ?? '') ||
-				function (date: Date | number): Date {
-					return date instanceof Date ? date : new Date(+date);
+				function (date: number): Date {
+					return new Date(+date);
 				},
 		};
 
-		return (date: number | Date) =>
-			formatDate(context.tzDate(date), pattern, context.shortDays, context.shortMonths);
+		return (date: number) => formatDate(context.tzDate(date), pattern, context.shortDays, context.shortMonths);
 	};
 };
 
@@ -131,7 +130,7 @@ export function getShortMonths(config: TimeFormatterConfig) {
 export const recalculateXFormatter = (
 	xAxisLabelFormat: string | Array<DateTimeFormatConfig>,
 	period: number,
-	formatterFactory: (format: string) => (timestamp: number | Date) => string,
+	formatterFactory: (format: string) => (timestamp: number) => string,
 ): DateTimeFormatter => {
 	if (xAxisLabelFormat) {
 		if (typeof xAxisLabelFormat === 'string') {
@@ -193,7 +192,7 @@ export const formatDate = (date: Date, patternStr: string, daysOfWeek: string[],
 	const MMMM = months[month];
 	const MMM = MMMM.substring(0, 3);
 	const yyyy = year + '';
-	const yy = yyyy.substring(2, 2);
+	const yy = yyyy.substring(2, 4);
 	// checks to see if month name will be used
 	patternStr = patternStr
 		.replace('hh', hh + '')
@@ -212,6 +211,7 @@ export const formatDate = (date: Date, patternStr: string, daysOfWeek: string[],
 		.replace('EEE', EEE)
 		.replace('YYYY', yyyy)
 		.replace('yyyy', yyyy)
+		.replace('YY', yy)
 		.replace('yy', yy)
 		.replace('aaa', aaa);
 	if (patternStr.indexOf('MMM') > -1) {
