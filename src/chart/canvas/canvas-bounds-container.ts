@@ -214,9 +214,17 @@ export class CanvasBoundsContainer {
 	}
 
 	public showPaneBounds(uuid: string) {
-		const defaultHeightRatio = getHeightRatios(this.panesOrder.length - 1);
-		const paneHeightRatio = uuid === CHART_UUID ? defaultHeightRatio[0] : defaultHeightRatio[1];
-		this.graphsHeightRatio[uuid] = paneHeightRatio;
+		if (uuid === CHART_UUID) {
+			const [defaultChartHeightRatio] = getHeightRatios(this.panesOrder.length - 1);
+			this.graphsHeightRatio[uuid] = defaultChartHeightRatio;
+		} else {
+			// when pane is hidden it has ratio of 0
+			// when we want pane to be visible again we want `recalculatePanesHeightRatios` function
+			// to treat it as a new pane
+			// to do so we need to delete its ratio (which is 0 because it is hidden) from graphsHeightRatio
+			// NOTE: CHART_UUID pane is exception, it is treated differently and should always have some ratio
+			delete this.graphsHeightRatio[uuid];
+		}
 		this.recalculatePanesHeightRatios();
 		this.paneVisibilityChangedSubject.next();
 	}
@@ -278,9 +286,7 @@ export class CanvasBoundsContainer {
 			const resizerUUID = CanvasElement.PANE_UUID_RESIZER(uuid);
 			const paneUUID = CanvasElement.PANE_UUID(uuid);
 			const resizerVisible =
-				this.config.components.paneResizer.visible &&
-				index !== firstVisiblePaneIdx &&
-				this.bounds[paneUUID].height > 0;
+				this.config.components.paneResizer.visible && index > firstVisiblePaneIdx && paneHeightRatio > 0;
 			if (resizerVisible) {
 				upsertBounds(
 					this.bounds,
@@ -527,8 +533,12 @@ export class CanvasBoundsContainer {
 		const pecRatios = pec.map(uuid =>
 			this.graphsHeightRatio[uuid] === undefined ? undefined : this.graphsHeightRatio[uuid],
 		);
-		const visiblePecNumber = pecRatios.filter(ratio => ratio !== 0 && ratio !== undefined).length;
-		const oldPecNumber = pecRatios.filter(ratio => ratio !== undefined).length;
+		// we should count only visible panes, to escape wheight distribution for hidden panes
+		const visiblePecRatios = pecRatios.filter(ratio => ratio !== 0);
+		const visiblePecNumber = visiblePecRatios.length;
+		// we don't count as an old PEC panes that are not visible, because they don't whey in the final result
+		const oldPecNumber = visiblePecRatios.filter(ratio => ratio !== undefined).length;
+		// if ratio in undefined for a given pane it means that it's a new pane
 		const newPecNumber = pecRatios.filter(ratio => ratio === undefined).length;
 		let freeRatioForPec = 0;
 		let freeRatio = 0;
@@ -538,18 +548,22 @@ export class CanvasBoundsContainer {
 			[ratioForOldPec, ratioForNewPec] = getHeightRatios(visiblePecNumber);
 			chartRatio *= ratioForOldPec;
 		}
-
+		// this means we should keep in mind only new panes
 		if (oldPecNumber === 0) {
 			chartRatio = 1 - ratioForNewPec * newPecNumber;
 		}
 		freeRatio = 1 - chartRatio - ratioForNewPec * newPecNumber;
-		pecRatios.forEach(ratio => {
+		visiblePecRatios.forEach(ratio => {
 			if (ratio) {
 				freeRatio -= ratio * ratioForOldPec;
 			}
 		});
 
-		freeRatioForPec = freeRatio / visiblePecNumber;
+		// || 1 to escape division by zero
+		// because there's might be no visible panes except CHART
+		freeRatioForPec = freeRatio / (visiblePecNumber || 1);
+
+		// distribute left free ratio between new and old panes
 		const proportions = pecRatios.map(ratio => {
 			// if ratio === 0 it means, that it's hidden
 			if (ratio === 0) {
@@ -562,6 +576,7 @@ export class CanvasBoundsContainer {
 
 			return ratio * ratioForOldPec + freeRatioForPec;
 		});
+
 		this._graphsHeightRatio = {};
 		this.graphsHeightRatio[CHART_UUID] = chartRatio;
 		proportions.forEach((ratio, index) => {

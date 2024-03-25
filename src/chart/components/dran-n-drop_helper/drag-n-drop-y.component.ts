@@ -36,12 +36,4 @@ export class DragNDropYComponent extends DragNDropComponent {
 		this.addRxSubscription(this.canvasInputListener.observeYDrag().subscribe(this.onDragTick));
 		this.addRxSubscription(this.canvasInputListener.observeYDragEnd().subscribe(this.onDragEnd));
 	}
-
-	/**
-	 * This method overrides the doDeactivate method of the parent class and calls the parent method before executing its own code.
-	 * It is a protected method, which means it can only be accessed within the class and its subclasses.
-	 */
-	protected doDeactivate() {
-		super.doDeactivate();
-	}
 }

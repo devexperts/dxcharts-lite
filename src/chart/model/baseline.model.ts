@@ -35,7 +35,7 @@ export class BaselineModel extends ChartBaseElement {
 	});
 	constructor(
 		private chartModel: ChartModel,
-		chartPanComponent: ChartPanComponent,
+		private chartPanComponent: ChartPanComponent,
 		private canvasModel: CanvasModel,
 		private canvasInputListener: CanvasInputListenerComponent,
 		private config: FullChartConfig,
@@ -47,6 +47,8 @@ export class BaselineModel extends ChartBaseElement {
 			this.ht,
 			{
 				onDragTick: this.dragTickCb,
+				onDragStart: this.dragStartCb,
+				onDragEnd: this.dragEndCb,
 			},
 			canvasInputListener,
 			chartPanComponent,
@@ -75,6 +77,9 @@ export class BaselineModel extends ChartBaseElement {
 			}
 		});
 	}
+
+	private dragStartCb = () => this.chartPanComponent.deactivatePanHandlers();
+	private dragEndCb = () => this.chartPanComponent.activateChartPanHandlers();
 
 	private dragTickCb = (dragInfo: DragInfo): void => {
 		const { delta: yDelta } = dragInfo;
