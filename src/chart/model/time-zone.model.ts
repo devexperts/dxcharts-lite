@@ -106,7 +106,9 @@ export class TimeZoneModel {
 			// so we have to subtract localOffset from current time
 			return time => {
 				return new Date(
-					time + getTimezoneOffset(timezone, time) + new Date(time).getTimezoneOffset() * timeMultiplier,
+					time +
+						getTimezoneOffset(timezone, time) +
+						new Date(time).getTimezoneOffset() * timeMultiplier,
 				);
 			};
 		}
