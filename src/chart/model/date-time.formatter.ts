@@ -11,11 +11,11 @@ export interface TimeFormatterConfig {
 }
 
 export interface DateTimeFormatter {
-	(date: Date | number): string;
+	(date: number): string;
 }
 export type DateTimeFormatterFactory = (format: string) => DateTimeFormatter;
 
-export const defaultDateTimeFormatter = () => (date: Date | number) => date.toString();
+export const defaultDateTimeFormatter = () => (date: number) => date.toString();
 
 /**
  * Default chart-core time formatter.
@@ -46,7 +46,6 @@ export const dateTimeFormatterFactory = (
 	['s', 'm', 'H', 'd', 'M'].forEach(function (k) {
 		patterns[k + k] = 'this.' + 'addZero' + '(' + patterns[k] + ')';
 	});
-	const re = new RegExp(Object.keys(patterns).sort().reverse().join('|'), 'g');
 	/**
 	 * Returns a string that concatenates the result of the function getPrefix with the input string fn and the string '()'.
 	 * @param {string} fn - The input string to concatenate.
@@ -74,14 +73,6 @@ export const dateTimeFormatterFactory = (
 		return fn + '.toUpperCase()';
 	}
 
-	/**
-	 * Returns a string that concatenates a pattern from an object with a string
-	 * @param {string} pattern - The key of the pattern to be concatenated
-	 * @returns {string} - A string that concatenates a pattern from an object with a string
-	 */
-	function applyPattern(pattern: string) {
-		return "' + (" + patterns[pattern] + ") + '";
-	}
 	return function (pattern) {
 		const context = {
 			shortDays: getShortDays(config),
@@ -106,15 +97,12 @@ export const dateTimeFormatterFactory = (
 			},
 			tzDate:
 				offsetFunction(config.timezone ?? '') ||
-				function (date: Date | number): Date {
-					return date instanceof Date ? date : new Date(+date);
+				function (date: number): Date {
+					return new Date(+date);
 				},
 		};
-		// eslint-disable-next-line no-new-func
-		return new Function(
-			'date',
-			'date=this.' + 'tzDate' + "(date); return '" + pattern.replace(re, applyPattern) + "'",
-		).bind(context);
+
+		return (date: number) => formatDate(context.tzDate(date), pattern, context.shortDays, context.shortMonths);
 	};
 };
 
@@ -125,7 +113,7 @@ export const dateTimeFormatterFactory = (
  * @param {TimeFormatterConfig} config - The configuration object containing shortDays property.
  * @returns {string[]} - An array of short day names.
  */
-function getShortDays(config: TimeFormatterConfig) {
+export function getShortDays(config: TimeFormatterConfig) {
 	return config.shortDays ?? ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 }
 /**
@@ -135,14 +123,14 @@ function getShortDays(config: TimeFormatterConfig) {
  * @param {TimeFormatterConfig} config - The configuration object that contains the shortMonths property.
  * @returns {string[]} - An array of short month names.
  */
-function getShortMonths(config: TimeFormatterConfig) {
+export function getShortMonths(config: TimeFormatterConfig) {
 	return config.shortMonths ?? ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 }
 
 export const recalculateXFormatter = (
 	xAxisLabelFormat: string | Array<DateTimeFormatConfig>,
 	period: number,
-	formatterFactory: (format: string) => (timestamp: number | Date) => string,
+	formatterFactory: (format: string) => (timestamp: number) => string,
 ): DateTimeFormatter => {
 	if (xAxisLabelFormat) {
 		if (typeof xAxisLabelFormat === 'string') {
@@ -176,3 +164,62 @@ export const recalculateXFormatter = (
 	}
 	return defaultDateTimeFormatter();
 };
+
+//#region Custom date pattern parser, transforms Date object to string by given pattern
+// examples: dd.MM => 15.12, YYYY => 2024, HH:mm => 15:56
+export const formatDate = (date: Date, patternStr: string, daysOfWeek: string[], months: string[]) => {
+	if (!patternStr) {
+		patternStr = 'M/d/yyyy';
+	}
+	const day = date.getDate();
+	const month = date.getMonth();
+	const year = date.getFullYear();
+	const hour = date.getHours();
+	const minute = date.getMinutes();
+	const second = date.getSeconds();
+	const miliseconds = date.getMilliseconds();
+	const h = hour % 12;
+	const hh = twoDigitPad(h);
+	const HH = twoDigitPad(hour);
+	const mm = twoDigitPad(minute);
+	const ss = twoDigitPad(second);
+	const aaa = hour < 12 ? 'AM' : 'PM';
+	const EEEE = daysOfWeek[date.getDay()];
+	const EEE = EEEE.substring(0, 3);
+	const dd = twoDigitPad(day);
+	const M = month + 1;
+	const MM = twoDigitPad(M);
+	const MMMM = months[month];
+	const MMM = MMMM.substring(0, 3);
+	const yyyy = year + '';
+	const yy = yyyy.substring(2, 4);
+	// checks to see if month name will be used
+	patternStr = patternStr
+		.replace('hh', hh + '')
+		.replace('h', h + '')
+		.replace('HH', HH + '')
+		.replace('H', hour + '')
+		.replace('mm', mm + '')
+		.replace('m', minute + '')
+		.replace('ss', ss + '')
+		.replace('s', second + '')
+		.replace('S', miliseconds + '')
+		.replace('dd', dd + '')
+		.replace('d', day + '')
+
+		.replace('EEEE', EEEE)
+		.replace('EEE', EEE)
+		.replace('YYYY', yyyy)
+		.replace('yyyy', yyyy)
+		.replace('YY', yy)
+		.replace('yy', yy)
+		.replace('aaa', aaa);
+	if (patternStr.indexOf('MMM') > -1) {
+		patternStr = patternStr.replace('MMMM', MMMM).replace('MMM', MMM);
+	} else {
+		patternStr = patternStr.replace('MM', MM + '').replace('M', M + '');
+	}
+	return patternStr;
+};
+const twoDigitPad = (num: string | number) => (typeof num === 'number' && num < 10 ? '0' + num : num);
+//#endregion
