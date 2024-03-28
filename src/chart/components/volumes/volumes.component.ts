@@ -145,6 +145,7 @@ export class VolumesComponent extends ChartBaseElement {
 
 		this.dynamicObjectsComponent.model.addObject({
 			id: this.volumesModel.id,
+			htId: this.volumesModel.id,
 			paneId: this.config.components.volumes.showSeparately ? VOLUMES_UUID : CHART_UUID,
 			drawer: this.volumesDrawer,
 			model: this.volumesModel,
