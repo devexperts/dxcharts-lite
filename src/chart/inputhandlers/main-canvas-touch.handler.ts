@@ -7,8 +7,7 @@ import { ChartBaseElement } from '../model/chart-base-element';
 import { CanvasInputListenerComponent } from '../inputlisteners/canvas-input-listener.component';
 import { ScaleModel } from '../model/scale.model';
 import { ChartPanComponent } from '../components/pan/chart-pan.component';
-
-const MIN_PINCH_DISTANCE = 15;
+import { Pixel } from '../model/scaling/viewport.model';
 
 /**
  * Handles chart touch events.
@@ -16,6 +15,8 @@ const MIN_PINCH_DISTANCE = 15;
 export class MainCanvasTouchHandler extends ChartBaseElement {
 	// 2 candles indexes touched by 2 fingers when pinching
 	private touchedCandleIndexes: [number, number] = [0, 0];
+	// number of px between touch events
+	private distance: Pixel = 0;
 	constructor(
 		private chartPanComponent: ChartPanComponent,
 		private scale: ScaleModel,
@@ -49,10 +50,10 @@ export class MainCanvasTouchHandler extends ChartBaseElement {
 	 */
 	private handleTouchStartEvent(e: TouchEvent) {
 		if (e.touches.length === 2) {
-			this.chartPanComponent.deactivatePanHandlers();
+			this.chartPanComponent.setChartPanningOptions(false, false);
 			// @ts-ignore
 			// TODO rework this
-			this.touchedCandleIndexes = this.getXPositions(e).map(this.scale.fromX);
+			this.touchedCandleIndexes = this.getXPositions(e).map(x => this.scale.fromX(x));
 		}
 	}
 
@@ -71,7 +72,7 @@ export class MainCanvasTouchHandler extends ChartBaseElement {
 	 * @returns {void}
 	 */
 	private handleTouchEndEvent(): void {
-		this.chartPanComponent.deactivatePanHandlers();
+		this.chartPanComponent.setChartPanningOptions(true, true);
 	}
 	/**
 	 * Gets candle positions touched by user in pixels.
@@ -99,10 +100,13 @@ export class MainCanvasTouchHandler extends ChartBaseElement {
 	public pinchHandler(candleIndexes: Array<number>, touchPositions: number[]): void {
 		const diff = Math.abs(touchPositions[0]) - Math.abs(touchPositions[1]);
 		const distance = Math.abs(diff);
+		const zoomIn = distance > this.distance;
 
-		if (distance < MIN_PINCH_DISTANCE) {
+		if (distance === this.distance) {
 			return;
 		}
+
+		this.distance = distance;
 
 		const first =
 			(touchPositions[0] * candleIndexes[1] - touchPositions[1] * candleIndexes[0]) /
@@ -112,10 +116,10 @@ export class MainCanvasTouchHandler extends ChartBaseElement {
 			((candleIndexes[0] - candleIndexes[1]) / (touchPositions[0] - touchPositions[1])) *
 				this.scale.getBounds().width;
 
-		if (first > last) {
-			this.scale.setXScale(last, first);
-		} else {
-			this.scale.setXScale(first, last);
+		if (first >= last) {
+			return;
 		}
+
+		this.scale.setXScale(first, last, zoomIn);
 	}
 }

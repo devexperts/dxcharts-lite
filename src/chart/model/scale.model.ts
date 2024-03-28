@@ -67,6 +67,11 @@ export class ScaleModel extends ViewportModel {
 
 	xConstraints: Constraints[] = [];
 
+	maxZoomReached: {
+		zoomIn: boolean;
+		zoomOut: boolean;
+	} = { zoomIn: false, zoomOut: false };
+
 	public readonly state: ChartScale;
 
 	constructor(
@@ -79,7 +84,7 @@ export class ScaleModel extends ViewportModel {
 		this.autoScaleModel = new AutoScaleViewportSubModel(this);
 		this.offsets = this.config.components.offsets;
 		this.addXConstraint((initialState, state) =>
-			zoomConstraint(initialState, state, this.config.components.chart, this.getBounds),
+			zoomConstraint(initialState, state, this.config.components.chart, this.getBounds, this),
 		);
 	}
 
@@ -150,7 +155,7 @@ export class ScaleModel extends ViewportModel {
 		this.beforeStartAnimationSubject.next();
 		const state = this.export();
 		zoomXToPercentViewportCalculator(this, state, viewportPercent, zoomSensitivity, zoomIn);
-		this.zoomXTo(state, disabledAnimations);
+		this.zoomXTo(state, zoomIn, disabledAnimations);
 	}
 
 	/**
@@ -165,7 +170,7 @@ export class ScaleModel extends ViewportModel {
 		this.beforeStartAnimationSubject.next();
 		const state = this.export();
 		zoomXToEndViewportCalculator(this, state, zoomSensitivity, zoomIn);
-		this.zoomXTo(state, this.config.scale.disableAnimations);
+		this.zoomXTo(state, zoomIn, this.config.scale.disableAnimations);
 	}
 
 	public haltAnimation() {
@@ -175,7 +180,11 @@ export class ScaleModel extends ViewportModel {
 		}
 	}
 
-	private zoomXTo(state: ViewportModelState, forceNoAnimation?: boolean) {
+	private zoomXTo(state: ViewportModelState, zoomIn: boolean, forceNoAnimation?: boolean) {
+		if ((this.maxZoomReached.zoomIn && zoomIn === true) || (this.maxZoomReached.zoomOut && zoomIn === false)) {
+			return;
+		}
+
 		const initialStateCopy = { ...state };
 		const constrainedState = this.scalePostProcessor(initialStateCopy, state);
 		if (this.state.lockPriceToBarRatio) {
@@ -199,7 +208,11 @@ export class ScaleModel extends ViewportModel {
 	 * @param fireChanged
 	 * @param forceNoAutoScale - force NOT apply auto-scaling (for lazy loading)
 	 */
-	public setXScale(xStart: Unit, xEnd: Unit, forceNoAnimation: boolean = true) {
+	public setXScale(xStart: Unit, xEnd: Unit, forceNoAnimation: boolean = true, zoomIn?: boolean) {
+		if ((this.maxZoomReached.zoomIn && zoomIn === true) || (this.maxZoomReached.zoomOut && zoomIn === false)) {
+			return;
+		}
+
 		const initialState = this.export();
 		const zoomX = this.calculateZoomX(xStart, xEnd);
 		const state = { ...initialState, zoomX, xStart, xEnd };
