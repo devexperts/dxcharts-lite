@@ -73,7 +73,13 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 		private hitTestCanvasModel: HitTestCanvasModel,
 	) {
 		super();
-		this.touchHandler = new MainCanvasTouchHandler(this.scale, this.canvasInputListener, this.mainCanvasParent);
+		
+		this.touchHandler = new MainCanvasTouchHandler(
+			this.chartPanComponent,
+			this.scale,
+			this.canvasInputListener,
+			this.mainCanvasParent,
+		);
 
 		const allPanesHitTest = this.canvasBoundsContainer.getBoundsHitTest(CanvasElement.ALL_PANES);
 

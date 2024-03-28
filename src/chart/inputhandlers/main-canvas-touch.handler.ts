@@ -6,6 +6,9 @@
 import { ChartBaseElement } from '../model/chart-base-element';
 import { CanvasInputListenerComponent } from '../inputlisteners/canvas-input-listener.component';
 import { ScaleModel } from '../model/scale.model';
+import { ChartPanComponent } from '../components/pan/chart-pan.component';
+
+const MIN_PINCH_DISTANCE = 15;
 
 /**
  * Handles chart touch events.
@@ -14,6 +17,7 @@ export class MainCanvasTouchHandler extends ChartBaseElement {
 	// 2 candles indexes touched by 2 fingers when pinching
 	private touchedCandleIndexes: [number, number] = [0, 0];
 	constructor(
+		private chartPanComponent: ChartPanComponent,
 		private scale: ScaleModel,
 		private canvasInputListeners: CanvasInputListenerComponent,
 		private mainCanvasParent: Element,
@@ -33,6 +37,9 @@ export class MainCanvasTouchHandler extends ChartBaseElement {
 		this.addRxSubscription(
 			this.canvasInputListeners.observeTouchMove().subscribe(e => this.handleTouchMoveEvent(e)),
 		);
+		this.addRxSubscription(
+			this.canvasInputListeners.observeTouchEndDocument().subscribe(() => this.handleTouchEndEvent()),
+		);
 	}
 
 	/**
@@ -42,21 +49,29 @@ export class MainCanvasTouchHandler extends ChartBaseElement {
 	 */
 	private handleTouchStartEvent(e: TouchEvent) {
 		if (e.touches.length === 2) {
+			this.chartPanComponent.deactivatePanHandlers();
 			// @ts-ignore
 			// TODO rework this
-			this.touchedCandleIndexes = this.getXPositions(e).map(x => this.scale.fromX(x));
+			this.touchedCandleIndexes = this.getXPositions(e).map(this.scale.fromX);
 		}
 	}
 
 	/**
-     * Handles touch move event
-     * @param {TouchEvent} e - The touch event object
-     * @returns {void}
-    */
+	 * Handles touch move event
+	 * @param {TouchEvent} e - The touch event object
+	 * @returns {void}
+	 */
 	private handleTouchMoveEvent(e: TouchEvent): void {
 		if (e.touches.length === 2) {
 			this.pinchHandler(this.touchedCandleIndexes, this.getXPositions(e));
 		}
+	}
+	/**
+	 * Handles touch end event
+	 * @returns {void}
+	 */
+	private handleTouchEndEvent(): void {
+		this.chartPanComponent.deactivatePanHandlers();
 	}
 	/**
 	 * Gets candle positions touched by user in pixels.
@@ -82,6 +97,13 @@ export class MainCanvasTouchHandler extends ChartBaseElement {
 	 * @returns {void}
 	 */
 	public pinchHandler(candleIndexes: Array<number>, touchPositions: number[]): void {
+		const diff = Math.abs(touchPositions[0]) - Math.abs(touchPositions[1]);
+		const distance = Math.abs(diff);
+
+		if (distance < MIN_PINCH_DISTANCE) {
+			return;
+		}
+
 		const first =
 			(touchPositions[0] * candleIndexes[1] - touchPositions[1] * candleIndexes[0]) /
 			(touchPositions[0] - touchPositions[1]);
@@ -89,6 +111,11 @@ export class MainCanvasTouchHandler extends ChartBaseElement {
 			first +
 			((candleIndexes[0] - candleIndexes[1]) / (touchPositions[0] - touchPositions[1])) *
 				this.scale.getBounds().width;
-		this.scale.setXScale(first, last);
+
+		if (first > last) {
+			this.scale.setXScale(last, first);
+		} else {
+			this.scale.setXScale(first, last);
+		}
 	}
 }
