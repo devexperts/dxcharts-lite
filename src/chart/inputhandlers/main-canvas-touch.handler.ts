@@ -9,6 +9,8 @@ import { ScaleModel } from '../model/scale.model';
 import { ChartPanComponent } from '../components/pan/chart-pan.component';
 import { Pixel } from '../model/scaling/viewport.model';
 
+const MIN_PINCH_DISTANCE = 10;
+
 /**
  * Handles chart touch events.
  */
@@ -39,7 +41,7 @@ export class MainCanvasTouchHandler extends ChartBaseElement {
 			this.canvasInputListeners.observeTouchMove().subscribe(e => this.handleTouchMoveEvent(e)),
 		);
 		this.addRxSubscription(
-			this.canvasInputListeners.observeTouchEndDocument().subscribe(() => this.handleTouchEndEvent()),
+			this.canvasInputListeners.observeTouchEndDocument().subscribe(e => this.handleTouchEndEvent(e)),
 		);
 	}
 
@@ -71,8 +73,11 @@ export class MainCanvasTouchHandler extends ChartBaseElement {
 	 * Handles touch end event
 	 * @returns {void}
 	 */
-	private handleTouchEndEvent(): void {
-		this.chartPanComponent.setChartPanningOptions(true, true);
+	private handleTouchEndEvent(e: TouchEvent): void {
+		// zero touches means the user stopped resizing completely (both fingers are up)
+		if (e.touches.length === 0) {
+			this.chartPanComponent.setChartPanningOptions(true, true);
+		}
 	}
 	/**
 	 * Gets candle positions touched by user in pixels.
@@ -102,7 +107,7 @@ export class MainCanvasTouchHandler extends ChartBaseElement {
 		const distance = Math.abs(diff);
 		const zoomIn = distance > this.distance;
 
-		if (distance === this.distance) {
+		if (distance < MIN_PINCH_DISTANCE || distance === this.distance) {
 			return;
 		}
 
@@ -120,6 +125,6 @@ export class MainCanvasTouchHandler extends ChartBaseElement {
 			return;
 		}
 
-		this.scale.setXScale(first, last, zoomIn);
+		this.scale.setXScale(first, last, true, zoomIn);
 	}
 }
