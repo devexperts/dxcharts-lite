@@ -181,10 +181,6 @@ export class ScaleModel extends ViewportModel {
 	}
 
 	private zoomXTo(state: ViewportModelState, zoomIn: boolean, forceNoAnimation?: boolean) {
-		if ((this.maxZoomReached.zoomIn && zoomIn === true) || (this.maxZoomReached.zoomOut && zoomIn === false)) {
-			return;
-		}
-
 		const initialStateCopy = { ...state };
 		const constrainedState = this.scalePostProcessor(initialStateCopy, state);
 		if (this.state.lockPriceToBarRatio) {
@@ -200,6 +196,10 @@ export class ScaleModel extends ViewportModel {
 		}
 	}
 
+	public resolveMaxZoomX(zoomIn: boolean) {
+		return (this.maxZoomReached.zoomIn && zoomIn) || (this.maxZoomReached.zoomOut && !zoomIn);
+	}
+
 	/**
 	 * Moves the viewport to exactly xStart..xEnd place.
 	 * (you need to fire DRAW event after this)
@@ -208,11 +208,7 @@ export class ScaleModel extends ViewportModel {
 	 * @param fireChanged
 	 * @param forceNoAutoScale - force NOT apply auto-scaling (for lazy loading)
 	 */
-	public setXScale(xStart: Unit, xEnd: Unit, forceNoAnimation: boolean = true, zoomIn?: boolean) {
-		if ((this.maxZoomReached.zoomIn && zoomIn === true) || (this.maxZoomReached.zoomOut && zoomIn === false)) {
-			return;
-		}
-
+	public setXScale(xStart: Unit, xEnd: Unit, forceNoAnimation: boolean = true) {
 		const initialState = this.export();
 		const zoomX = this.calculateZoomX(xStart, xEnd);
 		const state = { ...initialState, zoomX, xStart, xEnd };

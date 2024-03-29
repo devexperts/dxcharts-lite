@@ -9,7 +9,7 @@ import { ScaleModel } from '../model/scale.model';
 import { ChartPanComponent } from '../components/pan/chart-pan.component';
 import { Pixel } from '../model/scaling/viewport.model';
 
-const MIN_PINCH_DISTANCE = 10;
+const MIN_PINCH_DISTANCE = 30;
 
 /**
  * Handles chart touch events.
@@ -19,6 +19,8 @@ export class MainCanvasTouchHandler extends ChartBaseElement {
 	private touchedCandleIndexes: [number, number] = [0, 0];
 	// number of px between touch events
 	private distance: Pixel = 0;
+	// used when maximum zoom in/out reached, can't use deactivate because it unsubscribes from all touch events
+	private isDraggable: boolean = true;
 	constructor(
 		private chartPanComponent: ChartPanComponent,
 		private scale: ScaleModel,
@@ -52,6 +54,7 @@ export class MainCanvasTouchHandler extends ChartBaseElement {
 	 */
 	private handleTouchStartEvent(e: TouchEvent) {
 		if (e.touches.length === 2) {
+			this.isDraggable = true;
 			this.chartPanComponent.setChartPanningOptions(false, false);
 			// @ts-ignore
 			// TODO rework this
@@ -107,7 +110,11 @@ export class MainCanvasTouchHandler extends ChartBaseElement {
 		const distance = Math.abs(diff);
 		const zoomIn = distance > this.distance;
 
-		if (distance < MIN_PINCH_DISTANCE || distance === this.distance) {
+		if (this.scale.resolveMaxZoomX(zoomIn)) {
+			this.isDraggable = false;
+		}
+
+		if (!this.isDraggable || distance < MIN_PINCH_DISTANCE) {
 			return;
 		}
 
@@ -125,6 +132,6 @@ export class MainCanvasTouchHandler extends ChartBaseElement {
 			return;
 		}
 
-		this.scale.setXScale(first, last, true, zoomIn);
+		this.scale.setXScale(first, last);
 	}
 }
