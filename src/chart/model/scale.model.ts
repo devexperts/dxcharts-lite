@@ -155,7 +155,7 @@ export class ScaleModel extends ViewportModel {
 		this.beforeStartAnimationSubject.next();
 		const state = this.export();
 		zoomXToPercentViewportCalculator(this, state, viewportPercent, zoomSensitivity, zoomIn);
-		this.zoomXTo(state, zoomIn, disabledAnimations);
+		this.zoomXTo(state, disabledAnimations);
 	}
 
 	/**
@@ -170,7 +170,7 @@ export class ScaleModel extends ViewportModel {
 		this.beforeStartAnimationSubject.next();
 		const state = this.export();
 		zoomXToEndViewportCalculator(this, state, zoomSensitivity, zoomIn);
-		this.zoomXTo(state, zoomIn, this.config.scale.disableAnimations);
+		this.zoomXTo(state, this.config.scale.disableAnimations);
 	}
 
 	public haltAnimation() {
@@ -180,7 +180,7 @@ export class ScaleModel extends ViewportModel {
 		}
 	}
 
-	private zoomXTo(state: ViewportModelState, zoomIn: boolean, forceNoAnimation?: boolean) {
+	private zoomXTo(state: ViewportModelState, forceNoAnimation?: boolean) {
 		const initialStateCopy = { ...state };
 		const constrainedState = this.scalePostProcessor(initialStateCopy, state);
 		if (this.state.lockPriceToBarRatio) {
