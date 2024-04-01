@@ -6,8 +6,8 @@
 import { ChartBaseElement } from '../model/chart-base-element';
 import { CanvasInputListenerComponent } from '../inputlisteners/canvas-input-listener.component';
 import { ScaleModel } from '../model/scale.model';
-import { ChartPanComponent } from '../components/pan/chart-pan.component';
 import { Pixel } from '../model/scaling/viewport.model';
+import { ChartAreaPanHandler } from '../components/chart/chart-area-pan.handler';
 
 const MIN_PINCH_DISTANCE = 30;
 
@@ -22,7 +22,7 @@ export class MainCanvasTouchHandler extends ChartBaseElement {
 	// used when maximum zoom in/out reached, can't use deactivate because it unsubscribes from all touch events
 	private isDraggable: boolean = true;
 	constructor(
-		private chartPanComponent: ChartPanComponent,
+		private chartAreaPanHandler: ChartAreaPanHandler,
 		private scale: ScaleModel,
 		private canvasInputListeners: CanvasInputListenerComponent,
 		private mainCanvasParent: Element,
@@ -55,7 +55,7 @@ export class MainCanvasTouchHandler extends ChartBaseElement {
 	private handleTouchStartEvent(e: TouchEvent) {
 		if (e.touches.length === 2) {
 			this.isDraggable = true;
-			this.chartPanComponent.setChartPanningOptions(false, false);
+			this.chartAreaPanHandler.deactivate();
 			// @ts-ignore
 			// TODO rework this
 			this.touchedCandleIndexes = this.getXPositions(e).map(x => this.scale.fromX(x));
@@ -79,7 +79,7 @@ export class MainCanvasTouchHandler extends ChartBaseElement {
 	private handleTouchEndEvent(e: TouchEvent): void {
 		// zero touches means the user stopped resizing completely (both fingers are up)
 		if (e.touches.length === 0) {
-			this.chartPanComponent.setChartPanningOptions(true, true);
+			this.chartAreaPanHandler.activate();
 		}
 	}
 	/**
