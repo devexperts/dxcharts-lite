@@ -6,7 +6,6 @@
 import { ChartConfigComponentsChart } from '../../chart.config';
 import { at } from '../../utils/array.utils';
 import { Bounds, BoundsProvider } from '../bounds.model';
-import { ScaleModel } from '../scale.model';
 import VisualCandle from '../visual-candle';
 import { ViewportModelState, calculateZoom, pixelsToUnits } from './viewport.model';
 
@@ -60,8 +59,7 @@ export const zoomConstraint = (
 	state: ViewportModelState,
 	chartConfig: ChartConfigComponentsChart,
 	boundsProvider: BoundsProvider,
-	scaleModel: ScaleModel,
-) => {
+): { newState: ViewportModelState; maxZoomReached: { zoomIn: boolean; zoomOut: boolean } } => {
 	const newState = {
 		...state,
 	};
@@ -75,22 +73,16 @@ export const zoomConstraint = (
 	// rules work only if chart is shown
 	if (bounds.width > 0) {
 		if (maxViewportReached) {
-			scaleModel.maxZoomReached.zoomOut = true;
 			newState.xStart = newState.xEnd - maxCandlesInViewport;
 			newState.zoomX = calculateZoom(newState.xEnd - newState.xStart, bounds.width);
-			return newState;
-		} else {
-			scaleModel.maxZoomReached.zoomOut = false;
+			return { newState, maxZoomReached: { zoomOut: true, zoomIn: false } };
 		}
 
 		if (minViewportReached) {
-			scaleModel.maxZoomReached.zoomIn = true;
 			newState.xStart = newState.xEnd - chartConfig.minCandles;
 			newState.zoomX = calculateZoom(newState.xEnd - newState.xStart, bounds.width);
-			return newState;
-		} else {
-			scaleModel.maxZoomReached.zoomIn = false;
+			return { newState, maxZoomReached: { zoomOut: false, zoomIn: true } };
 		}
 	}
-	return newState;
+	return { newState, maxZoomReached: { zoomOut: false, zoomIn: false } };
 };

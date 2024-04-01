@@ -83,9 +83,18 @@ export class ScaleModel extends ViewportModel {
 		this.state = cloneUnsafe(config.scale);
 		this.autoScaleModel = new AutoScaleViewportSubModel(this);
 		this.offsets = this.config.components.offsets;
-		this.addXConstraint((initialState, state) =>
-			zoomConstraint(initialState, state, this.config.components.chart, this.getBounds, this),
-		);
+		this.addXConstraint((initialState, state) => {
+			const { maxZoomReached, newState } = zoomConstraint(
+				initialState,
+				state,
+				this.config.components.chart,
+				this.getBounds,
+			);
+			
+			this.maxZoomReached = maxZoomReached;
+
+			return newState;
+		});
 	}
 
 	protected doActivate(): void {
