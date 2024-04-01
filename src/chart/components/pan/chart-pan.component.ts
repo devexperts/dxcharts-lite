@@ -13,9 +13,11 @@ import { ScaleModel } from '../../model/scale.model';
 import { ChartAreaPanHandler } from '../chart/chart-area-pan.handler';
 import { BaseType, ChartBaseModel } from '../chart/chart-base.model';
 import { HitTestCanvasModel } from '../../model/hit-test-canvas.model';
+import { MainCanvasTouchHandler } from '../../inputhandlers/main-canvas-touch.handler';
 
 export class ChartPanComponent extends ChartBaseElement {
 	public chartAreaPanHandler: ChartAreaPanHandler;
+	public mainCanvasTouchHandler: MainCanvasTouchHandler;
 	constructor(
 		private eventBus: EventBus,
 		private mainScale: ScaleModel,
@@ -32,7 +34,6 @@ export class ChartPanComponent extends ChartBaseElement {
 			this.eventBus,
 			this.config,
 			this.mainScale,
-			this.mainCanvasParent,
 			this.canvasInputListener,
 			this.canvasBoundsContainer,
 			this.canvasAnimation,
@@ -40,6 +41,14 @@ export class ChartPanComponent extends ChartBaseElement {
 			this.hitTestCanvasModel,
 		);
 		this.addChildEntity(this.chartAreaPanHandler);
+
+		this.mainCanvasTouchHandler = new MainCanvasTouchHandler(
+			this,
+			this.mainScale,
+			this.canvasInputListener,
+			this.mainCanvasParent,
+		);
+		this.addChildEntity(this.mainCanvasTouchHandler);
 	}
 
 	/**
