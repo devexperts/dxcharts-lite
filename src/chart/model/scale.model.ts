@@ -196,7 +196,7 @@ export class ScaleModel extends ViewportModel {
 		}
 	}
 
-	public resolveMaxZoomX(zoomIn: boolean) {
+	public isMaxZoomXReached(zoomIn: boolean) {
 		return (this.maxZoomReached.zoomIn && zoomIn) || (this.maxZoomReached.zoomOut && !zoomIn);
 	}
 

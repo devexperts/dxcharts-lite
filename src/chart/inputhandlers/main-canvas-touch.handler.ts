@@ -18,7 +18,7 @@ export class MainCanvasTouchHandler extends ChartBaseElement {
 	// 2 candles indexes touched by 2 fingers when pinching
 	private touchedCandleIndexes: [number, number] = [0, 0];
 	// number of px between touch events
-	private distance: Pixel = 0;
+	private pinchDistance: Pixel = 0;
 	// used when maximum zoom in/out reached, can't use deactivate because it unsubscribes from all touch events
 	private isDraggable: boolean = true;
 	constructor(
@@ -107,18 +107,18 @@ export class MainCanvasTouchHandler extends ChartBaseElement {
 	 */
 	public pinchHandler(candleIndexes: Array<number>, touchPositions: number[]): void {
 		const diff = Math.abs(touchPositions[0]) - Math.abs(touchPositions[1]);
-		const distance = Math.abs(diff);
-		const zoomIn = distance > this.distance;
+		const pinchDistance = Math.abs(diff);
+		const zoomIn = pinchDistance > this.pinchDistance;
 
-		if (this.scale.resolveMaxZoomX(zoomIn)) {
+		if (this.scale.isMaxZoomXReached(zoomIn)) {
 			this.isDraggable = false;
 		}
 
-		if (!this.isDraggable || distance < MIN_PINCH_DISTANCE) {
+		if (!this.isDraggable || pinchDistance < MIN_PINCH_DISTANCE) {
 			return;
 		}
 
-		this.distance = distance;
+		this.pinchDistance = pinchDistance;
 
 		const first =
 			(touchPositions[0] * candleIndexes[1] - touchPositions[1] * candleIndexes[0]) /
