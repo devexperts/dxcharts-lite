@@ -67,6 +67,11 @@ export class ScaleModel extends ViewportModel {
 
 	xConstraints: Constraints[] = [];
 
+	maxZoomReached: {
+		zoomIn: boolean;
+		zoomOut: boolean;
+	} = { zoomIn: false, zoomOut: false };
+
 	public readonly state: ChartScale;
 
 	constructor(
@@ -78,9 +83,18 @@ export class ScaleModel extends ViewportModel {
 		this.state = cloneUnsafe(config.scale);
 		this.autoScaleModel = new AutoScaleViewportSubModel(this);
 		this.offsets = this.config.components.offsets;
-		this.addXConstraint((initialState, state) =>
-			zoomConstraint(initialState, state, this.config.components.chart, this.getBounds),
-		);
+		this.addXConstraint((initialState, state) => {
+			const { maxZoomReached, newState } = zoomConstraint(
+				initialState,
+				state,
+				this.config.components.chart,
+				this.getBounds,
+			);
+			
+			this.maxZoomReached = maxZoomReached;
+
+			return newState;
+		});
 	}
 
 	protected doActivate(): void {
@@ -189,6 +203,10 @@ export class ScaleModel extends ViewportModel {
 		} else {
 			startViewportModelAnimation(this.canvasAnimation, this, constrainedState);
 		}
+	}
+
+	public isMaxZoomXReached(zoomIn: boolean) {
+		return (this.maxZoomReached.zoomIn && zoomIn) || (this.maxZoomReached.zoomOut && !zoomIn);
 	}
 
 	/**

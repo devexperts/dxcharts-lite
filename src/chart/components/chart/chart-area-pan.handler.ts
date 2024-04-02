@@ -9,7 +9,6 @@ import { CanvasAnimation, VIEWPORT_ANIMATION_ID } from '../../animation/canvas-a
 import { CanvasBoundsContainer, CanvasElement, HitBoundsTest } from '../../canvas/canvas-bounds-container';
 import { AutoScaleDisableOnDrag, FullChartConfig } from '../../chart.config';
 import EventBus from '../../events/event-bus';
-import { MainCanvasTouchHandler } from '../../inputhandlers/main-canvas-touch.handler';
 import { CanvasInputListenerComponent, Point } from '../../inputlisteners/canvas-input-listener.component';
 import { ChartBaseElement } from '../../model/chart-base-element';
 import { ScaleModel } from '../../model/scale.model';
@@ -35,7 +34,6 @@ interface ChartPanningOptions {
 /**
  * ChartAreaPanHandler is a class that handles the panning and zooming of the chart area.
  * It extends the ChartBaseElement class and has the following properties:
- * @property {MainCanvasTouchHandler} touchHandler - An instance of the MainCanvasTouchHandler class.
  * @property {Point} currentPoint - An object that represents the current point of the chart area.
  * @property {number} xDraggedCandlesDelta - A number that represents the number of candles delta changed during X dragging.
  * @property {number} lastXStart - A number that represents the last X start position.
@@ -45,7 +43,6 @@ interface ChartPanningOptions {
  * @param {EventBus} bus - An instance of the EventBus class.
  * @param {FullChartConfig} config - An instance of the FullChartConfig class.
  * @param {ScaleModel} scaleModel - An instance of the ScaleModel class.
- * @param {Element} mainCanvasParent - The parent element of the main canvas.
  * @param {CanvasInputListenerComponent} canvasInputListener - An instance of the CanvasInputListenerComponent class.
  * @param {CanvasBoundsContainer} canvasBoundsContainer - An instance of the CanvasBoundsContainer class.
  * @param {CanvasAnimation} canvasAnimation - An instance of the CanvasAnimation class.
@@ -53,7 +50,6 @@ interface ChartPanningOptions {
  
 */
 export class ChartAreaPanHandler extends ChartBaseElement {
-	private readonly touchHandler: MainCanvasTouchHandler;
 	private currentPoint: Point = { x: 0, y: 0 };
 	// number of candles delta changed during X dragging: 1, 5 or -3 for ex.
 	public xDraggedCandlesDelta: number = 0;
@@ -65,7 +61,6 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 		private bus: EventBus,
 		private config: FullChartConfig,
 		private scale: ScaleModel,
-		private mainCanvasParent: Element,
 		private canvasInputListener: CanvasInputListenerComponent,
 		private canvasBoundsContainer: CanvasBoundsContainer,
 		private canvasAnimation: CanvasAnimation,
@@ -73,7 +68,6 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 		private hitTestCanvasModel: HitTestCanvasModel,
 	) {
 		super();
-		this.touchHandler = new MainCanvasTouchHandler(this.scale, this.canvasInputListener, this.mainCanvasParent);
 
 		const allPanesHitTest = this.canvasBoundsContainer.getBoundsHitTest(CanvasElement.ALL_PANES);
 
@@ -182,9 +176,6 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 					this.lastXStart += prependedCandlesWidth;
 				}),
 		);
-
-		this.touchHandler.activate();
-		this.addSubscription(this.touchHandler.deactivate.bind(this.touchHandler));
 	}
 
 	private calculateDynamicSesitivity(e: WheelEvent, maxSensitivity: number) {
