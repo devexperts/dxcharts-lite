@@ -52,4 +52,6 @@ jobs:
             #       NODE_AUTH_TOKEN: ${{secrets.NPMJS_DEVEXPERTS_BOT_PUBLISH_TOKEN}}
 
             - name: Push changes to repository
-              run: git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git ${{ github.ref }}
+              run: |
+                  git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git ${{ github.ref }}
+                  git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git --tags
