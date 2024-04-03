@@ -1,9 +1,17 @@
 name: Publish to npm registry
 
 on:
-    release:
-        types: [created]
     workflow_dispatch:
+        inputs:
+            release-type:
+                description: 'Release type (one of): patch, minor, major'
+                required: true
+                type: choice
+                default: 'patch'
+                options:
+                    - patch
+                    - minor
+                    - major
 
 jobs:
     publish:
@@ -15,13 +23,33 @@ jobs:
                   node-version: '18.x'
                   registry-url: https://registry.npmjs.org/
                   scope: '@devexperts'
-            - run: yarn install --frozen-lockfile
-            - run: git config user.email "pmalyshev@devexperts.com"
-            - run: git config user.name "dxpm"
-            - run: git checkout ${{ github.ref_name }}
-            - run: npm version from-git --no-git-tag-version
-            - run: git commit -a -m "ci:bump package version"
-            - run: git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git ${{ github.ref }}
-            - run: npm publish --access public
+
+            - name: Git Configuration
+              run: |
+                  git config user.email "pmalyshev@devexperts.com"   
+                  git config user.name "dxpm"
+
+            - name: Install dependencies
+              run: yarn install --frozen-lockfile
+
+            - name: Bump version
+              run: |
+                  echo "NEW_TAG=$(npm --no-git-tag-version version $RELEASE_TYPE)" >> $GITHUB_ENV
+              env:
+                  RELEASE_TYPE: ${{ github.event.inputs.release-type }}
+
+            - name: Commit changes
+              run: |
+                  git commit -a -m "ci: release ${{ env.NEW_TAG }}"
+
+            - name: Create new tag
+              run: |
+                  git tag ${{ env.NEW_TAG }}
+
+            - name: Publish
+              run: npm publish --access public
               env:
                   NODE_AUTH_TOKEN: ${{secrets.NPMJS_DEVEXPERTS_BOT_PUBLISH_TOKEN}}
+
+            - name: Push changes to repository
+              run: git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git ${{ github.ref }}
