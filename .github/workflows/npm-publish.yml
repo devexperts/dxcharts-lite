@@ -18,9 +18,9 @@ jobs:
             - run: yarn install --frozen-lockfile
             - run: git config user.email "pmalyshev@devexperts.com"
             - run: git config user.name "dxpm"
-            - run: npm version from-git --no-git-tag-version
+            - run: npm version from-git
               # - run: git commit -a -m "ci:bump package version"
-              # - run: git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git ${{ github.ref }}
+            - run: git push https://${{ github.actor }}:${{ github.token }}@github.com/${{ github.repository }}.git ${{ github.ref }}
               # - run: npm publish --access public
               env:
                   NODE_AUTH_TOKEN: ${{secrets.NPMJS_DEVEXPERTS_BOT_PUBLISH_TOKEN}}
