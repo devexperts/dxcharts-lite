@@ -8,8 +8,6 @@ import { CanvasInputListenerComponent } from '../inputlisteners/canvas-input-lis
 import { ScaleModel } from '../model/scale.model';
 import { ChartAreaPanHandler } from '../components/chart/chart-area-pan.handler';
 
-const MIN_PINCH_DISTANCE = 30;
-
 /**
  * Handles chart touch events.
  */
@@ -100,9 +98,6 @@ export class MainCanvasTouchHandler extends ChartBaseElement {
 	 * @returns {void}
 	 */
 	public pinchHandler(candleIndexes: Array<number>, touchPositions: number[]): void {
-		const diff = Math.abs(touchPositions[0]) - Math.abs(touchPositions[1]);
-		const pinchDistance = Math.abs(diff);
-
 		const first =
 			(touchPositions[0] * candleIndexes[1] - touchPositions[1] * candleIndexes[0]) /
 			(touchPositions[0] - touchPositions[1]);
@@ -111,7 +106,7 @@ export class MainCanvasTouchHandler extends ChartBaseElement {
 			((candleIndexes[0] - candleIndexes[1]) / (touchPositions[0] - touchPositions[1])) *
 				this.scale.getBounds().width;
 
-		if (pinchDistance < MIN_PINCH_DISTANCE || first >= last) {
+		if (first >= last) {
 			return;
 		}
 
