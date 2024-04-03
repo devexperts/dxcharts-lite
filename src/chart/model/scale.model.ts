@@ -86,7 +86,7 @@ export class ScaleModel extends ViewportModel {
 		this.state = cloneUnsafe(config.scale);
 		this.autoScaleModel = new AutoScaleViewportSubModel(this);
 		this.offsets = this.config.components.offsets;
-		this.zoomReached = this.calculateZoomReached(this.export());
+		this.zoomReached = this.calculateZoomReached(this.export().zoomX);
 	}
 
 	protected doActivate(): void {
@@ -184,7 +184,7 @@ export class ScaleModel extends ViewportModel {
 	private zoomXTo(state: ViewportModelState, zoomIn: boolean, forceNoAnimation?: boolean) {
 		const initialStateCopy = { ...state };
 		const constrainedState = this.scalePostProcessor(initialStateCopy, state);
-		this.zoomReached = this.calculateZoomReached(constrainedState, zoomIn);
+		this.zoomReached = this.calculateZoomReached(constrainedState.zoomX, zoomIn);
 
 		if (this.zoomReached.max || this.zoomReached.min) {
 			return;
@@ -203,15 +203,14 @@ export class ScaleModel extends ViewportModel {
 		}
 	}
 
-	public calculateZoomReached(state: ViewportModelState, zoomIn: boolean = true) {
+	public calculateZoomReached(zoomX: Unit, zoomIn: boolean = true) {
 		const chartWidth = this.getBounds().width;
 		const delta = 0.001; // zoom values are very precise and should be compared with some precision delta
 
 		if (chartWidth > 0) {
-			const max =
-				state.zoomX - calculateZoom(this.config.components.chart.minCandles, chartWidth) <= delta && zoomIn;
+			const max = zoomX - calculateZoom(this.config.components.chart.minCandles, chartWidth) <= delta && zoomIn;
 			const min =
-				state.zoomX - calculateZoom(chartWidth / this.config.components.chart.minWidth, chartWidth) >= delta &&
+				zoomX - calculateZoom(chartWidth / this.config.components.chart.minWidth, chartWidth) >= delta &&
 				!zoomIn;
 
 			return { max, min };
@@ -234,7 +233,7 @@ export class ScaleModel extends ViewportModel {
 		const state = { ...initialState, zoomX, xStart, xEnd };
 		const constrainedState = this.scalePostProcessor(initialState, state);
 		const zoomIn = constrainedState.xStart > initialState.xStart || constrainedState.xEnd < initialState.xEnd;
-		this.zoomReached = this.calculateZoomReached(constrainedState, zoomIn);
+		this.zoomReached = this.calculateZoomReached(zoomX, zoomIn);
 		if (this.zoomReached.max || this.zoomReached.min) {
 			return;
 		}
