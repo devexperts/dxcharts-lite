@@ -6,7 +6,6 @@
 import { ChartBaseElement } from '../model/chart-base-element';
 import { CanvasInputListenerComponent } from '../inputlisteners/canvas-input-listener.component';
 import { ScaleModel } from '../model/scale.model';
-import { Pixel } from '../model/scaling/viewport.model';
 import { ChartAreaPanHandler } from '../components/chart/chart-area-pan.handler';
 
 const MIN_PINCH_DISTANCE = 30;
@@ -17,10 +16,6 @@ const MIN_PINCH_DISTANCE = 30;
 export class MainCanvasTouchHandler extends ChartBaseElement {
 	// 2 candles indexes touched by 2 fingers when pinching
 	private touchedCandleIndexes: [number, number] = [0, 0];
-	// number of px between touch events
-	private pinchDistance: Pixel = 0;
-	// used when maximum zoom in/out reached, can't use deactivate because it unsubscribes from all touch events
-	private isDraggable: boolean = true;
 	constructor(
 		private chartAreaPanHandler: ChartAreaPanHandler,
 		private scale: ScaleModel,
@@ -54,7 +49,6 @@ export class MainCanvasTouchHandler extends ChartBaseElement {
 	 */
 	private handleTouchStartEvent(e: TouchEvent) {
 		if (e.touches.length === 2) {
-			this.isDraggable = true;
 			this.chartAreaPanHandler.deactivate();
 			// @ts-ignore
 			// TODO rework this
@@ -108,17 +102,6 @@ export class MainCanvasTouchHandler extends ChartBaseElement {
 	public pinchHandler(candleIndexes: Array<number>, touchPositions: number[]): void {
 		const diff = Math.abs(touchPositions[0]) - Math.abs(touchPositions[1]);
 		const pinchDistance = Math.abs(diff);
-		const zoomIn = pinchDistance > this.pinchDistance;
-
-		if (this.scale.isMaxZoomXReached(zoomIn)) {
-			this.isDraggable = false;
-		}
-
-		if (!this.isDraggable || pinchDistance < MIN_PINCH_DISTANCE) {
-			return;
-		}
-
-		this.pinchDistance = pinchDistance;
 
 		const first =
 			(touchPositions[0] * candleIndexes[1] - touchPositions[1] * candleIndexes[0]) /
@@ -128,7 +111,7 @@ export class MainCanvasTouchHandler extends ChartBaseElement {
 			((candleIndexes[0] - candleIndexes[1]) / (touchPositions[0] - touchPositions[1])) *
 				this.scale.getBounds().width;
 
-		if (first >= last) {
+		if (pinchDistance < MIN_PINCH_DISTANCE || first >= last) {
 			return;
 		}
 

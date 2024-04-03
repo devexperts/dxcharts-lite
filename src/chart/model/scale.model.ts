@@ -9,10 +9,17 @@ import { CanvasAnimation } from '../animation/canvas-animation';
 import { startViewportModelAnimation } from '../animation/viewport-model-animation';
 import { cloneUnsafe } from '../utils/object.utils';
 import { AutoScaleViewportSubModel } from './scaling/auto-scale.model';
-import { zoomConstraint } from './scaling/constrait.functions';
 import { ZoomXToZoomYRatio, changeXToKeepRatio, changeYToKeepRatio, ratioFromZoomXY } from './scaling/lock-ratio.model';
 import { moveXStart, moveYStart } from './scaling/move-chart.functions';
-import { Price, Unit, ViewportModel, ViewportModelState, Zoom, compareStates } from './scaling/viewport.model';
+import {
+	Price,
+	Unit,
+	ViewportModel,
+	ViewportModelState,
+	Zoom,
+	calculateZoom,
+	compareStates,
+} from './scaling/viewport.model';
 import { zoomXToEndViewportCalculator, zoomXToPercentViewportCalculator } from './scaling/x-zooming.functions';
 import { BoundsProvider } from './bounds.model';
 
@@ -42,6 +49,11 @@ export type ViewportPercent = number;
 
 type Constraints = (initialState: ViewportModelState, state: ViewportModelState) => ViewportModelState;
 
+export interface ZoomReached {
+	max: boolean;
+	min: boolean;
+}
+
 /**
  * The ScaleModel class represents the state of a chart's scale, including the current viewport, zoom level, and auto-scaling settings.
  * It extends the ViewportModel class, which provides the underlying implementation for handling viewports and zoom levels.
@@ -56,23 +68,14 @@ export class ScaleModel extends ViewportModel {
 	public scaleInversedSubject: Subject<boolean> = new Subject<boolean>();
 	// y-axis component needs this subject in order to halt prev animation if axis type is percent
 	public beforeStartAnimationSubject: Subject<void> = new Subject<void>();
-
-	// TODO rework, make a new history based on units
-	history: ScaleHistoryItem[] = [];
-
-	autoScaleModel: AutoScaleViewportSubModel;
-
+	public autoScaleModel: AutoScaleViewportSubModel;
 	public zoomXYRatio: ZoomXToZoomYRatio = 0;
-	offsets: ChartConfigComponentsOffsets;
-
-	xConstraints: Constraints[] = [];
-
-	maxZoomReached: {
-		zoomIn: boolean;
-		zoomOut: boolean;
-	} = { zoomIn: false, zoomOut: false };
-
+	public zoomReached: ZoomReached;
 	public readonly state: ChartScale;
+	// TODO rework, make a new history based on units
+	public history: ScaleHistoryItem[] = [];
+	public offsets: ChartConfigComponentsOffsets;
+	private xConstraints: Constraints[] = [];
 
 	constructor(
 		public config: FullChartConfig,
@@ -83,18 +86,7 @@ export class ScaleModel extends ViewportModel {
 		this.state = cloneUnsafe(config.scale);
 		this.autoScaleModel = new AutoScaleViewportSubModel(this);
 		this.offsets = this.config.components.offsets;
-		this.addXConstraint((initialState, state) => {
-			const { maxZoomReached, newState } = zoomConstraint(
-				initialState,
-				state,
-				this.config.components.chart,
-				this.getBounds,
-			);
-			
-			this.maxZoomReached = maxZoomReached;
-
-			return newState;
-		});
+		this.zoomReached = this.calculateZoomReached(this.export());
 	}
 
 	protected doActivate(): void {
@@ -164,7 +156,7 @@ export class ScaleModel extends ViewportModel {
 		this.beforeStartAnimationSubject.next();
 		const state = this.export();
 		zoomXToPercentViewportCalculator(this, state, viewportPercent, zoomSensitivity, zoomIn);
-		this.zoomXTo(state, disabledAnimations);
+		this.zoomXTo(state, zoomIn, disabledAnimations);
 	}
 
 	/**
@@ -179,7 +171,7 @@ export class ScaleModel extends ViewportModel {
 		this.beforeStartAnimationSubject.next();
 		const state = this.export();
 		zoomXToEndViewportCalculator(this, state, zoomSensitivity, zoomIn);
-		this.zoomXTo(state, this.config.scale.disableAnimations);
+		this.zoomXTo(state, zoomIn, this.config.scale.disableAnimations);
 	}
 
 	public haltAnimation() {
@@ -189,9 +181,15 @@ export class ScaleModel extends ViewportModel {
 		}
 	}
 
-	private zoomXTo(state: ViewportModelState, forceNoAnimation?: boolean) {
+	private zoomXTo(state: ViewportModelState, zoomIn: boolean, forceNoAnimation?: boolean) {
 		const initialStateCopy = { ...state };
 		const constrainedState = this.scalePostProcessor(initialStateCopy, state);
+		this.zoomReached = this.calculateZoomReached(constrainedState, zoomIn);
+
+		if (this.zoomReached.max || this.zoomReached.min) {
+			return;
+		}
+
 		if (this.state.lockPriceToBarRatio) {
 			changeYToKeepRatio(constrainedState, this.zoomXYRatio);
 		}
@@ -205,8 +203,21 @@ export class ScaleModel extends ViewportModel {
 		}
 	}
 
-	public isMaxZoomXReached(zoomIn: boolean) {
-		return (this.maxZoomReached.zoomIn && zoomIn) || (this.maxZoomReached.zoomOut && !zoomIn);
+	public calculateZoomReached(state: ViewportModelState, zoomIn: boolean = true) {
+		const chartWidth = this.getBounds().width;
+		const delta = 0.001; // zoom values are very precise and should be compared with some precision delta
+
+		if (chartWidth > 0) {
+			const max =
+				state.zoomX - calculateZoom(this.config.components.chart.minCandles, chartWidth) <= delta && zoomIn;
+			const min =
+				state.zoomX - calculateZoom(chartWidth / this.config.components.chart.minWidth, chartWidth) >= delta &&
+				!zoomIn;
+
+			return { max, min };
+		}
+
+		return { max: false, min: false };
 	}
 
 	/**
@@ -222,6 +233,12 @@ export class ScaleModel extends ViewportModel {
 		const zoomX = this.calculateZoomX(xStart, xEnd);
 		const state = { ...initialState, zoomX, xStart, xEnd };
 		const constrainedState = this.scalePostProcessor(initialState, state);
+		const zoomIn = constrainedState.xStart > initialState.xStart || constrainedState.xEnd < initialState.xEnd;
+		this.zoomReached = this.calculateZoomReached(constrainedState, zoomIn);
+		if (this.zoomReached.max || this.zoomReached.min) {
+			return;
+		}
+
 		if (this.state.lockPriceToBarRatio) {
 			changeYToKeepRatio(constrainedState, this.zoomXYRatio);
 		}
