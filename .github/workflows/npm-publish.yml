@@ -26,8 +26,8 @@ jobs:
 
             - name: Git Configuration
               run: |
-                  git config user.email "pmalyshev@devexperts.com"   
-                  git config user.name "dxpm"
+                  git config user.name "github-actions[bot]"
+                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
             - name: Install dependencies
               run: yarn install --frozen-lockfile
