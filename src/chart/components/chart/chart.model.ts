@@ -62,7 +62,6 @@ export class ChartModel extends ChartBaseElement {
 		return this.candleSeries.filter(s => s !== this.mainCandleSeries);
 	}
 
-	public readonly nextCandleTimeStampSubject: Subject<void> = new Subject<void>();
 	public readonly chartTypeChanged: Subject<BarType> = new Subject<BarType>();
 	public readonly mainInstrumentChangedSubject: Subject<ChartInstrument> = new Subject<ChartInstrument>();
 	public readonly offsetsChanged = new Subject<void>();

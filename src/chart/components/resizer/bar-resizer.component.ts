@@ -30,8 +30,9 @@ export class BarResizerComponent extends ChartBaseElement {
 	animationId: string;
 	initialY: number = 0;
 	resizeEvent$: Subject<void> = new Subject<void>();
+
 	constructor(
-		private id: string,
+		public readonly id: string,
 		private boundsProvider: BoundsProvider,
 		private hitTest: HitBoundsTest,
 		private dragTickCb: (yDelta: number) => void,
@@ -67,12 +68,15 @@ export class BarResizerComponent extends ChartBaseElement {
 			const dragNDropYComponent = new DragNDropYComponent(
 				this.hitTest,
 				{
-					onDragTick: callIfPredicateTrue(this.onYDragTick, this.dragPredicate),
-					onDragStart: callIfPredicateTrue(this.onYDragStart, this.dragPredicate),
-					onDragEnd: callIfPredicateTrue(this.onYDragEnd, this.dragPredicate)
+					onDragTick: this.onYDragTick,
+					onDragStart: this.onYDragStart,
+					onDragEnd: this.onYDragEnd,
 				},
 				this.canvasInputListener,
 				this.chartPanComponent,
+				{
+					dragPredicate: this.dragPredicate,
+				},
 			);
 			this.addChildEntity(dragNDropYComponent);
 			if (this.config.animation.paneResizer.enabled) {
@@ -112,6 +116,7 @@ export class BarResizerComponent extends ChartBaseElement {
 		this.initialY = this.boundsProvider().y;
 		// Stop redrawing hit test
 		this.hitTestCanvasModel.hitTestDrawersPredicateSubject.next(false);
+		this.chartPanComponent.deactivatePanHandlers();
 	};
 
 	private onYDragEnd = () => {
@@ -120,6 +125,7 @@ export class BarResizerComponent extends ChartBaseElement {
 		this.canvasBoundsContainer.graphsHeightRatioChangedSubject.next(this.canvasBoundsContainer.graphsHeightRatio);
 		// Continue redrawing hit test
 		this.hitTestCanvasModel.hitTestDrawersPredicateSubject.next(true);
+		this.chartPanComponent.activateChartPanHandlers();
 	};
 
 	private onYDragTick = (dragInfo: DragInfo) => {
@@ -185,8 +191,3 @@ export class BarResizerComponent extends ChartBaseElement {
 		}
 	}
 }
-
-const callIfPredicateTrue =
-	(fun: (...args: any[]) => void, predicate: () => boolean) =>
-	(...args: unknown[]) =>
-		predicate() && fun(...args);

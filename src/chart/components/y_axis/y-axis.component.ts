@@ -25,7 +25,6 @@ import { ChartBaseElement } from '../../model/chart-base-element';
 import { DataSeriesType } from '../../model/data-series.config';
 import { DataSeriesModel } from '../../model/data-series.model';
 import { ScaleModel } from '../../model/scale.model';
-import { cloneUnsafe } from '../../utils/object.utils';
 import { uuid } from '../../utils/uuid.utils';
 import { PriceAxisType } from '../labels_generator/numeric-axis-labels.generator';
 import { ChartPanComponent } from '../pan/chart-pan.component';
@@ -44,6 +43,7 @@ import { LabelsGroups, VisualYAxisLabel, YAxisLabelsProvider } from './price_lab
 import { YAxisScaleHandler } from './y-axis-scale.handler';
 import { YAxisModel } from './y-axis.model';
 import { HitTestCanvasModel } from '../../model/hit-test-canvas.model';
+import { merge as mergeObj } from '../../utils/merge.utils';
 
 export type LabelColorResolver = (priceMovement: PriceMovement, colors: FullChartColors) => string;
 
@@ -71,9 +71,13 @@ export class YAxisComponent extends ChartBaseElement {
 		public paneUUID: string,
 		public extentIdx: number,
 		hitTestCanvasModel: HitTestCanvasModel,
+		initialState?: YAxisConfig,
 	) {
 		super();
-		this.state = cloneUnsafe(config.components.yAxis);
+		this.state = mergeObj(initialState ?? {}, config.components.yAxis, {
+			overrideExisting: false,
+			addIfMissing: true,
+		});
 
 		//#region init yAxisScaleHandler
 		this.yAxisScaleHandler = new YAxisScaleHandler(
@@ -267,7 +271,7 @@ export class YAxisComponent extends ChartBaseElement {
 	public setVisible(isVisible: boolean) {
 		this.state.visible = isVisible;
 		this.config.components.yAxis.visible = isVisible;
-		isVisible ? this.enable() : this.disable();
+		isVisible ? this.activate() : this.deactivate();
 		this.model.fancyLabelsModel.updateLabels();
 		this.model.baseLabelsModel.updateLabels();
 	}

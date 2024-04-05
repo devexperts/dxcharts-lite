@@ -29,9 +29,9 @@ import {
 import { PaneHitTestController } from './pane-hit-test.controller';
 import { PaneComponent } from './pane.component';
 import { Unsubscriber } from '../../utils/function.utils';
-import { flatMap } from '../../utils/array.utils';
 import { DataSeriesModel } from '../../model/data-series.model';
 import { HitTestCanvasModel } from '../../model/hit-test-canvas.model';
+import { firstOf, flatMap, lastOf } from '../../utils/array.utils';
 
 export class PaneManager extends ChartBaseElement {
 	public panes: Record<string, PaneComponent> = {};
@@ -83,7 +83,7 @@ export class PaneManager extends ChartBaseElement {
 
 	private addBounds(uuid: string, order?: number): Unsubscriber {
 		this.canvasBoundsContainer.addPaneBounds(uuid, order);
-		return () => this.canvasBoundsContainer.removedPaneBounds(uuid);
+		return () => this.canvasBoundsContainer.removePaneBounds(uuid);
 	}
 
 	/**
@@ -186,18 +186,101 @@ export class PaneManager extends ChartBaseElement {
 	}
 
 	/**
+	 * Moves the canvas bounds container up by calling the movePaneUp method with the uuid of the current object.
+	 * @returns {void}
+	 */
+	public movePaneUp(uuid: string): void {
+		this.canvasBoundsContainer.movePaneUp(uuid);
+	}
+
+	/**
+	 * Moves the canvas bounds container down by calling the movePaneDown method with the uuid of the current object.
+	 * @returns {void}
+	 */
+	public movePaneDown(uuid: string): void {
+		this.canvasBoundsContainer.movePaneDown(uuid);
+	}
+
+	/**
+	 * Checks if the current pane can move up.
+	 * @returns {boolean} - Returns true if the current pane can move up, otherwise false.
+	 */
+	public canMovePaneUp(uuid: string): boolean {
+		const firstVisiblePane = firstOf(
+			this.canvasBoundsContainer.panesOrder.filter(uuid => this.panes[uuid]?.visible ?? false),
+		);
+		return uuid !== firstVisiblePane && (this.panes[uuid]?.visible ?? false);
+	}
+
+	/**
+	 * Checks if the current pane can move down.
+	 *
+	 * @returns {boolean} - Returns true if the current pane is not the last one in the canvasBoundsContainer, otherwise returns false.
+	 */
+	public canMovePaneDown(uuid: string): boolean {
+		const lastVisiblePane = lastOf(
+			this.canvasBoundsContainer.panesOrder.filter(uuid => this.panes[uuid]?.visible ?? false),
+		);
+		return uuid !== lastVisiblePane && (this.panes[uuid]?.visible ?? false);
+	}
+
+	/**
 	 * Removes pane from the chart and all related components
 	 * @param uuid
 	 */
 	public removePane(uuid: string) {
 		const pane = this.panes[uuid];
-		if (pane !== undefined) {
-			this.paneRemovedSubject.next(pane);
-			pane.disable();
-			pane.yExtentComponents.forEach(yExtentComponent => yExtentComponent.disable());
-			delete this.panes[uuid];
-			this.recalculateState();
+
+		if (pane === undefined) {
+			return;
 		}
+
+		this.paneRemovedSubject.next(pane);
+		pane.disable();
+		pane.yExtentComponents.forEach(yExtentComponent => yExtentComponent.disable());
+		delete this.panes[uuid];
+		this.recalculateState();
+	}
+
+	/**
+	 * Hides a pane from the chart and all related components
+	 */
+	public hidePane(paneUUID: string) {
+		const pane = this.panes[paneUUID];
+
+		// hide pane only if we have more than one visible pane
+		if (pane === undefined || !pane.visible) {
+			return;
+		}
+
+		const paneResizerId = CanvasElement.PANE_UUID_RESIZER(paneUUID);
+		const resizer = this.userInputListenerComponents.find(
+			el => el instanceof BarResizerComponent && el.id === paneResizerId,
+		);
+		resizer?.disable();
+
+		this.canvasBoundsContainer.hidePaneBounds(paneUUID);
+		this.recalculateState();
+	}
+
+	/**
+	 * Shows a pane, use if the pane is hidden
+	 */
+	public showPane(paneUUID: string) {
+		const pane = this.panes[paneUUID];
+		const paneResizerId = CanvasElement.PANE_UUID_RESIZER(paneUUID);
+
+		if (pane === undefined || pane.visible) {
+			return;
+		}
+
+		const resizer = this.userInputListenerComponents.find(
+			el => el instanceof BarResizerComponent && el.id === paneResizerId,
+		);
+		resizer?.enable();
+
+		this.canvasBoundsContainer.showPaneBounds(paneUUID);
+		this.recalculateState();
 	}
 
 	/**

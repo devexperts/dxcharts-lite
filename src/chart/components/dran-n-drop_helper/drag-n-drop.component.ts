@@ -14,7 +14,7 @@ export interface DragInfo {
 }
 
 export interface DragComponentOptions {
-	disableChartPanning: boolean;
+	dragPredicate: () => boolean;
 }
 
 export interface DragNDropComponentCallbacks {
@@ -24,7 +24,7 @@ export interface DragNDropComponentCallbacks {
 }
 
 export const defaultDragComponentOptions: DragComponentOptions = {
-	disableChartPanning: true,
+	dragPredicate: () => true,
 };
 
 export class DragNDropComponent extends ChartBaseElement {
@@ -40,45 +40,32 @@ export class DragNDropComponent extends ChartBaseElement {
 		super();
 	}
 
-	/**
-	 * Calls the parent class's doActivate method and performs any additional activation logic.
-	 * This method is protected and can only be accessed by the class itself and its subclasses.
-	 */
-	protected doActivate() {
-		super.doActivate();
-	}
-
-	/**
-	 * This method overrides the doDeactivate method of the parent class and calls it using the super keyword.
-	 * It is a protected method that can only be accessed within the class and its subclasses.
-	 * This method is responsible for deactivating the current object.
-	 */
-	protected doDeactivate() {
-		super.doDeactivate();
-	}
-
 	protected onDragStart = (point: Point) => {
-		this.dragging = true;
-		this.draggedPixels = 0;
-		this.dragCallbacks.onDragStart && this.dragCallbacks.onDragStart(point);
-		this.dragComponentOptions.disableChartPanning && this.chartPanComponent.deactivatePanHandlers();
+		if (this.dragComponentOptions.dragPredicate()) {
+			this.dragging = true;
+			this.draggedPixels = 0;
+			this.dragCallbacks.onDragStart && this.dragCallbacks.onDragStart(point);
+		}
 	};
 
 	protected onDragTick = (yDelta: number) => {
-		if (this.dragging) {
-			this.draggedPixels += yDelta;
-			this.dragCallbacks.onDragTick({
-				delta: yDelta,
-				draggedPixels: this.draggedPixels,
-			});
+		if (this.dragComponentOptions.dragPredicate()) {
+			if (this.dragging) {
+				this.draggedPixels += yDelta;
+				this.dragCallbacks.onDragTick({
+					delta: yDelta,
+					draggedPixels: this.draggedPixels,
+				});
+			}
 		}
 	};
 
 	protected onDragEnd = () => {
-		if (this.dragging) {
-			this.dragging = false;
-			this.dragCallbacks.onDragEnd && this.dragCallbacks.onDragEnd(this.draggedPixels);
-			this.dragComponentOptions.disableChartPanning && this.chartPanComponent.activateChartPanHandlers();
+		if (this.dragComponentOptions.dragPredicate()) {
+			if (this.dragging) {
+				this.dragging = false;
+				this.dragCallbacks.onDragEnd && this.dragCallbacks.onDragEnd(this.draggedPixels);
+			}
 		}
 	};
 }

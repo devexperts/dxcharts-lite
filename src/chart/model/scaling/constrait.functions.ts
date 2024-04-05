@@ -59,7 +59,7 @@ export const zoomConstraint = (
 	state: ViewportModelState,
 	chartConfig: ChartConfigComponentsChart,
 	boundsProvider: BoundsProvider,
-) => {
+): { newState: ViewportModelState; maxZoomReached: { zoomIn: boolean; zoomOut: boolean } } => {
 	const newState = {
 		...state,
 	};
@@ -75,14 +75,14 @@ export const zoomConstraint = (
 		if (maxViewportReached) {
 			newState.xStart = newState.xEnd - maxCandlesInViewport;
 			newState.zoomX = calculateZoom(newState.xEnd - newState.xStart, bounds.width);
-			return newState;
+			return { newState, maxZoomReached: { zoomOut: true, zoomIn: false } };
 		}
 
 		if (minViewportReached) {
 			newState.xStart = newState.xEnd - chartConfig.minCandles;
 			newState.zoomX = calculateZoom(newState.xEnd - newState.xStart, bounds.width);
-			return newState;
+			return { newState, maxZoomReached: { zoomOut: false, zoomIn: true } };
 		}
 	}
-	return newState;
+	return { newState, maxZoomReached: { zoomOut: false, zoomIn: false } };
 };

@@ -18,9 +18,7 @@ export class DynamicObjectsModel extends ChartBaseElement {
 	private _objects: BehaviorSubject<Record<PaneId, LinkedList<DynamicObject>>>;
 	private modelIdToObjectMap: Map<DynamicObjectId, DynamicObject> = new Map();
 
-	constructor(
-		private canvasModel: CanvasModel,
-	) {
+	constructor(private canvasModel: CanvasModel) {
 		super();
 		this._objects = new BehaviorSubject({});
 	}
@@ -68,7 +66,6 @@ export class DynamicObjectsModel extends ChartBaseElement {
 	/**
 	 * Adds an object from outside chart-core into model
 	 * @param obj
-	 * @param paneId
 	 */
 	addObject(obj: DynamicObject) {
 		const paneId = obj.paneId;
@@ -84,8 +81,7 @@ export class DynamicObjectsModel extends ChartBaseElement {
 
 	/**
 	 * Removes an object from model
-	 * @param model
-	 * @param paneId
+	 * @param id
 	 */
 	removeObject(id: DynamicObjectId) {
 		const objInfo = this.getObjectInfoById(id);
@@ -103,6 +99,22 @@ export class DynamicObjectsModel extends ChartBaseElement {
 			delete this.objects[obj.paneId];
 		}
 		this.setDynamicObjects(this.objects);
+	}
+
+	/**
+	 * Updates an object
+	 * @param obj
+	 */
+	updateObject(obj: DynamicObject) {
+		const objInfo = this.getObjectInfoById(obj.id);
+
+		if (!objInfo) {
+			return;
+		}
+
+		const [oldObj] = objInfo;
+		this.removeObject(oldObj.id);
+		this.addObject(obj);
 	}
 
 	/**

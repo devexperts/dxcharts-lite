@@ -71,7 +71,7 @@ export class HoverProducerComponent extends ChartBaseElement {
 		private canvasBoundsContainer: CanvasBoundsContainer,
 		private paneManager: PaneManager,
 		private timeZoneModel: TimeZoneModel,
-		private formatterFactory: (format: string) => (timestamp: number | Date) => string,
+		private formatterFactory: (format: string) => (timestamp: number) => string,
 	) {
 		super();
 		const candleHoverProducerPart = new CandleHoverProducerPart(this.chartModel);

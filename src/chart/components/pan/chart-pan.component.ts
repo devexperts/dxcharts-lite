@@ -7,16 +7,17 @@ import { CanvasAnimation } from '../../animation/canvas-animation';
 import { CanvasBoundsContainer } from '../../canvas/canvas-bounds-container';
 import { FullChartConfig } from '../../chart.config';
 import EventBus from '../../events/event-bus';
-import { ChartBaseElement, ChartEntity } from '../../model/chart-base-element';
+import { ChartBaseElement } from '../../model/chart-base-element';
 import { CanvasInputListenerComponent } from '../../inputlisteners/canvas-input-listener.component';
 import { ScaleModel } from '../../model/scale.model';
 import { ChartAreaPanHandler } from '../chart/chart-area-pan.handler';
 import { BaseType, ChartBaseModel } from '../chart/chart-base.model';
 import { HitTestCanvasModel } from '../../model/hit-test-canvas.model';
+import { MainCanvasTouchHandler } from '../../inputhandlers/main-canvas-touch.handler';
 
 export class ChartPanComponent extends ChartBaseElement {
-	public chartPanComponents: Array<ChartEntity> = [];
 	public chartAreaPanHandler: ChartAreaPanHandler;
+	public mainCanvasTouchHandler: MainCanvasTouchHandler;
 	constructor(
 		private eventBus: EventBus,
 		private mainScale: ScaleModel,
@@ -33,32 +34,21 @@ export class ChartPanComponent extends ChartBaseElement {
 			this.eventBus,
 			this.config,
 			this.mainScale,
-			this.mainCanvasParent,
 			this.canvasInputListener,
 			this.canvasBoundsContainer,
 			this.canvasAnimation,
 			this,
 			this.hitTestCanvasModel,
 		);
-		this.chartPanComponents.push(this.chartAreaPanHandler);
-	}
+		this.addChildEntity(this.chartAreaPanHandler);
 
-	/**
-	 * Activates the chart pan handlers.
-	 * @protected
-	 * @returns {void}
-	 */
-	protected doActivate(): void {
-		this.activateChartPanHandlers();
-	}
-
-	/**
-	 * This method is used to deactivate the pan handlers.
-	 * @returns {void}
-	 * @protected
-	 */
-	protected doDeactivate(): void {
-		this.deactivatePanHandlers();
+		this.mainCanvasTouchHandler = new MainCanvasTouchHandler(
+			this.chartAreaPanHandler,
+			this.mainScale,
+			this.canvasInputListener,
+			this.mainCanvasParent,
+		);
+		this.addChildEntity(this.mainCanvasTouchHandler);
 	}
 
 	/**
@@ -70,13 +60,17 @@ export class ChartPanComponent extends ChartBaseElement {
 	 * @returns {void}
 	 */
 	public activateChartPanHandlers() {
-		this.chartPanComponents.forEach(c => c.activate());
+		this.activate();
 	}
 
 	/**
 	 * Deactivates all the pan handlers of the chart.
 	 */
 	public deactivatePanHandlers() {
-		this.chartPanComponents.forEach(c => c.deactivate());
+		this.deactivate();
+	}
+
+	public setChartPanningOptions(horizontal: boolean, vertical: boolean) {
+		this.chartAreaPanHandler.chartPanningOptions = { horizontal, vertical };
 	}
 }

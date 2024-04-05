@@ -6,6 +6,10 @@
 import { ChartBaseElement } from '../model/chart-base-element';
 import { CanvasInputListenerComponent } from '../inputlisteners/canvas-input-listener.component';
 import { ScaleModel } from '../model/scale.model';
+import { Pixel } from '../model/scaling/viewport.model';
+import { ChartAreaPanHandler } from '../components/chart/chart-area-pan.handler';
+
+const MIN_PINCH_DISTANCE = 30;
 
 /**
  * Handles chart touch events.
@@ -13,7 +17,12 @@ import { ScaleModel } from '../model/scale.model';
 export class MainCanvasTouchHandler extends ChartBaseElement {
 	// 2 candles indexes touched by 2 fingers when pinching
 	private touchedCandleIndexes: [number, number] = [0, 0];
+	// number of px between touch events
+	private pinchDistance: Pixel = 0;
+	// used when maximum zoom in/out reached, can't use deactivate because it unsubscribes from all touch events
+	private isDraggable: boolean = true;
 	constructor(
+		private chartAreaPanHandler: ChartAreaPanHandler,
 		private scale: ScaleModel,
 		private canvasInputListeners: CanvasInputListenerComponent,
 		private mainCanvasParent: Element,
@@ -33,6 +42,9 @@ export class MainCanvasTouchHandler extends ChartBaseElement {
 		this.addRxSubscription(
 			this.canvasInputListeners.observeTouchMove().subscribe(e => this.handleTouchMoveEvent(e)),
 		);
+		this.addRxSubscription(
+			this.canvasInputListeners.observeTouchEndDocument().subscribe(e => this.handleTouchEndEvent(e)),
+		);
 	}
 
 	/**
@@ -42,6 +54,8 @@ export class MainCanvasTouchHandler extends ChartBaseElement {
 	 */
 	private handleTouchStartEvent(e: TouchEvent) {
 		if (e.touches.length === 2) {
+			this.isDraggable = true;
+			this.chartAreaPanHandler.deactivate();
 			// @ts-ignore
 			// TODO rework this
 			this.touchedCandleIndexes = this.getXPositions(e).map(x => this.scale.fromX(x));
@@ -49,18 +63,23 @@ export class MainCanvasTouchHandler extends ChartBaseElement {
 	}
 
 	/**
-     * Handles touch move event
-     * @param {TouchEvent} e - The touch event object
-     * @returns {void}
-     
-    private handleTouchMoveEvent(e: TouchEvent): void {
-        if (e.touches.length === 2) {
-            this.pinchHandler(this.touchedCandleIndexes, this.getXPositions(e));
-        }
-    }*/
+	 * Handles touch move event
+	 * @param {TouchEvent} e - The touch event object
+	 * @returns {void}
+	 */
 	private handleTouchMoveEvent(e: TouchEvent): void {
 		if (e.touches.length === 2) {
 			this.pinchHandler(this.touchedCandleIndexes, this.getXPositions(e));
+		}
+	}
+	/**
+	 * Handles touch end event
+	 * @returns {void}
+	 */
+	private handleTouchEndEvent(e: TouchEvent): void {
+		// zero touches means the user stopped resizing completely (both fingers are up)
+		if (e.touches.length === 0) {
+			this.chartAreaPanHandler.activate();
 		}
 	}
 	/**
@@ -87,6 +106,20 @@ export class MainCanvasTouchHandler extends ChartBaseElement {
 	 * @returns {void}
 	 */
 	public pinchHandler(candleIndexes: Array<number>, touchPositions: number[]): void {
+		const diff = Math.abs(touchPositions[0]) - Math.abs(touchPositions[1]);
+		const pinchDistance = Math.abs(diff);
+		const zoomIn = pinchDistance > this.pinchDistance;
+
+		if (this.scale.isMaxZoomXReached(zoomIn)) {
+			this.isDraggable = false;
+		}
+
+		if (!this.isDraggable || pinchDistance < MIN_PINCH_DISTANCE) {
+			return;
+		}
+
+		this.pinchDistance = pinchDistance;
+
 		const first =
 			(touchPositions[0] * candleIndexes[1] - touchPositions[1] * candleIndexes[0]) /
 			(touchPositions[0] - touchPositions[1]);
@@ -94,6 +127,11 @@ export class MainCanvasTouchHandler extends ChartBaseElement {
 			first +
 			((candleIndexes[0] - candleIndexes[1]) / (touchPositions[0] - touchPositions[1])) *
 				this.scale.getBounds().width;
+
+		if (first >= last) {
+			return;
+		}
+
 		this.scale.setXScale(first, last);
 	}
 }

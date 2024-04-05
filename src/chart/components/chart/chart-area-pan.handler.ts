@@ -3,19 +3,18 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { merge, animationFrameScheduler } from 'rxjs';
-import { throttleTime } from 'rxjs/operators';
+import { animationFrameScheduler } from 'rxjs';
+import { throttleTime, filter } from 'rxjs/operators';
 import { CanvasAnimation, VIEWPORT_ANIMATION_ID } from '../../animation/canvas-animation';
 import { CanvasBoundsContainer, CanvasElement, HitBoundsTest } from '../../canvas/canvas-bounds-container';
 import { AutoScaleDisableOnDrag, FullChartConfig } from '../../chart.config';
 import EventBus from '../../events/event-bus';
-import { MainCanvasTouchHandler } from '../../inputhandlers/main-canvas-touch.handler';
 import { CanvasInputListenerComponent, Point } from '../../inputlisteners/canvas-input-listener.component';
 import { ChartBaseElement } from '../../model/chart-base-element';
 import { ScaleModel } from '../../model/scale.model';
 import { pixelsToUnits } from '../../model/scaling/viewport.model';
 import { deviceDetector } from '../../utils/device/device-detector.utils';
-import { getTouchpadSensitivity, touchpadDetector } from '../../utils/device/touchpad.utils';
+import { getTouchpadSensitivity } from '../../utils/device/touchpad.utils';
 import { DragNDropXComponent } from '../dran-n-drop_helper/drag-n-drop-x.component';
 import { DragNDropYComponent } from '../dran-n-drop_helper/drag-n-drop-y.component';
 import { DragInfo } from '../dran-n-drop_helper/drag-n-drop.component';
@@ -27,10 +26,14 @@ export interface ChartWheelEvent {
 	readonly candleIdx: number;
 }
 
+interface ChartPanningOptions {
+	horizontal: boolean;
+	vertical: boolean;
+}
+
 /**
  * ChartAreaPanHandler is a class that handles the panning and zooming of the chart area.
  * It extends the ChartBaseElement class and has the following properties:
- * @property {MainCanvasTouchHandler} touchHandler - An instance of the MainCanvasTouchHandler class.
  * @property {Point} currentPoint - An object that represents the current point of the chart area.
  * @property {number} xDraggedCandlesDelta - A number that represents the number of candles delta changed during X dragging.
  * @property {number} lastXStart - A number that represents the last X start position.
@@ -40,7 +43,6 @@ export interface ChartWheelEvent {
  * @param {EventBus} bus - An instance of the EventBus class.
  * @param {FullChartConfig} config - An instance of the FullChartConfig class.
  * @param {ScaleModel} scaleModel - An instance of the ScaleModel class.
- * @param {Element} mainCanvasParent - The parent element of the main canvas.
  * @param {CanvasInputListenerComponent} canvasInputListener - An instance of the CanvasInputListenerComponent class.
  * @param {CanvasBoundsContainer} canvasBoundsContainer - An instance of the CanvasBoundsContainer class.
  * @param {CanvasAnimation} canvasAnimation - An instance of the CanvasAnimation class.
@@ -48,18 +50,17 @@ export interface ChartWheelEvent {
  
 */
 export class ChartAreaPanHandler extends ChartBaseElement {
-	private readonly touchHandler: MainCanvasTouchHandler;
 	private currentPoint: Point = { x: 0, y: 0 };
 	// number of candles delta changed during X dragging: 1, 5 or -3 for ex.
-	xDraggedCandlesDelta = 0;
-	lastXStart = 0;
-	wheelTrottleTime = 15; // in ms
+	public xDraggedCandlesDelta: number = 0;
+	public lastXStart: number = 0;
+	public wheelThrottleTime: number = 15; // in ms
+	public chartPanningOptions: ChartPanningOptions = { horizontal: true, vertical: true };
 
 	constructor(
 		private bus: EventBus,
 		private config: FullChartConfig,
 		private scale: ScaleModel,
-		private mainCanvasParent: Element,
 		private canvasInputListener: CanvasInputListenerComponent,
 		private canvasBoundsContainer: CanvasBoundsContainer,
 		private canvasAnimation: CanvasAnimation,
@@ -67,7 +68,6 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 		private hitTestCanvasModel: HitTestCanvasModel,
 	) {
 		super();
-		this.touchHandler = new MainCanvasTouchHandler(this.scale, this.canvasInputListener, this.mainCanvasParent);
 
 		const allPanesHitTest = this.canvasBoundsContainer.getBoundsHitTest(CanvasElement.ALL_PANES);
 
@@ -82,7 +82,7 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 			this.canvasInputListener,
 			this.chartPanComponent,
 			{
-				disableChartPanning: false,
+				dragPredicate: () => this.chartPanningOptions.horizontal,
 			},
 		);
 
@@ -129,49 +129,43 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 		const allPanesHitTest = this.canvasBoundsContainer.getBoundsHitTest(CanvasElement.ALL_PANES);
 		//#endregion
 		this.addRxSubscription(
-			merge(
-				this.canvasInputListener.observeWheel(allPanesHitTest),
-				this.canvasInputListener.observePinch(allPanesHitTest),
-			)
-				.pipe(throttleTime(this.wheelTrottleTime, animationFrameScheduler, { trailing: true, leading: true }))
-				.subscribe(e => {
-					const isTouchpad = touchpadDetector(e);
-					const zoomSensitivity = isTouchpad
-						? getTouchpadSensitivity(
-								this.config.components.yAxis.type,
-								this.config.scale.zoomSensitivity.pinch,
-						  )
-						: this.config.scale.zoomSensitivity.wheel;
-					this.zoomXHandler(e, zoomSensitivity);
-				}),
-		);
-
-		this.addRxSubscription(
 			this.canvasInputListener
-				.observeScrollGesture()
-				.pipe(throttleTime(this.wheelTrottleTime, animationFrameScheduler, { trailing: true, leading: true }))
-				.subscribe((e: WheelEvent) => {
-					let direction = -1;
+				.observeWheel(allPanesHitTest)
+				.pipe(
+					filter(() => this.chartPanningOptions.horizontal && this.chartPanningOptions.vertical),
+					throttleTime(this.wheelThrottleTime, animationFrameScheduler, { trailing: true, leading: true }),
+				)
+				.subscribe(e => {
 					const device = deviceDetector();
-					if (device === 'apple' || device === 'mobile') {
-						direction = 1;
-					}
-					let deltaX = 0;
-					let deltaY = 0;
-					deltaX += e.deltaX * direction;
-					deltaY += e.deltaY * -direction;
+					const direction = device === 'apple' || device === 'mobile' ? 1 : -1;
+					const deltaX = 0 + e.deltaX * direction;
+					const deltaY = 0 + e.deltaY * -direction;
 
+					if (e.ctrlKey) {
+						const zoomSensitivity = this.calculateDynamicSesitivity(
+							e,
+							this.config.scale.zoomSensitivity.wheel,
+						);
+						this.zoomXHandler(e, zoomSensitivity);
+						this.bus.fireDraw();
+						return;
+					}
+					// also works for geasture touchpad vertical case
+					if (deltaY !== 0 && Math.abs(deltaY) > Math.abs(deltaX)) {
+						const zoomSensitivity = this.calculateDynamicSesitivity(
+							e,
+							this.config.scale.zoomSensitivity.wheel,
+						);
+						this.zoomXHandler(e, zoomSensitivity);
+						this.bus.fireDraw();
+					}
+					// also works for geasture touchpad horizontal case
 					if (deltaX !== 0 && Math.abs(deltaX) > Math.abs(deltaY)) {
 						const unitsDelta = pixelsToUnits(deltaX, this.scale.zoomX);
 						this.scale.moveXStart(this.scale.xStart - unitsDelta);
-					} else if (deltaY !== 0 && Math.abs(deltaY) > Math.abs(deltaX)) {
-						const zoomSensitivity = getTouchpadSensitivity(
-							this.config.components.yAxis.type,
-							this.config.scale.zoomSensitivity.glide,
-						);
-						this.zoomXHandler(e, zoomSensitivity);
+						this.bus.fireDraw();
+						return;
 					}
-					this.bus.fireDraw();
 				}),
 		);
 
@@ -182,9 +176,18 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 					this.lastXStart += prependedCandlesWidth;
 				}),
 		);
+	}
 
-		this.touchHandler.activate();
-		this.addSubscription(this.touchHandler.deactivate.bind(this.touchHandler));
+	private calculateDynamicSesitivity(e: WheelEvent, maxSensitivity: number) {
+		// max delta distance that touchpad can provide
+		const MAX_POSSIBLE_DELTA = 100;
+		// get max delta
+		const delta = Math.max(Math.abs(e.deltaY), Math.abs(e.deltaX));
+		// calculate sensitivity for max delta based on touchpad it's distance
+		const caclulatedSensitivity = (maxSensitivity * delta) / MAX_POSSIBLE_DELTA;
+		// adjust sencitivity for percent axis type
+		const zoomSensitivity = getTouchpadSensitivity(this.config.components.yAxis.type, caclulatedSensitivity);
+		return zoomSensitivity;
 	}
 
 	/**
@@ -201,6 +204,8 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 			this.canvasAnimation.forceStopAnimation(VIEWPORT_ANIMATION_ID);
 			this.currentPoint = { x: 0, y: 0 };
 			lastYStart = scale.yStart;
+			// Stop redrawing hit test
+			this.hitTestCanvasModel.hitTestDrawersPredicateSubject.next(false);
 		};
 
 		const onYDragTick = (dragInfo: DragInfo) => {
@@ -231,7 +236,7 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 			this.canvasInputListener,
 			this.chartPanComponent,
 			{
-				disableChartPanning: false,
+				dragPredicate: () => this.chartPanningOptions.vertical,
 			},
 		);
 		this.addChildEntity(dragNDropYComponent);

@@ -45,7 +45,6 @@ export class LineDrawer implements SeriesDrawer {
 				ctx.beginPath();
 				ctx.moveTo(prevX, prevY);
 				ctx.lineTo(x, y);
-
 				ctx.stroke();
 			}
 		}
