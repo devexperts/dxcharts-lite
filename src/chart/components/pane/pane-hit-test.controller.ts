@@ -48,7 +48,7 @@ export class PaneHitTestController implements HitTestSubscriber<DataSeriesModel>
 	 * @returns {void}
 	 */
 	onHover(model: DataSeriesModel | null): void {
-		this.allDataSeries.forEach(d => (d.hovered = d.htId === model?.htId));
+		this.allDataSeries.forEach(d => (d.highlighted = d.htId === model?.htId));
 		this.canvasModel.fireDraw();
 	}
 

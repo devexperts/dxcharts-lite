@@ -78,7 +78,7 @@ export const setLineWidth = (
 ) => {
 	if (drawerConfig.forceBold) {
 		ctx.lineWidth = drawerConfig.forceBold;
-	} else if (dataSeries.hovered) {
+	} else if (dataSeries.highlighted) {
 		ctx.lineWidth = lineWidth !== seriesSelectedWidth ? lineWidth + 1 : seriesSelectedWidth;
 	} else {
 		ctx.lineWidth = lineWidth;
