@@ -70,7 +70,7 @@ export class ScaleModel extends ViewportModel {
 	public beforeStartAnimationSubject: Subject<void> = new Subject<void>();
 	public autoScaleModel: AutoScaleViewportSubModel;
 	public zoomXYRatio: ZoomXToZoomYRatio = 0;
-	public zoomReached: ZoomReached;
+	public zoomReached: ZoomReached = { min: false, max: false };
 	public readonly state: ChartScale;
 	// TODO rework, make a new history based on units
 	public history: ScaleHistoryItem[] = [];
@@ -86,13 +86,13 @@ export class ScaleModel extends ViewportModel {
 		this.state = cloneUnsafe(config.scale);
 		this.autoScaleModel = new AutoScaleViewportSubModel(this);
 		this.offsets = this.config.components.offsets;
-		this.zoomReached = this.calculateZoomReached(this.export().zoomX);
 	}
 
 	protected doActivate(): void {
 		super.doActivate();
 		this.scaleInversedSubject = new Subject();
 		this.beforeStartAnimationSubject = new Subject();
+		this.zoomReached = this.calculateZoomReached(this.export().zoomX);
 
 		this.addRxSubscription(
 			this.scaleInversedSubject.subscribe(() => {
@@ -208,12 +208,16 @@ export class ScaleModel extends ViewportModel {
 		const delta = 0.001; // zoom values are very precise and should be compared with some precision delta
 
 		if (chartWidth > 0) {
-			const max = zoomX - calculateZoom(this.config.components.chart.minCandles, chartWidth) <= delta && zoomIn;
-			const min =
-				zoomX - calculateZoom(chartWidth / this.config.components.chart.minWidth, chartWidth) >= delta &&
-				!zoomIn;
+			const maxZoomReached = zoomX - calculateZoom(this.config.components.chart.minCandles, chartWidth) <= delta;
+			// max zoom reached and trying to zoom in further
+			const maxZoomDisabled = maxZoomReached && zoomIn;
 
-			return { max, min };
+			const minZoomReached =
+				zoomX - calculateZoom(chartWidth / this.config.components.chart.minWidth, chartWidth) >= delta;
+			// min zoom reached and trying to zoom out further
+			const minZoomDisabled = minZoomReached && !zoomIn;
+
+			return { max: maxZoomDisabled, min: minZoomDisabled };
 		}
 
 		return { max: false, min: false };
@@ -232,7 +236,7 @@ export class ScaleModel extends ViewportModel {
 		const zoomX = this.calculateZoomX(xStart, xEnd);
 		const state = { ...initialState, zoomX, xStart, xEnd };
 		const constrainedState = this.scalePostProcessor(initialState, state);
-		const zoomIn = constrainedState.xStart > initialState.xStart || constrainedState.xEnd < initialState.xEnd;
+		const zoomIn = constrainedState.xEnd - constrainedState.xStart < initialState.xEnd - initialState.xStart;
 		this.zoomReached = this.calculateZoomReached(zoomX, zoomIn);
 		if (this.zoomReached.max || this.zoomReached.min) {
 			return;
