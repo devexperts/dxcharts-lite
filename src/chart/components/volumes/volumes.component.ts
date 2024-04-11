@@ -58,7 +58,7 @@ export class VolumesComponent extends ChartBaseElement {
 			this.volumesColorByChartTypeMap,
 			() => true,
 		);
-		config.components.volumes.visible && this.addVolumesToDynamicObjects();
+		config.components.volumes.visible && this.syncVolumesDynamicObject();
 		this.addChildEntity(this.separateVolumes);
 		this.registerDefaultVolumeColorResolvers();
 		this.volumeVisibilityChangedSubject.next(config.components.volumes.visible);
@@ -92,6 +92,7 @@ export class VolumesComponent extends ChartBaseElement {
 				this.separateVolumes.deactiveSeparateVolumes();
 			}
 			this.volumeIsSeparateModeChangedSubject.next(separate);
+			this.syncVolumesDynamicObject();
 		}
 	}
 
@@ -120,9 +121,6 @@ export class VolumesComponent extends ChartBaseElement {
 	public setVisible(visible = true) {
 		this.config.components.volumes.visible = visible;
 		this.volumeVisibilityChangedSubject.next(visible);
-		visible
-			? this.addVolumesToDynamicObjects()
-			: this.dynamicObjectsComponent.model.removeObject(this.volumesModel.id);
 		if (this.config.components.volumes.showSeparately) {
 			if (visible) {
 				this.separateVolumes.activateSeparateVolumes();
@@ -133,21 +131,33 @@ export class VolumesComponent extends ChartBaseElement {
 			}
 		}
 		this.canvasBoundsContainer.recalculatePanesHeightRatios();
+		this.syncVolumesDynamicObject();
 		this.canvasModel.fireDraw();
 	}
 
-	private addVolumesToDynamicObjects() {
-		// check if the volumes dynamic object is already added
-		const position = this.dynamicObjectsComponent.model.getObjectPosition(this.volumesModel.id);
-		if (position !== -1) {
+	private syncVolumesDynamicObject() {
+		const visible = this.config.components.volumes.visible;
+
+		if (!visible) {
+			this.dynamicObjectsComponent.model.removeObject(this.volumesModel.id);
 			return;
 		}
 
-		this.dynamicObjectsComponent.model.addObject({
+		const paneId = this.config.components.volumes.showSeparately ? VOLUMES_UUID : CHART_UUID;
+		const volumesDynamicObject = {
 			id: this.volumesModel.id,
-			paneId: this.config.components.volumes.showSeparately ? VOLUMES_UUID : CHART_UUID,
+			paneId,
 			drawer: this.volumesDrawer,
 			model: this.volumesModel,
-		});
+		};
+
+		// check if the volumes dynamic object is already added
+		const position = this.dynamicObjectsComponent.model.getObjectPosition(this.volumesModel.id);
+		if (position === -1) {
+			this.dynamicObjectsComponent.model.addObject(volumesDynamicObject);
+			return;
+		}
+
+		this.dynamicObjectsComponent.model.updateObject(volumesDynamicObject);
 	}
 }
