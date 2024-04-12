@@ -234,6 +234,9 @@ export class ScaleModel extends ViewportModel {
 	public setXScale(xStart: Unit, xEnd: Unit, forceNoAnimation: boolean = true) {
 		const initialState = this.export();
 		const zoomX = this.calculateZoomX(xStart, xEnd);
+		if (initialState.xStart === xStart && initialState.xEnd === xEnd) {
+			return;
+		}
 		const state = { ...initialState, zoomX, xStart, xEnd };
 		const constrainedState = this.scalePostProcessor(initialState, state);
 		const zoomIn = constrainedState.xEnd - constrainedState.xStart < initialState.xEnd - initialState.xStart;
@@ -258,6 +261,9 @@ export class ScaleModel extends ViewportModel {
 
 	public setYScale(yStart: Unit, yEnd: Unit, fire = false) {
 		const initialState = this.export();
+		if (initialState.yStart === yStart && initialState.yEnd === yEnd) {
+			return;
+		}
 		super.setYScale(yStart, yEnd, fire);
 		const state = this.export();
 		const constrainedState = this.scalePostProcessor(initialState, state);
