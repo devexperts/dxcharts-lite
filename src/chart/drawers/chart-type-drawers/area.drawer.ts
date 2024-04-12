@@ -32,7 +32,7 @@ export class AreaDrawer implements SeriesDrawer {
 				ctx.strokeStyle = model.colors.areaTheme.lineColor;
 			}
 
-			if (model.hovered) {
+			if (model.highlighted) {
 				ctx.lineWidth = this.config.selectedWidth;
 			} else {
 				ctx.lineWidth = this.config.areaLineWidth;
