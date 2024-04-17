@@ -385,11 +385,13 @@ export class ChartModel extends ChartBaseElement {
 		const prependedCandlesWidth = this.chartBaseModel.mainVisualPoints
 			.slice(0, updateResult.prepended.length)
 			.reduce((acc, cur) => acc + cur.width, 0);
-		this.scale.moveXStart(this.scale.xStart + prependedCandlesWidth);
-		this.candlesPrependSubject.next({
-			prependedCandlesWidth,
-			prependedCandles: updateResult.prepended,
-		});
+		if (prependedCandlesWidth > 0) {
+			this.scale.moveXStart(this.scale.xStart + prependedCandlesWidth);
+			this.candlesPrependSubject.next({
+				prependedCandlesWidth,
+				prependedCandles: updateResult.prepended,
+			});
+		}
 
 		this.chartBaseModel.recalculatePeriod();
 		this.candlesUpdatedSubject.next();

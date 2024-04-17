@@ -6,7 +6,7 @@
 import { CanvasAnimation, VIEWPORT_ANIMATION_ID } from './canvas-animation';
 import { ViewportModel, ViewportModelState } from '../model/scaling/viewport.model';
 
-const VIEWPORT_ANIMATION_DURATION = 20;
+const VIEWPORT_ANIMATION_DURATION = 30;
 
 /**
  * Starts the animation for chart viewport movement.

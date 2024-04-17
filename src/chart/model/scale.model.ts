@@ -231,7 +231,7 @@ export class ScaleModel extends ViewportModel {
 	 * @param fireChanged
 	 * @param forceNoAutoScale - force NOT apply auto-scaling (for lazy loading)
 	 */
-	public setXScale(xStart: Unit, xEnd: Unit, forceNoAnimation: boolean = true) {
+	public setXScale(xStart: Unit, xEnd: Unit, forceNoAnimation: boolean = true, ignoreConstraints = false) {
 		const initialState = this.export();
 		const zoomX = this.calculateZoomX(xStart, xEnd);
 		if (initialState.xStart === xStart && initialState.xEnd === xEnd) {
@@ -241,7 +241,7 @@ export class ScaleModel extends ViewportModel {
 		const constrainedState = this.scalePostProcessor(initialState, state);
 		const zoomIn = constrainedState.xEnd - constrainedState.xStart < initialState.xEnd - initialState.xStart;
 		this.zoomReached = this.calculateZoomReached(zoomX, zoomIn);
-		if (this.zoomReached.max || this.zoomReached.min) {
+		if ((this.zoomReached.max || this.zoomReached.min) && !ignoreConstraints) {
 			return;
 		}
 
