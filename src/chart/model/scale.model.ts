@@ -234,7 +234,7 @@ export class ScaleModel extends ViewportModel {
 	public setXScale(xStart: Unit, xEnd: Unit, forceNoAnimation: boolean = true) {
 		const initialState = this.export();
 		const zoomX = this.calculateZoomX(xStart, xEnd);
-		if (initialState.xStart === xStart && initialState.xEnd === xEnd) {
+		if (initialState.xStart === xStart && initialState.xEnd === xEnd && initialState.zoomX > 0) {
 			return;
 		}
 		const state = { ...initialState, zoomX, xStart, xEnd };
@@ -261,7 +261,7 @@ export class ScaleModel extends ViewportModel {
 
 	public setYScale(yStart: Unit, yEnd: Unit, fire = false) {
 		const initialState = this.export();
-		if (initialState.yStart === yStart && initialState.yEnd === yEnd) {
+		if (initialState.yStart === yStart && initialState.yEnd === yEnd && initialState.zoomY > 0) {
 			return;
 		}
 		super.setYScale(yStart, yEnd, fire);
