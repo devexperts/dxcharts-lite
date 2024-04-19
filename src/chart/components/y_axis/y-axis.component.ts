@@ -44,6 +44,7 @@ import { YAxisScaleHandler } from './y-axis-scale.handler';
 import { YAxisModel } from './y-axis.model';
 import { HitTestCanvasModel } from '../../model/hit-test-canvas.model';
 import { merge as mergeObj } from '../../utils/merge.utils';
+import { cloneUnsafe } from '../../utils/object.utils';
 
 export type LabelColorResolver = (priceMovement: PriceMovement, colors: FullChartColors) => string;
 
@@ -74,7 +75,8 @@ export class YAxisComponent extends ChartBaseElement {
 		initialState?: YAxisConfig,
 	) {
 		super();
-		this.state = mergeObj(initialState ?? {}, config.components.yAxis, {
+		const initialStateCopy = initialState ? cloneUnsafe(initialState) : {};
+		this.state = mergeObj(initialStateCopy, config.components.yAxis, {
 			overrideExisting: false,
 			addIfMissing: true,
 		});
