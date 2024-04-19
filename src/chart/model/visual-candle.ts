@@ -66,7 +66,7 @@ export default class VisualCandle extends VisualSeriesPoint {
 	 * @returns {Pixel} - The height of the body in pixels.
 	 */
 	bodyHeight(viewable: Viewable): Pixel {
-		return floorToDPR(Math.abs(viewable.toY(this.open) - viewable.toY(this.close)));
+		return floorToDPR(Math.max(Math.abs(viewable.toY(this.open) - viewable.toY(this.close)), 1));
 	}
 	/**
 	 * Calculates the height of a candle in pixels based on the high and low values of the candle and the viewable area.
