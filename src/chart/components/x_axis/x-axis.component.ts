@@ -199,5 +199,19 @@ export class XAxisComponent extends ChartBaseElement {
 	public isVisible(): boolean {
 		return this.config.components?.xAxis.visible ?? false;
 	}
+
+	/* This function assigns a callback to be executed when a double-click event is detected. 
+	 * It accepts one parameter `cb`, which is a callback function. 
+	 * When a double-click event occurs, the specified callback function `cb` will be invoked. 
+	 * By default it calls basic scale on XAxis
+	 */
+	public setDblClickCallback = (cb: () => void) => this.xAxisScaleHandler.setDblClickCallback(cb);
+	
+	/* This function assigns a callback to be executed when a double-tap event is detected. 
+	 * Similar to the dblclick function, it takes one parameter `cb`, which is a callback function. 
+	 * This function ensures that the callback `cb` is called whenever a double-tap event is triggered. 
+	 * By default it calls basic scale on XAxis
+	 */
+	public setDblTapCallback = (cb: () => void) => this.xAxisScaleHandler.setDblTapCallback(cb);
 	//#endregion
 }
