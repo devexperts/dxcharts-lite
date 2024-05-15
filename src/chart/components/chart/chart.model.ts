@@ -33,7 +33,7 @@ import { PaneComponent } from '../pane/pane.component';
 import { LabelGroup } from '../y_axis/price_labels/y-axis-labels.model';
 import { createBasicScaleViewportTransformer, createTimeFrameViewportTransformer } from './basic-scale';
 import { calculateCandleWidth } from './candle-width-calculator.functions';
-import { deleteCandlesIndex, prepareCandle, reindexCandles } from './candle.functions';
+import { deleteCandlesIndex, isCandle, prepareCandle, reindexCandles } from './candle.functions';
 import { ChartBaseModel } from './chart-base.model';
 import { CandleSeries, ChartInstrument, PartialCandle } from './chart.component';
 import { fakeCandle } from './fake-candles';
@@ -230,9 +230,9 @@ export class ChartModel extends ChartBaseElement {
 		instrument: ChartInstrument = this.mainCandleSeries.instrument,
 		recalculateAndUpdate = true,
 	): CandleSeriesModel | undefined {
-		const prepareCandleCandles = sortCandles(candles.map(prepareCandle));
+		const preparedCandles = prepareCandles(candles);
 		// set correct indexes based on main candles timestamp
-		const reindexCandles = this.reindexCandlesBasedOnSeries(this.mainCandleSeries.dataPoints, prepareCandleCandles);
+		const reindexCandles = this.reindexCandlesBasedOnSeries(this.mainCandleSeries.dataPoints, preparedCandles);
 		// ensure there are no gaps in new candles
 		const secondaryCandles = this.secondarySeriesAdjustments(this.mainCandleSeries.dataPoints, reindexCandles);
 		// create a new secondary series model if it doesn't already exist
@@ -267,10 +267,10 @@ export class ChartModel extends ChartBaseElement {
 			this.mainInstrumentChangedSubject.next(mainSeries.instrument);
 		}
 		this.rememberCurrentTimeframe();
-		const prepareCandleCandles = sortCandles(mainSeries.candles.map(prepareCandle));
+		const preparedCandles = prepareCandles(mainSeries.candles);
 		this.mainCandleSeries.clearData();
-		reindexCandles(prepareCandleCandles);
-		this.mainCandleSeries.dataPoints = prepareCandleCandles;
+		reindexCandles(preparedCandles);
+		this.mainCandleSeries.dataPoints = preparedCandles;
 		// deactivate deleted series
 		this.secondaryCandleSeries
 			.filter(series => {
@@ -359,7 +359,7 @@ export class ChartModel extends ChartBaseElement {
 			return;
 		}
 
-		const preparedCandles = sortCandles(mainSeries.candles.map(prepareCandle));
+		const preparedCandles = prepareCandles(mainSeries.candles);
 		const updateResult = updateCandles(this.mainCandleSeries.dataPoints, preparedCandles);
 		const updatedCandles = updateResult.candles;
 		reindexCandles(updatedCandles);
@@ -367,7 +367,7 @@ export class ChartModel extends ChartBaseElement {
 
 		// re-create series
 		secondarySeries.map(series => {
-			const preparedCandles = sortCandles(series.candles.map(prepareCandle));
+			const preparedCandles = prepareCandles(series.candles);
 			const updatedCandles = updateCandles(
 				this.findSecondarySeriesBySymbol(series.instrument?.symbol ?? '')?.dataPoints ?? [],
 				preparedCandles,
@@ -1116,6 +1116,8 @@ export interface UpdateCandlesResult {
 
 const sortCandles = (candles: Candle[]): Candle[] =>
 	candles.slice().sort((a, b) => (a.timestamp === b.timestamp ? 0 : a.timestamp > b.timestamp ? 1 : -1));
+
+const prepareCandles = (candles: PartialCandle[]): Candle[] => sortCandles(candles.map(prepareCandle).filter(isCandle));
 
 const findFirstNotEmptyCandle = (candles: Array<Candle>, startIdx: number, iterateStep: number): Candle | undefined => {
 	if (startIdx >= candles.length) {
