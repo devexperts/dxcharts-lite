@@ -57,4 +57,4 @@ export const deleteCandlesIndex = (candles: Array<Candle>) => {
 	});
 };
 
-export const isCandle = (value: unknown): value is Candle => value !== undefined;
+export const isCandle = (value: Candle | undefined): value is Candle => value !== undefined;
