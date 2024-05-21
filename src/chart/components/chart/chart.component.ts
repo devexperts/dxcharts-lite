@@ -146,7 +146,6 @@ export class ChartComponent extends ChartBaseElement {
 		this.dynamicObjects.model.addObject({
 			id: this.chartModel.mainCandleSeries.id,
 			paneId: this.chartModel.mainCandleSeries.extentComponent.paneUUID,
-			htId: this.chartModel.mainCandleSeries.htId,
 			model: this.chartModel.mainCandleSeries,
 			drawer: this.dataSeriesDrawer,
 		});
@@ -154,8 +153,8 @@ export class ChartComponent extends ChartBaseElement {
 			this.paneManager.dataSeriesAddedSubject.subscribe(series => {
 				this.dynamicObjects.model.addObject({
 					id: series.id,
-					htId: series.htId,
 					paneId: series.extentComponent.paneUUID,
+					parentId: series.parentId,
 					model: series,
 					drawer: this.dataSeriesDrawer,
 				});

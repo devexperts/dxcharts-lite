@@ -9,15 +9,16 @@ export type DynamicObjectId = string | number;
 
 export interface DynamicObject<T = unknown> {
 	readonly id: DynamicObjectId;
-	readonly htId: DynamicObjectId;
 	readonly drawer: DynamicModelDrawer<T>;
 	readonly paneId: PaneId;
 	readonly model?: T;
+	readonly parentId?: DynamicObjectId;
 }
 
 export class DynamicObjectsModel extends ChartBaseElement {
 	private _objects: BehaviorSubject<Record<PaneId, LinkedList<DynamicObject>>>;
 	private modelIdToObjectMap: Map<DynamicObjectId, DynamicObject> = new Map();
+	private _uniqueObjects: Record<PaneId, Set<DynamicObjectId>> = {};
 
 	constructor(private canvasModel: CanvasModel) {
 		super();
@@ -28,7 +29,7 @@ export class DynamicObjectsModel extends ChartBaseElement {
 	 * @returns the `DynamicObject` itself and pane `LinkedList` where the object is stored.
 	 *
 	 */
-	private getObjectInfoById(id: DynamicObjectId): [DynamicObject, LinkedList<DynamicObject>] | undefined {
+	public getObjectInfoById(id: DynamicObjectId): [DynamicObject, LinkedList<DynamicObject>] | undefined {
 		const obj = this.modelIdToObjectMap.get(id);
 
 		if (!obj) {
@@ -77,6 +78,10 @@ export class DynamicObjectsModel extends ChartBaseElement {
 		}
 		paneList.insertAtEnd(obj);
 		this.modelIdToObjectMap.set(obj.id, obj);
+		if (!this.uniqueObjects[paneId]) {
+			this.uniqueObjects[paneId] = new Set();
+		}
+		this.uniqueObjects[paneId].add(obj.parentId ?? obj.id);
 		this.setDynamicObjects(objects);
 	}
 
@@ -96,6 +101,7 @@ export class DynamicObjectsModel extends ChartBaseElement {
 		const targetPos = paneList.getNodePosition(targetNode);
 		paneList.removeAt(targetPos);
 		this.modelIdToObjectMap.delete(id);
+		this.uniqueObjects[obj.paneId].delete(obj.parentId ?? obj.id);
 		if (paneList.size() === 0) {
 			delete this.objects[obj.paneId];
 		}
@@ -242,27 +248,18 @@ export class DynamicObjectsModel extends ChartBaseElement {
 	}
 
 	/**
+	 * Getter for the unique objects, unique object is an entity which is either dynamic object itself, or its parent
+	 */
+	get uniqueObjects() {
+		return this._uniqueObjects;
+	}
+
+	/**
 	 * Sets the objects
 	 * @param objects
 	 */
 	setDynamicObjects(objects: Record<PaneId, LinkedList<DynamicObject>>) {
 		this._objects.next(objects);
 		this.canvasModel.fireDraw();
-	}
-
-	/**
-	 * Unique objects have different hit test id, which means they do not belong to one entity, for example, several linked data series
-	 * @param paneId
-	 */
-	getUniqueObjectsSize(paneId: PaneId) {
-		const uniqueObjectIds: DynamicObjectId[] = [];
-
-		for (const obj of this.objects[paneId]) {
-			if (obj.htId && !uniqueObjectIds.includes(obj.htId)) {
-				uniqueObjectIds.push(obj.htId);
-			}
-		}
-
-		return uniqueObjectIds.length;
 	}
 }

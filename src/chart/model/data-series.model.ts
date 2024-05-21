@@ -123,6 +123,7 @@ export class DataSeriesModel<
 		public extentComponent: YExtentComponent,
 		public id: string,
 		public htId: number,
+		public parentId?: number | string,
 		_config: AtLeastOne<DataSeriesConfig> = cloneUnsafe(DEFAULT_DATA_SERIES_CONFIG),
 	) {
 		super();
