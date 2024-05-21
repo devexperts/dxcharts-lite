@@ -44,6 +44,7 @@ import { YAxisScaleHandler } from './y-axis-scale.handler';
 import { YAxisModel } from './y-axis.model';
 import { HitTestCanvasModel } from '../../model/hit-test-canvas.model';
 import { merge as mergeObj } from '../../utils/merge.utils';
+import { cloneUnsafe } from '../../utils/object.utils';
 
 export type LabelColorResolver = (priceMovement: PriceMovement, colors: FullChartColors) => string;
 
@@ -74,7 +75,8 @@ export class YAxisComponent extends ChartBaseElement {
 		initialState?: YAxisConfig,
 	) {
 		super();
-		this.state = mergeObj(initialState ?? {}, config.components.yAxis, {
+		const initialStateCopy = initialState ? cloneUnsafe(initialState) : {};
+		this.state = mergeObj(initialStateCopy, config.components.yAxis, {
 			overrideExisting: false,
 			addIfMissing: true,
 		});
@@ -88,7 +90,6 @@ export class YAxisComponent extends ChartBaseElement {
 			canvasInputListeners,
 			canvasBoundsContainer,
 			canvasBoundsContainer.getBoundsHitTest(CanvasElement.PANE_UUID_Y_AXIS(paneUUID, extentIdx)),
-			auto => scale.autoScale(auto),
 			hitTestCanvasModel,
 		);
 		this.addChildEntity(this.yAxisScaleHandler);
@@ -331,5 +332,19 @@ export class YAxisComponent extends ChartBaseElement {
 		//  recalculating labels is not needed, so just redraw YAxis
 		this.canvasModel.fireDraw();
 	}
+
+	/* This function assigns a callback to be executed when a double-click event is detected.
+	 * It accepts one parameter `cb`, which is a callback function.
+	 * When a double-click event occurs, the specified callback function `cb` will be invoked.
+	 * By default it calls auto scale on YAxis
+	 */
+	public setDblClickCallback = (cb: () => void) => this.yAxisScaleHandler.setDblClickCallback(cb);
+
+	/* This function assigns a callback to be executed when a double-tap event is detected.
+	 * Similar to the dblclick function, it takes one parameter `cb`, which is a callback function.
+	 * This function ensures that the callback `cb` is called whenever a double-tap event is triggered.
+	 * By default it calls auto scale on YAxis
+	 */
+	public setDblTapCallback = (cb: () => void) => this.yAxisScaleHandler.setDblTapCallback(cb);
 	//#endregion
 }

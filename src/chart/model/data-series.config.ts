@@ -49,6 +49,8 @@ export interface DataSeriesPaintConfig {
 	color: string;
 	lineWidth: number;
 	hoveredLineWidth: number;
+	// vertical offset for the values to avoid intersection with other values at the same candle
+	offset: number;
 	// add this for TREND_HISTOGRAM study type
 	multiplyColors?:
 		| [NegativeColor, PositiveColor]
@@ -59,6 +61,7 @@ export const DEFAULT_DATA_SERIES_PAINT_CONFIG: DataSeriesPaintConfig = {
 	color: '#FF00FF',
 	lineWidth: 1,
 	hoveredLineWidth: 2,
+	offset: 0,
 };
 
 export const DEFAULT_DATA_SERIES_CONFIG: DataSeriesConfig = {

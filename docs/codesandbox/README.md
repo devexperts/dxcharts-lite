@@ -28,7 +28,7 @@ Generator will parse the link between `<!--CSB_LINK-->` tags and replace the url
 The result will be smth like that:
 
 ```md
-<!--CSB_LINK-->[live example](https://codesandbox.io/s/fqz71k)<!--/CSB_LINK-->
+<!--CSB_LINK-->[live example](https://codesandbox.io/s/2jz2df)<!--/CSB_LINK-->
 ```
 
 ## How to run a generator

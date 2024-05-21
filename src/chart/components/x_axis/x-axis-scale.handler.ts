@@ -23,6 +23,9 @@ export class XAxisScaleHandler extends ChartBaseElement {
 	lastXWidth: Unit = 0;
 	lastXPxWidth: Pixel = 0;
 
+	private dblClickCallback: () => void;
+	private dblTapCallback: () => void;
+
 	constructor(
 		private scale: ScaleModel,
 		private canvasInputListener: CanvasInputListenerComponent,
@@ -32,6 +35,9 @@ export class XAxisScaleHandler extends ChartBaseElement {
 		private hitTestCanvasModel: HitTestCanvasModel,
 	) {
 		super();
+
+		this.dblClickCallback = () => chartModel.doBasicScale();
+		this.dblTapCallback = () => chartModel.doBasicScale();
 
 		const dragNDropXComponent = new DragNDropXComponent(
 			this.canvasBoundsContainer.getBoundsHitTest(CanvasElement.X_AXIS),
@@ -63,9 +69,13 @@ export class XAxisScaleHandler extends ChartBaseElement {
 		this.addRxSubscription(
 			this.canvasInputListener
 				.observeDbClick(this.canvasBoundsContainer.getBoundsHitTest(CanvasElement.X_AXIS))
-				.subscribe(() => this.chartModel.doBasicScale()),
+				.subscribe(() => this.dblClickCallback()),
 		);
-
+		this.addRxSubscription(
+			this.canvasInputListener
+				.observeDbTap(this.canvasBoundsContainer.getBoundsHitTest(CanvasElement.X_AXIS))
+				.subscribe(() => this.dblTapCallback()),
+		);
 		this.addRxSubscription(
 			this.chartModel.candlesPrependSubject.subscribe(
 				({ prependedCandlesWidth }) => (this.lastXStart += prependedCandlesWidth),
@@ -99,4 +109,8 @@ export class XAxisScaleHandler extends ChartBaseElement {
 		// Continue redrawing hit test
 		this.hitTestCanvasModel.hitTestDrawersPredicateSubject.next(true);
 	};
+
+	public setDblTapCallback = (cb: () => void) => this.dblTapCallback = cb;
+
+	public setDblClickCallback = (cb: () => void) => this.dblClickCallback = cb;
 }

@@ -31,6 +31,9 @@ export class YAxisScaleHandler extends ChartBaseElement {
 	lastYHeight: Unit = 0;
 	lastYPxHeight: Pixel = 0;
 
+	private dblClickCallback: () => void;
+	private dblTapCallback: () => void;
+
 	constructor(
 		private bus: EventBus,
 		private config: YAxisConfig,
@@ -39,10 +42,13 @@ export class YAxisScaleHandler extends ChartBaseElement {
 		private canvasInputListener: CanvasInputListenerComponent,
 		private bounds: CanvasBoundsContainer,
 		private hitTest: HitBoundsTest,
-		private autoScaleCallback: (auto: boolean) => void,
 		private hitTestCanvasModel: HitTestCanvasModel,
 	) {
 		super();
+
+		this.dblClickCallback = () => scale.autoScale(true);
+		this.dblTapCallback = () => scale.autoScale(true);
+
 		// drag to Y-scale and double click to auto scale
 		if (config.customScale) {
 			const dragNDropYComponent = new DragNDropYComponent(
@@ -66,7 +72,13 @@ export class YAxisScaleHandler extends ChartBaseElement {
 		if (this.config.customScaleDblClick) {
 			this.addRxSubscription(
 				this.canvasInputListener.observeDbClick(this.hitTest).subscribe(() => {
-					this.autoScaleCallback(true);
+					this.dblClickCallback();
+					this.bus.fireDraw();
+				}),
+			);
+			this.addRxSubscription(
+				this.canvasInputListener.observeDbTap(this.hitTest).subscribe(() => {
+					this.dblTapCallback();
 					this.bus.fireDraw();
 				}),
 			);
@@ -102,7 +114,7 @@ export class YAxisScaleHandler extends ChartBaseElement {
 		const newYEnd = this.lastYEnd + delta;
 		if (this.lastYStart !== newYStart || this.lastYEnd !== newYEnd) {
 			this.scale.setYScale(newYStart, newYEnd);
-			this.autoScaleCallback(false);
+			this.scale.state.auto = false;
 			this.bus.fireDraw();
 		}
 	};
@@ -112,4 +124,8 @@ export class YAxisScaleHandler extends ChartBaseElement {
 		// Continue redrawing hit test
 		this.hitTestCanvasModel.hitTestDrawersPredicateSubject.next(true);
 	};
+
+	public setDblTapCallback = (cb: () => void) => this.dblTapCallback = cb;
+
+	public setDblClickCallback = (cb: () => void) => this.dblClickCallback = cb;
 }

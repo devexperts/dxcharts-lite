@@ -67,7 +67,7 @@ export class DataSeriesModel<
 > extends ChartBaseElement {
 	public name: string = '';
 
-	public hovered = false;
+	public highlighted = false;
 	public yAxisLabelProvider: DataSeriesYAxisLabelsProvider;
 	public readonly config: DataSeriesConfig;
 	public scale: ScaleModel;
