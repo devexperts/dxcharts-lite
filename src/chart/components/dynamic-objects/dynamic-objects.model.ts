@@ -12,6 +12,7 @@ export interface DynamicObject<T = unknown> {
 	readonly drawer: DynamicModelDrawer<T>;
 	readonly paneId: PaneId;
 	readonly model?: T;
+	// this property shows if a dynamic object belongs to some higher entity, for example, data series is a part of a set of data series, which is a single object
 	readonly parentId?: DynamicObjectId;
 }
 
@@ -101,7 +102,9 @@ export class DynamicObjectsModel extends ChartBaseElement {
 		const targetPos = paneList.getNodePosition(targetNode);
 		paneList.removeAt(targetPos);
 		this.modelIdToObjectMap.delete(id);
-		this.uniqueObjects[obj.paneId].delete(obj.parentId ?? obj.id);
+		if (this.uniqueObjects[obj.paneId]) {
+			this.uniqueObjects[obj.paneId].delete(obj.parentId ?? obj.id);
+		}
 		if (paneList.size() === 0) {
 			delete this.objects[obj.paneId];
 		}
