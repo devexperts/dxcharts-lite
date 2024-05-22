@@ -154,6 +154,7 @@ export class ChartComponent extends ChartBaseElement {
 				this.dynamicObjects.model.addObject({
 					id: series.id,
 					paneId: series.extentComponent.paneUUID,
+					parentId: series.parentId,
 					model: series,
 					drawer: this.dataSeriesDrawer,
 				});

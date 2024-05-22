@@ -12,11 +12,14 @@ export interface DynamicObject<T = unknown> {
 	readonly drawer: DynamicModelDrawer<T>;
 	readonly paneId: PaneId;
 	readonly model?: T;
+	// this property shows if a dynamic object belongs to some higher entity, for example, data series is a part of a set of data series, which is a single object
+	readonly parentId?: DynamicObjectId;
 }
 
 export class DynamicObjectsModel extends ChartBaseElement {
 	private _objects: BehaviorSubject<Record<PaneId, LinkedList<DynamicObject>>>;
 	private modelIdToObjectMap: Map<DynamicObjectId, DynamicObject> = new Map();
+	private _uniqueObjects: Record<PaneId, Set<DynamicObjectId>> = {};
 
 	constructor(private canvasModel: CanvasModel) {
 		super();
@@ -27,7 +30,7 @@ export class DynamicObjectsModel extends ChartBaseElement {
 	 * @returns the `DynamicObject` itself and pane `LinkedList` where the object is stored.
 	 *
 	 */
-	private getObjectInfoById(id: DynamicObjectId): [DynamicObject, LinkedList<DynamicObject>] | undefined {
+	public getObjectInfoById(id: DynamicObjectId): [DynamicObject, LinkedList<DynamicObject>] | undefined {
 		const obj = this.modelIdToObjectMap.get(id);
 
 		if (!obj) {
@@ -76,6 +79,10 @@ export class DynamicObjectsModel extends ChartBaseElement {
 		}
 		paneList.insertAtEnd(obj);
 		this.modelIdToObjectMap.set(obj.id, obj);
+		if (!this.uniqueObjects[paneId]) {
+			this.uniqueObjects[paneId] = new Set();
+		}
+		this.uniqueObjects[paneId].add(obj.parentId ?? obj.id);
 		this.setDynamicObjects(objects);
 	}
 
@@ -95,6 +102,9 @@ export class DynamicObjectsModel extends ChartBaseElement {
 		const targetPos = paneList.getNodePosition(targetNode);
 		paneList.removeAt(targetPos);
 		this.modelIdToObjectMap.delete(id);
+		if (this.uniqueObjects[obj.paneId]) {
+			this.uniqueObjects[obj.paneId].delete(obj.parentId ?? obj.id);
+		}
 		if (paneList.size() === 0) {
 			delete this.objects[obj.paneId];
 		}
@@ -238,6 +248,13 @@ export class DynamicObjectsModel extends ChartBaseElement {
 	 */
 	get objects() {
 		return this._objects.getValue();
+	}
+
+	/**
+	 * Getter for the unique objects, unique object is an entity which is either dynamic object itself, or its parent
+	 */
+	get uniqueObjects() {
+		return this._uniqueObjects;
 	}
 
 	/**
