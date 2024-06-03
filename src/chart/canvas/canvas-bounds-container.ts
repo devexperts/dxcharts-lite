@@ -96,7 +96,7 @@ export class CanvasBoundsContainer {
 
 	private boundsChangedSubject = new Subject<void>();
 	public barResizerChangedSubject = new Subject<void>();
-	private _graphsHeightRatio: Record<string, number> = { chart: 1 };
+	private _graphsHeightRatio: Record<string, number> = { [CHART_UUID]: 1 };
 	get graphsHeightRatio(): Record<string, number> {
 		return this._graphsHeightRatio;
 	}
