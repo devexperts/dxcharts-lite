@@ -210,12 +210,12 @@ export class ScaleModel extends ViewportModel {
 		if (chartWidth > 0) {
 			const maxZoomReached = zoomX - calculateZoom(this.config.components.chart.minCandles, chartWidth) <= delta;
 			// max zoom reached and trying to zoom in further
-			const maxZoomDisabled = maxZoomReached && zoomIn === true;
+			const maxZoomDisabled = maxZoomReached && zoomIn;
 
 			const minZoomReached =
 				zoomX - calculateZoom(chartWidth / this.config.components.chart.minWidth, chartWidth) >= delta;
 			// min zoom reached and trying to zoom out further
-			const minZoomDisabled = minZoomReached && zoomIn === false;
+			const minZoomDisabled = minZoomReached && !zoomIn;
 
 			return { max: maxZoomDisabled, min: minZoomDisabled };
 		}
@@ -275,7 +275,6 @@ export class ScaleModel extends ViewportModel {
 	private setLockPriceScale(yStart: Unit, yEnd: Unit, fire = false, initialState: ViewportModelState) {
 		const zoomIn = yEnd < initialState.yEnd;
 		if ((this.zoomReached.min && zoomIn === false) || (this.zoomReached.max && zoomIn === true)) {
-			this.fireChanged();
 			return;
 		}
 
@@ -290,6 +289,7 @@ export class ScaleModel extends ViewportModel {
 		changeXToKeepRatio(constrainedState, this.zoomXYRatio);
 		this.zoomReached = this.calculateZoomReached(constrainedState.zoomX, zoomIn);
 		this.setXScale(constrainedState.xStart, constrainedState.xEnd);
+		this.fireChanged();
 	}
 
 	private setYScaleCommon(yStart: Unit, yEnd: Unit, fire = false, initialState: ViewportModelState) {
