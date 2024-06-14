@@ -8,7 +8,7 @@ import { Drawer } from '../../drawers/drawing-manager';
 import { CrossToolHover, CrossToolModel, CrossToolType } from './cross-tool.model';
 
 export interface CrossToolTypeDrawer {
-	draw: (ctx: CanvasRenderingContext2D, hover: CrossToolHover) => void;
+	draw: (canvasModel: CanvasModel, hover: CrossToolHover) => void;
 }
 
 export class CrossToolDrawer implements Drawer {
@@ -29,7 +29,7 @@ export class CrossToolDrawer implements Drawer {
 	draw() {
 		const drawer = this.crossToolTypeDrawers[this.model.type];
 		if (drawer) {
-			this.model.currentHover && drawer.draw(this.crossToolCanvasModel.ctx, this.model.currentHover);
+			this.model.currentHover && drawer.draw(this.crossToolCanvasModel, this.model.currentHover);
 		} else {
 			console.error(`No cross tool drawer type registered for drawer type ${this.model.type}`);
 		}

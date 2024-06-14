@@ -5,6 +5,7 @@
  */
 import { ChartConfigComponentsChart } from '../../chart.config';
 import { CandleSeriesModel } from '../../model/candle-series.model';
+import { CanvasModel } from '../../model/canvas.model';
 import { DataSeriesModel, VisualSeriesPoint } from '../../model/data-series.model';
 import VisualCandle from '../../model/visual-candle';
 import { flat } from '../../utils/array.utils';
@@ -32,11 +33,12 @@ export class BarDrawer implements SeriesDrawer {
 	}
 
 	public draw(
-		ctx: CanvasRenderingContext2D,
+		canvasModel: CanvasModel,
 		points: VisualSeriesPoint[][],
 		candleSeries: DataSeriesModel,
 		drawerConfig: ChartDrawerConfig,
 	) {
+		const ctx = canvasModel.ctx;
 		if (candleSeries instanceof CandleSeriesModel) {
 			// @ts-ignore
 			const visualCandles: VisualCandle[] = flat(points);

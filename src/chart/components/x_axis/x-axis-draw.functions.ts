@@ -5,6 +5,7 @@
  */
 import { CanvasBoundsContainer, CanvasElement } from '../../canvas/canvas-bounds-container';
 import { FullChartConfig } from '../../chart.config';
+import { CanvasModel } from '../../model/canvas.model';
 import { XAxisLabel } from './x-axis-labels.model';
 
 const DEFAULT_X_LABEL_PADDING = { x: 4, y: 4 };
@@ -19,7 +20,7 @@ export type LabelAlign = 'start' | 'end' | 'middle';
  * @param label
  */
 export function drawXAxisLabel(
-	ctx: CanvasRenderingContext2D,
+	canvasModel: CanvasModel,
 	canvasBoundsContainer: CanvasBoundsContainer,
 	config: FullChartConfig,
 	label: XAxisLabel,
@@ -29,6 +30,7 @@ export function drawXAxisLabel(
 	const xAxisColors = config.colors.xAxis;
 	const offsetTop = padding.top ?? 0;
 
+	const ctx = canvasModel.ctx;
 	const xAxisBounds = canvasBoundsContainer.getBounds(CanvasElement.X_AXIS);
 	ctx.save();
 	ctx.font = `bold ${fontSize}px ${fontFamily}`;

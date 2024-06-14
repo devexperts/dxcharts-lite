@@ -121,7 +121,7 @@ export class CanvasBoundsContainer {
 			this.updateCanvasOnPageLocation(calculatedBCR);
 			this.recalculateBounds();
 		});
-		this.yAxisBoundsContainer = new YAxisBoundsContainer(this.config, this.canvasModel);
+		this.yAxisBoundsContainer = new YAxisBoundsContainer(this.config);
 	}
 
 	public updateYAxisWidths() {
@@ -462,7 +462,7 @@ export class CanvasBoundsContainer {
 	getXAxisHeight() {
 		if (!this.xAxisHeight) {
 			const font = this.config.components.xAxis.fontSize + 'px ' + this.config.components.xAxis.fontFamily;
-			const fontHeight = calculateSymbolHeight(font, this.canvasModel.ctx);
+			const fontHeight = calculateSymbolHeight(font);
 			this.xAxisHeight =
 				fontHeight +
 				(this.config.components.xAxis.padding.top ?? 0) +

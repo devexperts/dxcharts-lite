@@ -7,9 +7,10 @@ module.exports = env => {
 		mode: 'development',
 		entry: {
 			index: './src/index.dev.ts',
+			'offscreen-worker': './src/chart/canvas/offscreen/offscreen-worker.js',
 		},
 		output: {
-			filename: `./test/[name].js`,
+			filename: `./[name].js`,
 			path: path.resolve(__dirname, 'dist'),
 		},
 		resolve: {
@@ -23,6 +24,7 @@ module.exports = env => {
 			historyApiFallback: true,
 			open: false,
 			liveReload: false,
+			headers: { 'Cross-Origin-Opener-Policy': 'same-origin', 'Cross-Origin-Embedder-Policy': 'credentialless' },
 		},
 		module: {
 			rules: [
@@ -32,7 +34,7 @@ module.exports = env => {
 					include: path.resolve('./src'),
 					loader: 'esbuild-loader',
 					options: {
-						target: 'es6',
+						target: 'es2020',
 					},
 				},
 			],

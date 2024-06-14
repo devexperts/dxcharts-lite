@@ -4,6 +4,7 @@
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 import { FullChartConfig } from '../../chart.config';
+import { CanvasModel } from '../../model/canvas.model';
 import { DataSeriesModel, VisualSeriesPoint } from '../../model/data-series.model';
 import { calculateSymbolHeight, calculateTextWidth } from '../../utils/canvas/canvas-font-measure-tool.utils';
 import { ChartDrawerConfig, SeriesDrawer } from '../data-series.drawer';
@@ -12,11 +13,12 @@ export class TextDrawer implements SeriesDrawer {
 	constructor(private config: FullChartConfig) {}
 
 	draw(
-		ctx: CanvasRenderingContext2D,
+		canvasModel: CanvasModel,
 		allPoints: VisualSeriesPoint[][],
 		model: DataSeriesModel,
 		drawerConfig: ChartDrawerConfig,
 	): void {
+		const ctx = canvasModel.ctx;
 		ctx.save();
 		allPoints.forEach((points, idx) => {
 			const config = model.getPaintConfig(idx);
@@ -25,8 +27,8 @@ export class TextDrawer implements SeriesDrawer {
 			ctx.font = font;
 			points.forEach(p => {
 				const text = model.getTextForPoint(p);
-				const textWidth = calculateTextWidth(text, ctx, font);
-				const textHeight = calculateSymbolHeight(font, ctx);
+				const textWidth = calculateTextWidth(text, font);
+				const textHeight = calculateSymbolHeight(font);
 				const x = model.view.toX(p.centerUnit) - textWidth / 2;
 				const y = model.view.toY(p.close) + textHeight;
 				ctx.fillText(text, x, y);
