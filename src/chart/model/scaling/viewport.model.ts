@@ -9,6 +9,7 @@ import { ChartBaseElement } from '../chart-base-element';
 import { ViewportMovementAnimation } from '../../animation/types/viewport-movement-animation';
 import { keys } from '../../utils/object.utils';
 import { Bounds } from '../bounds.model';
+import { ZoomXToZoomYRatio } from './lock-ratio.model';
 
 // Basic:
 // ---------
@@ -100,6 +101,7 @@ export interface ViewportModelState {
 	yEnd: Unit;
 	zoomX: Zoom;
 	zoomY: Zoom;
+	zoomXY: ZoomXToZoomYRatio;
 	inverseY: boolean;
 }
 
@@ -124,6 +126,7 @@ export abstract class ViewportModel extends ChartBaseElement implements Viewable
 	private _yEnd: Unit = 0;
 	private _zoomX: Zoom = 1;
 	private _zoomY: Zoom = 1;
+	private _zoomXY: ZoomXToZoomYRatio = 0;
 	//endregion
 	// toggle Y inverse mode
 	private _inverseY: boolean = false;
@@ -324,6 +327,7 @@ export abstract class ViewportModel extends ChartBaseElement implements Viewable
 			yEnd: this.yEnd,
 			zoomX: this.zoomX,
 			zoomY: this.zoomY,
+			zoomXY: this.zoomXY,
 			inverseY: this.inverseY,
 		};
 	}
@@ -401,6 +405,14 @@ export abstract class ViewportModel extends ChartBaseElement implements Viewable
 
 	set zoomY(value: Zoom) {
 		this._zoomY = value;
+	}
+
+	get zoomXY(): ZoomXToZoomYRatio {
+		return this._zoomXY;
+	}
+
+	set zoomXY(value: ZoomXToZoomYRatio) {
+		this._zoomXY = value;
 	}
 
 	get inverseY(): boolean {
