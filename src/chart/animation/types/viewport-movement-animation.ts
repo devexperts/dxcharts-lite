@@ -8,6 +8,7 @@ import { AnimationConfig } from '../canvas-animation';
 import { Unit, ViewportModel, Zoom } from '../../model/scaling/viewport.model';
 import { easeExpOut } from '../../utils/math.utils';
 import { uuid } from '../../utils/uuid.utils';
+import { ratioFromZoomXY } from '../../model/scaling/lock-ratio.model';
 
 export type easingFn = (normalizedTime: number) => number;
 
@@ -71,6 +72,7 @@ export class ViewportMovementAnimation extends Animation {
 				yEnd: newYEnd,
 				zoomX: newZoomX,
 				zoomY: newZoomY,
+				zoomXY: ratioFromZoomXY(newZoomX, newZoomY),
 				inverseY: this.viewportModel.inverseY,
 			});
 		}
@@ -88,6 +90,7 @@ export class ViewportMovementAnimation extends Animation {
 			yEnd: this.animationConfig.targetYEnd,
 			zoomX: this.animationConfig.targetZoomX,
 			zoomY: this.animationConfig.targetZoomY,
+			zoomXY: ratioFromZoomXY(this.animationConfig.targetZoomX, this.animationConfig.targetZoomY),
 			inverseY: this.viewportModel.inverseY,
 		});
 	}

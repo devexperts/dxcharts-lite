@@ -16,15 +16,21 @@ export const zoomYToZoomX = (zoomY: Zoom, ratio: ZoomXToZoomYRatio): Zoom => zoo
  * @param state
  * @param zoomXYRatio
  */
-export const changeYToKeepRatio = (state: ViewportModelState, zoomXYRatio: ZoomXToZoomYRatio) => {
-	const prevZoomY = state.zoomY;
-	state.zoomY = zoomXToZoomY(state.zoomX, zoomXYRatio);
-	const zoomYMult = state.zoomY / prevZoomY;
-	const lastYHeight = state.yEnd - state.yStart;
-	const newYHeight = lastYHeight * zoomYMult;
-	const delta = newYHeight - lastYHeight;
-	state.yEnd = state.yEnd + delta / 2;
-	state.yStart = state.yStart - delta / 2;
+export const changeYToKeepRatio = (prevState: ViewportModelState, newState: ViewportModelState) => {
+	const prevZoomX = prevState.zoomX;
+	const prevZoomY = prevState.zoomY;
+	const prevZoomXY = ratioFromZoomXY(prevZoomX, prevZoomY);
+	const prevYHeight = prevState.yEnd - prevState.yStart;
+	// recalculate zoomY
+	newState.zoomY = zoomXToZoomY(newState.zoomX, prevZoomXY);
+	const zoomYMult = newState.zoomY / prevZoomY;
+	const newYHeight = prevYHeight * zoomYMult;
+	const delta = newYHeight - prevYHeight;
+	newState.yEnd = newState.yEnd + delta / 2;
+	newState.yStart = newState.yStart - delta / 2;
+	// recalculate zoomXY ratio
+	const newZoomXY = ratioFromZoomXY(newState.zoomX, newState.zoomY);
+	newState.zoomXY = newZoomXY;
 };
 
 /**
@@ -32,12 +38,18 @@ export const changeYToKeepRatio = (state: ViewportModelState, zoomXYRatio: ZoomX
  * @param state
  * @param zoomXYRatio
  */
-export const changeXToKeepRatio = (state: ViewportModelState, zoomXYRatio: ZoomXToZoomYRatio) => {
-	const prevZoomX = state.zoomX;
-	state.zoomX = zoomYToZoomX(state.zoomY, zoomXYRatio);
-	const zoomXMult = state.zoomX / prevZoomX;
-	const lastXWidth = state.xEnd - state.xStart;
-	const newXWidth = lastXWidth * zoomXMult;
-	const delta = newXWidth - lastXWidth;
-	state.xStart = state.xStart - delta;
+export const changeXToKeepRatio = (prevState: ViewportModelState, newState: ViewportModelState) => {
+	const prevZoomX = prevState.zoomX;
+	const prevZoomY = prevState.zoomY;
+	const prevZoomXY = ratioFromZoomXY(prevZoomX, prevZoomY);
+	const prevXWidth = prevState.xEnd - prevState.xStart;
+	// recalculate zoomX
+	newState.zoomX = zoomYToZoomX(newState.zoomY, prevZoomXY);
+	const zoomXMult = newState.zoomX / prevZoomX;
+	const newXWidth = prevXWidth * zoomXMult;
+	const delta = newXWidth - prevXWidth;
+	newState.xStart = newState.xStart - delta;
+	// recalculate zoomXY ratio
+	const newZoomXY = ratioFromZoomXY(newState.zoomX, newState.zoomY);
+	newState.zoomXY = newZoomXY;
 };
