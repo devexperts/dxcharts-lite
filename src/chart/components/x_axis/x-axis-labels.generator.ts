@@ -34,7 +34,7 @@ export interface XAxisLabelsGenerator {
 	/**
 	 * Generates x-axis labels from scratch. Heavy operation.
 	 */
-	generateLabels(): void;
+	generateLabels(prependedCandles?: VisualCandle[]): void;
 	/**
 	 * Updates current labels state (x-position). Lightweight operation.
 	 */
@@ -130,7 +130,7 @@ export class XAxisTimeLabelsGenerator implements XAxisLabelsGenerator {
 	/**
 	 * Make a prediction(750) about how many candles we need to fake to fill all X axis by labels
 	 */
-	private getAllCandlesWithFake() {
+	private getAllCandlesWithFake(prependedCandles: VisualCandle[] = []) {
 		const visualCandles = this.chartModel.mainCandleSeries.visualPoints;
 		if (visualCandles.length === 0) {
 			return [];
@@ -146,7 +146,7 @@ export class XAxisTimeLabelsGenerator implements XAxisLabelsGenerator {
 			),
 		);
 
-		return [...visualCandles, ...appendFakeCandle];
+		return [...prependedCandles, ...visualCandles, ...appendFakeCandle];
 	}
 
 	/**
@@ -200,8 +200,8 @@ export class XAxisTimeLabelsGenerator implements XAxisLabelsGenerator {
 	 * @function
 	 * @returns {void}
 	 */
-	private generateWeightedLabels() {
-		const allCandlesWithFake = this.getAllCandlesWithFake();
+	private generateWeightedLabels(prependedCandles: VisualCandle[] = []) {
+		const allCandlesWithFake = this.getAllCandlesWithFake(prependedCandles);
 		const weightedPoints = mapCandlesToWeightedPoints(
 			allCandlesWithFake,
 			this.weightToTimeFormatMatcherArray,
@@ -339,8 +339,8 @@ export class XAxisTimeLabelsGenerator implements XAxisLabelsGenerator {
 	 * Calls the method generateWeightedLabels to generate labels.
 	 * @returns {void}
 	 */
-	public generateLabels(): void {
-		this.generateWeightedLabels();
+	public generateLabels(prependedCandles?: VisualCandle[]): void {
+		this.generateWeightedLabels(prependedCandles);
 	}
 
 	/**
