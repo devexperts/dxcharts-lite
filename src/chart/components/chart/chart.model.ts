@@ -289,7 +289,9 @@ export class ChartModel extends ChartBaseElement {
 		});
 		this.chartBaseModel.recalculatePeriod();
 		this.autoScaleOnCandles();
-		this.scale.doAutoScale();
+		if (this.config.scale.auto) {
+			this.scale.doAutoScale();
+		}
 		this.candlesSetSubject.next();
 		this.canvasModel.fireDraw();
 	}
@@ -978,7 +980,9 @@ export class ChartModel extends ChartBaseElement {
 				series.recalculateVisualPoints();
 			}
 		});
-		this.scale.doAutoScale();
+		if (this.config.scale.auto) {
+			this.scale.doAutoScale();
+		}
 		this.candlesUpdatedSubject.next();
 	}
 
