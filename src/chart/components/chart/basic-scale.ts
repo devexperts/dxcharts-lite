@@ -15,8 +15,6 @@ import { ChartModel } from './chart.model';
  */
 export const createBasicScaleViewportTransformer = (scale: ScaleModel) => (visualCandleSource: VisualCandle[]) => {
 	if (visualCandleSource.length !== 0) {
-		const state = scale.export();
-
 		const vCandles = visualCandleSource.slice(
 			Math.max(visualCandleSource.length - scale.state.defaultViewportItems, 0),
 		);
@@ -24,7 +22,6 @@ export const createBasicScaleViewportTransformer = (scale: ScaleModel) => (visua
 		const endCandle = vCandles[vCandles.length - 1];
 		scale.setXScale(startCandle.startUnit, endCandle.startUnit + endCandle.width + scale.offsets.right);
 		scale.doAutoScale(true);
-		scale.recalculateZoomXYRatio(state);
 		scale.fireChanged();
 	}
 };
