@@ -9,7 +9,7 @@ import { CanvasAnimation } from '../animation/canvas-animation';
 import { startViewportModelAnimation } from '../animation/viewport-model-animation';
 import { cloneUnsafe } from '../utils/object.utils';
 import { AutoScaleViewportSubModel } from './scaling/auto-scale.model';
-import { changeXToKeepRatio, changeYToKeepRatio, ratioFromZoomXY } from './scaling/lock-ratio.model';
+import { changeXToKeepRatio, changeYToKeepRatio } from './scaling/lock-ratio.model';
 import { moveXStart, moveYStart } from './scaling/move-chart.functions';
 import {
 	Price,
@@ -230,7 +230,7 @@ export class ScaleModel extends ViewportModel {
 	 * @param fireChanged
 	 * @param forceNoAutoScale - force NOT apply auto-scaling (for lazy loading)
 	 */
-	public setXScale(xStart: Unit, xEnd: Unit, forceNoAnimation: boolean = true, forceUpdateY = true) {
+	public setXScale(xStart: Unit, xEnd: Unit, forceNoAnimation: boolean = true) {
 		const initialState = this.export();
 		const zoomX = this.calculateZoomX(xStart, xEnd);
 		if (initialState.xStart === xStart && initialState.xEnd === xEnd && initialState.zoomX > 0) {
@@ -244,7 +244,7 @@ export class ScaleModel extends ViewportModel {
 			return;
 		}
 
-		if (this.state.lockPriceToBarRatio && forceUpdateY) {
+		if (this.state.lockPriceToBarRatio) {
 			changeYToKeepRatio(initialState, constrainedState);
 		}
 		if (this.state.auto) {
@@ -265,13 +265,21 @@ export class ScaleModel extends ViewportModel {
 		}
 
 		if (this.state.lockPriceToBarRatio) {
-			this.setLockPriceScale(yStart, yEnd, fire, initialState);
+			this.setLockedYScale(yStart, yEnd, fire, initialState);
 			return;
 		}
-		this.setYScaleCommon(yStart, yEnd, fire, initialState);
+
+		super.setYScale(yStart, yEnd, fire);
+		const state = this.export();
+		const constrainedState = this.scalePostProcessor(initialState, state);
+		if (this.state.auto) {
+			this.autoScaleModel.doAutoYScale(constrainedState);
+		}
+
+		this.apply(constrainedState);
 	}
 
-	private setLockPriceScale(yStart: Unit, yEnd: Unit, fire = false, initialState: ViewportModelState) {
+	private setLockedYScale(yStart: Unit, yEnd: Unit, fire = false, initialState: ViewportModelState) {
 		const zoomIn = yEnd < initialState.yEnd;
 		if ((this.zoomReached.min && zoomIn === false) || (this.zoomReached.max && zoomIn === true)) {
 			return;
@@ -283,19 +291,8 @@ export class ScaleModel extends ViewportModel {
 
 		changeXToKeepRatio(initialState, constrainedState);
 		this.zoomReached = this.calculateZoomReached(constrainedState.zoomX, zoomIn);
-		this.setXScale(constrainedState.xStart, constrainedState.xEnd, true, false);
-		this.fireChanged();
-	}
-
-	private setYScaleCommon(yStart: Unit, yEnd: Unit, fire = false, initialState: ViewportModelState) {
-		super.setYScale(yStart, yEnd, fire);
-		const state = this.export();
-		const constrainedState = this.scalePostProcessor(initialState, state);
-		if (this.state.auto) {
-			this.autoScaleModel.doAutoYScale(constrainedState);
-		}
-
 		this.apply(constrainedState);
+		this.fireChanged();
 	}
 
 	/**
@@ -440,17 +437,8 @@ export class ScaleModel extends ViewportModel {
 			this.state.lockPriceToBarRatio = false;
 			return;
 		}
-		if (value) {
-			const state = this.export();
-			this.recalculateZoomXYRatio(state);
-		}
+
 		this.state.lockPriceToBarRatio = value;
-	}
-	/**
-	 * Recalculates the zoom X/Y ratio based on the current zoom levels.
-	 */
-	public recalculateZoomXYRatio(state: ViewportModelState) {
-		state.zoomXY = ratioFromZoomXY(state.zoomX, state.zoomY);
 	}
 }
 
