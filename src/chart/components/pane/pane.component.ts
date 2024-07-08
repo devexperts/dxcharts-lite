@@ -41,6 +41,7 @@ import {
 } from './extent/y-extent-component';
 import { PaneHitTestController } from './pane-hit-test.controller';
 import { HitTestCanvasModel } from '../../model/hit-test-canvas.model';
+import { ChartResizeHandler } from '../../inputhandlers/chart-resize.handler';
 
 export class PaneComponent extends ChartBaseElement {
 	/**
@@ -87,6 +88,7 @@ export class PaneComponent extends ChartBaseElement {
 		public seriesAddedSubject: Subject<DataSeriesModel>,
 		public seriesRemovedSubject: Subject<DataSeriesModel>,
 		private hitTestCanvasModel: HitTestCanvasModel,
+		private chartResizeHandler: ChartResizeHandler,
 		options?: AtLeastOne<YExtentCreationOptions>,
 	) {
 		super();
@@ -208,6 +210,7 @@ export class PaneComponent extends ChartBaseElement {
 				this.uuid,
 				extentIdx,
 				this.hitTestCanvasModel,
+				this.chartResizeHandler,
 				initialYAxisState,
 			);
 

@@ -3,7 +3,8 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { Subject } from 'rxjs';
+import { merge, animationFrameScheduler, Subject } from 'rxjs';
+import { throttleTime } from 'rxjs/operators';
 import { CanvasBoundsContainer, CanvasElement } from '../../canvas/canvas-bounds-container';
 import { CursorHandler } from '../../canvas/cursor.handler';
 import { YAxisWidthContributor } from '../../canvas/y-axis-bounds.container';
@@ -45,6 +46,7 @@ import { YAxisModel } from './y-axis.model';
 import { HitTestCanvasModel } from '../../model/hit-test-canvas.model';
 import { merge as mergeObj } from '../../utils/merge.utils';
 import { cloneUnsafe } from '../../utils/object.utils';
+import { ChartResizeHandler } from '../../inputhandlers/chart-resize.handler';
 
 export type LabelColorResolver = (priceMovement: PriceMovement, colors: FullChartColors) => string;
 
@@ -72,6 +74,7 @@ export class YAxisComponent extends ChartBaseElement {
 		public paneUUID: string,
 		public extentIdx: number,
 		hitTestCanvasModel: HitTestCanvasModel,
+		private chartResizeHandler: ChartResizeHandler,
 		initialState?: YAxisConfig,
 	) {
 		super();
@@ -135,6 +138,14 @@ export class YAxisComponent extends ChartBaseElement {
 			this.scale.beforeStartAnimationSubject.subscribe(
 				() => this.state.type === 'percent' && this.scale.haltAnimation(),
 			),
+		);
+
+		this.addRxSubscription(
+			merge(this.scale.yChanged, this.chartResizeHandler.canvasResized)
+				.pipe(throttleTime(50, animationFrameScheduler, { trailing: true, leading: true }))
+				.subscribe(() => {
+					this.updateOrderedLabels();
+				}),
 		);
 	}
 
