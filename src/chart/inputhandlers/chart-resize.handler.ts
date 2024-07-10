@@ -10,6 +10,7 @@ import EventBus from '../events/event-bus';
 import { EVENT_DRAW, EVENT_RESIZED } from '../events/events';
 import { uuid } from '../utils/uuid.utils';
 import { animationFrameThrottledPrior } from '../utils/performance/request-animation-frame-throttle.utils';
+import { createMutex } from '../utils/mutex';
 
 export type PickedDOMRect = Pick<DOMRect, 'x' | 'y' | 'width' | 'height'>;
 
@@ -21,6 +22,7 @@ export class ChartResizeHandler {
 	public previousBCR: PickedDOMRect | undefined = undefined;
 	private animFrameId = `resize_${uuid()}`;
 	public canvasResized = new Subject<PickedDOMRect>();
+	public mutex = createMutex();
 	constructor(
 		private frameElement: HTMLElement,
 		private resizerElement: HTMLElement,
@@ -56,7 +58,7 @@ export class ChartResizeHandler {
 	 * @memberof ClassName
 	 * @returns {void}
 	 */
-	public fireUpdates() {
+	public async fireUpdates() {
 		const resizerElementBCR = this.resizerElement.getBoundingClientRect();
 		const newBCR = {
 			x: resizerElementBCR.x,
@@ -69,7 +71,9 @@ export class ChartResizeHandler {
 		}
 		if (this.previousBCR === undefined || this.isBCRDimensionsDiffer(this.previousBCR, newBCR)) {
 			this.previousBCR = newBCR;
-			this.canvasModels.forEach(model => this.previousBCR && model.updateDPR(this.previousBCR));
+			await Promise.all(this.canvasModels.map(model => model.canvasReady));
+			// we use mutex in order to avoid situation when canvas resize happened during offscreen rendering
+			await this.mutex.calculateSafe(() => this.canvasModels.forEach(model => model.updateDPR(newBCR)));
 			this.canvasResized.next(newBCR);
 			this.bus.fire(EVENT_RESIZED, newBCR);
 			this.bus.fire(EVENT_DRAW);

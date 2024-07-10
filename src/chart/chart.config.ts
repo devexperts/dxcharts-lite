@@ -68,6 +68,21 @@ export const getDefaultConfig = (): FullChartConfig => ({
 	shortDays: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
 	shortMonths: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
 	rtl: false,
+	experimental: {
+		offscreen: {
+			enabled: false,
+			fonts: [],
+			bufferSizes: {
+				mainCanvas: 50_000,
+				hitTestCanvas: 15 * 50_000,
+				dynamicObjectsCanvas: 16 * 100_000,
+				yAxisLabelsCanvas: 50_000,
+				crossToolCanvas: 8000,
+				backgroundCanvas: 4000,
+				snapshotCanvas: 12 * 100_000,
+			}
+		},
+	},
 	scale: {
 		keepZoomXOnYAxisChange: true,
 		auto: true,
@@ -856,6 +871,34 @@ export interface FullChartConfig extends TimeFormatterConfig {
 	useUTCTimeOverride: boolean;
 	animation: AnimationConfig;
 	devexpertsPromoLink: boolean;
+	experimental: ExperimentalFeatures;
+}
+
+export interface ExperimentalFeatures {
+	offscreen: OffscreenFeature;
+}
+
+export interface OffscreenFeature {
+	/**
+	 * Enables chart's drawing in the offscreen canvas worker.
+	 */
+	enabled: boolean;
+	// if you use custom fonts for canvas objects, then you need to provide them here
+	fonts: Array<{
+		// example: 'Open Sans Semibold'
+		fontFamily: string;
+		// example: url('../fonts/OpenSans-Bold.ttf'), url('../fonts/OpenSans-Bold.ttf') format('truetype')
+		url: string;
+	}>;
+	bufferSizes: {
+		mainCanvas: number;
+		snapshotCanvas: number;
+		crossToolCanvas: number;
+		dynamicObjectsCanvas: number;
+		backgroundCanvas: number;
+		hitTestCanvas: number;
+		yAxisLabelsCanvas: number;
+	};
 }
 
 // use this to merge partial config with existing

@@ -19,6 +19,7 @@ import {
 import { DateTimeFormatterFactory } from '../../model/date-time.formatter';
 import { getFormattedTimeLabel } from './navigation-map.model';
 import { flat } from '../../utils/array.utils';
+import { isOffscreenCanvasModel } from '../../canvas/offscreen/canvas-offscreen-wrapper';
 
 const BTN_ARROW_WIDTH = 4;
 
@@ -97,10 +98,25 @@ export class NavigationMapDrawer implements Drawer {
 					this.config.colors.navigationMap.mapGradientTopColor &&
 					this.config.colors.navigationMap.mapGradientBottomColor
 				) {
-					const grd = ctx.createLinearGradient(chart.x, chart.y, chart.x, chart.y + chart.height);
-					grd.addColorStop(0, this.config.colors.navigationMap.mapGradientTopColor);
-					grd.addColorStop(1, this.config.colors.navigationMap.mapGradientBottomColor);
-					ctx.fillStyle = grd;
+					if (isOffscreenCanvasModel(this.canvasModel)) {
+						const offscreenCtx = this.canvasModel.ctx;
+						// special method for gradient fill, because we can't transfer CanvasGradient directly to offscreen
+						offscreenCtx.setGradientFillStyle(
+							chart.x,
+							chart.y,
+							chart.x,
+							chart.y + chart.height,
+							0,
+							this.config.colors.navigationMap.mapGradientTopColor,
+							1,
+							this.config.colors.navigationMap.mapGradientBottomColor,
+						);
+					} else {
+						const grd = ctx.createLinearGradient(chart.x, chart.y, chart.x, chart.y + chart.height);
+						grd.addColorStop(0, this.config.colors.navigationMap.mapGradientTopColor);
+						grd.addColorStop(1, this.config.colors.navigationMap.mapGradientBottomColor);
+						ctx.fillStyle = grd;
+					}
 				}
 				ctx.fill();
 				if (this.config.colors.navigationMap.mapColor) {

@@ -32,10 +32,9 @@ export class XAxisLabelsDrawer implements Drawer {
 	 * @returns {void}
 	 */
 	draw() {
-		const ctx = this.canvasModel.ctx;
 		this.drawHighlightedBackgroundBetweenLabels();
 		this.xAxisLabelsModel.labels.forEach(l => {
-			drawXAxisLabel(ctx, this.canvasBoundsContainer, this.config, l);
+			drawXAxisLabel(this.canvasModel, this.canvasBoundsContainer, this.config, l);
 		});
 	}
 

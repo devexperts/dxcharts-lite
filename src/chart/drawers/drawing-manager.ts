@@ -3,14 +3,23 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
+import { Remote } from 'comlink';
+import {
+	CanvasOffscreenContext2D,
+	isOffscreenCanvasModel,
+	strsToSync,
+} from '../canvas/offscreen/canvas-offscreen-wrapper';
+import { initOffscreenWorker, isOffscreenWorkerAvailable } from '../canvas/offscreen/init-offscreen';
+import { OffscreenWorker } from '../canvas/offscreen/offscreen-worker';
 import EventBus from '../events/event-bus';
 import { EVENT_DRAW } from '../events/events';
 import { ChartResizeHandler } from '../inputhandlers/chart-resize.handler';
-import { MIN_SUPPORTED_CANVAS_SIZE } from '../model/canvas.model';
+import { CanvasModel, MIN_SUPPORTED_CANVAS_SIZE } from '../model/canvas.model';
 import { arrayIntersect, reorderArray } from '../utils/array.utils';
 import { StringTMap } from '../utils/object.utils';
 import { animationFrameThrottled } from '../utils/performance/request-animation-frame-throttle.utils';
 import { uuid } from '../utils/uuid.utils';
+import { FullChartConfig } from '../chart.config';
 
 export const HIT_TEST_PREFIX = 'HIT_TEST_';
 
@@ -51,10 +60,32 @@ export class DrawingManager {
 	private drawersMap: StringTMap<Drawer> = {};
 
 	private readonly drawHitTestCanvas: () => void;
-	private canvasIdsList: Array<string> | undefined = [];
+	private canvasIdsList: Record<string, boolean> = {};
 	private animFrameId = `draw_${uuid()}`;
+	private readyDraw = false;
+	private offscreenWorker?: Remote<OffscreenWorker>;
+	private offscreenCanvases: CanvasModel<CanvasOffscreenContext2D>[] = [];
 
-	constructor(eventBus: EventBus, private chartResizeHandler: ChartResizeHandler) {
+	constructor(
+		private config: FullChartConfig,
+		eventBus: EventBus,
+		private chartResizeHandler: ChartResizeHandler,
+		canvases: CanvasModel[],
+	) {
+		for (const canvas of canvases) {
+			this.canvasIdsList[canvas.canvasId] = true;
+		}
+		if (config.experimental.offscreen.enabled && isOffscreenWorkerAvailable) {
+			initOffscreenWorker(canvases, config.experimental.offscreen.fonts).then(worker => {
+				this.offscreenCanvases = canvases.filter(isOffscreenCanvasModel);
+				this.offscreenWorker = worker;
+				this.readyDraw = true;
+				eventBus.fireDraw();
+			});
+		} else {
+			this.readyDraw = true;
+			eventBus.fireDraw();
+		}
 		// eventBus.on(EVENT_DRAW_LAST_CANDLE, () => animationFrameThrottled(this.animFrameId + 'last', () => this.drawLastBar()));
 		this.drawHitTestCanvas = () => {
 			this.drawingOrder.forEach(drawer => {
@@ -65,22 +96,48 @@ export class DrawingManager {
 		};
 		eventBus.on(EVENT_DRAW, (canvasIds: Array<string>) => {
 			if (chartResizeHandler.wasResized()) {
-				// if we fire bus.fireDraw() without arguments(undefined) we need to keep canvasIdsList empty
-				if (this.canvasIdsList) {
-					if (canvasIds && canvasIds.length !== 0) {
-						this.canvasIdsList = this.canvasIdsList.concat(canvasIds);
-					} else {
-						// make this undefined until the end of frame - this will redraw everything
-						this.canvasIdsList = undefined;
+				// if we fire bus.fireDraw() without arguments(undefined) we need to redraw all canvases
+				if (!canvasIds) {
+					for (const canvasId of Object.keys(this.canvasIdsList)) {
+						this.canvasIdsList[canvasId] = true;
+					}
+				} else {
+					for (const canvasId of canvasIds) {
+						this.canvasIdsList[canvasId] = true;
 					}
 				}
-				animationFrameThrottled(this.animFrameId, () => {
-					this.forceDraw(this.canvasIdsList);
-					this.canvasIdsList = [];
+				animationFrameThrottled(this.animFrameId, async() => {
+					if (!this.isDrawable()) {
+						// previous rendering cycle is not finished yet, schedule another draw
+						eventBus.fireDraw([]);
+						return;
+					}
+					const canvasIds = Object.entries(this.canvasIdsList).filter(([, v]) => v).map(([k]) => k);
+					this.forceDraw();
 					this.drawHitTestCanvas();
+					for (const canvasId of canvasIds) {
+						this.canvasIdsList[canvasId] = false;
+					}
+					// we use mutex in order to avoid situation when canvas resize happened during offscreen rendering
+					await this.chartResizeHandler.mutex.calculateSafe(() => this.drawOffscreen());
+					this.readyDraw = true;
 				});
 			}
 		});
+	}
+
+	private async drawOffscreen() {
+		if (this.offscreenWorker === undefined) {
+			return;
+		}
+		// commit method exists only in offscreen context class and adds END_OF_FILE marker to the buffer
+		// so worker knows where is the end of commands
+		this.offscreenCanvases.forEach(canvas => canvas.ctx.commit());
+		if (strsToSync.length) {
+			await this.offscreenWorker.syncStrings(strsToSync);
+			strsToSync.length = 0;
+		}
+		await this.offscreenWorker.executeCanvasCommands(this.offscreenCanvases.map(canvas => canvas.idx));
 	}
 
 	/**
@@ -89,9 +146,16 @@ export class DrawingManager {
 	 * If all canvases update in separate animation frames - we see visual lag. Instead we should do all updates and then redraw.
 	 * @doc-tags tricky,canvas,resize
 	 */
-	public redrawCanvasesImmediate() {
+	public async redrawCanvasesImmediate() {
+		// not safe and meaningless to use in offscreen mode
+		// I'm not sure if it's even possible because of async nature of offscreen
+		// of course we can implement some kind of spinlock, but it's insane
+		if (this.config.experimental.offscreen.enabled) {
+			return;
+		}
 		this.chartResizeHandler.fireUpdates();
 		this.forceDraw();
+		this.readyDraw = true;
 	}
 
 	drawLastBar() {
@@ -107,6 +171,7 @@ export class DrawingManager {
 		if (!this.isDrawable()) {
 			return;
 		}
+		this.readyDraw = false;
 		this.drawingOrder.forEach(drawerName => {
 			if (drawerName.indexOf(HIT_TEST_PREFIX) === -1) {
 				const drawer = this.drawersMap[drawerName];
@@ -129,6 +194,7 @@ export class DrawingManager {
 	 */
 	public isDrawable(): boolean {
 		return (
+			this.readyDraw &&
 			(this.chartResizeHandler.previousBCR?.height ?? 0) > MIN_SUPPORTED_CANVAS_SIZE.width &&
 			(this.chartResizeHandler.previousBCR?.width ?? 0) > MIN_SUPPORTED_CANVAS_SIZE.height
 		);
