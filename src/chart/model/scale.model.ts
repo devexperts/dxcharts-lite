@@ -207,7 +207,8 @@ export class ScaleModel extends ViewportModel {
 		const delta = 0.001; // zoom values are very precise and should be compared with some precision delta
 
 		if (chartWidth > 0) {
-			const maxZoomReached = zoomX - calculateZoom(this.config.components.chart.minCandles, chartWidth) <= delta;
+			const minCandlesZoom = calculateZoom(this.config.components.chart.minCandles, chartWidth);
+			const maxZoomReached = zoomX !== minCandlesZoom && zoomX - minCandlesZoom <= delta;
 			// max zoom reached and trying to zoom in further
 			const maxZoomDisabled = maxZoomReached && zoomIn;
 
