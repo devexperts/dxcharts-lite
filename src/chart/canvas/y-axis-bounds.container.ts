@@ -77,7 +77,7 @@ export class YAxisBoundsContainer {
 				return;
 			}
 			const margin = state.labelBoxMargin.start + state.labelBoxMargin.end;
-			const width = this.getTextWidth(c.getLargestLabel()) + margin;
+			const width = this.getTextWidth(c.getLargestLabel()) + margin + 100;
 			const idx = c.getYAxisIndex();
 			const uuid = c.getPaneUUID();
 			const extentOrder = this.extentsOrder.get(uuid) ?? { left: [], right: [] };

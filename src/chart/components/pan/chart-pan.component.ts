@@ -47,6 +47,7 @@ export class ChartPanComponent extends ChartBaseElement {
 			this.mainScale,
 			this.canvasInputListener,
 			this.mainCanvasParent,
+			this.canvasBoundsContainer,
 		);
 		this.addChildEntity(this.mainCanvasTouchHandler);
 	}
