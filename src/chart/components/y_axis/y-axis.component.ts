@@ -3,8 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { merge, animationFrameScheduler, Subject } from 'rxjs';
-import { throttleTime } from 'rxjs/operators';
+import { Subject } from 'rxjs';
 import { CanvasBoundsContainer, CanvasElement } from '../../canvas/canvas-bounds-container';
 import { CursorHandler } from '../../canvas/cursor.handler';
 import { YAxisWidthContributor } from '../../canvas/y-axis-bounds.container';
@@ -108,6 +107,7 @@ export class YAxisComponent extends ChartBaseElement {
 			valueFormatter,
 			dataSeriesProvider,
 			extentIdx,
+			this.chartResizeHandler,
 		);
 		this.addChildEntity(this.model);
 		this.updateCursor();
@@ -138,14 +138,6 @@ export class YAxisComponent extends ChartBaseElement {
 			this.scale.beforeStartAnimationSubject.subscribe(
 				() => this.state.type === 'percent' && this.scale.haltAnimation(),
 			),
-		);
-
-		this.addRxSubscription(
-			merge(this.scale.yChanged, this.chartResizeHandler.canvasResized)
-				.pipe(throttleTime(50, animationFrameScheduler, { trailing: true, leading: true }))
-				.subscribe(() => {
-					this.updateOrderedLabels();
-				}),
 		);
 	}
 
