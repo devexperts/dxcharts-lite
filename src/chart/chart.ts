@@ -105,7 +105,8 @@ export class Chart extends ChartBootstrap {
 	}
 
 	public setChartType(type: BarType): void {
-		this.chartComponent.setChartType(type);
+		this.data.setChartType(type);
+		this.yAxis.updateOrderedLabels();
 	}
 
 	public createPane(): PaneComponent {
