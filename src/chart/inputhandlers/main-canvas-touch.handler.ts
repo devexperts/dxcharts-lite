@@ -32,14 +32,10 @@ export class MainCanvasTouchHandler extends ChartBaseElement {
 	 */
 	protected doActivate(): void {
 		this.addRxSubscription(
-			this.canvasInputListeners.observeTouchStart(this.hitTest).subscribe(e => {
-				this.handleTouchStartEvent(e);
-			}),
+			this.canvasInputListeners.observeTouchStart(this.hitTest).subscribe(e => this.handleTouchStartEvent(e)),
 		);
 		this.addRxSubscription(
-			this.canvasInputListeners.observeTouchMove(this.hitTest).subscribe(e => {
-				this.handleTouchMoveEvent(e);
-			}),
+			this.canvasInputListeners.observeTouchMove(this.hitTest).subscribe(e => this.handleTouchMoveEvent(e)),
 		);
 		this.addRxSubscription(
 			this.canvasInputListeners.observeTouchEndDocument().subscribe(e => this.handleTouchEndEvent(e)),
