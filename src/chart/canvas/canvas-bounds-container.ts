@@ -947,6 +947,39 @@ export class CanvasBoundsContainer {
 	setMainCandleSeries(candleSeries: CandleSeriesModel) {
 		this.mainCandleSeries = candleSeries;
 	}
+
+	/**
+	 * Returns the effective width of the Y axis.
+	 *
+	 * @function
+	 * @name getEffectiveYAxisWidth
+	 * @returns {number} The effective width of the Y axis.
+	 */
+	getEffectiveYAxisWidth() {
+		const yAxis = this.getBounds(CanvasElement.PANE_UUID_Y_AXIS(CHART_UUID));
+		return yAxis.width;
+	}
+
+	/**
+	 * Returns the effective width of the chart.
+	 *
+	 * @function
+	 * @returns {number} The effective width of the chart.
+	 */
+	getEffectiveChartWidth() {
+		const chart = this.getBounds(CanvasElement.PANE_UUID(CHART_UUID));
+		return chart.width;
+	}
+
+	/**
+	 * Returns the effective height of the chart.
+	 *
+	 * @returns {number} The effective height of the chart.
+	 */
+	getEffectiveChartHeight() {
+		const chart = this.getBounds(CanvasElement.PANE_UUID(CHART_UUID));
+		return chart.height;
+	}
 }
 
 // paneCounter=chartHeightRatio: 0=1, 1=0.8, 2=0.6, 3=0.5, 4=0.4, 5=0.4

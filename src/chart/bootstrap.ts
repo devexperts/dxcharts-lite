@@ -328,6 +328,7 @@ export default class ChartBootstrap {
 			mainCanvasModel,
 			yAxisLabelsCanvasModel,
 			this.hitTestCanvasModel,
+			this.chartResizeHandler,
 		);
 		this.paneManager = paneManager;
 

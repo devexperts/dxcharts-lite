@@ -32,6 +32,7 @@ import { Unsubscriber } from '../../utils/function.utils';
 import { DataSeriesModel } from '../../model/data-series.model';
 import { HitTestCanvasModel } from '../../model/hit-test-canvas.model';
 import { firstOf, flatMap, lastOf } from '../../utils/array.utils';
+import { ChartResizeHandler } from '../../inputhandlers/chart-resize.handler';
 
 export class PaneManager extends ChartBaseElement {
 	public panes: Record<string, PaneComponent> = {};
@@ -63,6 +64,7 @@ export class PaneManager extends ChartBaseElement {
 		private mainCanvasModel: CanvasModel,
 		private yAxisLabelsCanvasModel: CanvasModel,
 		private hitTestCanvasModel: HitTestCanvasModel,
+		private chartResizeHandler: ChartResizeHandler,
 	) {
 		super();
 		this.hitTestController = new PaneHitTestController(this.panes, this.dynamicObjectsCanvasModel);
@@ -165,6 +167,7 @@ export class PaneManager extends ChartBaseElement {
 			this.dataSeriesAddedSubject,
 			this.dataSeriesRemovedSubject,
 			this.hitTestCanvasModel,
+			this.chartResizeHandler,
 			options,
 		);
 
