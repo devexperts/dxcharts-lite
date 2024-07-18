@@ -31,6 +31,7 @@ export class YAxisScaleHandler extends ChartBaseElement {
 	lastYHeight: Unit = 0;
 	lastYPxHeight: Pixel = 0;
 
+	private touches: TouchList | undefined;
 	private dblClickCallback: () => void;
 	private dblTapCallback: () => void;
 
@@ -78,8 +79,19 @@ export class YAxisScaleHandler extends ChartBaseElement {
 			);
 			this.addRxSubscription(
 				this.canvasInputListener.observeDbTap(this.hitTest).subscribe(() => {
+					// apply dbl tap only if single finger taps are made
+					if (this.touches && this.touches?.length > 1) {
+						this.touches = undefined;
+						return;
+					}
+
 					this.dblTapCallback();
 					this.bus.fireDraw();
+				}),
+			);
+			this.addRxSubscription(
+				this.canvasInputListener.observeTouchStart().subscribe(e => {
+					this.touches = e.touches;
 				}),
 			);
 		}
@@ -97,7 +109,13 @@ export class YAxisScaleHandler extends ChartBaseElement {
 	};
 
 	private onYDragTick = (dragInfo: DragInfo) => {
-		const { delta: absoluteYDelta } = dragInfo;
+		let { delta: absoluteYDelta } = dragInfo;
+
+		if (this.touches && this.touches.length > 1) {
+			const top = Math.min(this.touches[0].clientY, this.touches[1].clientY);
+			absoluteYDelta = top === this.touches[0].clientY ? absoluteYDelta : -absoluteYDelta;
+		}
+
 		// 1/3..3
 		let zoomYMult;
 		if (absoluteYDelta < 0) {
