@@ -4,7 +4,7 @@
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 import { ChartBaseElement } from '../../model/chart-base-element';
-import { CanvasBoundsContainer, CanvasElement } from '../../canvas/canvas-bounds-container';
+import { CanvasBoundsContainer, CanvasElement, HitBoundsTest } from '../../canvas/canvas-bounds-container';
 import { CanvasInputListenerComponent } from '../../inputlisteners/canvas-input-listener.component';
 import { ScaleModel } from '../../model/scale.model';
 import { Pixel, Unit } from '../../model/scaling/viewport.model';
@@ -24,6 +24,8 @@ export class XAxisScaleHandler extends ChartBaseElement {
 	lastXPxWidth: Pixel = 0;
 
 	private dblClickCallback: () => void;
+
+	private touches: TouchList | undefined;
 	private dblTapCallback: () => void;
 
 	constructor(
@@ -32,6 +34,7 @@ export class XAxisScaleHandler extends ChartBaseElement {
 		private canvasBoundsContainer: CanvasBoundsContainer,
 		private chartPanComponent: ChartPanComponent,
 		private chartModel: ChartModel,
+		private hitTest: HitBoundsTest,
 		private hitTestCanvasModel: HitTestCanvasModel,
 	) {
 		super();
@@ -40,7 +43,7 @@ export class XAxisScaleHandler extends ChartBaseElement {
 		this.dblTapCallback = () => chartModel.doBasicScale();
 
 		const dragNDropXComponent = new DragNDropXComponent(
-			this.canvasBoundsContainer.getBoundsHitTest(CanvasElement.X_AXIS),
+			hitTest,
 			{
 				onDragStart: this.onXDragStart,
 				onDragTick: this.onXDragTick,
@@ -67,14 +70,23 @@ export class XAxisScaleHandler extends ChartBaseElement {
 	protected doActivate() {
 		super.doActivate();
 		this.addRxSubscription(
-			this.canvasInputListener
-				.observeDbClick(this.canvasBoundsContainer.getBoundsHitTest(CanvasElement.X_AXIS))
-				.subscribe(() => this.dblClickCallback()),
+			this.canvasInputListener.observeDbClick(this.hitTest).subscribe(() => this.dblClickCallback()),
 		);
 		this.addRxSubscription(
-			this.canvasInputListener
-				.observeDbTap(this.canvasBoundsContainer.getBoundsHitTest(CanvasElement.X_AXIS))
-				.subscribe(() => this.dblTapCallback()),
+			this.canvasInputListener.observeDbTap(this.hitTest).subscribe(() => {
+				// apply dbl tap only if single finger taps are made
+				if (this.touches && this.touches?.length > 1) {
+					this.touches = undefined;
+					return;
+				}
+
+				this.dblTapCallback();
+			}),
+		);
+		this.addRxSubscription(
+			this.canvasInputListener.observeTouchStart(this.hitTest).subscribe(e => {
+				this.touches = e.touches;
+			}),
 		);
 		this.addRxSubscription(
 			this.chartModel.candlesPrependSubject.subscribe(

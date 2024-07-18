@@ -31,8 +31,9 @@ export class YAxisScaleHandler extends ChartBaseElement {
 	lastYHeight: Unit = 0;
 	lastYPxHeight: Pixel = 0;
 
-	private touches: TouchList | undefined;
 	private dblClickCallback: () => void;
+
+	private touches: TouchList | undefined;
 	private dblTapCallback: () => void;
 
 	constructor(
@@ -90,7 +91,7 @@ export class YAxisScaleHandler extends ChartBaseElement {
 				}),
 			);
 			this.addRxSubscription(
-				this.canvasInputListener.observeTouchStart().subscribe(e => {
+				this.canvasInputListener.observeTouchStart(this.hitTest).subscribe(e => {
 					this.touches = e.touches;
 				}),
 			);
