@@ -159,8 +159,8 @@ export class ChartModel extends ChartBaseElement {
 	 */
 	private handleChartResize(nextCB: PickedDOMRect) {
 		if (nextCB.width > MIN_SUPPORTED_CANVAS_SIZE.width && nextCB.height > MIN_SUPPORTED_CANVAS_SIZE.height) {
-			const nextChartWidth = this.getEffectiveChartWidth();
-			const nextYAxisWidth = this.getEffectiveYAxisWidth();
+			const nextChartWidth = this.canvasBoundsContainer.getEffectiveChartWidth();
+			const nextYAxisWidth = this.canvasBoundsContainer.getEffectiveYAxisWidth();
 
 			if (this.prevChartWidth === 0) {
 				this.scale.isViewportValid() ? this.scale.recalculateZoom() : this.doBasicScale();
@@ -527,39 +527,6 @@ export class ChartModel extends ChartBaseElement {
 	}
 
 	/**
-	 * Returns the effective width of the Y axis.
-	 *
-	 * @function
-	 * @name getEffectiveYAxisWidth
-	 * @returns {number} The effective width of the Y axis.
-	 */
-	getEffectiveYAxisWidth() {
-		const yAxis = this.canvasBoundsContainer.getBounds(CanvasElement.PANE_UUID_Y_AXIS(CHART_UUID));
-		return yAxis.width;
-	}
-
-	/**
-	 * Returns the effective width of the chart.
-	 *
-	 * @function
-	 * @returns {number} The effective width of the chart.
-	 */
-	getEffectiveChartWidth() {
-		const chart = this.canvasBoundsContainer.getBounds(CanvasElement.PANE_UUID(CHART_UUID));
-		return chart.width;
-	}
-
-	/**
-	 * Returns the effective height of the chart.
-	 *
-	 * @returns {number} The effective height of the chart.
-	 */
-	getEffectiveChartHeight() {
-		const chart = this.canvasBoundsContainer.getBounds(CanvasElement.PANE_UUID(CHART_UUID));
-		return chart.height;
-	}
-
-	/**
 	 * Updates the offsets of the chart components and redraws the chart.
 	 * @param {Partial<ChartConfigComponentsOffsets>} offsets - The new offsets to be applied to the chart components.
 	 * @returns {void}
@@ -832,7 +799,7 @@ export class ChartModel extends ChartBaseElement {
 	 * @returns {number} - The maximum number of candles that can fit in the chart width
 	 */
 	getMaxCandlesFitLength() {
-		return floor(this.getEffectiveChartWidth() / this.config.components.chart.minWidth);
+		return floor(this.canvasBoundsContainer.getEffectiveChartWidth() / this.config.components.chart.minWidth);
 	}
 
 	/**

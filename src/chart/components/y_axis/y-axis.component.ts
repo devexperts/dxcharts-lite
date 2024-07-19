@@ -45,6 +45,7 @@ import { YAxisModel } from './y-axis.model';
 import { HitTestCanvasModel } from '../../model/hit-test-canvas.model';
 import { merge as mergeObj } from '../../utils/merge.utils';
 import { cloneUnsafe } from '../../utils/object.utils';
+import { ChartResizeHandler } from '../../inputhandlers/chart-resize.handler';
 
 export type LabelColorResolver = (priceMovement: PriceMovement, colors: FullChartColors) => string;
 
@@ -72,6 +73,7 @@ export class YAxisComponent extends ChartBaseElement {
 		public paneUUID: string,
 		public extentIdx: number,
 		hitTestCanvasModel: HitTestCanvasModel,
+		private chartResizeHandler: ChartResizeHandler,
 		initialState?: YAxisConfig,
 	) {
 		super();
@@ -105,6 +107,7 @@ export class YAxisComponent extends ChartBaseElement {
 			valueFormatter,
 			dataSeriesProvider,
 			extentIdx,
+			this.chartResizeHandler,
 		);
 		this.addChildEntity(this.model);
 		this.updateCursor();

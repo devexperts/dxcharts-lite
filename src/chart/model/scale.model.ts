@@ -50,8 +50,8 @@ export type ViewportPercent = number;
 type Constraints = (initialState: ViewportModelState, state: ViewportModelState) => ViewportModelState;
 
 export interface ZoomReached {
-	max: boolean;
-	min: boolean;
+	zoomIn: boolean;
+	zoomOut: boolean;
 }
 
 /**
@@ -69,7 +69,7 @@ export class ScaleModel extends ViewportModel {
 	// y-axis component needs this subject in order to halt prev animation if axis type is percent
 	public beforeStartAnimationSubject: Subject<void> = new Subject<void>();
 	public autoScaleModel: AutoScaleViewportSubModel;
-	public zoomReached: ZoomReached = { min: false, max: false };
+	public zoomReached: ZoomReached = { zoomIn: false, zoomOut: false };
 	public readonly state: ChartScale;
 	// TODO rework, make a new history based on units
 	public history: ScaleHistoryItem[] = [];
@@ -185,7 +185,7 @@ export class ScaleModel extends ViewportModel {
 		const constrainedState = this.scalePostProcessor(initialStateCopy, state);
 		this.zoomReached = this.calculateZoomReached(constrainedState.zoomX, zoomIn);
 
-		if (this.zoomReached.max || this.zoomReached.min) {
+		if (this.zoomReached.zoomIn || this.zoomReached.zoomOut) {
 			return;
 		}
 
@@ -207,19 +207,20 @@ export class ScaleModel extends ViewportModel {
 		const delta = 0.001; // zoom values are very precise and should be compared with some precision delta
 
 		if (chartWidth > 0) {
-			const maxZoomReached = zoomX - calculateZoom(this.config.components.chart.minCandles, chartWidth) <= delta;
-			// max zoom reached and trying to zoom in further
-			const maxZoomDisabled = maxZoomReached && zoomIn;
+			const maxZoomIn = calculateZoom(this.config.components.chart.minCandles, chartWidth);
+			const maxZoomInReached = zoomX !== maxZoomIn && zoomX - maxZoomIn <= delta;
+			// max zoom in reached and trying to zoom in further
+			const maxZoomInDisabled = maxZoomInReached && zoomIn;
 
-			const minZoomReached =
-				zoomX - calculateZoom(chartWidth / this.config.components.chart.minWidth, chartWidth) >= delta;
-			// min zoom reached and trying to zoom out further
-			const minZoomDisabled = minZoomReached && !zoomIn;
+			const maxZoomOut = calculateZoom(chartWidth / this.config.components.chart.minWidth, chartWidth);
+			const maxZoomOutReached = zoomX - maxZoomOut >= delta;
+			// max zoom out reached and trying to zoom out further
+			const maxZoomOutDisabled = maxZoomOutReached && !zoomIn;
 
-			return { max: maxZoomDisabled, min: minZoomDisabled };
+			return { zoomIn: maxZoomInDisabled, zoomOut: maxZoomOutDisabled };
 		}
 
-		return { max: false, min: false };
+		return { zoomIn: false, zoomOut: false };
 	}
 
 	/**
@@ -240,7 +241,7 @@ export class ScaleModel extends ViewportModel {
 		const constrainedState = this.scalePostProcessor(initialState, state);
 		const zoomIn = constrainedState.xEnd - constrainedState.xStart < initialState.xEnd - initialState.xStart;
 		this.zoomReached = this.calculateZoomReached(zoomX, zoomIn);
-		if (this.zoomReached.max || this.zoomReached.min) {
+		if (this.zoomReached.zoomIn || this.zoomReached.zoomOut) {
 			return;
 		}
 
@@ -281,7 +282,7 @@ export class ScaleModel extends ViewportModel {
 
 	private setLockedYScale(yStart: Unit, yEnd: Unit, fire = false, initialState: ViewportModelState) {
 		const zoomIn = yEnd < initialState.yEnd;
-		if ((this.zoomReached.min && zoomIn === false) || (this.zoomReached.max && zoomIn === true)) {
+		if ((this.zoomReached.zoomOut && zoomIn === false) || (this.zoomReached.zoomIn && zoomIn === true)) {
 			return;
 		}
 
