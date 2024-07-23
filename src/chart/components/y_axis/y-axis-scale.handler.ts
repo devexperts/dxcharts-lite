@@ -112,6 +112,10 @@ export class YAxisScaleHandler extends ChartBaseElement {
 	private onYDragTick = (dragInfo: DragInfo) => {
 		let { delta: absoluteYDelta } = dragInfo;
 
+		// check how many touch events are at the axis
+		// if multitouch - take the first two and apply delta the following way:
+		// the touch above keeps the initial delta because top => bottom gesture
+		// the touch below has the reversed delta because the gesture is bottom => top
 		if (this.touches && this.touches.length > 1) {
 			const top = Math.min(this.touches[0].clientY, this.touches[1].clientY);
 			absoluteYDelta = top === this.touches[0].clientY ? absoluteYDelta : -absoluteYDelta;
