@@ -93,6 +93,7 @@ export class XAxisComponent extends ChartBaseElement {
 			canvasBoundsContainer,
 			chartPanComponent,
 			this.chartComponent.chartModel,
+			canvasBoundsContainer.getBoundsHitTest(CanvasElement.X_AXIS),
 			hitTestCanvasModel,
 		);
 		this.addChildEntity(this.xAxisScaleHandler);

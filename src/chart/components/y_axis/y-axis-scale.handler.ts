@@ -32,6 +32,8 @@ export class YAxisScaleHandler extends ChartBaseElement {
 	lastYPxHeight: Pixel = 0;
 
 	private dblClickCallback: () => void;
+
+	private touches: TouchList | undefined;
 	private dblTapCallback: () => void;
 
 	constructor(
@@ -78,8 +80,19 @@ export class YAxisScaleHandler extends ChartBaseElement {
 			);
 			this.addRxSubscription(
 				this.canvasInputListener.observeDbTap(this.hitTest).subscribe(() => {
+					// apply dbl tap only if single finger taps are made
+					if (this.touches && this.touches?.length > 1) {
+						this.touches = undefined;
+						return;
+					}
+
 					this.dblTapCallback();
 					this.bus.fireDraw();
+				}),
+			);
+			this.addRxSubscription(
+				this.canvasInputListener.observeTouchStart(this.hitTest).subscribe(e => {
+					this.touches = e.touches;
 				}),
 			);
 		}
@@ -97,7 +110,17 @@ export class YAxisScaleHandler extends ChartBaseElement {
 	};
 
 	private onYDragTick = (dragInfo: DragInfo) => {
-		const { delta: absoluteYDelta } = dragInfo;
+		let { delta: absoluteYDelta } = dragInfo;
+
+		// check how many touch events are at the axis
+		// if multitouch - take the first two and apply delta the following way:
+		// the touch above keeps the initial delta because top => bottom gesture
+		// the touch below has the reversed delta because the gesture is bottom => top
+		if (this.touches && this.touches.length > 1) {
+			const top = Math.min(this.touches[0].clientY, this.touches[1].clientY);
+			absoluteYDelta = top === this.touches[0].clientY ? absoluteYDelta : -absoluteYDelta;
+		}
+
 		// 1/3..3
 		let zoomYMult;
 		if (absoluteYDelta < 0) {
