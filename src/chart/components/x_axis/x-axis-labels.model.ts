@@ -7,6 +7,7 @@ import { ChartBaseElement } from '../../model/chart-base-element';
 import EventBus from '../../events/event-bus';
 import { LabelAlign } from './x-axis-draw.functions';
 import { EVENT_DRAW } from '../../events/events';
+import { uuid } from '../../utils/uuid.utils';
 
 export interface XAxisLabel {
 	text: string;
@@ -27,16 +28,48 @@ export interface XAxisLabelsProvider {
  * Custom labels on X axis.
  */
 export class XAxisLabelsModel extends ChartBaseElement {
-	public labels: XAxisLabel[] = [];
+	private _labels: XAxisLabel[] = [];
+	private labelProviders: Map<string, XAxisLabelsProvider> = new Map();
 
-	constructor(public eventBus: EventBus, readonly labelProviders: XAxisLabelsProvider[]) {
+	constructor(public eventBus: EventBus) {
 		super();
+	}
+
+	protected doActivate(): void {
+		super.doActivate();
 		this.initModel();
 		/**
 		 * TODO refactor this, should NOT be recalculated on each DRAW, rather coordinates should be updated in drawer
 		 * @doc-tags refactor
 		 */
 		this.addSubscription(this.eventBus.on(EVENT_DRAW, () => this.recalculateLabels()));
+	}
+
+	get labels(): XAxisLabel[] {
+		return this._labels;
+	}
+
+	/**
+	 * Registers a new label provider.
+	 * @param {XAxisLabelsProvider} provider
+	 * @param {string} id
+	 * @returns {string}
+	 */
+	public registerLabelProvider(provider: XAxisLabelsProvider, id: string = uuid()): string {
+		this.labelProviders.set(id, provider);
+		this.initModel();
+
+		return id;
+	}
+
+	/**
+	 * Unregisters a label provider.
+	 * @param {string} id
+	 * @returns {void}
+	 */
+	public unregisterLabelProvider(id: string): void {
+		this.labelProviders.delete(id);
+		this.initModel();
 	}
 
 	/**
@@ -51,8 +84,8 @@ export class XAxisLabelsModel extends ChartBaseElement {
 	 * @returns {void}
 	 */
 	public recalculateLabels(): void {
-		this.labels = [];
-		for (const provider of this.labelProviders) {
+		this._labels = [];
+		for (const [, provider] of this.labelProviders) {
 			this.labels.push(...provider.getUnorderedLabels());
 		}
 	}
