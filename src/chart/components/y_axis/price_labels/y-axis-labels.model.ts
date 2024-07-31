@@ -3,7 +3,8 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { merge, Observable, Subject } from 'rxjs';
+import { animationFrameScheduler, merge, Observable, Subject } from 'rxjs';
+import { throttleTime } from 'rxjs/operators';
 import { CanvasBoundsContainer, CanvasElement } from '../../../canvas/canvas-bounds-container';
 import { YAxisConfig, YAxisLabelMode } from '../../../chart.config';
 import EventBus from '../../../events/event-bus';
@@ -17,6 +18,7 @@ import { animationFrameThrottledPrior } from '../../../utils/performance/request
 import { uuid } from '../../../utils/uuid.utils';
 import { YAxisLabelDrawConfig } from '../y-axis-labels.drawer';
 import { calcLabelsYCoordinates } from './labels-positions-calculator';
+import { ChartResizeHandler } from '../../../inputhandlers/chart-resize.handler';
 
 export type YAxisVisualLabelType = 'badge' | 'rectangle' | 'plain';
 
@@ -79,6 +81,7 @@ export class FancyYAxisLabelsModel extends ChartBaseElement {
 		private canvasModel: CanvasModel,
 		private paneUUID: string,
 		private updateYAxisWidth: () => void,
+		private chartResizeHandler: ChartResizeHandler,
 	) {
 		super();
 		this.initModel();
@@ -97,9 +100,12 @@ export class FancyYAxisLabelsModel extends ChartBaseElement {
 		super.doActivate();
 		this.addRxSubscription(
 			merge(
-				this.canvasBoundsContainer.observeBoundsChanged(CanvasElement.PANE_UUID(this.paneUUID)),
 				this.canvasBoundsContainer.barResizerChangedSubject,
 				this.scale.changed,
+				merge(
+					this.canvasBoundsContainer.observeBoundsChanged(CanvasElement.PANE_UUID(this.paneUUID)),
+					this.chartResizeHandler.canvasResized,
+				).pipe(throttleTime(50, animationFrameScheduler, { trailing: true, leading: true })),
 			).subscribe(() => {
 				this.updateLabels();
 			}),

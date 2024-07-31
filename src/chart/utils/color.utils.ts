@@ -5,9 +5,15 @@
  */
 const HEX_COLOR_REGEXP = /^(#)([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i;
 const RGB_COLOR_REGEXP = /^\s*(rgba?)\s*[(]\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*(?:,\s*[\d.]+\s*)?[)]\s*$/i;
+const RGBA_COLOR_REGEXP =
+	/^rgba[(](?:\s*0*(?:\d\d?(?:\.\d+)?(?:\s*%)?|\.\d+\s*%|100(?:\.0*)?\s*%|(?:1\d\d|2[0-4]\d|25[0-5])(?:\.\d+)?)\s*,){3}\s*0*(?:\.\d+|1(?:\.0*)?)\s*[)]$/;
+
+export const isHex = (color: string) => HEX_COLOR_REGEXP.exec(color);
+export const isRgb = (color: string) => RGB_COLOR_REGEXP.exec(color);
+export const isRgba = (color: string) => RGBA_COLOR_REGEXP.exec(color);
 
 function parseColor(color: string) {
-	const match = HEX_COLOR_REGEXP.exec(color) || RGB_COLOR_REGEXP.exec(color);
+	const match = isHex(color) || isRgb(color);
 	let colors: string[] = [];
 	if (match) {
 		colors = match.slice(2, 5);

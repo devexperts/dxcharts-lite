@@ -7,6 +7,7 @@ import { ChartBaseElement } from '../model/chart-base-element';
 import { CanvasInputListenerComponent } from '../inputlisteners/canvas-input-listener.component';
 import { ScaleModel } from '../model/scale.model';
 import { ChartAreaPanHandler } from '../components/chart/chart-area-pan.handler';
+import { HitBoundsTest } from '../canvas/canvas-bounds-container';
 
 /**
  * Handles chart touch events.
@@ -19,6 +20,7 @@ export class MainCanvasTouchHandler extends ChartBaseElement {
 		private scale: ScaleModel,
 		private canvasInputListeners: CanvasInputListenerComponent,
 		private mainCanvasParent: Element,
+		private hitTest: HitBoundsTest,
 	) {
 		super();
 	}
@@ -30,10 +32,10 @@ export class MainCanvasTouchHandler extends ChartBaseElement {
 	 */
 	protected doActivate(): void {
 		this.addRxSubscription(
-			this.canvasInputListeners.observeTouchStart().subscribe(e => this.handleTouchStartEvent(e)),
+			this.canvasInputListeners.observeTouchStart(this.hitTest).subscribe(e => this.handleTouchStartEvent(e)),
 		);
 		this.addRxSubscription(
-			this.canvasInputListeners.observeTouchMove().subscribe(e => this.handleTouchMoveEvent(e)),
+			this.canvasInputListeners.observeTouchMove(this.hitTest).subscribe(e => this.handleTouchMoveEvent(e)),
 		);
 		this.addRxSubscription(
 			this.canvasInputListeners.observeTouchEndDocument().subscribe(e => this.handleTouchEndEvent(e)),

@@ -9,7 +9,7 @@ import { CanvasAnimation } from '../animation/canvas-animation';
 import { startViewportModelAnimation } from '../animation/viewport-model-animation';
 import { cloneUnsafe } from '../utils/object.utils';
 import { AutoScaleViewportSubModel } from './scaling/auto-scale.model';
-import { ZoomXToZoomYRatio, changeXToKeepRatio, changeYToKeepRatio, ratioFromZoomXY } from './scaling/lock-ratio.model';
+import { changeXToKeepRatio, changeYToKeepRatio } from './scaling/lock-ratio.model';
 import { moveXStart, moveYStart } from './scaling/move-chart.functions';
 import {
 	Price,
@@ -50,8 +50,8 @@ export type ViewportPercent = number;
 type Constraints = (initialState: ViewportModelState, state: ViewportModelState) => ViewportModelState;
 
 export interface ZoomReached {
-	max: boolean;
-	min: boolean;
+	zoomIn: boolean;
+	zoomOut: boolean;
 }
 
 /**
@@ -69,8 +69,7 @@ export class ScaleModel extends ViewportModel {
 	// y-axis component needs this subject in order to halt prev animation if axis type is percent
 	public beforeStartAnimationSubject: Subject<void> = new Subject<void>();
 	public autoScaleModel: AutoScaleViewportSubModel;
-	public zoomXYRatio: ZoomXToZoomYRatio = 0;
-	public zoomReached: ZoomReached = { min: false, max: false };
+	public zoomReached: ZoomReached = { zoomIn: false, zoomOut: false };
 	public readonly state: ChartScale;
 	// TODO rework, make a new history based on units
 	public history: ScaleHistoryItem[] = [];
@@ -186,12 +185,12 @@ export class ScaleModel extends ViewportModel {
 		const constrainedState = this.scalePostProcessor(initialStateCopy, state);
 		this.zoomReached = this.calculateZoomReached(constrainedState.zoomX, zoomIn);
 
-		if (this.zoomReached.max || this.zoomReached.min) {
+		if (this.zoomReached.zoomIn || this.zoomReached.zoomOut) {
 			return;
 		}
 
 		if (this.state.lockPriceToBarRatio) {
-			changeYToKeepRatio(constrainedState, this.zoomXYRatio);
+			changeYToKeepRatio(initialStateCopy, constrainedState);
 		}
 		if (this.state.auto) {
 			this.autoScaleModel.doAutoYScale(constrainedState);
@@ -208,19 +207,20 @@ export class ScaleModel extends ViewportModel {
 		const delta = 0.001; // zoom values are very precise and should be compared with some precision delta
 
 		if (chartWidth > 0) {
-			const maxZoomReached = zoomX - calculateZoom(this.config.components.chart.minCandles, chartWidth) <= delta;
-			// max zoom reached and trying to zoom in further
-			const maxZoomDisabled = maxZoomReached && zoomIn;
+			const maxZoomIn = calculateZoom(this.config.components.chart.minCandles, chartWidth);
+			const maxZoomInReached = zoomX !== maxZoomIn && zoomX - maxZoomIn <= delta;
+			// max zoom in reached and trying to zoom in further
+			const maxZoomInDisabled = maxZoomInReached && zoomIn;
 
-			const minZoomReached =
-				zoomX - calculateZoom(chartWidth / this.config.components.chart.minWidth, chartWidth) >= delta;
-			// min zoom reached and trying to zoom out further
-			const minZoomDisabled = minZoomReached && !zoomIn;
+			const maxZoomOut = calculateZoom(chartWidth / this.config.components.chart.minWidth, chartWidth);
+			const maxZoomOutReached = zoomX - maxZoomOut >= delta;
+			// max zoom out reached and trying to zoom out further
+			const maxZoomOutDisabled = maxZoomOutReached && !zoomIn;
 
-			return { max: maxZoomDisabled, min: minZoomDisabled };
+			return { zoomIn: maxZoomInDisabled, zoomOut: maxZoomOutDisabled };
 		}
 
-		return { max: false, min: false };
+		return { zoomIn: false, zoomOut: false };
 	}
 
 	/**
@@ -241,12 +241,12 @@ export class ScaleModel extends ViewportModel {
 		const constrainedState = this.scalePostProcessor(initialState, state);
 		const zoomIn = constrainedState.xEnd - constrainedState.xStart < initialState.xEnd - initialState.xStart;
 		this.zoomReached = this.calculateZoomReached(zoomX, zoomIn);
-		if (this.zoomReached.max || this.zoomReached.min) {
+		if (this.zoomReached.zoomIn || this.zoomReached.zoomOut) {
 			return;
 		}
 
 		if (this.state.lockPriceToBarRatio) {
-			changeYToKeepRatio(constrainedState, this.zoomXYRatio);
+			changeYToKeepRatio(initialState, constrainedState);
 		}
 		if (this.state.auto) {
 			this.autoScaleModel.doAutoYScale(constrainedState);
@@ -264,24 +264,38 @@ export class ScaleModel extends ViewportModel {
 		if (initialState.yStart === yStart && initialState.yEnd === yEnd && initialState.zoomY > 0) {
 			return;
 		}
+
+		if (this.state.lockPriceToBarRatio) {
+			this.setLockedYScale(yStart, yEnd, fire, initialState);
+			return;
+		}
+
+		super.setYScale(yStart, yEnd, fire);
+		const state = this.export();
+		const constrainedState = this.scalePostProcessor(initialState, state);
+		if (this.state.auto) {
+			this.autoScaleModel.doAutoYScale(constrainedState);
+		}
+
+		this.apply(constrainedState);
+	}
+
+	private setLockedYScale(yStart: Unit, yEnd: Unit, fire = false, initialState: ViewportModelState) {
+		const zoomIn = yEnd < initialState.yEnd;
+		if ((this.zoomReached.zoomOut && zoomIn === false) || (this.zoomReached.zoomIn && zoomIn === true)) {
+			return;
+		}
+
 		super.setYScale(yStart, yEnd, fire);
 		const state = this.export();
 		const constrainedState = this.scalePostProcessor(initialState, state);
 
-		if (this.state.lockPriceToBarRatio) {
-			changeXToKeepRatio(constrainedState, this.zoomXYRatio);
-
-			this.setXScale(constrainedState.xStart, constrainedState.xEnd);
-			// TODO: rewrite logic for applying constraints to consider both axes, now constraints on Y may not work correctly
-			return;
-		} else {
-			if (this.state.auto) {
-				this.autoScaleModel.doAutoYScale(constrainedState);
-			}
-
-			this.apply(constrainedState);
-		}
+		changeXToKeepRatio(initialState, constrainedState);
+		this.zoomReached = this.calculateZoomReached(constrainedState.zoomX, zoomIn);
+		this.apply(constrainedState);
+		this.fireChanged();
 	}
+
 	/**
 	 * Moves both xStart and xEnd without changing the viewport width (zoom).
 	 * Works without animation.
@@ -424,17 +438,8 @@ export class ScaleModel extends ViewportModel {
 			this.state.lockPriceToBarRatio = false;
 			return;
 		}
-		if (value) {
-			this.recalculateZoomXYRatio();
-		}
-		this.state.lockPriceToBarRatio = value;
-	}
 
-	/**
-	 * Recalculates the zoom X/Y ratio based on the current zoom levels.
-	 */
-	public recalculateZoomXYRatio() {
-		this.zoomXYRatio = ratioFromZoomXY(this.zoomX, this.zoomY);
+		this.state.lockPriceToBarRatio = value;
 	}
 }
 

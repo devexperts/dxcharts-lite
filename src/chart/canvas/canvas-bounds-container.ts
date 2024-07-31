@@ -96,7 +96,7 @@ export class CanvasBoundsContainer {
 
 	private boundsChangedSubject = new Subject<void>();
 	public barResizerChangedSubject = new Subject<void>();
-	private _graphsHeightRatio: Record<string, number> = { chart: 1 };
+	private _graphsHeightRatio: Record<string, number> = { [CHART_UUID]: 1 };
 	get graphsHeightRatio(): Record<string, number> {
 		return this._graphsHeightRatio;
 	}
@@ -946,6 +946,39 @@ export class CanvasBoundsContainer {
 	 */
 	setMainCandleSeries(candleSeries: CandleSeriesModel) {
 		this.mainCandleSeries = candleSeries;
+	}
+
+	/**
+	 * Returns the effective width of the Y axis.
+	 *
+	 * @function
+	 * @name getEffectiveYAxisWidth
+	 * @returns {number} The effective width of the Y axis.
+	 */
+	getEffectiveYAxisWidth() {
+		const yAxis = this.getBounds(CanvasElement.PANE_UUID_Y_AXIS(CHART_UUID));
+		return yAxis.width;
+	}
+
+	/**
+	 * Returns the effective width of the chart.
+	 *
+	 * @function
+	 * @returns {number} The effective width of the chart.
+	 */
+	getEffectiveChartWidth() {
+		const chart = this.getBounds(CanvasElement.PANE_UUID(CHART_UUID));
+		return chart.width;
+	}
+
+	/**
+	 * Returns the effective height of the chart.
+	 *
+	 * @returns {number} The effective height of the chart.
+	 */
+	getEffectiveChartHeight() {
+		const chart = this.getBounds(CanvasElement.PANE_UUID(CHART_UUID));
+		return chart.height;
 	}
 }
 

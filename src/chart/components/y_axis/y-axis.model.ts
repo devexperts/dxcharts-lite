@@ -7,6 +7,7 @@ import { CanvasBoundsContainer } from '../../canvas/canvas-bounds-container';
 import { YAxisWidthContributor } from '../../canvas/y-axis-bounds.container';
 import { YAxisConfig } from '../../chart.config';
 import EventBus from '../../events/event-bus';
+import { ChartResizeHandler } from '../../inputhandlers/chart-resize.handler';
 import { CanvasModel } from '../../model/canvas.model';
 import { ChartBaseElement } from '../../model/chart-base-element';
 import { DataSeriesModel } from '../../model/data-series.model';
@@ -30,6 +31,7 @@ export class YAxisModel extends ChartBaseElement {
 		valueFormatter: (value: number) => string,
 		dataSeriesProvider: () => DataSeriesModel | undefined,
 		private extentIdx: number,
+		chartResizeHandler: ChartResizeHandler,
 	) {
 		super();
 		this.labelsGenerator = new NumericYAxisLabelsGenerator(
@@ -56,6 +58,7 @@ export class YAxisModel extends ChartBaseElement {
 			canvasModel,
 			paneUUID,
 			() => this.canvasBoundsContainer.updateYAxisWidths(),
+			chartResizeHandler,
 		);
 		this.addChildEntity(this.fancyLabelsModel);
 	}

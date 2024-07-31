@@ -4,7 +4,7 @@
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 import { CanvasAnimation } from '../../animation/canvas-animation';
-import { CanvasBoundsContainer } from '../../canvas/canvas-bounds-container';
+import { CanvasBoundsContainer, CanvasElement } from '../../canvas/canvas-bounds-container';
 import { FullChartConfig } from '../../chart.config';
 import EventBus from '../../events/event-bus';
 import { ChartBaseElement } from '../../model/chart-base-element';
@@ -47,6 +47,7 @@ export class ChartPanComponent extends ChartBaseElement {
 			this.mainScale,
 			this.canvasInputListener,
 			this.mainCanvasParent,
+			this.canvasBoundsContainer.getBoundsHitTest(CanvasElement.ALL_PANES),
 		);
 		this.addChildEntity(this.mainCanvasTouchHandler);
 	}

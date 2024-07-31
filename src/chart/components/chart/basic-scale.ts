@@ -35,7 +35,6 @@ export const createBasicScaleViewportTransformer =
 				scale.doAutoScale(true);
 			}
 
-			scale.recalculateZoomXYRatio();
 			scale.fireChanged();
 		}
 	};
