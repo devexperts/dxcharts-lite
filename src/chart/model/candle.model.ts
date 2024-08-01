@@ -30,15 +30,8 @@ export interface Candle {
 	readonly vwap?: number;
 }
 
-export const generateMockCandleId = (
-	timestamp: number,
-	open: number,
-	hi: number,
-	lo: number,
-	close: number,
-): string => {
-	const ohlc = open + hi + lo + close;
-	return `${timestamp}_${hashCode(ohlc.toString())}`;
+export const generateCandleId = (timestamp: number, hashValue: number | string): string => {
+	return `${timestamp}_${hashCode(hashValue.toString())}`;
 };
 
 /**

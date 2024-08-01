@@ -887,7 +887,7 @@ export class ChartModel extends ChartBaseElement {
 	 * Updates candles in series. Default is main series.
 	 * Any number of candles may be provided - they would be matched by their index and updated.
 	 * @param candles - any list of new (updated) candles
-	 * @param instrument - name of instrument to update
+	 * @param instrumentSymbol - name of instrument to update
 	 */
 	// I'd like to keep this method, for me one generic method is more convenient than 3 (updateLastCandle, addLastCandle, prepend...)
 	public updateCandles(
@@ -1048,7 +1048,7 @@ export class ChartModel extends ChartBaseElement {
 	/**
 	 * Adds new candle to the chart
 	 * @param candle - new candle
-	 * @param instrument - name of the instrument to update
+	 * @param instrumentSymbol - name of the instrument to update
 	 */
 	public addLastCandle(candle: Candle, instrumentSymbol: string = this.mainCandleSeries.instrument.symbol) {
 		this.updateCandles([candle], instrumentSymbol);
@@ -1057,7 +1057,7 @@ export class ChartModel extends ChartBaseElement {
 	/**
 	 * Updates last candle value
 	 * @param candle - updated candle
-	 * @param instrument - name of the instrument to update
+	 * @param instrumentSymbol - name of the instrument to update
 	 */
 	public updateLastCandle(candle: Candle, instrumentSymbol: string = this.mainCandleSeries.instrument.symbol): void {
 		this.updateCandles([candle], instrumentSymbol);
@@ -1069,6 +1069,10 @@ export class ChartModel extends ChartBaseElement {
 	 * @param instrumentSymbol - name of the instrument to update
 	 */
 	public removeCandleByIdx(idx: number, instrumentSymbol: string = this.mainCandleSeries.instrument.symbol) {
+		if (idx < 0) {
+			return;
+		}
+
 		const seriesList = this.findSeriesBySymbol(instrumentSymbol);
 		if (seriesList.length === 0) {
 			console.warn("removeCandle by id failed. Can't find series", instrumentSymbol);
@@ -1087,30 +1091,10 @@ export class ChartModel extends ChartBaseElement {
 	/**
 	 * Remove candle by id and recalculate indexes
 	 * @param id
-	 * @param instrumentSymbol - name of the instrument to update
 	 */
-	public removeCandleById(id: Candle['id'], instrumentSymbol: string = this.mainCandleSeries.instrument.symbol) {
-		const seriesList = this.findSeriesBySymbol(instrumentSymbol);
-		if (seriesList.length === 0) {
-			console.warn("removeCandle by id failed. Can't find series", instrumentSymbol);
-			return;
-		}
-		seriesList.forEach(series => {
-			const targetCandleIdx = this.candleFromId(id);
-			if (targetCandleIdx) {
-				series.dataPoints = series.dataPoints
-					.slice(0, targetCandleIdx)
-					.concat(series.dataPoints.slice(targetCandleIdx + 1));
-				reindexCandles(series.dataPoints);
-				series.recalculateVisualPoints();
-			}
-
-			reindexCandles(series.dataPoints);
-			series.recalculateVisualPoints();
-		});
-		this.candlesRemovedSubject.next();
-		this.candlesUpdatedSubject.next();
-		this.canvasModel.fireDraw();
+	public removeCandleById(id: Candle['id']) {
+		const idx = this.candleFromId(id);
+		this.removeCandleByIdx(idx);
 	}
 }
 

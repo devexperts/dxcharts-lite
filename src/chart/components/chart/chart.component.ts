@@ -433,7 +433,7 @@ export class ChartComponent extends ChartBaseElement {
 	/**
 	 * Adds new candle to the chart
 	 * @param candle - new candle
-	 * @param instrument - name of the instrument to update
+	 * @param instrumentSymbol - name of the instrument to update
 	 */
 	public addLastCandle(candle: Candle, instrumentSymbol?: string) {
 		this.chartModel.addLastCandle(candle, instrumentSymbol);
@@ -443,8 +443,6 @@ export class ChartComponent extends ChartBaseElement {
 	 * Remove candle by idx and recalculate indexes
 	 * @param idx - candle index
 	 * @param instrumentSymbol - name of the instrument to update
-	 *
-	 * @deprecated - use removeCandleById instead
 	 */
 	public removeCandleByIdx(idx: number, instrumentSymbol?: string) {
 		this.chartModel.removeCandleByIdx(idx, instrumentSymbol);
@@ -453,16 +451,15 @@ export class ChartComponent extends ChartBaseElement {
 	/**
 	 * Remove candle by id and recalculate indexes
 	 * @param id - candle id
-	 * @param instrumentSymbol - name of the instrument to update
 	 */
-	public removeCandleById(id: Candle['id'], instrumentSymbol?: string) {
-		this.chartModel.removeCandleById(id, instrumentSymbol);
+	public removeCandleById(id: Candle['id']) {
+		this.chartModel.removeCandleById(id);
 	}
 
 	/**
 	 * Updates last candle value
 	 * @param candle - updated candle
-	 * @param instrument - name of the instrument to update
+	 * @param instrumentSymbol - name of the instrument to update
 	 */
 	public updateLastCandle(candle: Candle, instrumentSymbol?: string) {
 		this.chartModel.updateLastCandle(candle, instrumentSymbol);
