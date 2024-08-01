@@ -70,7 +70,7 @@ export class ChartInstrument {
 	priceIncrements?: Array<number> = [0.01];
 }
 
-export type PartialCandle = Partial<Candle> & { timestamp: Timestamp; close: number };
+export type PartialCandle = Partial<Candle> & { id: string; timestamp: Timestamp; close: number };
 
 export interface CandleSeries {
 	candles: PartialCandle[];
@@ -440,12 +440,23 @@ export class ChartComponent extends ChartBaseElement {
 	}
 
 	/**
-	 * Remove candle by idx and recaculate indexes
+	 * Remove candle by idx and recalculate indexes
 	 * @param idx - candle index
 	 * @param instrument - name of the instrument to update
+	 *
+	 * @deprecated - use removeCandleById instead
 	 */
 	public removeCandleByIdx(idx: number, instrumentSymbol?: string) {
 		this.chartModel.removeCandleByIdx(idx, instrumentSymbol);
+	}
+
+	/**
+	 * Remove candle by id and recalculate indexes
+	 * @param id - candle id
+	 * @param instrument - name of the instrument to update
+	 */
+	public removeCandleById(id: string, instrumentSymbol?: string) {
+		this.chartModel.removeCandleById(id, instrumentSymbol);
 	}
 
 	/**

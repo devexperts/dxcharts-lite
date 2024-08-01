@@ -1,5 +1,6 @@
 import { Unit } from './scaling/viewport.model';
 import { PriceMovement } from './candle-series.model';
+import { hashCode } from '../utils/string.utils';
 
 /*
  * Copyright (C) 2019 - 2023 Devexperts Solutions IE Limited
@@ -16,6 +17,7 @@ export const BASIC_CANDLE_WIDTH: Unit = 1;
  * @doc-tags-name Candle
  */
 export interface Candle {
+	readonly id: string;
 	readonly hi: number;
 	readonly lo: number;
 	readonly open: number;
@@ -27,6 +29,17 @@ export interface Candle {
 	readonly impVolatility?: number;
 	readonly vwap?: number;
 }
+
+export const generateMockCandleId = (
+	timestamp: number,
+	open: number,
+	hi: number,
+	lo: number,
+	close: number,
+): string => {
+	const ohlc = open + hi + lo + close;
+	return `${timestamp}_${hashCode(ohlc.toString())}`;
+};
 
 /**
  * Provides the name of candle difference
@@ -66,7 +79,7 @@ export function hollowDirection(open: number, close: number): PriceMovement {
  * @returns {Candle} A new Candle object with the same properties as the base object, with the option to modify the prices.
  */
 export function copyCandle(base: Candle, idx: number, pricesAsClose: boolean = false): Candle {
-	const { expansion, impVolatility, vwap, volume, timestamp } = base;
+	const { id, expansion, impVolatility, vwap, volume, timestamp } = base;
 	let hi = base.hi;
 	let lo = base.lo;
 	let open = base.open;
@@ -81,6 +94,7 @@ export function copyCandle(base: Candle, idx: number, pricesAsClose: boolean = f
 		_idx = idx;
 	}
 	return {
+		id,
 		hi,
 		lo,
 		open,

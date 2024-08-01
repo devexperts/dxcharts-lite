@@ -77,6 +77,7 @@ function generateRandomCandle(from, to, candleAvgSize, type) {
 	var high = Math.max(open, close) + Math.random() * candleAvgSize * 0.2;
 	var low = Math.min(open, close) - Math.random() * candleAvgSize * 0.2;
 	return {
+		id: '',
 		hi: high,
 		lo: low,
 		open: open,

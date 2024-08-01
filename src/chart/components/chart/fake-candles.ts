@@ -14,6 +14,7 @@ export const DEFAULT_PERIOD = 60; // 1 minute
 export const fakeCandle = (candles: Candle[], index: Index, period: number = DEFAULT_PERIOD): Candle => {
 	const t = getTimestampOfIndex(candles, index, period);
 	return {
+		id: '',
 		hi: NaN,
 		lo: NaN,
 		open: NaN,

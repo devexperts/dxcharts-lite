@@ -50,7 +50,11 @@ export class ChartBaseModel<T extends BaseType = 'point'> {
 	 * @param timestamp
 	 */
 	// TODO think how to make this function like candleFromX
-	public dataFromTimestamp(timestamp: Timestamp, shouldExtrapolate: boolean = true, selectedDataPoints: DataPoint<T>[] = this.mainDataPoints): VisualPoint<T> {
+	public dataFromTimestamp(
+		timestamp: Timestamp,
+		shouldExtrapolate: boolean = true,
+		selectedDataPoints: DataPoint<T>[] = this.mainDataPoints,
+	): VisualPoint<T> {
 		const result = searchCandleIndex(timestamp, shouldExtrapolate, selectedDataPoints, this.period);
 		return this.dataFromIdx(result.index);
 	}
