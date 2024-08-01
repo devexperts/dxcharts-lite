@@ -658,13 +658,11 @@ export class ChartModel extends ChartBaseElement {
 	}
 
 	/**
-	 * For given id finds the target candle index in array.
+	 * For given id finds the target candle index
 	 * @param id
+	 * @param selectedCandleSeries
 	 */
-	public candleFromId(
-		id: string,
-		selectedCandleSeries: CandleSeriesModel = this.mainCandleSeries,
-	): number | undefined {
+	public candleFromId(id: Candle['id'], selectedCandleSeries: CandleSeriesModel = this.mainCandleSeries): number {
 		const dataPointsSource = selectedCandleSeries.visualPoints;
 		return dataPointsSource.findIndex(vc => vc.candle.id === id);
 	}
@@ -1067,8 +1065,8 @@ export class ChartModel extends ChartBaseElement {
 
 	/**
 	 * Remove candle by idx and recalculate indexes
-	 * @param candle - new candle
-	 * @param instrument - name of the instrument to update
+	 * @param idx
+	 * @param instrumentSymbol - name of the instrument to update
 	 */
 	public removeCandleByIdx(idx: number, instrumentSymbol: string = this.mainCandleSeries.instrument.symbol) {
 		const seriesList = this.findSeriesBySymbol(instrumentSymbol);
@@ -1086,25 +1084,12 @@ export class ChartModel extends ChartBaseElement {
 		this.canvasModel.fireDraw();
 	}
 
-	wad = {
-		id: '473385600000_762478699',
-		hi: 0.13895107589285713,
-		lo: 0.06473215178571425,
-		open: 0.1300225,
-		close: 0.09821427678571425,
-		timestamp: 473385600000,
-		volume: 45499171200,
-		expansion: false,
-		idx: 0,
-		impVolatility: 'NaN',
-	};
-
 	/**
-	 * Remove candle by id and recaculate indexes
-	 * @param candle - new candle
-	 * @param instrument - name of the instrument to update
+	 * Remove candle by id and recalculate indexes
+	 * @param id
+	 * @param instrumentSymbol - name of the instrument to update
 	 */
-	public removeCandleById(id: string, instrumentSymbol: string = this.mainCandleSeries.instrument.symbol) {
+	public removeCandleById(id: Candle['id'], instrumentSymbol: string = this.mainCandleSeries.instrument.symbol) {
 		const seriesList = this.findSeriesBySymbol(instrumentSymbol);
 		if (seriesList.length === 0) {
 			console.warn("removeCandle by id failed. Can't find series", instrumentSymbol);

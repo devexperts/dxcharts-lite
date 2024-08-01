@@ -442,7 +442,7 @@ export class ChartComponent extends ChartBaseElement {
 	/**
 	 * Remove candle by idx and recalculate indexes
 	 * @param idx - candle index
-	 * @param instrument - name of the instrument to update
+	 * @param instrumentSymbol - name of the instrument to update
 	 *
 	 * @deprecated - use removeCandleById instead
 	 */
@@ -453,9 +453,9 @@ export class ChartComponent extends ChartBaseElement {
 	/**
 	 * Remove candle by id and recalculate indexes
 	 * @param id - candle id
-	 * @param instrument - name of the instrument to update
+	 * @param instrumentSymbol - name of the instrument to update
 	 */
-	public removeCandleById(id: string, instrumentSymbol?: string) {
+	public removeCandleById(id: Candle['id'], instrumentSymbol?: string) {
 		this.chartModel.removeCandleById(id, instrumentSymbol);
 	}
 
