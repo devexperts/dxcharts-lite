@@ -1103,11 +1103,7 @@ export class ChartModel extends ChartBaseElement {
 	 * @param selectedCandleSeries - candle series to remove candles from
 	 * @param isSequence - true, if candles follow one by one
 	 */
-	public removeCandlesByIds(
-		ids: Candle['id'][],
-		isSequence: boolean = false,
-		selectedCandleSeries: CandleSeriesModel = this.mainCandleSeries,
-	) {
+	public removeCandlesByIds(ids: Candle['id'][], isSequence: boolean, selectedCandleSeries: CandleSeriesModel) {
 		if (!isSequence) {
 			ids.forEach(id => this.removeCandleByIdx(this.candleIdxFromId(id, selectedCandleSeries)));
 			return;
@@ -1133,18 +1129,14 @@ export class ChartModel extends ChartBaseElement {
 	}
 
 	/**
-	 * Add candles by ids and recalculate indexes
+	 * Add candles by id and recalculate indexes
 	 *
 	 * @param candles - candles to add
-	 * @param candleStartId - target candle to start adding candles from
+	 * @param startId - target candle to start adding candles from
 	 * @param selectedCandleSeries - candle series to add candles to
 	 */
-	public addCandlesById(
-		candles: Candle[],
-		candleStartId: string,
-		selectedCandleSeries: CandleSeriesModel = this.mainCandleSeries,
-	) {
-		const targetCandleIdx = this.candleIdxFromId(candleStartId);
+	public addCandlesById(candles: Candle[], startId: string, selectedCandleSeries: CandleSeriesModel) {
+		const targetCandleIdx = this.candleIdxFromId(startId);
 
 		if (targetCandleIdx < 0) {
 			console.warn('Selected start candle is not found');
