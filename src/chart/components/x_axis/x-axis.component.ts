@@ -148,7 +148,7 @@ export class XAxisComponent extends ChartBaseElement {
 			this.chartComponent.chartModel.candlesUpdatedSubject
 				.pipe(
 					map(() => lastOf(this.chartComponent.chartModel.mainCandleSeries.visualPoints)),
-					distinctUntilChanged((a, b) => a?.candle?.timestamp === b?.candle?.timestamp),
+					distinctUntilChanged((a, b) => a?.candle?.id === b?.candle?.id),
 					filter(notEmpty),
 				)
 				.subscribe(x => this.xAxisLabelsGenerator?.updateLastLabel?.(x)),

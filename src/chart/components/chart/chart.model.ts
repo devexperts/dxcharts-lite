@@ -472,7 +472,8 @@ export class ChartModel extends ChartBaseElement {
 	private secondarySeriesAdjustments(mainSeries: Array<Candle>, secondarySeries: Array<Candle>): Array<Candle> {
 		const result: Array<Candle> = [];
 		mainSeries.forEach(mainCandle => {
-			const idx = mainCandle.idx ?? 0;
+			const candleIdx = this.candleIdxFromId(mainCandle.id);
+			const idx = candleIdx > 0 ? candleIdx : 0;
 			const compareCandle = secondarySeries[idx];
 			if (!compareCandle) {
 				// take first candle to left or right
@@ -671,6 +672,7 @@ export class ChartModel extends ChartBaseElement {
 	 * For given id finds the target candle index
 	 * @param id
 	 * @param selectedCandleSeries
+	 * @returns candle index, -1 if not found
 	 */
 	public candleIdxFromId(id: Candle['id'], selectedCandleSeries: CandleSeriesModel = this.mainCandleSeries): number {
 		return selectedCandleSeries.visualPoints.findIndex(vc => vc.candle.id === id);
@@ -1041,7 +1043,7 @@ export class ChartModel extends ChartBaseElement {
 			const idx = result.index;
 			if (idx < 0) {
 				prepend.push(c);
-			} else if (target[idx].timestamp === c.timestamp) {
+			} else if (target[idx].id === c.id) {
 				targetCopy[idx] = c;
 			} else {
 				console.warn(`Couldn't update candle with timestamp ${c.timestamp}`);
@@ -1174,7 +1176,7 @@ export interface UpdateCandlesResult {
 }
 
 const sortCandles = (candles: Candle[]): Candle[] =>
-	candles.slice().sort((a, b) => (a.timestamp === b.timestamp ? 0 : a.timestamp > b.timestamp ? 1 : -1));
+	candles.slice().sort((a, b) => (a.id === b.id ? 0 : a.timestamp > b.timestamp ? 1 : -1));
 
 const prepareCandles = (candles: PartialCandle[]): Candle[] => sortCandles(candles.map(prepareCandle).filter(isCandle));
 
@@ -1212,7 +1214,7 @@ const updateCandles = (target: Candle[], update: Candle[]): UpdateCandlesResult 
 			prepend.push(c);
 		} else if (idx >= target.length) {
 			append.push(c);
-		} else if (target[idx].timestamp === c.timestamp) {
+		} else if (target[idx].id === c.id) {
 			targetCopy[idx] = c;
 		} else {
 			console.warn(`Couldn't update candle with timestamp ${c.timestamp}`);
