@@ -1114,6 +1114,11 @@ export class ChartModel extends ChartBaseElement {
 		const firstIdx = this.candleIdxFromId(ids[0], selectedCandleSeries);
 		const lastIdx = this.candleIdxFromId(ids[ids.length - 1], selectedCandleSeries);
 
+		if (firstIdx < 0 || lastIdx < 0) {
+			console.warn('Candle is not found');
+			return;
+		}
+
 		// if array is a sequence the removal process should be faster because reindex and recalculate visual points would call only once
 		selectedCandleSeries.dataPoints = selectedCandleSeries.dataPoints
 			.slice(0, firstIdx)
