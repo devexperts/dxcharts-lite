@@ -409,9 +409,7 @@ export class ChartModel extends ChartBaseElement {
 				series.dataPoints = series.dataPoints.slice(0, index);
 			});
 		});
-		this.candlesRemovedSubject.next();
-		this.candlesUpdatedSubject.next();
-		this.canvasModel.fireDraw();
+		this.candlesChangedRedraw();
 	}
 
 	/**
@@ -658,13 +656,24 @@ export class ChartModel extends ChartBaseElement {
 	}
 
 	/**
+	 * For given id finds the target candle
+	 * @param id
+	 * @param selectedCandleSeries
+	 */
+	public candleFromId(
+		id: Candle['id'],
+		selectedCandleSeries: CandleSeriesModel = this.mainCandleSeries,
+	): VisualCandle | undefined {
+		return selectedCandleSeries.visualPoints.find(vc => vc.candle.id === id);
+	}
+
+	/**
 	 * For given id finds the target candle index
 	 * @param id
 	 * @param selectedCandleSeries
 	 */
-	public candleFromId(id: Candle['id'], selectedCandleSeries: CandleSeriesModel = this.mainCandleSeries): number {
-		const dataPointsSource = selectedCandleSeries.visualPoints;
-		return dataPointsSource.findIndex(vc => vc.candle.id === id);
+	public candleIdxFromId(id: Candle['id'], selectedCandleSeries: CandleSeriesModel = this.mainCandleSeries): number {
+		return selectedCandleSeries.visualPoints.findIndex(vc => vc.candle.id === id);
 	}
 
 	/**
@@ -1083,18 +1092,73 @@ export class ChartModel extends ChartBaseElement {
 			reindexCandles(series.dataPoints);
 			series.recalculateVisualPoints();
 		});
-		this.candlesRemovedSubject.next();
-		this.candlesUpdatedSubject.next();
-		this.canvasModel.fireDraw();
+		this.candlesChangedRedraw();
 	}
 
 	/**
-	 * Remove candle by id and recalculate indexes
-	 * @param id
+	 * Remove candles by ids and recalculate indexes
+	 * @param ids - candles ids to remove
+	 * @param selectedCandleSeries - candle series to remove candles from
+	 * @param isSequence - true, if candles follow one by one
 	 */
-	public removeCandleById(id: Candle['id']) {
-		const idx = this.candleFromId(id);
-		this.removeCandleByIdx(idx);
+	public removeCandlesByIds(
+		ids: Candle['id'][],
+		isSequence: boolean = false,
+		selectedCandleSeries: CandleSeriesModel = this.mainCandleSeries,
+	) {
+		if (!isSequence) {
+			ids.forEach(id => this.removeCandleByIdx(this.candleIdxFromId(id, selectedCandleSeries)));
+			return;
+		}
+
+		const firstIdx = this.candleIdxFromId(ids[0], selectedCandleSeries);
+		const lastIdx = this.candleIdxFromId(ids[ids.length - 1], selectedCandleSeries);
+
+		// if array is a sequence the removal process should be faster because reindex and recalculate visual points would call only once
+		selectedCandleSeries.dataPoints = selectedCandleSeries.dataPoints
+			.slice(0, firstIdx)
+			.concat(selectedCandleSeries.dataPoints.slice(lastIdx + 1));
+
+		reindexCandles(selectedCandleSeries.dataPoints, lastIdx);
+		selectedCandleSeries.recalculateVisualPoints();
+
+		this.candlesChangedRedraw();
+	}
+
+	/**
+	 * Add candles by ids and recalculate indexes
+	 *
+	 * @param candles - candles to add
+	 * @param candleStartId - target candle to start adding candles from
+	 * @param selectedCandleSeries - candle series to add candles to
+	 */
+	public addCandlesById(
+		candles: Candle[],
+		candleStartId: string,
+		selectedCandleSeries: CandleSeriesModel = this.mainCandleSeries,
+	) {
+		const targetCandleIdx = this.candleIdxFromId(candleStartId);
+
+		if (targetCandleIdx < 0) {
+			console.warn('Selected start candle is not found');
+			return;
+		}
+
+		const candlesBefore = selectedCandleSeries.dataPoints.slice(0, targetCandleIdx);
+		const candlesAfter = selectedCandleSeries.dataPoints.slice(targetCandleIdx);
+
+		selectedCandleSeries.dataPoints = candlesBefore.concat(candles).concat(candlesAfter);
+
+		reindexCandles(selectedCandleSeries.dataPoints);
+		selectedCandleSeries.recalculateVisualPoints();
+
+		this.candlesChangedRedraw();
+	}
+
+	private candlesChangedRedraw() {
+		this.candlesRemovedSubject.next();
+		this.candlesUpdatedSubject.next();
+		this.canvasModel.fireDraw();
 	}
 }
 
