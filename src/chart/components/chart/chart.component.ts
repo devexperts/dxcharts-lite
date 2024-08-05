@@ -70,7 +70,7 @@ export class ChartInstrument {
 	priceIncrements?: Array<number> = [0.01];
 }
 
-export type PartialCandle = Partial<Candle> & { timestamp: Timestamp; close: number };
+export type PartialCandle = Partial<Candle> & { id: string; timestamp: Timestamp; close: number };
 
 export interface CandleSeries {
 	candles: PartialCandle[];
@@ -433,25 +433,54 @@ export class ChartComponent extends ChartBaseElement {
 	/**
 	 * Adds new candle to the chart
 	 * @param candle - new candle
-	 * @param instrument - name of the instrument to update
+	 * @param instrumentSymbol - name of the instrument to update
 	 */
 	public addLastCandle(candle: Candle, instrumentSymbol?: string) {
 		this.chartModel.addLastCandle(candle, instrumentSymbol);
 	}
 
 	/**
-	 * Remove candle by idx and recaculate indexes
+	 * Remove candle by idx and recalculate indexes
 	 * @param idx - candle index
-	 * @param instrument - name of the instrument to update
+	 * @param instrumentSymbol - name of the instrument to update
 	 */
 	public removeCandleByIdx(idx: number, instrumentSymbol?: string) {
 		this.chartModel.removeCandleByIdx(idx, instrumentSymbol);
 	}
 
 	/**
+	 * Remove candles by ids and recalculate indexes
+	 * @param ids - candles ids to remove
+	 * @param isSequence - true, if candles follow one by one
+	 * @param selectedCandleSeries - candle series to remove candles from
+	 */
+	public removeCandlesById(
+		ids: Candle['id'][],
+		isSequence: boolean = false,
+		selectedCandleSeries: CandleSeriesModel = this.chartModel.mainCandleSeries,
+	) {
+		this.chartModel.removeCandlesByIds(ids, isSequence, selectedCandleSeries);
+	}
+
+	/**
+	 * Add candles by id and recalculate indexes
+	 *
+	 * @param candles - candles to add
+	 * @param startId - target candle to start adding candles from
+	 * @param selectedCandleSeries - candle series to add candles to
+	 */
+	public addCandlesById(
+		candles: Candle[],
+		startId: string,
+		selectedCandleSeries: CandleSeriesModel = this.chartModel.mainCandleSeries,
+	) {
+		this.chartModel.addCandlesById(candles, startId, selectedCandleSeries);
+	}
+
+	/**
 	 * Updates last candle value
 	 * @param candle - updated candle
-	 * @param instrument - name of the instrument to update
+	 * @param instrumentSymbol - name of the instrument to update
 	 */
 	public updateLastCandle(candle: Candle, instrumentSymbol?: string) {
 		this.chartModel.updateLastCandle(candle, instrumentSymbol);

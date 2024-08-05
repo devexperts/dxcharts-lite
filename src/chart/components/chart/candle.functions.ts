@@ -25,6 +25,7 @@ export const prepareCandle = (candle: PartialCandle): Candle | undefined => {
 		const preparedCandleOpen = finite(candle.open, candle.lo, settlementPrice);
 		const preparedCandleClose = finite(candle.close, candle.hi, settlementPrice);
 		return {
+			id: candle.id,
 			hi: preparedCandleHi,
 			lo: preparedCandleLo,
 			open: preparedCandleOpen,
@@ -45,8 +46,8 @@ export const prepareCandle = (candle: PartialCandle): Candle | undefined => {
  * Adds index to candles according to their array index.
  * @param candles
  */
-export const reindexCandles = (candles: Array<Candle>) => {
-	for (let i = 0; i < candles.length; ++i) {
+export const reindexCandles = (candles: Array<Candle>, startIdx: number = 0) => {
+	for (let i = startIdx; i < candles.length; ++i) {
 		candles[i].idx = i;
 	}
 };
