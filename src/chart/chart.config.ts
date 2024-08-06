@@ -103,7 +103,7 @@ export const getDefaultConfig = (): FullChartConfig => ({
 			highlightActiveCandle: true,
 			cursor: 'default',
 			selectedWidth: 3,
-			minCandlesOffset: 0,
+			minCandlesOffset: 2,
 			defaultZoomCandleWidth: 7,
 			zoomStep: 0,
 			histogram: {
