@@ -540,18 +540,45 @@ export class CanvasBoundsContainer {
 		const oldPecNumber = visiblePecRatios.filter(ratio => ratio !== undefined).length;
 		// if ratio in undefined for a given pane it means that it's a new pane
 		const newPecNumber = pecRatios.filter(ratio => ratio === undefined).length;
+		const paneIsAdded = newPecNumber > 0;
+
 		let freeRatioForPec = 0;
 		let freeRatio = 0;
 		let ratioForOldPec = 1;
 		let ratioForNewPec = 0;
-		if (newPecNumber > 0) {
+		if (paneIsAdded) {
 			[ratioForOldPec, ratioForNewPec] = getHeightRatios(visiblePecNumber);
-			chartRatio *= ratioForOldPec;
 		}
+
+		//#region chart height ratio logic
+		if (this.graphsHeightRatio[CHART_UUID] === 0) {
+			chartRatio = 0;
+		}
+
+		if (this.graphsHeightRatio[CHART_UUID] !== 0) {
+			if (paneIsAdded) {
+				chartRatio = 1 * ratioForOldPec;
+			} else {
+				// pec ratio values before recalculating and new chart ratio
+				const currentHeightRatioValues = Object.values(this.graphsHeightRatio).reduce(
+					(prev, curr) => (curr += prev),
+				);
+
+				// chart is hidden and one of the pec is removed
+				// since the chart height ratio is new, the currentHeightRatioValues could be > 1, it happens if make chart visible again
+				if (currentHeightRatioValues < 1 && this.graphsHeightRatio[CHART_UUID] !== 0) {
+					chartRatio += 1 - currentHeightRatioValues;
+				}
+			}
+		}
+
+		//#endregion
+
 		// this means we should keep in mind only new panes
 		if (oldPecNumber === 0) {
 			chartRatio = 1 - ratioForNewPec * newPecNumber;
 		}
+
 		freeRatio = 1 - chartRatio - ratioForNewPec * newPecNumber;
 		visiblePecRatios.forEach(ratio => {
 			if (ratio) {
