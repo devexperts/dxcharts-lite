@@ -1010,13 +1010,15 @@ export class CanvasBoundsContainer {
 }
 
 // paneCounter=chartHeightRatio: 0=1, 1=0.8, 2=0.6, 3=0.5, 4=0.4, 5=0.4
+// ratios requirements table: https://confluence.in.devexperts.com/display/UI/Chart+Navigation#ChartNavigation-2Graphsadjustablesizes
 const DEFAULT_RATIOS: Record<number, number> = {
 	0: 1,
 	1: 0.8,
 	2: 0.6,
 	3: 0.5,
 	4: 0.4,
-	5: 0.2,
+	5: 0.4,
+	6: 0.4,
 };
 
 // NOTE: pec stands for panes except main chart
