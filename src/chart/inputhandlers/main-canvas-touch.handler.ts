@@ -108,7 +108,7 @@ export class MainCanvasTouchHandler extends ChartBaseElement {
 			((candleIndexes[0] - candleIndexes[1]) / (touchPositions[0] - touchPositions[1])) *
 				this.scale.getBounds().width;
 
-		if (first >= last) {
+		if (first >= last || touchPositions[0] === touchPositions[1]) {
 			return;
 		}
 
