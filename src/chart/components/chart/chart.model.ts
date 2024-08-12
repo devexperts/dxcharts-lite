@@ -105,14 +105,17 @@ export class ChartModel extends ChartBaseElement {
 		candleSeries.config.type = this.config.components.chart.type;
 		this.candleSeries.push(candleSeries);
 
-		scale.addXConstraint((_, state) =>
-			candleEdgesConstrait(
-				state,
-				this.mainCandleSeries.visualPoints,
-				this.config.components.chart.minCandlesOffset,
-				scale.getBounds(),
-			),
-		);
+		if (this.config.components.chart.minCandlesOffset > 0) {
+			scale.addXConstraint((_, state) =>
+				candleEdgesConstrait(
+					state,
+					this.mainCandleSeries.visualPoints,
+					this.config.components.chart.minCandlesOffset,
+					scale.getBounds(),
+				),
+			);
+		}
+
 		this.basicScaleViewportTransformer = createBasicScaleViewportTransformer(scale);
 		this.timeFrameViewportTransformer = createTimeFrameViewportTransformer(scale, this);
 		this.pane = this.paneManager.panes[CHART_UUID];
@@ -286,7 +289,9 @@ export class ChartModel extends ChartBaseElement {
 		});
 		this.chartBaseModel.recalculatePeriod();
 		this.autoScaleOnCandles();
-		this.scale.doAutoScale();
+		if (this.config.scale.auto) {
+			this.scale.doAutoScale();
+		}
 		this.candlesSetSubject.next();
 		this.canvasModel.fireDraw();
 	}
@@ -942,7 +947,9 @@ export class ChartModel extends ChartBaseElement {
 				series.recalculateVisualPoints();
 			}
 		});
-		this.scale.doAutoScale();
+		if (this.config.scale.auto) {
+			this.scale.doAutoScale();
+		}
 		this.candlesUpdatedSubject.next();
 	}
 
