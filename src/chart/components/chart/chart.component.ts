@@ -466,7 +466,6 @@ export class ChartComponent extends ChartBaseElement {
 	 * Remove candles by ids and recalculate indexes
 	 * 
 	 * @param ids - candles ids to remove
-	 * @param isSequence - true, if candles follow one by one
 	 * @param selectedCandleSeries - candle series to remove candles from
 	 */
 	public removeCandlesByIds(
