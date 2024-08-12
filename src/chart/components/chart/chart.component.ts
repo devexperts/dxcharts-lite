@@ -449,17 +449,31 @@ export class ChartComponent extends ChartBaseElement {
 	}
 
 	/**
+	 * Remove candles by ids and recalculate indexes, candles should be as a sequence, follow one by one
+	 * Works faster than removeCandlesByIds
+	 * 
+	 * @param ids - candles ids to remove
+	 * @param selectedCandleSeries - candle series to remove candles from
+	 */
+	public removeCandlesByIdsSequence(
+		ids: Candle['id'][],
+		selectedCandleSeries: CandleSeriesModel = this.chartModel.mainCandleSeries,
+	) {
+		this.chartModel.removeCandlesByIdsSequence(ids, selectedCandleSeries);
+	}
+
+	/**
 	 * Remove candles by ids and recalculate indexes
+	 * 
 	 * @param ids - candles ids to remove
 	 * @param isSequence - true, if candles follow one by one
 	 * @param selectedCandleSeries - candle series to remove candles from
 	 */
-	public removeCandlesById(
+	public removeCandlesByIds(
 		ids: Candle['id'][],
-		isSequence: boolean = false,
 		selectedCandleSeries: CandleSeriesModel = this.chartModel.mainCandleSeries,
 	) {
-		this.chartModel.removeCandlesByIds(ids, isSequence, selectedCandleSeries);
+		this.chartModel.removeCandlesByIds(ids, selectedCandleSeries);
 	}
 
 	/**

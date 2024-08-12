@@ -6,6 +6,8 @@
 /* eslint-disable */
 'use strict';
 
+import { generateCandleId } from '../model/candle.model';
+
 export default function generateCandlesData(config) {
 	// default generation config
 	config = config || {};
@@ -77,7 +79,7 @@ function generateRandomCandle(from, to, candleAvgSize, type) {
 	var high = Math.max(open, close) + Math.random() * candleAvgSize * 0.2;
 	var low = Math.min(open, close) - Math.random() * candleAvgSize * 0.2;
 	return {
-		id: '',
+		id: generateCandleId(0, high + low + open + close),
 		hi: high,
 		lo: low,
 		open: open,

@@ -1076,6 +1076,7 @@ export class ChartModel extends ChartBaseElement {
 
 	/**
 	 * Remove candle by idx and recalculate indexes
+	 * 
 	 * @param idx
 	 * @param instrumentSymbol - name of the instrument to update
 	 */
@@ -1098,17 +1099,13 @@ export class ChartModel extends ChartBaseElement {
 	}
 
 	/**
-	 * Remove candles by ids and recalculate indexes
+	 * Remove candles by ids and recalculate indexes, candles should be as a sequence, follow one by one
+	 * Works faster than removeCandlesByIds
+	 * 
 	 * @param ids - candles ids to remove
 	 * @param selectedCandleSeries - candle series to remove candles from
-	 * @param isSequence - true, if candles follow one by one
 	 */
-	public removeCandlesByIds(ids: Candle['id'][], isSequence: boolean, selectedCandleSeries: CandleSeriesModel) {
-		if (!isSequence) {
-			ids.forEach(id => this.removeCandleByIdx(this.candleIdxFromId(id, selectedCandleSeries)));
-			return;
-		}
-
+	public removeCandlesByIdsSequence(ids: Candle['id'][], selectedCandleSeries: CandleSeriesModel) {
 		const firstIdx = this.candleIdxFromId(ids[0], selectedCandleSeries);
 		const lastIdx = this.candleIdxFromId(ids[ids.length - 1], selectedCandleSeries);
 
@@ -1126,6 +1123,15 @@ export class ChartModel extends ChartBaseElement {
 		selectedCandleSeries.recalculateVisualPoints();
 
 		this.candlesChangedRedraw();
+	}
+
+	/**
+	 * Remove candles by ids and recalculate indexes
+	 * @param ids - candles ids to remove
+	 * @param selectedCandleSeries - candle series to remove candles from
+	 */
+	public removeCandlesByIds(ids: Candle['id'][], selectedCandleSeries: CandleSeriesModel) {
+		ids.forEach(id => this.removeCandleByIdx(this.candleIdxFromId(id, selectedCandleSeries)));
 	}
 
 	/**
@@ -1168,7 +1174,7 @@ export interface UpdateCandlesResult {
 }
 
 const sortCandles = (candles: Candle[]): Candle[] =>
-	candles.slice().sort((a, b) => (a.id === b.id ? 0 : a.timestamp > b.timestamp ? 1 : -1));
+	candles.slice().sort((a, b) => (a.timestamp === b.timestamp ? 0 : a.timestamp > b.timestamp ? 1 : -1));
 
 const prepareCandles = (candles: PartialCandle[]): Candle[] => sortCandles(candles.map(prepareCandle).filter(isCandle));
 
