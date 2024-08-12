@@ -181,3 +181,5 @@ You can find them [here](https://github.com/devexperts/dxcharts-lite/tree/master
 ## Demo
 
 To show you how it's beautiful, we have created [Demo version](https://devexperts.com/dxcharts-demo/), based on DXCharts Lite. Feel all power of our library!
+
+## TEST
