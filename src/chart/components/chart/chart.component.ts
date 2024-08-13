@@ -52,6 +52,7 @@ import { PrependedCandlesData } from './chart-base.model';
 import { TrendHistogramDrawer } from '../../drawers/data-series-drawers/trend-histogram.drawer';
 import { DynamicObjectsComponent } from '../dynamic-objects/dynamic-objects.component';
 import { ChartResizeHandler } from '../../inputhandlers/chart-resize.handler';
+import { PartialExcept } from '../../utils/types.utils';
 
 /**
  * Represents a financial instrument to be displayed on a chart
@@ -70,7 +71,7 @@ export class ChartInstrument {
 	priceIncrements?: Array<number> = [0.01];
 }
 
-export type PartialCandle = Partial<Candle> & { id: string; timestamp: Timestamp; close: number };
+export type PartialCandle = PartialExcept<Candle, 'id' | 'timestamp' | 'close'>;
 
 export interface CandleSeries {
 	candles: PartialCandle[];
@@ -451,7 +452,7 @@ export class ChartComponent extends ChartBaseElement {
 	/**
 	 * Remove candles by ids and recalculate indexes, candles should be as a sequence, follow one by one
 	 * Works faster than removeCandlesByIds
-	 * 
+	 *
 	 * @param ids - candles ids to remove
 	 * @param selectedCandleSeries - candle series to remove candles from
 	 */
@@ -464,7 +465,7 @@ export class ChartComponent extends ChartBaseElement {
 
 	/**
 	 * Remove candles by ids and recalculate indexes
-	 * 
+	 *
 	 * @param ids - candles ids to remove
 	 * @param selectedCandleSeries - candle series to remove candles from
 	 */
