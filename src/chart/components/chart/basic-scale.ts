@@ -8,23 +8,36 @@ import VisualCandle from '../../model/visual-candle';
 import { Timestamp } from '../../model/scaling/viewport.model';
 import { ChartModel } from './chart.model';
 
+export interface BasicScaleOptions {
+	xScale?: boolean;
+	yScale?: boolean;
+}
+
 /**
  * Calculates the initial viewport.
  * @param scaleModel
  * @doc-tags scaling,viewport
  */
-export const createBasicScaleViewportTransformer = (scale: ScaleModel) => (visualCandleSource: VisualCandle[]) => {
-	if (visualCandleSource.length !== 0) {
-		const vCandles = visualCandleSource.slice(
-			Math.max(visualCandleSource.length - scale.state.defaultViewportItems, 0),
-		);
-		const startCandle = vCandles[0];
-		const endCandle = vCandles[vCandles.length - 1];
-		scale.setXScale(startCandle.startUnit, endCandle.startUnit + endCandle.width + scale.offsets.right);
-		scale.doAutoScale(true);
-		scale.fireChanged();
-	}
-};
+export const createBasicScaleViewportTransformer =
+	(scale: ScaleModel) =>
+	(visualCandleSource: VisualCandle[], scaleOptions: BasicScaleOptions = { xScale: true, yScale: true }) => {
+		if (visualCandleSource.length !== 0) {
+			if (scaleOptions.xScale) {
+				const vCandles = visualCandleSource.slice(
+					Math.max(visualCandleSource.length - scale.state.defaultViewportItems, 0),
+				);
+				const startCandle = vCandles[0];
+				const endCandle = vCandles[vCandles.length - 1];
+				scale.setXScale(startCandle.startUnit, endCandle.startUnit + endCandle.width + scale.offsets.right);
+			}
+
+			if (scaleOptions.yScale) {
+				scale.doAutoScale(true);
+			}
+
+			scale.fireChanged();
+		}
+	};
 
 /**
  * Moves the viewport between 2 timestamps.
