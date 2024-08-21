@@ -482,7 +482,7 @@ export default class ChartBootstrap {
 		);
 		this.chartComponents.push(this.volumesComponent);
 		// grid component
-		const mainChartGridComponent = new GridComponent(
+		const verticalGridComponent = new GridComponent(
 			mainCanvasModel,
 			scaleModel,
 			config,
@@ -492,11 +492,11 @@ export default class ChartBootstrap {
 			() => this.canvasBoundsContainer.getBounds(CanvasElement.ALL_PANES),
 			() => this.canvasBoundsContainer.getBounds(chartPaneId),
 			() => this.xAxisComponent.xAxisLabelsGenerator.labels,
-			() => this.yAxisComponent.model.baseLabelsModel.labels,
-			() => mainPane.mainExtent.toY(mainPane.mainExtent.getBaseline()),
+			() => [],
+			undefined,
 			() => config.components.grid.visible,
 		);
-		this.chartComponents.push(mainChartGridComponent);
+		this.chartComponents.push(verticalGridComponent);
 		this.hoverProducer = new HoverProducerComponent(
 			this.crossEventProducer,
 			scaleModel,
