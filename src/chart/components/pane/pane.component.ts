@@ -30,9 +30,8 @@ import { ChartBaseModel } from '../chart/chart-base.model';
 import { createCandlesOffsetProvider } from '../chart/data-series.high-low-provider';
 import { DragNDropYComponent } from '../dran-n-drop_helper/drag-n-drop-y.component';
 import { GridComponent } from '../grid/grid.component';
-import { PriceAxisType } from '../labels_generator/numeric-axis-labels.generator';
+import { NumericAxisLabel, PriceAxisType } from '../labels_generator/numeric-axis-labels.generator';
 import { ChartPanComponent } from '../pan/chart-pan.component';
-import { NumericYAxisLabelsGenerator } from '../y_axis/numeric-y-axis-labels.generator';
 import { YAxisComponent } from '../y_axis/y-axis.component';
 import {
 	createDefaultYExtentHighLowProvider,
@@ -134,8 +133,9 @@ export class PaneComponent extends ChartBaseElement {
 	private createGridComponent(
 		uuid: string,
 		scale: ScaleModel,
-		yAxisLabelsGenerator: NumericYAxisLabelsGenerator,
 		yAxisState: YAxisConfig,
+		yAxisLabelsGetter: () => NumericAxisLabel[],
+		yAxisBaselineGetter: () => Unit,
 	) {
 		const chartPaneId = CanvasElement.PANE_UUID(uuid);
 		const gridComponent = new GridComponent(
@@ -148,7 +148,9 @@ export class PaneComponent extends ChartBaseElement {
 			() => this.canvasBoundsContainer.getBounds(chartPaneId),
 			() => this.canvasBoundsContainer.getBounds(chartPaneId),
 			() => [],
-			() => yAxisLabelsGenerator.generateNumericLabels(),
+			yAxisLabelsGetter,
+			yAxisBaselineGetter,
+			() => this.config.components.grid.visible,
 		);
 		return gridComponent;
 	}
@@ -245,8 +247,9 @@ export class PaneComponent extends ChartBaseElement {
 		const gridComponent = this.createGridComponent(
 			this.uuid,
 			scaleModel,
-			yExtentComponent.yAxis.model.labelsGenerator,
 			yExtentComponent.yAxis.state,
+			() => yExtentComponent.yAxis.model.baseLabelsModel.labels,
+			() => yExtentComponent.toY(yExtentComponent.getBaseline()),
 		);
 		yExtentComponent.addChildEntity(gridComponent);
 
