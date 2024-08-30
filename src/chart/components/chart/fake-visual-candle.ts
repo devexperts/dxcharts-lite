@@ -1,13 +1,8 @@
-/*
- * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
- * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
- * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
- */
-import { Candle, nameDirection } from '../../model/candle.model';
-import { DataSeriesPoint, VisualSeriesPoint } from '../../model/data-series.model';
-import { Index, Pixel, Unit } from '../../model/scaling/viewport.model';
-import VisualCandle from '../../model/visual-candle';
-import { DEFAULT_PERIOD, fakeCandle, fakeDataPoint } from './fake-candles';
+import { Candle, nameDirection } from "../../model/candle.model";
+import { DataSeriesPoint, VisualSeriesPoint } from "../../model/data-series.model";
+import { Index, Pixel, Unit } from "../../model/scaling/viewport.model";
+import VisualCandle from "../../model/visual-candle";
+import { DEFAULT_PERIOD, fakeCandle, fakeDataPoint } from "./fake-candles";
 
 /**
  * Generates fake candle for left and right "out of data range" zones.
