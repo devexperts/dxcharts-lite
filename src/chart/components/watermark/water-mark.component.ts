@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2023 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -14,6 +14,16 @@ import { merge } from '../../utils/merge.utils';
 import { ChartModel } from '../chart/chart.model';
 import { PaneManager } from '../pane/pane-manager.component';
 import { WaterMarkDrawer } from './water-mark.drawer';
+
+export interface WaterMarkConfig {
+	isVisible?: boolean;
+	fontFamily?: string;
+	firstRowFontSize?: number;
+	firstRowBottomPadding?: number;
+	secondRowFontSize?: number;
+	secondRowBottomPadding?: number;
+	thirdRowFontSize?: number;
+}
 
 export interface WaterMarkData {
 	firstRow?: string;
@@ -93,22 +103,23 @@ export class WaterMarkComponent extends ChartBaseElement {
 
 	/**
      * Sets the watermark configuration for the chart.
-     * @param {ChartConfigComponentsWaterMark} watermarkConfig - The configuration object for the watermark.
+     * @param {WaterMarkConfig} watermarkConfig - The configuration object for the watermark.
      * @returns {void}
      
     */
-	public setWaterMarkConfig(watermarkConfig: ChartConfigComponentsWaterMark): void {
+	public setWaterMarkConfig(watermarkConfig: WaterMarkConfig): void {
 		if (!watermarkConfig || !this.config.components) {
 			return;
 		}
 		if (!this.config.components.waterMark) {
 			this.config.components.waterMark = JSON.parse(JSON.stringify(watermarkConfig));
 		} else {
-			const newWatermark: Partial<ChartConfigComponentsWaterMark> = {};
+			const newWatermark: WaterMarkConfig = {};
 			merge(newWatermark, watermarkConfig);
 			merge(newWatermark, this.config.components.waterMark);
 			// eslint-disable-next-line no-restricted-syntax
-			this.config.components.waterMark = newWatermark as ChartConfigComponentsWaterMark;
+			this.config.components.waterMark = newWatermark as ChartConfigComponentsWaterMark &
+				Required<ChartConfigComponentsWaterMark>;
 		}
 		this.canvasModel.fireDraw();
 	}
