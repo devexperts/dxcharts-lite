@@ -29,9 +29,6 @@ export interface Candle {
 	readonly vwap?: number;
 }
 
-export const defaultSortCandles = (candles: Candle[]): Candle[] =>
-	candles.slice().sort((a, b) => (a.timestamp === b.timestamp ? 0 : a.timestamp > b.timestamp ? 1 : -1));
-
 export const generateCandleId = (timestamp: number, hashValue: number | string): string => {
 	return `${timestamp}_${hashCode(hashValue.toString())}`;
 };
