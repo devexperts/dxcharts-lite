@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2023 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -118,11 +118,11 @@ export class VolumesDrawer implements DynamicModelDrawer<VolumesModel> {
 					nextX !== undefined ? nextX - x : floorToDPR(unitToPixels(vCandle.width, viewportModel.zoomX));
 				if (this.config.components.volumes.showSeparately) {
 					const y = floorToDPR(viewportModel.toY(vCandle.candle.volume));
-					const height = ceilToDPR(viewportModel.toY(0)) - y;
+					const height = floorToDPR(viewportModel.toY(0)) - y;
 					this.drawVolume(canvasModel, vCandle, x, y, width, height);
 				} else {
 					const zoomY = volumeMax / (fullVHeight / OVERLAY_VOLUME_TOTAL_HEIGHT_DIVISOR);
-					const height = Math.max(ceilToDPR(unitToPixels(vCandle.candle.volume, zoomY)), 2);
+					const height = Math.max(unitToPixels(vCandle.candle.volume, zoomY), 2);
 					const y = floorToDPR(bounds.y + fullVHeight - height);
 					this.drawVolume(canvasModel, vCandle, x, y, width, height);
 				}
@@ -161,7 +161,7 @@ export class VolumesDrawer implements DynamicModelDrawer<VolumesModel> {
 			ctx.lineTo(x, ceilToDPR(yEnd));
 			ctx.stroke();
 		} else {
-			ctx.fillRect(x, y, width, height);
+			ctx.fillRect(x, y, width, ceilToDPR(height));
 		}
 	}
 }
