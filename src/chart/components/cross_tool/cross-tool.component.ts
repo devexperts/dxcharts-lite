@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2023 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -63,11 +63,22 @@ export class CrossToolComponent extends ChartBaseElement {
 	private registerDefaultDrawerTypes() {
 		this.registerCrossToolTypeDrawer(
 			'cross-and-labels',
-			new CrossAndLabelsDrawerType(this.config, this.canvasBoundsContainer, this.paneManager, () => true),
+			new CrossAndLabelsDrawerType(
+				this.config,
+				this.canvasBoundsContainer,
+				this.paneManager,
+				() => true,
+			),
 		);
 		this.registerCrossToolTypeDrawer(
 			'just-labels',
-			new CrossAndLabelsDrawerType(this.config, this.canvasBoundsContainer, this.paneManager, () => true, true),
+			new CrossAndLabelsDrawerType(
+				this.config,
+				this.canvasBoundsContainer,
+				this.paneManager,
+				() => true,
+				true,
+			),
 		);
 		this.registerCrossToolTypeDrawer('none', new NoneDrawerType());
 	}
