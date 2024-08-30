@@ -53,6 +53,7 @@ List of default drawer types:
 	'HIT_TEST_DRAWINGS',
 	'GRID',
 	'VOLUMES',
+	'UNDERLAY_VOLUMES_AREA',
 	'X_AXIS',
 	'Y_AXIS',
 	'HIGH_LOW',

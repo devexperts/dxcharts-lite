@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2023 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -49,21 +49,21 @@ export class YAxisDrawer implements Drawer {
 				const labels = yAxisComponent.model.baseLabelsModel.labels;
 
 				const bounds: Bounds = yAxisComponent.getBounds();
-				const ctx = this.canvasModel.ctx;
+			const ctx = this.canvasModel.ctx;
 
-				// draw axis background rect animation
-				ctx.fillStyle = this.getBackgroundColor();
-				ctx.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
+			// draw axis background rect animation
+			ctx.fillStyle = this.getBackgroundColor();
+			ctx.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
 
 				const font = getFontFromConfig(yAxisComponent.state);
-				const fontHeight = calculateSymbolHeight(font, ctx);
+			const fontHeight = calculateSymbolHeight(font, ctx);
 
-				const textColor = this.getLabelTextColor();
-				ctx.save();
-				clipToBounds(ctx, bounds);
+			const textColor = this.getLabelTextColor();
+			ctx.save();
+			clipToBounds(ctx, bounds);
 				this.drawLabels(ctx, labels, bounds, fontHeight, font, textColor, yAxisComponent);
-				ctx.restore();
-			}
+			ctx.restore();
+		}
 		});
 	}
 
