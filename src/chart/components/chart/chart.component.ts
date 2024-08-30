@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - 2023 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -52,6 +52,7 @@ import { PrependedCandlesData } from './chart-base.model';
 import { TrendHistogramDrawer } from '../../drawers/data-series-drawers/trend-histogram.drawer';
 import { DynamicObjectsComponent } from '../dynamic-objects/dynamic-objects.component';
 import { ChartResizeHandler } from '../../inputhandlers/chart-resize.handler';
+import { PartialExcept } from '../../utils/types.utils';
 
 /**
  * Represents a financial instrument to be displayed on a chart
@@ -70,7 +71,7 @@ export class ChartInstrument {
 	priceIncrements?: Array<number> = [0.01];
 }
 
-export type PartialCandle = Partial<Candle> & { timestamp: Timestamp; close: number };
+export type PartialCandle = PartialExcept<Candle, 'id' | 'timestamp' | 'close'>;
 
 export interface CandleSeries {
 	candles: PartialCandle[];
@@ -433,25 +434,67 @@ export class ChartComponent extends ChartBaseElement {
 	/**
 	 * Adds new candle to the chart
 	 * @param candle - new candle
-	 * @param instrument - name of the instrument to update
+	 * @param instrumentSymbol - name of the instrument to update
 	 */
 	public addLastCandle(candle: Candle, instrumentSymbol?: string) {
 		this.chartModel.addLastCandle(candle, instrumentSymbol);
 	}
 
 	/**
-	 * Remove candle by idx and recaculate indexes
+	 * Remove candle by idx and recalculate indexes
 	 * @param idx - candle index
-	 * @param instrument - name of the instrument to update
+	 * @param instrumentSymbol - name of the instrument to update
 	 */
 	public removeCandleByIdx(idx: number, instrumentSymbol?: string) {
 		this.chartModel.removeCandleByIdx(idx, instrumentSymbol);
 	}
 
 	/**
+	 * Remove candles by ids and recalculate indexes, candles should be as a sequence, follow one by one
+	 * Works faster than removeCandlesByIds
+	 *
+	 * @param ids - candles ids to remove
+	 * @param selectedCandleSeries - candle series to remove candles from
+	 */
+	public removeCandlesByIdsSequence(
+		ids: Candle['id'][],
+		selectedCandleSeries: CandleSeriesModel = this.chartModel.mainCandleSeries,
+	) {
+		this.chartModel.removeCandlesByIdsSequence(ids, selectedCandleSeries);
+	}
+
+	/**
+	 * Remove candles by ids and recalculate indexes
+	 *
+	 * @param ids - candles ids to remove
+	 * @param selectedCandleSeries - candle series to remove candles from
+	 */
+	public removeCandlesByIds(
+		ids: Candle['id'][],
+		selectedCandleSeries: CandleSeriesModel = this.chartModel.mainCandleSeries,
+	) {
+		this.chartModel.removeCandlesByIds(ids, selectedCandleSeries);
+	}
+
+	/**
+	 * Add candles by id and recalculate indexes
+	 *
+	 * @param candles - candles to add
+	 * @param startId - target candle to start adding candles from
+	 * @param selectedCandleSeries - candle series to add candles to
+	 */
+	public addCandlesById(
+		candles: Candle[],
+		startId: string,
+		selectedCandleSeries: CandleSeriesModel = this.chartModel.mainCandleSeries,
+	) {
+		this.chartModel.addCandlesById(candles, startId, selectedCandleSeries);
+	}
+
+	/**
 	 * Updates last candle value
 	 * @param candle - updated candle
-	 * @param instrument - name of the instrument to update
+	 * @param instrumentSymbol - name of the instrument to update
 	 */
 	public updateLastCandle(candle: Candle, instrumentSymbol?: string) {
 		this.chartModel.updateLastCandle(candle, instrumentSymbol);

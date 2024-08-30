@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - 2023 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -414,9 +414,7 @@ export class ChartModel extends ChartBaseElement {
 				series.dataPoints = series.dataPoints.slice(0, index);
 			});
 		});
-		this.candlesRemovedSubject.next();
-		this.candlesUpdatedSubject.next();
-		this.canvasModel.fireDraw();
+		this.candlesChangedRedraw();
 	}
 
 	/**
@@ -479,7 +477,8 @@ export class ChartModel extends ChartBaseElement {
 	private secondarySeriesAdjustments(mainSeries: Array<Candle>, secondarySeries: Array<Candle>): Array<Candle> {
 		const result: Array<Candle> = [];
 		mainSeries.forEach(mainCandle => {
-			const idx = mainCandle.idx ?? 0;
+			const candleIdx = this.candleIdxFromId(mainCandle.id);
+			const idx = candleIdx > 0 ? candleIdx : 0;
 			const compareCandle = secondarySeries[idx];
 			if (!compareCandle) {
 				// take first candle to left or right
@@ -660,6 +659,28 @@ export class ChartModel extends ChartBaseElement {
 	): VisualCandle {
 		const dataPointsSource = selectedCandleSeries.dataPoints;
 		return this.chartBaseModel.dataFromTimestamp(timestamp, extrapolate, dataPointsSource);
+	}
+
+	/**
+	 * For given id finds the target candle
+	 * @param id
+	 * @param selectedCandleSeries
+	 */
+	public candleFromId(
+		id: Candle['id'],
+		selectedCandleSeries: CandleSeriesModel = this.mainCandleSeries,
+	): VisualCandle | undefined {
+		return selectedCandleSeries.visualPoints.find(vc => vc.candle.id === id);
+	}
+
+	/**
+	 * For given id finds the target candle index
+	 * @param id
+	 * @param selectedCandleSeries
+	 * @returns candle index, -1 if not found
+	 */
+	public candleIdxFromId(id: Candle['id'], selectedCandleSeries: CandleSeriesModel = this.mainCandleSeries): number {
+		return selectedCandleSeries.visualPoints.findIndex(vc => vc.candle.id === id);
 	}
 
 	/**
@@ -882,7 +903,7 @@ export class ChartModel extends ChartBaseElement {
 	 * Updates candles in series. Default is main series.
 	 * Any number of candles may be provided - they would be matched by their index and updated.
 	 * @param candles - any list of new (updated) candles
-	 * @param instrument - name of instrument to update
+	 * @param instrumentSymbol - name of instrument to update
 	 */
 	// I'd like to keep this method, for me one generic method is more convenient than 3 (updateLastCandle, addLastCandle, prepend...)
 	public updateCandles(
@@ -1029,7 +1050,7 @@ export class ChartModel extends ChartBaseElement {
 			const idx = result.index;
 			if (idx < 0) {
 				prepend.push(c);
-			} else if (target[idx].timestamp === c.timestamp) {
+			} else if (target[idx].id === c.id) {
 				targetCopy[idx] = c;
 			} else {
 				console.warn(`Couldn't update candle with timestamp ${c.timestamp}`);
@@ -1045,7 +1066,7 @@ export class ChartModel extends ChartBaseElement {
 	/**
 	 * Adds new candle to the chart
 	 * @param candle - new candle
-	 * @param instrument - name of the instrument to update
+	 * @param instrumentSymbol - name of the instrument to update
 	 */
 	public addLastCandle(candle: Candle, instrumentSymbol: string = this.mainCandleSeries.instrument.symbol) {
 		this.updateCandles([candle], instrumentSymbol);
@@ -1054,7 +1075,7 @@ export class ChartModel extends ChartBaseElement {
 	/**
 	 * Updates last candle value
 	 * @param candle - updated candle
-	 * @param instrument - name of the instrument to update
+	 * @param instrumentSymbol  - name of the instrument to update
 	 */
 	public updateLastCandle(candle: Candle, instrumentSymbol: string = this.mainCandleSeries.instrument.symbol): void {
 		this.updateCandles([candle], instrumentSymbol);
@@ -1063,9 +1084,12 @@ export class ChartModel extends ChartBaseElement {
 	/**
 	 * Remove candle by idx and recaculate indexes
 	 * @param candle - new candle
-	 * @param instrument - name of the instrument to update
+	 * @param instrumentSymbol - name of the instrument to update
 	 */
 	public removeCandleByIdx(idx: number, instrumentSymbol: string = this.mainCandleSeries.instrument.symbol) {
+		if (idx < 0) {
+			return;
+		}
 		const seriesList = this.findSeriesBySymbol(instrumentSymbol);
 		if (seriesList.length === 0) {
 			console.warn("removeCandle by id failed. Can't find series", instrumentSymbol);
@@ -1076,6 +1100,72 @@ export class ChartModel extends ChartBaseElement {
 			reindexCandles(series.dataPoints);
 			series.recalculateVisualPoints();
 		});
+		this.candlesChangedRedraw();
+	}
+
+	/**
+	 * Remove candles by ids and recalculate indexes, candles should be as a sequence, follow one by one
+	 * Works faster than removeCandlesByIds
+	 *
+	 * @param ids - candles ids to remove
+	 * @param selectedCandleSeries - candle series to remove candles from
+	 */
+	public removeCandlesByIdsSequence(ids: Candle['id'][], selectedCandleSeries: CandleSeriesModel) {
+		const firstIdx = this.candleIdxFromId(ids[0], selectedCandleSeries);
+		const lastIdx = this.candleIdxFromId(ids[ids.length - 1], selectedCandleSeries);
+
+		if (firstIdx < 0 || lastIdx < 0) {
+			console.warn('Candle is not found');
+			return;
+		}
+
+		// if array is a sequence the removal process should be faster because reindex and recalculate visual points would call only once
+		selectedCandleSeries.dataPoints = selectedCandleSeries.dataPoints
+			.slice(0, firstIdx)
+			.concat(selectedCandleSeries.dataPoints.slice(lastIdx + 1));
+
+		reindexCandles(selectedCandleSeries.dataPoints, lastIdx);
+		selectedCandleSeries.recalculateVisualPoints();
+
+		this.candlesChangedRedraw();
+	}
+
+	/**
+	 * Remove candles by ids and recalculate indexes
+	 * @param ids - candles ids to remove
+	 * @param selectedCandleSeries - candle series to remove candles from
+	 */
+	public removeCandlesByIds(ids: Candle['id'][], selectedCandleSeries: CandleSeriesModel) {
+		ids.forEach(id => this.removeCandleByIdx(this.candleIdxFromId(id, selectedCandleSeries)));
+	}
+
+	/**
+	 * Add candles by id and recalculate indexes
+	 *
+	 * @param candles - candles to add
+	 * @param startId - target candle to start adding candles from
+	 * @param selectedCandleSeries - candle series to add candles to
+	 */
+	public addCandlesById(candles: Candle[], startId: string, selectedCandleSeries: CandleSeriesModel) {
+		const targetCandleIdx = this.candleIdxFromId(startId);
+
+		if (targetCandleIdx < 0) {
+			console.warn('Selected start candle is not found');
+			return;
+		}
+
+		const candlesBefore = selectedCandleSeries.dataPoints.slice(0, targetCandleIdx);
+		const candlesAfter = selectedCandleSeries.dataPoints.slice(targetCandleIdx);
+
+		selectedCandleSeries.dataPoints = candlesBefore.concat(candles).concat(candlesAfter);
+
+		reindexCandles(selectedCandleSeries.dataPoints);
+		selectedCandleSeries.recalculateVisualPoints();
+
+		this.candlesChangedRedraw();
+	}
+
+	private candlesChangedRedraw() {
 		this.candlesRemovedSubject.next();
 		this.candlesUpdatedSubject.next();
 		this.canvasModel.fireDraw();

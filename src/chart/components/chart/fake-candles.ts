@@ -1,9 +1,9 @@
 /*
- * Copyright (C) 2019 - 2023 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { Candle } from '../../model/candle.model';
+import { Candle, generateCandleId } from '../../model/candle.model';
 import { DataSeriesPoint } from '../../model/data-series.model';
 import { Index, Timestamp } from '../../model/scaling/viewport.model';
 import { firstOf, lastOf } from '../../utils/array.utils';
@@ -14,6 +14,7 @@ export const DEFAULT_PERIOD = 60; // 1 minute
 export const fakeCandle = (candles: Candle[], index: Index, period: number = DEFAULT_PERIOD): Candle => {
 	const t = getTimestampOfIndex(candles, index, period);
 	return {
+		id: generateCandleId(t, t),
 		hi: NaN,
 		lo: NaN,
 		open: NaN,

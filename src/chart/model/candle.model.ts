@@ -1,11 +1,11 @@
-import { Unit } from './scaling/viewport.model';
-import { PriceMovement } from './candle-series.model';
-
 /*
- * Copyright (C) 2019 - 2023 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
+import { Unit } from './scaling/viewport.model';
+import { PriceMovement } from './candle-series.model';
+import { hashCode } from '../utils/string.utils';
 
 // Has no specific rule, just any number to use in units calculation.
 // 1 - because why not? Easy to debug.
@@ -16,6 +16,7 @@ export const BASIC_CANDLE_WIDTH: Unit = 1;
  * @doc-tags-name Candle
  */
 export interface Candle {
+	readonly id: string;
 	readonly hi: number;
 	readonly lo: number;
 	readonly open: number;
@@ -27,6 +28,10 @@ export interface Candle {
 	readonly impVolatility?: number;
 	readonly vwap?: number;
 }
+
+export const generateCandleId = (timestamp: number, hashValue: number | string): string => {
+	return `${timestamp}_${hashCode(hashValue.toString())}`;
+};
 
 /**
  * Provides the name of candle difference
@@ -66,7 +71,7 @@ export function hollowDirection(open: number, close: number): PriceMovement {
  * @returns {Candle} A new Candle object with the same properties as the base object, with the option to modify the prices.
  */
 export function copyCandle(base: Candle, idx: number, pricesAsClose: boolean = false): Candle {
-	const { expansion, impVolatility, vwap, volume, timestamp } = base;
+	const { id, expansion, impVolatility, vwap, volume, timestamp } = base;
 	let hi = base.hi;
 	let lo = base.lo;
 	let open = base.open;
@@ -81,6 +86,7 @@ export function copyCandle(base: Candle, idx: number, pricesAsClose: boolean = f
 		_idx = idx;
 	}
 	return {
+		id,
 		hi,
 		lo,
 		open,
