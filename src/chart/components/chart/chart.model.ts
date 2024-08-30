@@ -233,7 +233,7 @@ export class ChartModel extends ChartBaseElement {
 		instrument: ChartInstrument = this.mainCandleSeries.instrument,
 		recalculateAndUpdate = true,
 	): CandleSeriesModel | undefined {
-		const preparedCandles = this.prepareCandles(candles);
+		const preparedCandles = prepareCandles(candles);
 		// set correct indexes based on main candles timestamp
 		const reindexCandles = this.reindexCandlesBasedOnSeries(this.mainCandleSeries.dataPoints, preparedCandles);
 		// ensure there are no gaps in new candles
@@ -270,7 +270,7 @@ export class ChartModel extends ChartBaseElement {
 			this.mainInstrumentChangedSubject.next(mainSeries.instrument);
 		}
 		this.rememberCurrentTimeframe();
-		const preparedCandles = this.prepareCandles(mainSeries.candles);
+		const preparedCandles = prepareCandles(mainSeries.candles);
 		this.mainCandleSeries.clearData();
 		reindexCandles(preparedCandles);
 		this.mainCandleSeries.dataPoints = preparedCandles;
@@ -364,7 +364,7 @@ export class ChartModel extends ChartBaseElement {
 			return;
 		}
 
-		const preparedCandles = this.prepareCandles(mainSeries.candles);
+		const preparedCandles = prepareCandles(mainSeries.candles);
 		const updateResult = updateCandles(this.mainCandleSeries.dataPoints, preparedCandles);
 		const updatedCandles = updateResult.candles;
 		reindexCandles(updatedCandles);
@@ -372,7 +372,7 @@ export class ChartModel extends ChartBaseElement {
 
 		// re-create series
 		secondarySeries.map(series => {
-			const preparedCandles = this.prepareCandles(series.candles);
+			const preparedCandles = prepareCandles(series.candles);
 			const updatedCandles = updateCandles(
 				this.findSecondarySeriesBySymbol(series.instrument?.symbol ?? '')?.dataPoints ?? [],
 				preparedCandles,
@@ -1170,13 +1170,6 @@ export class ChartModel extends ChartBaseElement {
 		this.candlesUpdatedSubject.next();
 		this.canvasModel.fireDraw();
 	}
-
-	private prepareCandles = (candles: PartialCandle[]): Candle[] => {
-		const prepared = candles.map(prepareCandle).filter(isCandle);
-		const { sortCandles } = this.config.components.chart;
-
-		return sortCandles ? sortCandles(prepared) : prepared;
-	};
 }
 
 export interface UpdateCandlesResult {
@@ -1184,6 +1177,11 @@ export interface UpdateCandlesResult {
 	appended?: Candle[];
 	candles: Candle[];
 }
+
+const sortCandles = (candles: Candle[]): Candle[] =>
+	candles.slice().sort((a, b) => (a.timestamp === b.timestamp ? 0 : a.timestamp > b.timestamp ? 1 : -1));
+
+const prepareCandles = (candles: PartialCandle[]): Candle[] => sortCandles(candles.map(prepareCandle).filter(isCandle));
 
 const findFirstNotEmptyCandle = (candles: Array<Candle>, startIdx: number, iterateStep: number): Candle | undefined => {
 	if (startIdx >= candles.length) {
