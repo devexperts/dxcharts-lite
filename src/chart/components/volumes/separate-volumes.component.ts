@@ -1,9 +1,10 @@
 /*
- * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2023 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 import { FullChartConfig } from '../../chart.config';
+import { DrawingManager } from '../../drawers/drawing-manager';
 import { ChartBaseElement } from '../../model/chart-base-element';
 import { Pixel, Unit } from '../../model/scaling/viewport.model';
 import { ChartComponent } from '../chart/chart.component';
@@ -18,6 +19,7 @@ export class SeparateVolumesComponent extends ChartBaseElement {
 	public pane: PaneComponent | undefined;
 	constructor(
 		private chartComponent: ChartComponent,
+		private drawingManager: DrawingManager,
 		public config: FullChartConfig,
 		private volumesModel: VolumesModel,
 		private paneManager: PaneManager,
@@ -72,6 +74,7 @@ export class SeparateVolumesComponent extends ChartBaseElement {
 	deactiveSeparateVolumes() {
 		this.paneManager.removePane(SeparateVolumesComponent.UUID);
 		delete this.pane;
+		this.drawingManager.removeDrawerByName('UNDERLAY_VOLUMES_AREA');
 	}
 
 	/**
