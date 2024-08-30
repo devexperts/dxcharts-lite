@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2023 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -540,40 +540,14 @@ export class CanvasBoundsContainer {
 		const oldPecNumber = visiblePecRatios.filter(ratio => ratio !== undefined).length;
 		// if ratio in undefined for a given pane it means that it's a new pane
 		const newPecNumber = pecRatios.filter(ratio => ratio === undefined).length;
-		const paneIsAdded = newPecNumber > 0;
-
 		let freeRatioForPec = 0;
 		let freeRatio = 0;
 		let ratioForOldPec = 1;
 		let ratioForNewPec = 0;
-		if (paneIsAdded) {
+		if (newPecNumber > 0) {
 			[ratioForOldPec, ratioForNewPec] = getHeightRatios(visiblePecNumber);
+			chartRatio *= ratioForOldPec;
 		}
-
-		//#region chart height ratio logic
-		if (this.graphsHeightRatio[CHART_UUID] === 0) {
-			chartRatio = 0;
-		}
-
-		if (this.graphsHeightRatio[CHART_UUID] !== 0) {
-			if (paneIsAdded) {
-				chartRatio = 1 * ratioForOldPec;
-			} else {
-				// pec ratio values before recalculating and new chart ratio
-				const currentHeightRatioValues = Object.values(this.graphsHeightRatio).reduce(
-					(prev, curr) => (curr += prev),
-				);
-
-				// chart is hidden and one of the pec is removed
-				// since the chart height ratio is new, the currentHeightRatioValues could be > 1, it happens if make chart visible again
-				if (currentHeightRatioValues < 1 && this.graphsHeightRatio[CHART_UUID] !== 0) {
-					chartRatio += 1 - currentHeightRatioValues;
-				}
-			}
-		}
-
-		//#endregion
-
 		// this means we should keep in mind only new panes
 		if (oldPecNumber === 0) {
 			chartRatio = 1 - ratioForNewPec * newPecNumber;
@@ -1009,15 +983,13 @@ export class CanvasBoundsContainer {
 }
 
 // paneCounter=chartHeightRatio: 0=1, 1=0.8, 2=0.6, 3=0.5, 4=0.4, 5=0.4
-// ratios requirements table: https://confluence.in.devexperts.com/display/UI/Chart+Navigation#ChartNavigation-2Graphsadjustablesizes
 const DEFAULT_RATIOS: Record<number, number> = {
 	0: 1,
 	1: 0.8,
 	2: 0.6,
 	3: 0.5,
 	4: 0.4,
-	5: 0.4,
-	6: 0.4,
+	5: 0.2,
 };
 
 // NOTE: pec stands for panes except main chart
