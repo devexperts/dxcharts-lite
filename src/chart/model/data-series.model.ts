@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - 2023 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -20,7 +20,7 @@ import {
 } from './data-series.config';
 import { HighLowWithIndex, ScaleModel } from './scale.model';
 import { HighLowProvider } from './scaling/auto-scale.model';
-import { Index, Unit, Viewable } from './scaling/viewport.model';
+import { Index, Pixel, Unit, Viewable } from './scaling/viewport.model';
 
 /**
  * Properties are named in order to match VisualCandle interface
@@ -30,14 +30,14 @@ export class VisualSeriesPoint {
 	/**
 	 * returns y coordinate in pixels
 	 */
-	y(viewable: Viewable): Unit {
+	y(viewable: Viewable): Pixel {
 		return floorToDPR(viewable.toY(this.close));
 	}
 	/**
 	 * returns x coordinate in pixels
 	 */
-	x(viewable: Viewable): Unit {
-		return floorToDPR(viewable.toX(this.centerUnit));
+	x(viewable: Viewable): Pixel {
+		return viewable.toX(this.centerUnit);
 	}
 
 	clone(): VisualSeriesPoint {
