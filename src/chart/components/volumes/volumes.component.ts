@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - 2023 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -43,13 +43,7 @@ export class VolumesComponent extends ChartBaseElement {
 		const volumesModel = new VolumesModel(chartComponent, scale);
 		this.volumesModel = volumesModel;
 		this.addChildEntity(volumesModel);
-		this.separateVolumes = new SeparateVolumesComponent(
-			chartComponent,
-			drawingManager,
-			config,
-			volumesModel,
-			paneManager,
-		);
+		this.separateVolumes = new SeparateVolumesComponent(chartComponent, config, volumesModel, paneManager);
 		this.volumesDrawer = new VolumesDrawer(
 			config,
 			this.volumesModel,
