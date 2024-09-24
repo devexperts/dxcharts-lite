@@ -14,6 +14,7 @@ import { DrawerType } from './drawers/drawing-manager';
 import { DateTimeFormatter, TimeFormatterConfig } from './model/date-time.formatter';
 import { DEFAULT_MERGE_OPTIONS, merge, MergeOptions } from './utils/merge.utils';
 import { DeepPartial } from './utils/object.utils';
+import { Candle, defaultSortCandles } from './model/candle.model';
 
 export const MAIN_FONT = 'Open Sans Semibold, sans-serif';
 
@@ -109,6 +110,7 @@ export const getDefaultConfig = (): FullChartConfig => ({
 			histogram: {
 				barCapSize: 1,
 			},
+			sortCandles: defaultSortCandles,
 		},
 		yAxis: {
 			type: 'regular',
@@ -977,6 +979,8 @@ export interface ChartConfigComponentsChart {
 	selectedWidth: number;
 	minCandlesOffset: number;
 	histogram: ChartConfigComponentsHistogram;
+	// optional because backward compability
+	sortCandles?: (candles: Candle[]) => Candle[];
 }
 
 export interface ChartConfigComponentsEvents {
