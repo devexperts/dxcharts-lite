@@ -12,7 +12,7 @@
     "allowSyntheticDefaultImports": true,
     "sourceMap": false,
     "target": "es6",
-    "lib": ["dom", "ES2016"],
+    "lib": ["dom", "ES2017"],
     "declaration": true,
     "skipLibCheck": true,
     "isolatedModules": true,

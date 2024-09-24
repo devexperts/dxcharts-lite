@@ -5,6 +5,7 @@
  */
 import { CanvasBoundsContainer, CanvasElement } from '../../../canvas/canvas-bounds-container';
 import { FullChartConfig } from '../../../chart.config';
+import { CanvasModel } from '../../../model/canvas.model';
 import { avoidAntialiasing, drawRoundedRect } from '../../../utils/canvas/canvas-drawing-functions.utils';
 import { PaneManager } from '../../pane/pane-manager.component';
 import { priceLabelDrawersMap } from '../../y_axis/price_labels/price-label.drawer';
@@ -30,9 +31,9 @@ export class CrossAndLabelsDrawerType implements CrossToolTypeDrawer {
 	 * @param {CanvasRenderingContext2D} ctx - The canvas context to draw on.
 	 * @param {CrossToolHover} hover - The hover object containing information about the cross tool's position.
 	 */
-	draw(ctx: CanvasRenderingContext2D, hover: CrossToolHover) {
+	draw(canvasModel: CanvasModel, hover: CrossToolHover) {
 		if (this.crossDrawPredicate()) {
-			avoidAntialiasing(ctx, () => this.drawCrossTool(ctx, hover));
+			avoidAntialiasing(canvasModel.ctx, () => this.drawCrossTool(canvasModel, hover));
 		}
 	}
 
@@ -41,7 +42,7 @@ export class CrossAndLabelsDrawerType implements CrossToolTypeDrawer {
 	 * The method draws a cross tool on the canvas using the provided context. It first gets the bounds of all panes and the hit test bounds of all panes. It then gets the top padding of the x-axis from the configuration and the left padding of the y-axis from the configuration based on the type of y-label.
 	 * If the hit test bounds of all panes contain the hover coordinates, it draws a horizontal line and a vertical line using the provided coordinates and the bounds of all panes. It sets the stroke style to the line color from the configuration and sets the line dash to the line dash from the configuration. It then begins a new path, moves to the start of the horizontal line, draws a line to the end of the horizontal line, moves to the start of the vertical line, and draws a line to the end of the vertical line. Finally, it strokes the path.
 	 */
-	protected drawCrossTool(ctx: CanvasRenderingContext2D, hover: CrossToolHover) {
+	protected drawCrossTool(canvasModel: CanvasModel, hover: CrossToolHover) {
 		const allPanes = this.canvasBoundsContainer.getBounds(CanvasElement.ALL_PANES);
 		// extension is need for allPanes.y to fit into hit test
 		const allPanesHT = this.canvasBoundsContainer.getBoundsHitTest(CanvasElement.ALL_PANES, { extensionY: 0.0001 });
@@ -63,6 +64,7 @@ export class CrossAndLabelsDrawerType implements CrossToolTypeDrawer {
 			};
 			const allowHorizontal = paneHT?.(hover.x, hover.y);
 
+			const ctx = canvasModel.ctx;
 			if (!this.noLines) {
 				ctx.strokeStyle = this.config.colors.crossTool.lineColor;
 				ctx.setLineDash(this.config.components.crossTool.lineDash);
@@ -77,7 +79,7 @@ export class CrossAndLabelsDrawerType implements CrossToolTypeDrawer {
 				ctx.stroke();
 			}
 
-			allowHorizontal && this.drawYLabel(ctx, hover);
+			allowHorizontal && this.drawYLabel(canvasModel, hover);
 			this.drawXLabel(ctx, hover);
 		}
 	}
@@ -129,7 +131,7 @@ export class CrossAndLabelsDrawerType implements CrossToolTypeDrawer {
 	 * @param {Point} point - The point where the label should be drawn.
 	 * @returns {void}
 	 */
-	protected drawYLabel(ctx: CanvasRenderingContext2D, point: CrossToolHover) {
+	protected drawYLabel(canvasModel: CanvasModel, point: CrossToolHover) {
 		const yLabelPadding = this.config.components.crossTool.yLabel.padding;
 		const crossToolColors = this.config.colors.crossTool;
 		// Y axis label different for main chart pane and the rest panes
@@ -149,7 +151,7 @@ export class CrossAndLabelsDrawerType implements CrossToolTypeDrawer {
 				const drawYLabel = priceLabelDrawersMap[type];
 				const textColor = type === 'plain' ? crossToolColors.lineColor : crossToolColors.labelTextColor;
 				drawYLabel(
-					ctx,
+					canvasModel,
 					bounds,
 					label,
 					y,

@@ -3,8 +3,10 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
+import { isOffscreenCanvasModel } from '../../canvas/offscreen/canvas-offscreen-wrapper';
 import { ChartConfigComponentsHistogram } from '../../chart.config';
 import { CandleSeriesModel } from '../../model/candle-series.model';
+import { CanvasModel } from '../../model/canvas.model';
 import { DataSeriesModel, VisualSeriesPoint } from '../../model/data-series.model';
 import VisualCandle from '../../model/visual-candle';
 import { floorToDPR } from '../../utils/device/device-pixel-ratio.utils';
@@ -14,11 +16,12 @@ export class HistogramDrawer implements SeriesDrawer {
 	constructor(private config: ChartConfigComponentsHistogram) {}
 
 	public draw(
-		ctx: CanvasRenderingContext2D,
+		canvasModel: CanvasModel,
 		points: VisualSeriesPoint[][],
 		model: DataSeriesModel,
 		drawerConfig: ChartDrawerConfig,
 	) {
+		const ctx = canvasModel.ctx;
 		if (model instanceof CandleSeriesModel) {
 			// @ts-ignore
 			const visualCandles: VisualCandle[] = points.flat();
@@ -45,18 +48,33 @@ export class HistogramDrawer implements SeriesDrawer {
 				ctx.fillRect(baseX, closeY, width, capHeight);
 
 				// the bar itself
-				const gradient = ctx.createLinearGradient(0, closeY + capHeight, 0, bottomY);
 				if (drawerConfig.singleColor) {
 					ctx.fillStyle = drawerConfig.singleColor;
 				} else {
-					gradient.addColorStop(0, histogramColors[`${direction}Cap`]);
-					gradient.addColorStop(1, histogramColors[`${direction}Bottom`]);
-					ctx.fillStyle = gradient;
+					if (isOffscreenCanvasModel(canvasModel)) {
+						const offscreenCtx = canvasModel.ctx;
+						// special method for gradient fill, because we can't transfer CanvasGradient directly to offscreen
+						offscreenCtx.setGradientFillStyle(
+							0,
+							closeY + capHeight,
+							0,
+							bottomY,
+							0,
+							histogramColors[`${direction}Cap`],
+							1,
+							histogramColors[`${direction}Bottom`],
+						);
+					} else {
+						const gradient = ctx.createLinearGradient(0, closeY + capHeight, 0, bottomY);
+						gradient.addColorStop(0, histogramColors[`${direction}Cap`]);
+						gradient.addColorStop(1, histogramColors[`${direction}Bottom`]);
+						ctx.fillStyle = gradient;
+					}
 				}
 				if (width === 0) {
 					// just draw a vertical line
 					ctx.beginPath();
-					ctx.strokeStyle = gradient;
+					ctx.strokeStyle = histogramColors[`${direction}Cap`];
 					ctx.moveTo(baseX, closeY + capHeight);
 					ctx.lineTo(baseX, bottomY);
 					ctx.stroke();

@@ -3,8 +3,9 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { YAxisConfig, FullChartColors, getFontFromConfig } from '../../chart.config';
+import { FullChartColors, YAxisConfig, getFontFromConfig } from '../../chart.config';
 import { Bounds } from '../../model/bounds.model';
+import { CanvasModel } from '../../model/canvas.model';
 import { drawPriceLabel, drawRoundedRect } from '../../utils/canvas/canvas-drawing-functions.utils';
 import { calculateSymbolHeight, calculateTextWidth } from '../../utils/canvas/canvas-font-measure-tool.utils';
 import { getLabelTextColorByBackgroundColor } from '../../utils/canvas/canvas-text-functions.utils';
@@ -47,7 +48,7 @@ export const DEFAULT_PRICE_LABEL_PADDING = 4;
  * @param checkBoundaries
  */
 export function drawBadgeLabel(
-	ctx: CanvasRenderingContext2D,
+	canvasModel: CanvasModel,
 	bounds: Bounds,
 	text: string,
 	centralY: number,
@@ -56,6 +57,7 @@ export function drawBadgeLabel(
 	yAxisColors: FullChartColors['yAxis'],
 	checkBoundaries: boolean = true,
 ): void {
+	const ctx = canvasModel.ctx;
 	const align = yAxisState.align;
 	const textFont = config.textFont ?? getFontFromConfig(yAxisState);
 	const bgColor = config.bgColor;
@@ -65,7 +67,7 @@ export function drawBadgeLabel(
 	const paddingTop = config.paddingTop ?? DEFAULT_PRICE_LABEL_PADDING;
 	const paddingBottom = config.paddingBottom ?? DEFAULT_PRICE_LABEL_PADDING;
 	const paddingEnd = config.paddingEnd ?? DEFAULT_PRICE_LABEL_PADDING;
-	const halfFontHeight = round(calculateSymbolHeight(textFont, ctx) / 2);
+	const halfFontHeight = round(calculateSymbolHeight(textFont) / 2);
 	const labelBoxTopY = centralY - halfFontHeight - paddingTop;
 	const labelBoxBottomY = centralY + halfFontHeight + paddingBottom;
 	const labelBoxHeight = labelBoxBottomY - labelBoxTopY;
@@ -104,7 +106,7 @@ export function drawBadgeLabel(
 	ctx.font = textFont;
 	const textX =
 		align === 'right'
-			? bounds.x + bounds.width - calculateTextWidth(text, ctx, textFont) - xTextOffset
+			? bounds.x + bounds.width - calculateTextWidth(text, textFont) - xTextOffset
 			: bounds.x + xTextOffset;
 	ctx.fillText(text, textX, centralY + halfFontHeight - 1); // -1 for font height adjustment
 	ctx.restore();
@@ -122,7 +124,7 @@ export function drawBadgeLabel(
  * @param checkBoundaries
  */
 export function drawRectLabel(
-	ctx: CanvasRenderingContext2D,
+	canvasModel: CanvasModel,
 	bounds: Bounds,
 	text: string,
 	centralY: number,
@@ -131,6 +133,7 @@ export function drawRectLabel(
 	yAxisColors: FullChartColors['yAxis'],
 	checkBoundaries: boolean = true,
 ) {
+	const ctx = canvasModel.ctx;
 	const align = yAxisState.align;
 	const textFont = config.textFont ?? getFontFromConfig(yAxisState);
 	const bgColor = config.bgColor;
@@ -142,7 +145,7 @@ export function drawRectLabel(
 	const paddingBottom = config.paddingBottom ?? paddings?.bottom ?? DEFAULT_PRICE_LABEL_PADDING;
 	const paddingEnd = config.paddingEnd ?? paddings?.end ?? DEFAULT_PRICE_LABEL_PADDING;
 	const paddingStart = config.paddingStart;
-	const fontHeight = calculateSymbolHeight(textFont, ctx);
+	const fontHeight = calculateSymbolHeight(textFont);
 	const labelBoxTopY = centralY - fontHeight / 2 - paddingTop;
 	const labelBoxBottomY = centralY + fontHeight / 2 + paddingBottom;
 	const labelBoxHeight = labelBoxBottomY - labelBoxTopY;
@@ -159,7 +162,7 @@ export function drawRectLabel(
 
 	const xTextOffset = yAxisState.labelBoxMargin.end;
 	ctx.font = textFont;
-	const textWidth = calculateTextWidth(text, ctx, textFont);
+	const textWidth = calculateTextWidth(text, textFont);
 
 	const marginEnd = xTextOffset - paddingEnd;
 	const width = paddingStart !== undefined ? textWidth + paddingStart + paddingEnd : bounds.width - marginEnd;
@@ -190,7 +193,7 @@ export function drawRectLabel(
  * @param checkBoundaries
  */
 export function drawPlainLabel(
-	ctx: CanvasRenderingContext2D,
+	canvasModel: CanvasModel,
 	bounds: Bounds,
 	text: string,
 	centralY: number,
@@ -199,6 +202,8 @@ export function drawPlainLabel(
 	yAxisColors: FullChartColors['yAxis'],
 	checkBoundaries: boolean = true,
 ) {
+	const ctx = canvasModel.ctx;
+
 	const align = yAxisState.align;
 	const textFont = config.textFont ?? getFontFromConfig(yAxisState);
 	const bgColor = yAxisColors.backgroundColor;
@@ -210,7 +215,7 @@ export function drawPlainLabel(
 	const paddingBottom = config.paddingBottom ?? paddings?.bottom ?? DEFAULT_PRICE_LABEL_PADDING;
 	const paddingEnd = config.paddingEnd ?? paddings?.end ?? DEFAULT_PRICE_LABEL_PADDING;
 	const paddingStart = config.paddingStart;
-	const fontHeight = calculateSymbolHeight(textFont, ctx);
+	const fontHeight = calculateSymbolHeight(textFont);
 	const labelBoxTopY = centralY - fontHeight / 2 - paddingTop;
 	const labelBoxBottomY = centralY + fontHeight / 2 + paddingBottom;
 	const labelBoxHeight = labelBoxBottomY - labelBoxTopY;
@@ -226,7 +231,7 @@ export function drawPlainLabel(
 
 	const xTextOffset = yAxisState.labelBoxMargin.end;
 	ctx.font = textFont;
-	const textWidth = calculateTextWidth(text, ctx, textFont);
+	const textWidth = calculateTextWidth(text, textFont);
 	const marginEnd = xTextOffset - paddingEnd;
 	const width = paddingStart !== undefined ? textWidth + paddingStart + paddingEnd : bounds.width - marginEnd;
 	const x = align === 'right' ? bounds.x + bounds.width - marginEnd - width : bounds.x + marginEnd;
@@ -254,7 +259,7 @@ export function getLabelYOffset(
 	ctx: CanvasRenderingContext2D,
 	paddingTop: number = DEFAULT_PRICE_LABEL_PADDING,
 ) {
-	const fontHeight = calculateSymbolHeight(font, ctx);
+	const fontHeight = calculateSymbolHeight(font);
 	return fontHeight / 2 + paddingTop;
 }
 

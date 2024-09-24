@@ -3,8 +3,10 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
+import { isOffscreenCanvasModel } from '../../canvas/offscreen/canvas-offscreen-wrapper';
 import { ChartConfigComponentsChart } from '../../chart.config';
 import { CandleSeriesModel } from '../../model/candle-series.model';
+import { CanvasModel } from '../../model/canvas.model';
 import { DataSeriesModel, VisualSeriesPoint } from '../../model/data-series.model';
 import VisualCandle from '../../model/visual-candle';
 import { flat } from '../../utils/array.utils';
@@ -15,11 +17,12 @@ export class AreaDrawer implements SeriesDrawer {
 	constructor(private config: ChartConfigComponentsChart) {}
 
 	public draw(
-		ctx: CanvasRenderingContext2D,
+		canvasModel: CanvasModel,
 		points: VisualSeriesPoint[][],
 		model: DataSeriesModel,
 		drawerConfig: ChartDrawerConfig,
 	) {
+		const ctx = canvasModel.ctx;
 		if (model instanceof CandleSeriesModel) {
 			// @ts-ignore
 			const visualCandles: VisualCandle[] = flat(points);
@@ -61,17 +64,28 @@ export class AreaDrawer implements SeriesDrawer {
 					ctx.lineTo(floor(firstLineX), bottomY);
 					ctx.closePath();
 
-					let fillColor: CanvasGradient;
 					if (drawerConfig.singleColor) {
 						ctx.fillStyle = drawerConfig.singleColor;
-					} else {
-						ctx.fillStyle =
-							model.colors.areaTheme.startColor && model.colors.areaTheme.stopColor
-								? ((fillColor = ctx.createLinearGradient(0, 0, 0, paneBounds.height)),
-								  fillColor.addColorStop(0, model.colors.areaTheme.startColor),
-								  fillColor.addColorStop(1, model.colors.areaTheme.stopColor),
-								  fillColor)
-								: '';
+					} else if (model.colors.areaTheme.startColor && model.colors.areaTheme.stopColor) {
+						if (isOffscreenCanvasModel(canvasModel)) {
+							const offscreenCtx = canvasModel.ctx;
+							// special method for gradient fill, because we can't transfer CanvasGradient directly to offscreen
+							offscreenCtx.setGradientFillStyle(
+								0,
+								0,
+								0,
+								paneBounds.height,
+								0,
+								model.colors.areaTheme.startColor,
+								1,
+								model.colors.areaTheme.stopColor,
+							);
+						} else {
+							const fillColor = ctx.createLinearGradient(0, 0, 0, paneBounds.height);
+							fillColor.addColorStop(0, model.colors.areaTheme.startColor);
+							fillColor.addColorStop(1, model.colors.areaTheme.stopColor);
+							ctx.fillStyle = fillColor;
+						}
 					}
 					ctx.fill();
 				} else {

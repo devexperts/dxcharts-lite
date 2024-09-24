@@ -6,6 +6,7 @@
 import { CanvasBoundsContainer, CanvasElement } from '../../canvas/canvas-bounds-container';
 import { BaselineModel } from '../../model/baseline.model';
 import { CandleSeriesModel } from '../../model/candle-series.model';
+import { CanvasModel } from '../../model/canvas.model';
 import { DataSeriesModel, VisualSeriesPoint } from '../../model/data-series.model';
 import { Pixel } from '../../model/scaling/viewport.model';
 import { flat } from '../../utils/array.utils';
@@ -15,11 +16,12 @@ export class BaselineDrawer implements SeriesDrawer {
 	constructor(private baseLineModel: BaselineModel, private canvasBoundContainer: CanvasBoundsContainer) {}
 
 	public draw(
-		ctx: CanvasRenderingContext2D,
+		canvasModel: CanvasModel,
 		points: VisualSeriesPoint[][],
 		model: DataSeriesModel,
 		drawerConfig?: ChartDrawerConfig,
 	) {
+		const ctx = canvasModel.ctx;
 		if (drawerConfig !== undefined && model instanceof CandleSeriesModel) {
 			const visualCandles = flat(points);
 			// calculate baseline

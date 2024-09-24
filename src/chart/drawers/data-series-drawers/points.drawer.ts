@@ -3,6 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
+import { CanvasModel } from '../../model/canvas.model';
 import { DataSeriesModel, VisualSeriesPoint } from '../../model/data-series.model';
 import { ChartDrawerConfig, SeriesDrawer } from '../data-series.drawer';
 
@@ -10,11 +11,12 @@ export class PointsDrawer implements SeriesDrawer {
 	constructor() {}
 
 	draw(
-		ctx: CanvasRenderingContext2D,
+		canvasModel: CanvasModel,
 		allPoints: VisualSeriesPoint[][],
 		model: DataSeriesModel,
 		drawerConfig: ChartDrawerConfig,
 	): void {
+		const ctx = canvasModel.ctx;
 		allPoints.forEach((points, idx) => {
 			const config = model.getPaintConfig(idx);
 			const radius = config.lineWidth;

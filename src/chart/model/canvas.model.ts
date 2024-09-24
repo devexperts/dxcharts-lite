@@ -3,10 +3,11 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
+import { CanvasOffscreenContext2D, isOffscreenCanvasModel } from '../canvas/offscreen/canvas-offscreen-wrapper';
 import { BarType, FullChartConfig } from '../chart.config';
 import EventBus from '../events/event-bus';
 import { PickedDOMRect } from '../inputhandlers/chart-resize.handler';
-import { DrawingManager } from '../drawers/drawing-manager';
+import { constVoid } from '../utils/function.utils';
 
 /**
  * The minimum supported canvas size in chart-core (in pixels).
@@ -18,31 +19,45 @@ export const MIN_SUPPORTED_CANVAS_SIZE = {
 	height: 20,
 };
 
-export class CanvasModel {
-	private readonly context: CanvasRenderingContext2D;
+export type CanvasModelOptions = CanvasRenderingContext2DSettings & {
+	offscreen?: boolean;
+	// size of SharedArrayBuffer in bytes
+	// if size is not enough, then the chart will crash on render
+	offscreenBufferSize?: number;
+};
+
+export class CanvasModel<T extends CanvasRenderingContext2D = CanvasRenderingContext2D> {
+	private readonly context: T;
 	public parent: HTMLElement;
 	public width: number = 0;
 	public height: number = 0;
 	public prevHeight: number = 0;
 	public prevWidth: number = 0;
-	private readonly _canvasId: string;
+	public idx: number = 0;
+	public readonly _canvasId: string;
 	type: CanvasBarType = CANDLE_TYPE;
+
+	public canvasReady: Promise<void> = Promise.resolve();
+	public fireCanvasReady: () => unknown = constVoid;
+
 	constructor(
+		ctx: T,
 		private eventBus: EventBus,
 		public canvas: HTMLCanvasElement,
-		public drawingManager: DrawingManager,
 		canvasModels: CanvasModel[],
 		private resizer?: HTMLElement,
-		options: CanvasRenderingContext2DSettings = {},
+		public options: CanvasModelOptions = {},
 	) {
+		if (options.offscreen) {
+			this.canvasReady = new Promise(resolve => {
+				this.fireCanvasReady = resolve;
+			});
+		}
 		canvasModels.push(this);
 		this.parent = findHeightParent(canvas);
-		const ctx = canvas.getContext('2d', options);
-		if (ctx === null) {
-			throw new Error("Couldn't get 2d context????");
-		}
-		this.context = ctx;
+
 		this._canvasId = canvas.getAttribute('data-element') ?? '';
+		this.context = ctx;
 		this.updateCanvasWidthHeight(canvas, this.getChartResizerElement().getBoundingClientRect());
 	}
 	/**
@@ -52,21 +67,26 @@ export class CanvasModel {
 	 */
 	updateDPR(bcr: PickedDOMRect | ClientRect) {
 		const { width, height } = bcr;
-		const dpi = window.devicePixelRatio;
 		this.canvas.style.height = height + 'px';
 		this.canvas.style.width = width + 'px';
-		this.canvas.width = width * dpi;
-		this.canvas.height = height * dpi;
+		const dpi = window.devicePixelRatio;
+		if (isOffscreenCanvasModel(this)) {
+			this.ctx.width = width * dpi;
+			this.ctx.height = height * dpi;
+		} else {
+			this.canvas.width = width * dpi;
+			this.canvas.height = height * dpi;
+		}
+		this.ctx.scale(dpi, dpi);
 		this.width = width;
 		this.height = height;
-		this.ctx.scale(dpi, dpi);
 	}
 
 	get canvasId(): string {
 		return this._canvasId;
 	}
 
-	get ctx(): CanvasRenderingContext2D {
+	get ctx(): T {
 		return this.context;
 	}
 
@@ -178,31 +198,17 @@ const TYPES: Partial<Record<BarType, CanvasBarType>> = {
  * @param {CanvasModel[]} canvasModels - An array of canvas models to add the new model to.
  *
  * @returns {CanvasModel} The newly created canvas model.
- 
-export function createMainCanvasModel(
-    eventBus,
-    canvas,
-    resizer,
-    barType,
-    config,
-    drawingManager,
-    canvasModels,
-) {
-    const canvasModel = createCanvasModel(eventBus, canvas, config, drawingManager, canvasModels, resizer);
-    // @ts-ignore
-    canvasModel.type = TYPES[barType] ?? CANDLE_TYPE;
-    return canvasModel;
-}*/
+ */
 export function createMainCanvasModel(
 	eventBus: EventBus,
 	canvas: HTMLCanvasElement,
 	resizer: HTMLElement,
 	barType: BarType,
 	config: FullChartConfig,
-	drawingManager: DrawingManager,
 	canvasModels: CanvasModel[],
+	options?: CanvasModelOptions,
 ): CanvasModel {
-	const canvasModel = createCanvasModel(eventBus, canvas, config, drawingManager, canvasModels, resizer);
+	const canvasModel = createCanvasModel(eventBus, canvas, config, canvasModels, resizer, options);
 	// @ts-ignore
 	canvasModel.type = TYPES[barType] ?? CANDLE_TYPE;
 	return canvasModel;
@@ -224,15 +230,29 @@ export function createCanvasModel(
 	eventBus: EventBus,
 	canvas: HTMLCanvasElement,
 	config: FullChartConfig,
-	drawingManager: DrawingManager,
 	canvasModels: CanvasModel[],
 	resizer?: HTMLElement,
-	options?: CanvasRenderingContext2DSettings,
+	options?: CanvasModelOptions,
 ): CanvasModel {
-	const canvasModel = new CanvasModel(eventBus, canvas, drawingManager, canvasModels, resizer, options);
+	const canvasModel = new CanvasModel(
+		getCanvasContext(canvas, options),
+		eventBus,
+		canvas,
+		canvasModels,
+		resizer,
+		options,
+	);
 	initCanvasWithConfig(canvasModel, config);
 	return canvasModel;
 }
+
+export const getCanvasContext = (canvas: HTMLCanvasElement, options?: CanvasModelOptions): CanvasRenderingContext2D => {
+	const ctx = options?.offscreen ? new CanvasOffscreenContext2D(canvas) : canvas.getContext('2d', options);
+	if (ctx === null) {
+		throw new Error("Couldn't get 2d context. Canvas is not supported.");
+	}
+	return ctx;
+};
 
 /**
  * Initializes a canvas with a given configuration.

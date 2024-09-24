@@ -171,8 +171,8 @@ export const overlappingPredicate = (
 	overlapingDistance: number,
 ): boolean => {
 	const font = XAxisTimeLabelsDrawer.getFontFromConfig(config);
-	const currentLabelTextWidth = calculateTextWidth(label.text, ctx, font);
-	const nextLabelTextWidth = calculateTextWidth(nextLabel.text, ctx, font);
+	const currentLabelTextWidth = calculateTextWidth(label.text, font);
+	const nextLabelTextWidth = calculateTextWidth(nextLabel.text, font);
 	const curPx = scale.toX(label.value) + currentLabelTextWidth / 2;
 	const nextPx = scale.toX(nextLabel.value) - nextLabelTextWidth / 2;
 	return nextPx - curPx < overlapingDistance;

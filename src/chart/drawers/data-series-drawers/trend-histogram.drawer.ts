@@ -4,6 +4,7 @@
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+import { CanvasModel } from '../../model/canvas.model';
 import { VisualSeriesPoint, DataSeriesModel } from '../../model/data-series.model';
 import { flat } from '../../utils/array.utils';
 import { floor } from '../../utils/math.utils';
@@ -12,7 +13,8 @@ import { SeriesDrawer } from '../data-series.drawer';
 export class TrendHistogramDrawer implements SeriesDrawer {
 	constructor() {}
 
-	draw(ctx: CanvasRenderingContext2D, allPoints: VisualSeriesPoint[][], model: DataSeriesModel): void {
+	draw(canvasModel: CanvasModel, allPoints: VisualSeriesPoint[][], model: DataSeriesModel): void {
+		const ctx = canvasModel.ctx;
 		const zero = model.view.toY(0);
 		//  here I do flat, thinks that there is no more that 1 series
 		const allPointsFlat = flat(allPoints);

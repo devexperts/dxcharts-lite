@@ -4,6 +4,7 @@
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 import { ScatterPlotStyle } from '../../chart.config';
+import { CanvasModel } from '../../model/canvas.model';
 import { DataSeriesModel, VisualSeriesPoint } from '../../model/data-series.model';
 import { flat } from '../../utils/array.utils';
 import { floorToDPR } from '../../utils/device/device-pixel-ratio.utils';
@@ -15,11 +16,12 @@ export class ScatterPlotDrawer implements SeriesDrawer {
 	constructor(private config: ScatterPlotStyle) {}
 
 	public draw(
-		ctx: CanvasRenderingContext2D,
+		canvasModel: CanvasModel,
 		points: VisualSeriesPoint[][],
 		model: DataSeriesModel,
 		drawerConfig: ChartDrawerConfig,
 	) {
+		const ctx = canvasModel.ctx;
 		ctx.fillStyle = drawerConfig.singleColor ?? this.config.mainColor;
 		for (const visualCandle of flat(points)) {
 			ctx.beginPath();

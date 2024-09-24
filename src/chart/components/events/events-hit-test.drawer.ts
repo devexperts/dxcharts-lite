@@ -4,7 +4,7 @@
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 import { Drawer } from '../../drawers/drawing-manager';
-import { HitTestCanvasModel } from '../../model/hit-test-canvas.model';
+import { HitTestCanvasModel, idToColor } from '../../model/hit-test-canvas.model';
 import { ChartModel } from '../chart/chart.model';
 import { FullChartConfig } from '../../chart.config';
 import { CanvasBoundsContainer, CanvasElement } from '../../canvas/canvas-bounds-container';
@@ -49,7 +49,7 @@ export class EventsHitTestDrawer implements Drawer {
 					ctx.fillStyle = color;
 					const size = getEventSize(event);
 					// draw hit test
-					ctx.fillStyle = this.hitTestCanvasModel.idToColor(event.id);
+					ctx.fillStyle = idToColor(event.id);
 					const hoverSize = (size + hoverExtendedAreaPixels) * 2;
 					if (prevX !== undefined) {
 						const prevSize = getEventSize(prevEvent);

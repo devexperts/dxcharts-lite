@@ -89,6 +89,7 @@
   },
   "dependencies": {
     "color": "^4.2.3",
+    "comlink": "4.4.1",
     "date-fns": "^2.30.0",
     "rxjs": "^7.5.7"
   },
