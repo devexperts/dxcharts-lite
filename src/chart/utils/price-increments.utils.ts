@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - 2023 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -140,9 +140,8 @@ export class PriceIncrementsUtils {
 	}
 }
 
-
 // TODO review dxFeed precision format
 export const precisionsToIncrement = (price: number, precisions: number[]) => {
 	const precision = lastOf(precisions) ?? 1;
 	return Math.pow(10, -precision);
-}
+};
