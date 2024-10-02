@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - 2023 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -25,7 +25,12 @@ export class BackgroundDrawer implements Drawer {
 			this.canvasModel.clear();
 			const ctx = this.canvasModel.ctx;
 			if (this.config.colors.chartAreaTheme.backgroundMode === 'gradient') {
-				const grd = ctx.createLinearGradient(0, 0 + this.canvasModel.height / 2, this.canvasModel.width, 0 + this.canvasModel.height / 2);
+				const grd = ctx.createLinearGradient(
+					0,
+					0 + this.canvasModel.height / 2,
+					this.canvasModel.width,
+					0 + this.canvasModel.height / 2,
+				);
 				grd.addColorStop(0, this.config.colors.chartAreaTheme.backgroundGradientTopColor);
 				grd.addColorStop(1, this.config.colors.chartAreaTheme.backgroundGradientBottomColor);
 				ctx.fillStyle = grd;
