@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -8,7 +8,7 @@ import { CandleSeriesModel } from '../../model/candle-series.model';
 import { DataSeriesModel, VisualSeriesPoint } from '../../model/data-series.model';
 import VisualCandle from '../../model/visual-candle';
 import { floorToDPR } from '../../utils/device/device-pixel-ratio.utils';
-import { HTSeriesDrawerConfig, SeriesDrawer } from '../data-series.drawer';
+import { ChartDrawerConfig, SeriesDrawer } from '../data-series.drawer';
 
 export class HistogramDrawer implements SeriesDrawer {
 	constructor(private config: ChartConfigComponentsHistogram) {}
@@ -17,7 +17,7 @@ export class HistogramDrawer implements SeriesDrawer {
 		ctx: CanvasRenderingContext2D,
 		points: VisualSeriesPoint[][],
 		model: DataSeriesModel,
-		hitTestDrawerConfig: HTSeriesDrawerConfig,
+		drawerConfig: ChartDrawerConfig,
 	) {
 		if (model instanceof CandleSeriesModel) {
 			// @ts-ignore
@@ -32,22 +32,22 @@ export class HistogramDrawer implements SeriesDrawer {
 				if (histogramColors === undefined) {
 					return;
 				}
-				if (hitTestDrawerConfig.color) {
-					ctx.fillStyle = hitTestDrawerConfig.color;
+				if (drawerConfig.singleColor) {
+					ctx.fillStyle = drawerConfig.singleColor;
 				} else {
 					ctx.fillStyle = histogramColors[`${direction}Bright`];
 				}
 
 				// histogram cap
 				const baseX = visualCandle.xStart(model.view);
-				const closeY = model.view.toY(visualCandle.close);
+				const closeY = floorToDPR(model.view.toY(visualCandle.close));
 				const width = floorToDPR(model.view.xPixels(visualCandle.width));
 				ctx.fillRect(baseX, closeY, width, capHeight);
 
 				// the bar itself
 				const gradient = ctx.createLinearGradient(0, closeY + capHeight, 0, bottomY);
-				if (hitTestDrawerConfig.color) {
-					ctx.fillStyle = hitTestDrawerConfig.color;
+				if (drawerConfig.singleColor) {
+					ctx.fillStyle = drawerConfig.singleColor;
 				} else {
 					gradient.addColorStop(0, histogramColors[`${direction}Cap`]);
 					gradient.addColorStop(1, histogramColors[`${direction}Bottom`]);

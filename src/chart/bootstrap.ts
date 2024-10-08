@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -218,14 +218,6 @@ export default class ChartBootstrap {
 		const yAxisLabelsCanvasModel = createCanvasModel(
 			eventBus,
 			elements.yAxisLabelsCanvas,
-			config,
-			drawingManager,
-			this.canvasModels,
-			elements.chartResizer,
-		);
-		const yAxisDescriptionsCanvasModel = createCanvasModel(
-			eventBus,
-			elements.yAxisDescriptionsCanvas,
 			config,
 			drawingManager,
 			this.canvasModels,
@@ -465,7 +457,7 @@ export default class ChartBootstrap {
 		);
 		this.chartComponents.push(highLowComponent);
 
-		this.initYAxisDrawer(yAxisLabelsCanvasModel, yAxisDescriptionsCanvasModel);
+		this.initYAxisDrawer(yAxisLabelsCanvasModel);
 
 		this.yAxisComponent = mainPane.mainExtent.yAxis;
 		// default labels provider
@@ -514,7 +506,6 @@ export default class ChartBootstrap {
 			this.canvasBoundsContainer,
 			this.paneManager,
 			timeZoneModel,
-			chartPanComponent.mainCanvasTouchHandler,
 			formatterFactory,
 		);
 		this.chartComponents.push(this.hoverProducer);
@@ -527,7 +518,6 @@ export default class ChartBootstrap {
 			paneManager,
 			this.crossEventProducer,
 			this.hoverProducer,
-			this.chartComponent.baselineModel,
 		);
 
 		this.chartComponents.push(this.crossToolComponent);
@@ -566,27 +556,24 @@ export default class ChartBootstrap {
 		this.clearer = clearerSafe(this.components);
 	}
 
-	private initYAxisDrawer(yAxisLabelsCanvasModel: CanvasModel, yAxisDescriptionsCanvasModel: CanvasModel) {
+	private initYAxisDrawer(yAxisLabelsCanvasModel: CanvasModel) {
 		const yAxisCompositeDrawer = new CompositeDrawer();
 		const clearYAxis = new ClearCanvasDrawer(yAxisLabelsCanvasModel);
-		const clearYAxisDescriptions = new ClearCanvasDrawer(yAxisDescriptionsCanvasModel);
 		yAxisCompositeDrawer.addDrawer(clearYAxis, 'YAXIS_CLEAR');
-		yAxisCompositeDrawer.addDrawer(clearYAxisDescriptions, 'Y_AXIS_DESCRIPTIONS_CLEAR');
 
 		this.drawingManager.addDrawer(yAxisCompositeDrawer, 'Y_AXIS');
 
 		const yAxisDrawer = new YAxisDrawer(this.config, yAxisLabelsCanvasModel, this.paneManager);
 		yAxisCompositeDrawer.addDrawer(yAxisDrawer);
 
-		const yAxisPriceLabelsDrawer = new YAxisPriceLabelsDrawer(
+		const yAxisLabelsDrawer = new YAxisPriceLabelsDrawer(
 			yAxisLabelsCanvasModel,
-			yAxisDescriptionsCanvasModel,
 			this.backgroundCanvasModel,
 			this.canvasBoundsContainer,
 			this.config,
 			this.paneManager,
 		);
-		this.drawingManager.addDrawer(yAxisPriceLabelsDrawer, 'Y_AXIS_PRICE_LABELS');
+		yAxisCompositeDrawer.addDrawer(yAxisLabelsDrawer);
 	}
 
 	// TODO remove chartModel dependency, put period to global config somewhere

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -15,7 +15,6 @@ import { DateTimeFormatter, TimeFormatterConfig } from './model/date-time.format
 import { DEFAULT_MERGE_OPTIONS, merge, MergeOptions } from './utils/merge.utils';
 import { DeepPartial } from './utils/object.utils';
 import { Candle, defaultSortCandles } from './model/candle.model';
-import { CustomIcon } from './components/events/events-custom-icons';
 
 export const MAIN_FONT = 'Open Sans Semibold, sans-serif';
 
@@ -70,10 +69,6 @@ export const getDefaultConfig = (): FullChartConfig => ({
 	shortDays: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
 	shortMonths: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
 	rtl: false,
-	intlFormatter: {
-		decimalSeparator: '.',
-		thousandsSeparator: '',
-	},
 	scale: {
 		keepZoomXOnYAxisChange: true,
 		auto: true,
@@ -114,11 +109,6 @@ export const getDefaultConfig = (): FullChartConfig => ({
 			zoomStep: 0,
 			histogram: {
 				barCapSize: 1,
-			},
-			maxYAxisScalesAmount: 10,
-			applyBackgroundToAxes: {
-				x: true,
-				y: true,
 			},
 			sortCandles: defaultSortCandles,
 		},
@@ -173,9 +163,6 @@ export const getDefaultConfig = (): FullChartConfig => ({
 						type: 'rectangle',
 					},
 				},
-			},
-			treasuryFormat: {
-				enabled: false,
 			},
 		},
 		xAxis: {
@@ -244,7 +231,7 @@ export const getDefaultConfig = (): FullChartConfig => ({
 			logoWidth: 20,
 			logoHeight: 20,
 		},
-		highLow: { visible: false, font: '12px sans-serif', prefix: { high: 'H: ', low: 'L: ' } },
+		highLow: { visible: false, font: '12px sans-serif' },
 		highlights: {
 			visible: false,
 			fontFamily: 'Open Sans',
@@ -438,35 +425,15 @@ export const getDefaultConfig = (): FullChartConfig => ({
 		highLowTheme: { highColor: 'rgba(223,222,223,1)', lowColor: 'rgba(223,222,223,1)' },
 		instrumentInfo: { textColor: '#aeb1b3' },
 		paneResizer: {
-			lineColor: 'rgba(61,61,61,1)',
+			lineColor: 'rgba(55,55,54,1)',
 			bgColor: 'rgba(20,20,19,1)',
 			bgHoverColor: 'rgba(55,55,54,0.6)',
 		},
 		events: {
-			earnings: {
-				color: 'rgba(217,44,64,1)',
-				normal: 'rgba(217,44,64,1)',
-				hover: 'rgba(217,44,64,1)',
-				line: 'rgba(217,44,64,1)',
-			},
-			dividends: {
-				color: 'rgba(169,38,251,1)',
-				normal: 'rgba(169,38,251,1)',
-				hover: 'rgba(169,38,251,1)',
-				line: 'rgba(169,38,251,1)',
-			},
-			splits: {
-				color: 'rgba(244,187,63,1)',
-				normal: 'rgba(244,187,63,1)',
-				hover: 'rgba(244,187,63,1)',
-				line: 'rgba(244,187,63,1)',
-			},
-			'conference-calls': {
-				color: 'rgba(48,194,97,1)',
-				normal: 'rgba(48,194,97,1)',
-				hover: 'rgba(48,194,97,1)',
-				line: 'rgba(48,194,97,1)',
-			},
+			earnings: { color: 'rgba(217,44,64,1)' },
+			dividends: { color: 'rgba(169,38,251,1)' },
+			splits: { color: 'rgba(244,187,63,1)' },
+			'conference-calls': { color: 'rgba(48,194,97,1)' },
 		},
 		secondaryChartTheme: [
 			{
@@ -804,7 +771,12 @@ export interface FullChartColors {
 		labelBoxColor: string;
 		labelTextColor: string;
 	};
-	events: ChartConfigComponentsEventsColors;
+	events: {
+		earnings: EventColors;
+		dividends: EventColors;
+		splits: EventColors;
+		'conference-calls': EventColors;
+	};
 	navigationMap: {
 		buttonColor: string;
 		knotColor: string;
@@ -882,7 +854,6 @@ export interface FullChartConfig extends TimeFormatterConfig {
 	 * Initial visual order of chart drawers. Reorder to put volumes on top of candles for example.
 	 */
 	drawingOrder: DrawerType[];
-	intlFormatter: IntlFormatter;
 	useUTCTimeOverride: boolean;
 	animation: AnimationConfig;
 	devexpertsPromoLink: boolean;
@@ -954,11 +925,6 @@ export interface AutoScaleDisableOnDrag {
 	yDiff: number;
 }
 
-export interface IntlFormatter {
-	decimalSeparator?: string;
-	thousandsSeparator?: string;
-}
-
 export interface ChartComponents {
 	chart: ChartConfigComponentsChart;
 	xAxis: ChartConfigComponentsXAxis;
@@ -1013,17 +979,6 @@ export interface ChartConfigComponentsChart {
 	selectedWidth: number;
 	minCandlesOffset: number;
 	histogram: ChartConfigComponentsHistogram;
-	/**
-	 * The maximum amount of Y axis scales on a single chart
-	 */
-	maxYAxisScalesAmount: number;
-	/**
-	 * Background color will be also applied to the chart axes
-	 */
-	applyBackgroundToAxes: {
-		x: boolean;
-		y: boolean;
-	};
 	// optional because backward compability
 	sortCandles?: (candles: Candle[]) => Candle[];
 }
@@ -1056,17 +1011,6 @@ export interface ChartConfigComponentsEvents {
 	 * 	</svg>'
 	 */
 	icons?: ChartConfigComponentsEventsIcons;
-	/**
-	 * Configure the event type vertical line appearance
-	 */
-	line?: ChartConfigComponentsEventsLine;
-}
-
-export interface ChartConfigComponentsEventsColors {
-	earnings: EventColors;
-	dividends: EventColors;
-	splits: EventColors;
-	'conference-calls': EventColors;
 }
 
 export interface DateTimeFormatConfig {
@@ -1139,10 +1083,6 @@ export interface YAxisConfig {
 	};
 	fontSize: number;
 	fontFamily: string;
-	/**
-	 * Treasury format for price values (1/32 tick format for bonds)
-	 */
-	treasuryFormat?: YAxisConfigTreasuryFormat;
 }
 
 export interface ChartConfigComponentsOffsets {
@@ -1208,7 +1148,6 @@ export interface ChartConfigComponentsHighLow {
 	 * Font config of high/low labels.
 	 */
 	font: string;
-	prefix: { high: string; low: string };
 }
 export interface ChartConfigComponentsCrossTool {
 	/**
@@ -1398,17 +1337,8 @@ export interface HighlightsColors {
 	label: string;
 }
 
-/**
- * @deprecated use {normal}, {hover} instead, will be removed in v6
- */
-export interface EventColorsOld {
+export interface EventColors {
 	color: string;
-}
-
-export interface EventColors extends EventColorsOld {
-	line?: string;
-	normal?: string;
-	hover?: string;
 }
 
 export interface HistogramColors {
@@ -1520,10 +1450,6 @@ export interface YAxisLabels {
 	settings: Record<YAxisLabelType, YAxisLabelConfig>;
 }
 
-export interface YAxisConfigTreasuryFormat {
-	enabled: boolean;
-}
-
 export interface YAxisTypeConfigProps {
 	rounded?: boolean;
 	paddings?: {
@@ -1543,19 +1469,18 @@ export interface YAxisLabelsColors extends Record<YAxisLabelType, Record<string,
 	prePostMarket: YAxisPrePostMarketLabelColorConfig;
 	prevDayClose: YAxisLabelColorConfig;
 }
+//#endregion
+
+export interface CustomIcon {
+	normal: string;
+	hover: string;
+}
 
 export interface ChartConfigComponentsEventsIcons {
 	earnings?: CustomIcon;
 	dividends?: CustomIcon;
 	splits?: CustomIcon;
-	'conference-calls'?: CustomIcon;
-}
-
-export interface ChartConfigComponentsEventsLine {
-	earnings?: { width: number; dash: Array<number> };
-	dividends?: { width: number; dash: Array<number> };
-	splits?: { width: number; dash: Array<number> };
-	'conference-calls'?: { width: number; dash: Array<number> };
+	conferenceCalls?: CustomIcon;
 }
 
 export type CursorType = string;
