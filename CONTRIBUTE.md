@@ -1,34 +1,31 @@
-# Contributing to DXcharts Lite
+# Contributing to dxcharts-lite
 
-We welcome your contributions to DXcharts Lite! Whether you're improving the source code or enhancing documentation, your help is greatly appreciated.
-
-Please follow these guidelines:
+We would be glad if you contribute to our source code and help us to improve dxcharts-lite even more! We propose you to follow these guidelines:
 
 ## Contributing a Patch
 
-1. **Fork the repository** and create your changes.
-2. **Develop and test** your code thoroughly.
-3. **Ensure your code is clear and well-documented**.
-4. **Add or update unit tests** as needed, and make sure all tests pass.
-5. **Submit a pull request** with a clear description of your changes.
-6. The repository owner will review your request. If approved, your changes will be merged. If further work is needed, you'll receive feedback.
-7. **Sign the Contributor License Agreement (CLA)** if required. Our bot will prompt you to sign the CLA on your pull request.
+1. Create your change to the repo in question.
+2. Fork the desired repo, develop and test your code changes.
+3. Ensure that your code is clear and comprehensible.
+4. Ensure that your code has an appropriate set of unit tests which all pass.
+5. Submit a pull request.
+6. The repo owner will review your request. If it is approved, the change will be merged. If it needs additional work, the repo owner will respond with useful comments.
+7. Before the code is merged Contributor License Agreement (CLA) should be signed. Our bot will comment on the PR asking you to sign the CLA if it is required.
 
-## Questions or problems
+## Question or problem
 
-If you have questions or run into a problem while using DXcharts Lite, please open a [Github issue](https://github.com/devexperts/dxcharts-lite/issues).
+If you have any questions about how to use dxcharts-lite, please contact via Github issues. Just create an issue with a question.
 
 ## Submitting an issue
 
-If you find a bug, notice a mistake in the documentation, or have a suggestion, please submit an issue to our [GitHub Repository](https://github.com/devexperts/dxcharts-lite). A pull request with a fix is even better! But before submitting, please search existing issues to see if your question has already been answered.
+You can help us by submitting an issue to our GitHub Repository in case you find a bug in the source code, a mistake in the documentation or a proposal. A Pull Request with a fix would be even better. Before you submit an issue, search the archive, maybe your question was already answered.
+Here are the submission guidelines we would like you to follow:
 
-When submitting an issue, please include:
-
--   **A detailed overview of the issue**
--   **Related issues**: Has a similar issue been reported before?
--   **Steps to reproduce**: How can we reproduce the problem? (for bugs)
--   **Suggested fix**: If you can't fix it yourself, perhaps you can point to where the problem might be (e.g., line of code or commit)
+-   Detailed overview of the Issue
+-   Related issues - has a similar issue been reported before?
+-   Reproduce the Error - A set of steps to reproduce the error (in case of a bug)
+-   Suggest a Fix - if you can't fix the bug yourself, perhaps you can point to what might be causing the problem (line of code or commit)
 
 ## Documentation fixes
 
-If you have suggestions to improve the documentation, please let us know by creating a new issue or commenting on an existing one. (Please follow the guidelines in the [Submitting an issue](#submitting-an-issue) section.)
+If you have any ideas how to help us to improve the documentation, please let others know what you're working on by creating a new issue or comment on a related existing one (please, follow the guidelines contained in Submitting an issue).

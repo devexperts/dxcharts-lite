@@ -6,7 +6,6 @@
 import { CanvasModel } from '../../model/canvas.model';
 import { Drawer } from '../../drawers/drawing-manager';
 import { CrossToolHover, CrossToolModel, CrossToolType } from './cross-tool.model';
-import { FullChartConfig } from '../../chart.config';
 
 export interface CrossToolTypeDrawer {
 	draw: (ctx: CanvasRenderingContext2D, hover: CrossToolHover) => void;
@@ -15,7 +14,6 @@ export interface CrossToolTypeDrawer {
 export class CrossToolDrawer implements Drawer {
 	constructor(
 		private model: CrossToolModel,
-		private config: FullChartConfig,
 		private crossToolCanvasModel: CanvasModel,
 		private readonly crossToolTypeDrawers: Record<CrossToolType, CrossToolTypeDrawer>,
 	) {}
@@ -29,13 +27,11 @@ export class CrossToolDrawer implements Drawer {
 	 * @returns {void}
 	 */
 	draw() {
-		const drawer = this.crossToolTypeDrawers[this.config.components.crossTool.type];
+		const drawer = this.crossToolTypeDrawers[this.model.type];
 		if (drawer) {
 			this.model.currentHover && drawer.draw(this.crossToolCanvasModel.ctx, this.model.currentHover);
 		} else {
-			console.error(
-				`No cross tool drawer type registered for drawer type ${this.config.components.crossTool.type}`,
-			);
+			console.error(`No cross tool drawer type registered for drawer type ${this.model.type}`);
 		}
 	}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -17,8 +17,8 @@ import { ChartPanComponent } from '../pan/chart-pan.component';
 const NAV_MAP_KNOT_CORRECTION = 4;
 
 export class NavigationMapMoveHandler extends ChartBaseElement {
-	public leftKnotDragStartXRelative: number = 0;
-	public rightKnotDragStartXRelative: number = 0;
+	private leftKnotDragStartXRelative: number = 0;
+	private rightKnotDragStartXRelative: number = 0;
 	private lastMousePosition: number = 0;
 
 	constructor(
@@ -116,12 +116,12 @@ export class NavigationMapMoveHandler extends ChartBaseElement {
 		//#endregion
 	}
 
-	public leftKnotDragStart = (point: Point) => {
+	private leftKnotDragStart = (point: Point) => {
 		const nMapChart = this.canvasBoundsContainer.getBounds(CanvasElement.N_MAP_CHART);
 		this.leftKnotDragStartXRelative = point.x - nMapChart.x - NAV_MAP_KNOT_CORRECTION;
 	};
 
-	public leftKnotDragTick = (dragInfo: DragInfo) => {
+	private leftKnotDragTick = (dragInfo: DragInfo) => {
 		const { delta: xDelta } = dragInfo;
 		const chart = this.canvasBoundsContainer.getBounds(CanvasElement.N_MAP_CHART);
 		const knotsWindowWidth = chart.width;
@@ -133,12 +133,12 @@ export class NavigationMapMoveHandler extends ChartBaseElement {
 		);
 	};
 
-	public rightKnotDragStart = (point: Point) => {
+	private rightKnotDragStart = (point: Point) => {
 		const nMapChart = this.canvasBoundsContainer.getBounds(CanvasElement.N_MAP_CHART);
 		this.rightKnotDragStartXRelative = point.x - nMapChart.x + NAV_MAP_KNOT_CORRECTION;
 	};
 
-	public rightKnotDragTick = (dragInfo: DragInfo) => {
+	private rightKnotDragTick = (dragInfo: DragInfo) => {
 		const { delta: xDelta } = dragInfo;
 		const nMapChart = this.canvasBoundsContainer.getBounds(CanvasElement.N_MAP_CHART);
 		const nMapChartWidth = nMapChart.width;

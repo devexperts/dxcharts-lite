@@ -1,11 +1,10 @@
 /*
- * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 import { YExtentComponent } from '../components/pane/extent/y-extent-component';
 import { DataSeriesYAxisLabelsProvider } from '../components/y_axis/price_labels/data-series-y-axis-labels.provider';
-import { LabelsGroups } from '../components/y_axis/price_labels/y-axis-labels.model';
 import { binarySearch, create2DArray, lastOf, slice2DArray } from '../utils/array.utils';
 import { floorToDPR } from '../utils/device/device-pixel-ratio.utils';
 import { MathUtils } from '../utils/math.utils';
@@ -65,13 +64,12 @@ export interface DataSeriesViewportIndexes {
 export class DataSeriesModel<
 	D extends DataSeriesPoint = DataSeriesPoint,
 	V extends VisualSeriesPoint = VisualSeriesPoint,
-	C extends DataSeriesConfig = DataSeriesConfig,
 > extends ChartBaseElement {
 	public name: string = '';
 
 	public highlighted = false;
 	public yAxisLabelProvider: DataSeriesYAxisLabelsProvider;
-	public readonly config: C;
+	public readonly config: DataSeriesConfig;
 	public scale: ScaleModel;
 	public view: DataSeriesView;
 	protected _dataPoints: D[][] = [];
@@ -79,7 +77,7 @@ export class DataSeriesModel<
 	/**
 	 * Should be used for paint tools like rectangular drawing or diff cloud
 	 */
-	public linkedDataSeriesModels: DataSeriesModel<D, V, C>[] = [];
+	public linkedDataSeriesModels: DataSeriesModel<D, V>[] = [];
 
 	// provides high-low regarding axis type
 	public highLowProvider: HighLowProvider;
@@ -126,11 +124,10 @@ export class DataSeriesModel<
 		public id: string,
 		public htId: number,
 		public parentId?: number | string,
-		_config?: AtLeastOne<C>,
+		_config: AtLeastOne<DataSeriesConfig> = cloneUnsafe(DEFAULT_DATA_SERIES_CONFIG),
 	) {
 		super();
-		const config = _config ?? cloneUnsafe(DEFAULT_DATA_SERIES_CONFIG);
-		this.config = merge(config, DEFAULT_DATA_SERIES_CONFIG);
+		this.config = merge(_config, DEFAULT_DATA_SERIES_CONFIG);
 		this.scale = extentComponent.scale;
 		this.view = new DataSeriesView(
 			this,
@@ -154,7 +151,6 @@ export class DataSeriesModel<
 		this.addRxSubscription(
 			this.scale.scaleInversedSubject.subscribe(() => {
 				this.recalculateVisualPoints();
-				this.extentComponent.dynamicObjectsCanvasModel.fireDraw();
 			}),
 		);
 	}
@@ -189,7 +185,6 @@ export class DataSeriesModel<
 	 * @param extent
 	 */
 	public moveToExtent(extent: YExtentComponent) {
-		const prevExtent = { ...this.extentComponent };
 		this.extentComponent.removeDataSeries(this);
 		this.extentComponent = extent;
 		this.scale = extent.scale;
@@ -201,29 +196,6 @@ export class DataSeriesModel<
 		);
 		this.yAxisLabelProvider.yAxisBoundsProvider = extent.getYAxisBounds;
 		this.yAxisLabelProvider.axisState = extent.yAxis?.state;
-		// move data series labels
-		const prevExtentMainLabels = prevExtent.yAxis.model.fancyLabelsModel.labelsProviders[LabelsGroups.MAIN];
-		const dataSeriesLabelsId =
-			prevExtentMainLabels && Object.keys(prevExtentMainLabels).find(p => this.parentId && p === this.parentId);
-		const currentMainLabels = this.extentComponent.yAxis.model.fancyLabelsModel.labelsProviders[LabelsGroups.MAIN];
-		if (dataSeriesLabelsId) {
-			const labelsProvider = prevExtentMainLabels[dataSeriesLabelsId];
-			labelsProvider.yAxisBoundsProvider = extent.getYAxisBounds;
-			// main group is not created yet (new extent without labels) or main group exists but no data series labels so far
-			if (!currentMainLabels || (currentMainLabels && !currentMainLabels[dataSeriesLabelsId])) {
-				// create new data series labels group on the new extent
-				this.extentComponent.yAxis.model.fancyLabelsModel.registerYAxisLabelsProvider(
-					LabelsGroups.MAIN,
-					labelsProvider,
-					dataSeriesLabelsId,
-				);
-				// remove labels from previous extent
-				prevExtent.yAxis.model.fancyLabelsModel.unregisterYAxisLabelsProvider(
-					LabelsGroups.MAIN,
-					dataSeriesLabelsId,
-				);
-			}
-		}
 		// shut down old subscriptions
 		this.deactivate();
 		// and apply new ones (with updated scaleModel)
@@ -295,7 +267,7 @@ export class DataSeriesModel<
 	 * @returns {string} The formatted value as a string.
 	 */
 	public valueFormatter(value: number) {
-		return this.extentComponent.formatters.regular(value);
+		return defaultValueFormatter(value);
 	}
 
 	/**
@@ -305,8 +277,7 @@ export class DataSeriesModel<
 	 * @param {number} [idx=this.dataIdxStart] - The index of the visual point to retrieve the close value for.
 	 * @returns {Unit} The close value of the visual point at the given index, or 1 if the visual point is not defined.
 	 */
-	public getBaseline = (idx = this.dataIdxStart): Unit =>
-		this.visualPoints[idx]?.close && this.visualPoints[idx]?.close >= 0 ? this.visualPoints[idx]?.close : 1;
+	public getBaseline = (idx = this.dataIdxStart): Unit => this.visualPoints[idx]?.close ?? 1;
 
 	/**
 	 * Returns the string representation of the close value of the given visual point.
