@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -57,7 +57,6 @@ export class YAxisComponent extends ChartBaseElement {
 	public yAxisScaleHandler: YAxisScaleHandler;
 	public model: YAxisModel;
 	public axisTypeSetSubject: Subject<PriceAxisType> = new Subject<PriceAxisType>();
-	public axisAlignSetSubject: Subject<YAxisAlign> = new Subject<YAxisAlign>();
 	public readonly state: YAxisConfig;
 
 	constructor(
@@ -65,15 +64,15 @@ export class YAxisComponent extends ChartBaseElement {
 		private config: FullChartConfig,
 		private canvasModel: CanvasModel,
 		public scale: ScaleModel,
-		private canvasInputListeners: CanvasInputListenerComponent,
+		canvasInputListeners: CanvasInputListenerComponent,
 		private canvasBoundsContainer: CanvasBoundsContainer,
-		private chartPanComponent: ChartPanComponent,
+		chartPanComponent: ChartPanComponent,
 		private cursors: CursorHandler,
 		valueFormatter: (value: number) => string,
 		dataSeriesProvider: () => DataSeriesModel | undefined,
 		public paneUUID: string,
 		public extentIdx: number,
-		private hitTestCanvasModel: HitTestCanvasModel,
+		hitTestCanvasModel: HitTestCanvasModel,
 		private chartResizeHandler: ChartResizeHandler,
 		initialState?: YAxisConfig,
 	) {
@@ -115,24 +114,6 @@ export class YAxisComponent extends ChartBaseElement {
 		this.registerDefaultLabelColorResolvers();
 	}
 
-	public setExtentIdx(extentIdx: number) {
-		this.extentIdx = extentIdx;
-		this.model.extentIdx = extentIdx;
-		this.yAxisScaleHandler.deactivate();
-		this.removeChildEntity(this.yAxisScaleHandler);
-		this.yAxisScaleHandler = new YAxisScaleHandler(
-			this.eventBus,
-			this.state,
-			this.chartPanComponent,
-			this.scale,
-			this.canvasInputListeners,
-			this.canvasBoundsContainer,
-			this.canvasBoundsContainer.getBoundsHitTest(CanvasElement.PANE_UUID_Y_AXIS(this.paneUUID, extentIdx)),
-			this.hitTestCanvasModel,
-		);
-		this.addChildEntity(this.yAxisScaleHandler);
-	}
-
 	/**
 	 * Registers default label color resolvers for different chart types.
 	 * @private
@@ -160,7 +141,7 @@ export class YAxisComponent extends ChartBaseElement {
 		);
 	}
 
-	public updateCursor() {
+	private updateCursor() {
 		if (this.state.type === 'percent') {
 			this.cursors.setCursorForCanvasEl(
 				CanvasElement.PANE_UUID_Y_AXIS(this.paneUUID, this.extentIdx),
@@ -285,7 +266,6 @@ export class YAxisComponent extends ChartBaseElement {
 	public setYAxisAlign(align: YAxisAlign) {
 		this.state.align = align;
 		this.canvasBoundsContainer.updateYAxisWidths();
-		this.axisAlignSetSubject.next(align);
 		this.eventBus.fireDraw();
 	}
 

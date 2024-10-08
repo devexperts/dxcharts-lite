@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -315,18 +315,6 @@ export class ChartComponent extends ChartBaseElement {
 	public setShowWicks(isShow: boolean) {
 		this.config.components.chart.showWicks = isShow;
 		this.canvasModel.fireDraw();
-	}
-
-	/**
-	 * Sets the options for the background color applying to the chart axes
-	 * @param {Object} options - options for both axes
-	 * @param {boolean} options.x - should the background color apply to the x axis
-	 * @param {boolean} options.y - should the background color apply to the y axis
-	 * @returns {void}
-	 */
-	public setApplyBackgroundToAxes(options: { x: boolean; y: boolean }) {
-		this.config.components.chart.applyBackgroundToAxes = { ...options };
-		this.chartModel.bus.fireDraw();
 	}
 
 	/**
