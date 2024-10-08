@@ -1,10 +1,5 @@
 /*
- * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
- * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
- * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
- */
-/*
- * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -13,11 +8,10 @@ import { PaneManager } from '../components/pane/pane-manager.component';
 import { CanvasModel } from '../model/canvas.model';
 import { DataSeriesModel, VisualSeriesPoint } from '../model/data-series.model';
 import { clipToBounds } from '../utils/canvas/canvas-drawing-functions.utils';
-import { isEmpty } from '../utils/object.utils';
 
-export interface HTSeriesDrawerConfig {
-	color?: string;
-	hoverWidth?: number;
+export interface ChartDrawerConfig {
+	singleColor?: string;
+	forceBold?: number;
 }
 
 export interface SeriesDrawer {
@@ -28,7 +22,7 @@ export interface SeriesDrawer {
 		 */
 		points: VisualSeriesPoint[][],
 		model: DataSeriesModel,
-		hitTestDrawerConfig: HTSeriesDrawerConfig,
+		drawerConfig: ChartDrawerConfig,
 	) => void;
 }
 
@@ -59,8 +53,7 @@ export class DataSeriesDrawer implements DynamicModelDrawer<DataSeriesModel> {
 	}
 
 	public drawSeries(ctx: CanvasRenderingContext2D, series: DataSeriesModel) {
-		const visibilityPredicates = series.config.additionalVisibilityPredicatesMap;
-		if (series.config.visible || (visibilityPredicates && !isEmpty(visibilityPredicates))) {
+		if (series.config.visible) {
 			const paintTool = series.config.type;
 			const drawer = this.seriesDrawers[paintTool];
 			if (drawer) {
@@ -80,11 +73,11 @@ export const setLineWidth = (
 	ctx: CanvasRenderingContext2D,
 	lineWidth: number,
 	dataSeries: DataSeriesModel,
-	hitTestDrawerConfig: HTSeriesDrawerConfig,
+	drawerConfig: ChartDrawerConfig,
 	seriesSelectedWidth: number = lineWidth,
 ) => {
-	if (hitTestDrawerConfig.hoverWidth) {
-		ctx.lineWidth = hitTestDrawerConfig.hoverWidth;
+	if (drawerConfig.forceBold) {
+		ctx.lineWidth = drawerConfig.forceBold;
 	} else if (dataSeries.highlighted) {
 		ctx.lineWidth = lineWidth !== seriesSelectedWidth ? lineWidth + 1 : seriesSelectedWidth;
 	} else {
