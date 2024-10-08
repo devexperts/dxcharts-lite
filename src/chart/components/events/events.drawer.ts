@@ -1,18 +1,21 @@
 /*
- * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 import { Bounds } from '../../model/bounds.model';
 import { CanvasBoundsContainer, CanvasElement } from '../../canvas/canvas-bounds-container';
-import { ChartConfigComponentsEventsIcons, FullChartConfig, EventColors } from '../../chart.config';
+import { CustomIcon, FullChartConfig } from '../../chart.config';
 import { CanvasModel } from '../../model/canvas.model';
 import { Drawer } from '../../drawers/drawing-manager';
 import { DateTimeFormatter } from '../../model/date-time.formatter';
 import { ChartModel } from '../chart/chart.model';
-import { EconomicEvent, EventsModel, EventWithId } from './events.model';
-import { createCustomIcon, CustomIconImage, drawCustomSvgIcon, getIconHash } from './events-custom-icons';
-import { Point } from '../../inputlisteners/canvas-input-listener.component';
+import { EconomicEvent, EventsModel, EventType, EventWithId } from './events.model';
+
+interface CreatedCustomIcon {
+	img: HTMLImageElement;
+	svgHeight: number;
+}
 
 const eventsSizesDict = {
 	'rhombus-small': 4,
@@ -20,16 +23,11 @@ const eventsSizesDict = {
 	'rhombus-large': 8,
 };
 
-const iconTypes: Array<keyof ChartConfigComponentsEventsIcons> = [
-	'earnings',
-	'dividends',
-	'splits',
-	'conference-calls',
-];
+const getIconHash = (type: EventType, state: keyof CustomIcon) => `${type}_${state}`;
 
 export class EventsDrawer implements Drawer {
 	// cache of created icons
-	private customIcons: Record<string, CustomIconImage> = {};
+	private customIcons: Record<string, CreatedCustomIcon> = {};
 
 	constructor(
 		private canvasModel: CanvasModel,
@@ -41,14 +39,49 @@ export class EventsDrawer implements Drawer {
 	) {
 		const iconsConfig = this.config.components.events.icons;
 		if (iconsConfig) {
-			iconTypes.forEach(type => {
-				const customIcon = createCustomIcon(type, iconsConfig[type]);
-				if (customIcon) {
-					this.customIcons[getIconHash(customIcon.type, 'normal')] = customIcon.normal;
-					this.customIcons[getIconHash(customIcon.type, 'hover')] = customIcon.hover;
-				}
-			});
+			this.createCustomIcon('earnings', iconsConfig.earnings);
+			this.createCustomIcon('dividends', iconsConfig.dividends);
+			this.createCustomIcon('splits', iconsConfig.splits);
+			this.createCustomIcon('conference-calls', iconsConfig.conferenceCalls);
 		}
+	}
+
+	/**
+	 * Creates a custom icon for a given event type.
+	 * @param {EventType} type - The type of the event.
+	 * @param {CustomIcon} [icon] - The custom icon object containing the normal and hover images.
+	 * @returns {void}
+	 */
+	createCustomIcon(type: EventType, icon?: CustomIcon) {
+		if (icon) {
+			const normal = this.createIconImage(icon.normal);
+			const hover = this.createIconImage(icon.hover);
+			this.customIcons[getIconHash(type, 'normal')] = normal;
+			this.customIcons[getIconHash(type, 'hover')] = hover;
+		}
+	}
+
+	/**
+	 * Creates an icon image from a string containing SVG data.
+	 * @param {string} iconString - The string containing SVG data.
+	 * @returns {Object} An object containing an Image object and the height of the SVG element.
+	 */
+	createIconImage(iconString: string) {
+		const parser = new DOMParser();
+		const svgSelector = parser.parseFromString(iconString, 'text/html').querySelector('svg');
+		let svgHeight = 0;
+		if (svgSelector) {
+			svgHeight = parseInt(svgSelector.getAttribute('height') ?? '', 10);
+		}
+		const svg64 = btoa(iconString);
+		const b64Start = 'data:image/svg+xml;base64,';
+		const image64 = b64Start + svg64;
+		const img = new Image();
+		img.src = image64;
+		return {
+			img,
+			svgHeight,
+		};
 	}
 
 	/**
@@ -74,26 +107,18 @@ export class EventsDrawer implements Drawer {
 			.forEach(event => {
 				const x = this.chartModel.candleFromTimestamp(event.timestamp).xCenter(this.chartModel.scale);
 				if (x > chartBounds.x && x < chartBounds.x + chartBounds.width) {
-					const colors = this.config.colors.events[event.type];
-					ctx.strokeStyle = colors.line ?? colors.normal ?? colors.color;
+					const color = this.config.colors.events[event.type].color;
+					ctx.strokeStyle = color;
 
 					// check custom icon in cache
 					if (this.customIcons[getIconHash(event.type, 'hover')] !== undefined) {
-						const point: Point = { x, y: bounds.y + bounds.height / 2 };
-						const isHovered = this.model.hoveredEvent.getValue() === event;
-						drawCustomSvgIcon(ctx, this.customIcons, point, event.type, isHovered);
+						this.drawCustomSvgEvent(ctx, x, bounds, event);
 					} else {
-						this.drawDefaultEvent(ctx, x, bounds, event, colors);
+						this.drawDefaultEvent(ctx, x, bounds, event, color);
 					}
 					// draw vertical line and label for the hovered event
 					if (this.model.hoveredEvent.getValue() === event) {
-						const line = this.config.components.events.line;
-						const width = line && line[event.type] && line[event.type]?.width;
-						const dash = line && line[event.type] && line[event.type]?.dash;
-
-						ctx.lineWidth = width ?? 1;
 						ctx.beginPath();
-						ctx.setLineDash(dash ?? []);
 						ctx.moveTo(x, chartBounds.y);
 						ctx.lineTo(x, bounds.y + bounds.height / 2);
 						ctx.stroke();
@@ -109,23 +134,36 @@ export class EventsDrawer implements Drawer {
 	}
 
 	/**
+	 * Draws a custom SVG event on a canvas context.
+	 * @param {CanvasRenderingContext2D} ctx - The canvas context to draw on.
+	 * @param {number} x - The x coordinate of the event.
+	 * @param {Bounds} bounds - The bounds of the event.
+	 * @param {EventWithId} event - The event to draw.
+	 * @returns {void}
+	 */
+	drawCustomSvgEvent(ctx: CanvasRenderingContext2D, x: number, bounds: Bounds, event: EventWithId) {
+		const y = bounds.y + bounds.height / 2;
+		const normal = this.customIcons[getIconHash(event.type, 'normal')];
+		const hover = this.customIcons[getIconHash(event.type, 'hover')];
+		if (this.model.hoveredEvent.getValue() === event) {
+			ctx.drawImage(hover.img, x - hover.svgHeight / 2, y - hover.svgHeight / 2);
+		} else {
+			ctx.drawImage(normal.img, x - normal.svgHeight / 2, y - normal.svgHeight / 2);
+		}
+	}
+
+	/**
 	 * Draws a default event on a canvas context.
 	 * @param {CanvasRenderingContext2D} ctx - The canvas context to draw on.
 	 * @param {number} x - The x coordinate of the event.
 	 * @param {Bounds} bounds - The bounds of the event.
 	 * @param {EventWithId} event - The event to draw.
-	 * @param {EventColors} colors - The colors of the event.
+	 * @param {string} color - The color of the event.
 	 * @returns {void}
 	 */
-	drawDefaultEvent(
-		ctx: CanvasRenderingContext2D,
-		x: number,
-		bounds: Bounds,
-		event: EventWithId,
-		colors: EventColors,
-	) {
+	drawDefaultEvent(ctx: CanvasRenderingContext2D, x: number, bounds: Bounds, event: EventWithId, color: string) {
 		const y = bounds.y + bounds.height / 2;
-		ctx.fillStyle = colors.normal ?? colors.color;
+		ctx.fillStyle = color;
 		// draw figure
 		ctx.lineWidth = 1.5; // 1.5 pixels
 		const size = getEventSize(event);
@@ -136,10 +174,8 @@ export class EventsDrawer implements Drawer {
 		ctx.lineTo(x, y + size);
 		ctx.closePath();
 		if (this.model.hoveredEvent.getValue() === event) {
-			ctx.fillStyle = colors.hover ?? colors.color;
 			ctx.fill();
 		} else {
-			ctx.strokeStyle = colors.normal ?? colors.color;
 			ctx.stroke();
 		}
 	}
@@ -183,7 +219,7 @@ export class EventsDrawer implements Drawer {
  * Returns the size of an event based on its style
  * @param {EconomicEvent} event - The event to get the size of
  * @returns {number} - The size of the event
-
+ 
 */
 export function getEventSize(event: EconomicEvent) {
 	return eventsSizesDict[event.style];

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -7,30 +7,14 @@ import { DataSeriesPoint } from '../model/data-series.model';
 import { binarySearch, BinarySearchResult, firstOf, lastOf } from './array.utils';
 import { floor } from './math.utils';
 
-export const getDaysOnlyTimestampFn =
-	(isDaysPeriod: boolean) =>
-	(timestamp: number): number => {
-		if (isDaysPeriod) {
-			return new Date(timestamp).setHours(0, 0, 0, 0);
-		}
-		return timestamp;
-	};
 export const searchCandleIndex = (
-	rawTimestamp: number,
-	options: {
-		extrapolate?: boolean;
-		isDaysPeriod?: boolean;
-	} = {},
+	timestamp: number,
+	shouldExtrapolate: boolean,
 	candles: DataSeriesPoint[],
 	periodMs = 1000,
 ): BinarySearchResult => {
-	const { extrapolate, isDaysPeriod } = options;
-	const shouldExtrapolate = Boolean(extrapolate);
-	const getDaysOnlyTimestamp = getDaysOnlyTimestampFn(Boolean(isDaysPeriod));
-	const timestamp = getDaysOnlyTimestamp(rawTimestamp);
-	const firstTimestamp = getDaysOnlyTimestamp(firstOf(candles)?.timestamp ?? 0);
-	const lastTimestamp = getDaysOnlyTimestamp(lastOf(candles)?.timestamp ?? 0);
-
+	const firstTimestamp = firstOf(candles)?.timestamp ?? 0;
+	const lastTimestamp = lastOf(candles)?.timestamp ?? 0;
 	if (timestamp > lastTimestamp) {
 		// TODO rework the code below, it looks very very sus ( ≖.≖)
 		if (shouldExtrapolate) {
@@ -60,6 +44,6 @@ export const searchCandleIndex = (
 			};
 		}
 	} else {
-		return binarySearch(candles, timestamp, candle => getDaysOnlyTimestamp(candle.timestamp));
+		return binarySearch(candles, timestamp, candle => candle.timestamp);
 	}
 };

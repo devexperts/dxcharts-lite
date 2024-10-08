@@ -8,9 +8,6 @@ import { CanvasInputListenerComponent } from '../inputlisteners/canvas-input-lis
 import { ScaleModel } from '../model/scale.model';
 import { ChartAreaPanHandler } from '../components/chart/chart-area-pan.handler';
 import { HitBoundsTest } from '../canvas/canvas-bounds-container';
-import { Pixel } from '../model/scaling/viewport.model';
-
-export const PIXELS_FOR_MOVE = 2;
 
 /**
  * Handles chart touch events.
@@ -18,15 +15,6 @@ export const PIXELS_FOR_MOVE = 2;
 export class MainCanvasTouchHandler extends ChartBaseElement {
 	// 2 candles indexes touched by 2 fingers when pinching
 	private touchedCandleIndexes: [number, number] = [0, 0];
-	// stores the information about touch events
-	public canvasTouchInfo: {
-		touchStart: { x: Pixel; y: Pixel };
-		isMoving?: boolean;
-	} = {
-		touchStart: { x: 0, y: 0 },
-		// uses touch start to determine if chart is being moved
-		isMoving: false,
-	};
 	constructor(
 		private chartAreaPanHandler: ChartAreaPanHandler,
 		private scale: ScaleModel,
@@ -60,12 +48,6 @@ export class MainCanvasTouchHandler extends ChartBaseElement {
 	 * @returns {void}
 	 */
 	private handleTouchStartEvent(e: TouchEvent) {
-		const { clientX, clientY } = e.touches[0];
-
-		if (e.touches.length === 1) {
-			this.canvasTouchInfo.touchStart = { x: clientX, y: clientY };
-		}
-
 		if (e.touches.length === 2) {
 			this.chartAreaPanHandler.deactivate();
 			// @ts-ignore
@@ -80,13 +62,6 @@ export class MainCanvasTouchHandler extends ChartBaseElement {
 	 * @returns {void}
 	 */
 	private handleTouchMoveEvent(e: TouchEvent): void {
-		const { clientX, clientY } = e.touches[0];
-		const { touchStart } = this.canvasTouchInfo;
-
-		if (e.touches.length === 1) {
-			this.canvasTouchInfo.isMoving = checkChartIsMoving(clientX, touchStart.x, clientY, touchStart.y);
-		}
-
 		if (e.touches.length === 2) {
 			this.pinchHandler(this.touchedCandleIndexes, this.getXPositions(e));
 		}
@@ -96,7 +71,6 @@ export class MainCanvasTouchHandler extends ChartBaseElement {
 	 * @returns {void}
 	 */
 	private handleTouchEndEvent(e: TouchEvent): void {
-		this.canvasTouchInfo.isMoving = false;
 		// zero touches means the user stopped resizing completely (both fingers are up)
 		if (e.touches.length === 0) {
 			this.chartAreaPanHandler.activate();
@@ -141,6 +115,3 @@ export class MainCanvasTouchHandler extends ChartBaseElement {
 		this.scale.setXScale(first, last);
 	}
 }
-
-export const checkChartIsMoving = (x1: Pixel, x2: Pixel, y1: Pixel, y2: Pixel, pixelsToMove: Pixel = PIXELS_FOR_MOVE) =>
-	Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2)) > pixelsToMove;
