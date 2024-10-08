@@ -47,7 +47,7 @@ interface ChartPanningOptions {
  * @param {CanvasBoundsContainer} canvasBoundsContainer - An instance of the CanvasBoundsContainer class.
  * @param {CanvasAnimation} canvasAnimation - An instance of the CanvasAnimation class.
  * @param {ChartPanComponent} chartPanComponent - An instance of the ChartPanComponent class.
-
+ 
 */
 export class ChartAreaPanHandler extends ChartBaseElement {
 	private currentPoint: Point = { x: 0, y: 0 };
@@ -98,7 +98,6 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 	 * If the zoomToCursor configuration is set to false, it calls the zoomXToEnd method of the scaleModel to zoom in or out based on the zoomIn parameter.
 	 * Finally, it fires the draw event of the bus to redraw the canvas.
 	 * @param {WheelEvent} e - Wheel event
-	 * @param {number} zoomSensitivity - zoom sensitivity
 	 * @returns {void}
 	 */
 	private zoomXHandler = (e: WheelEvent, zoomSensitivity: number) => {
@@ -138,9 +137,9 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 				)
 				.subscribe(e => {
 					const device = deviceDetector();
-					const direction = device === 'apple' || device === 'mobile' ? -1 : 1;
+					const direction = device === 'apple' || device === 'mobile' ? 1 : -1;
 					const deltaX = 0 + e.deltaX * direction;
-					const deltaY = 0 + e.deltaY * direction;
+					const deltaY = 0 + e.deltaY * -direction;
 
 					if (e.ctrlKey) {
 						const zoomSensitivity = this.calculateDynamicSesitivity(
@@ -193,7 +192,7 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 
 	/**
 	 * Registers a handler for panning the chart along the Y-axis.
-	 * @param {ScaleModel} scale - The scale model of the extent.
+	 * @param {ScaleModel} scaleModel - The scale model of the extent.
 	 * @param {HitBoundsTest} hitTest - The hit test of the pane.
 	 * @returns {DragNDropYComponent} - The drag and drop component for panning the chart along the Y-axis.
 	 */

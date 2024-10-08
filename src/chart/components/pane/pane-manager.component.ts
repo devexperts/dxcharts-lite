@@ -20,7 +20,7 @@ import { uuid as generateUuid } from '../../utils/uuid.utils';
 import { ChartBaseModel } from '../chart/chart-base.model';
 import { createHighLowOffsetCalculator } from '../chart/data-series.high-low-provider';
 import { ChartPanComponent } from '../pan/chart-pan.component';
-import { BarResizerComponent, RESIZER_HIT_TEST_EXTENSION } from '../resizer/bar-resizer.component';
+import { BarResizerComponent } from '../resizer/bar-resizer.component';
 import {
 	YExtentComponent,
 	YExtentCreationOptions,
@@ -33,8 +33,6 @@ import { DataSeriesModel } from '../../model/data-series.model';
 import { HitTestCanvasModel } from '../../model/hit-test-canvas.model';
 import { firstOf, flatMap, lastOf } from '../../utils/array.utils';
 import { ChartResizeHandler } from '../../inputhandlers/chart-resize.handler';
-
-export type MoveDataSeriesToPaneDirection = 'above' | 'below';
 
 export class PaneManager extends ChartBaseElement {
 	public panes: Record<string, PaneComponent> = {};
@@ -97,7 +95,7 @@ export class PaneManager extends ChartBaseElement {
 	 */
 	private addResizer(uuid: string) {
 		const resizerHT = this.canvasBoundsContainer.getBoundsHitTest(CanvasElement.PANE_UUID_RESIZER(uuid), {
-			extensionY: this.config.components.paneResizer.dragZone + RESIZER_HIT_TEST_EXTENSION,
+			extensionY: this.config.components.paneResizer.dragZone,
 		});
 		const dragPredicate = () => this.chartBaseModel.mainVisualPoints.length !== 0;
 		const dragTick = () => {
@@ -143,7 +141,6 @@ export class PaneManager extends ChartBaseElement {
 	/**
 	 * Creates sub-plot on the chart with y-axis
 	 * @param uuid
-	 * @param {AtLeastOne<YExtentCreationOptions>} options
 	 * @returns
 	 */
 	public createPane(uuid = generateUuid(), options?: AtLeastOne<YExtentCreationOptions>): PaneComponent {
@@ -290,41 +287,6 @@ export class PaneManager extends ChartBaseElement {
 	}
 
 	/**
-	 * Move data series to a certain pane, or create a new one if no pane is found
-	 */
-	public moveDataSeriesToPane(
-		dataSeries: DataSeriesModel[],
-		initialPane: PaneComponent,
-		initialExtent: YExtentComponent,
-		paneUUID?: string,
-		extent?: YExtentComponent,
-		direction?: MoveDataSeriesToPaneDirection,
-		index = 0,
-	) {
-		const pane = paneUUID && this.panes[paneUUID];
-
-		if (!pane) {
-			const order = direction && direction === 'above' ? index : this.panesOrder.length + index;
-			const newPane = this.createPane(paneUUID, { order });
-			newPane.moveDataSeriesToExistingExtentComponent(dataSeries, initialPane, initialExtent, newPane.mainExtent);
-			initialPane.yExtentComponents.length === 0 && this.removePane(initialPane.uuid);
-			return;
-		}
-
-		if (extent) {
-			pane.moveDataSeriesToExistingExtentComponent(dataSeries, initialPane, initialExtent, extent);
-		} else {
-			pane.moveDataSeriesToNewExtentComponent(
-				dataSeries,
-				initialPane,
-				initialExtent,
-				initialExtent.yAxis.state.align,
-			);
-		}
-		initialPane.yExtentComponents.length === 0 && this.removePane(initialPane.uuid);
-	}
-
-	/**
 	 * Adds cursors to the chart elements based on the provided uuid and cursor type.
 	 * @private
 	 * @param {string} uuid - The unique identifier for the chart element.
@@ -340,7 +302,7 @@ export class PaneManager extends ChartBaseElement {
 			this.cursorHandler.setCursorForCanvasEl(
 				paneResizer,
 				this.config.components.paneResizer.cursor,
-				this.config.components.paneResizer.dragZone + RESIZER_HIT_TEST_EXTENSION,
+				this.config.components.paneResizer.dragZone,
 			);
 
 		return () => {

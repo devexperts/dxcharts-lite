@@ -69,12 +69,7 @@ export class FancyYAxisLabelsModel extends ChartBaseElement {
 	 * an easier way to manage custom y-axis labels, than y-axis labels providers, but doesn't support overlapping avoidance
 	 */
 	public readonly customLabels: Record<string, VisualYAxisLabel> = {};
-	private _labelsProviders: Record<string, Record<string, YAxisLabelsProvider>> = {};
-
-	get labelsProviders(): Record<string, Record<string, YAxisLabelsProvider>> {
-		return this._labelsProviders;
-	}
-
+	private labelsProviders: Record<string, Record<string, YAxisLabelsProvider>> = {};
 	private labelsPositionRecalculatedSubject: Subject<void> = new Subject();
 	private animFrameId = `anim_cache_${uuid()}`;
 
@@ -281,5 +276,4 @@ export class FancyYAxisLabelsModel extends ChartBaseElement {
  */
 export interface YAxisLabelsProvider {
 	readonly getUnorderedLabels: () => LabelGroup[];
-	yAxisBoundsProvider?: () => Bounds;
 }

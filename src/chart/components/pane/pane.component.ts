@@ -13,7 +13,7 @@ import {
 	HitBoundsTest,
 } from '../../canvas/canvas-bounds-container';
 import { CursorHandler } from '../../canvas/cursor.handler';
-import { FullChartConfig, YAxisAlign, YAxisConfig } from '../../chart.config';
+import { FullChartConfig, YAxisConfig } from '../../chart.config';
 import { DrawingManager } from '../../drawers/drawing-manager';
 import EventBus from '../../events/event-bus';
 import { CanvasInputListenerComponent } from '../../inputlisteners/canvas-input-listener.component';
@@ -49,7 +49,6 @@ export class PaneComponent extends ChartBaseElement {
 	public ht: HitBoundsTest;
 
 	public yExtentComponents: YExtentComponent[] = [];
-	public yExtentComponentsChangedSubject: Subject<void> = new Subject();
 
 	get scale() {
 		return this.mainExtent.scale;
@@ -127,10 +126,8 @@ export class PaneComponent extends ChartBaseElement {
 	/**
 	 * Creates a new GridComponent instance with the provided parameters.
 	 * @param {string} uuid - The unique identifier of the pane.
-	 * @param {ScaleModel} scale - The scale model used to calculate the scale of the grid.
-	 * @param {YAxisConfig} yAxisState - y Axis Config
-	 * @param {() => NumericAxisLabel[]} yAxisLabelsGetter
-	 * @param {() => Unit} yAxisBaselineGetter
+	 * @param {ScaleModel} scaleModel - The scale model used to calculate the scale of the grid.
+	 * @param {NumericYAxisLabelsGenerator} yAxisLabelsGenerator - The generator used to create the labels for the y-axis.
 	 * @returns {GridComponent} - The newly created GridComponent instance.
 	 */
 	private createGridComponent(
@@ -162,8 +159,8 @@ export class PaneComponent extends ChartBaseElement {
 	 * Creates a handler for Y-axis panning of the chart.
 	 * @private
 	 * @param {string} uuid - The unique identifier of the chart pane.
-	 * @param {ScaleModel} scale - The scale model of the chart.
-	 * @returns [Unsubscriber, DragNDropYComponent]
+	 * @param {ScaleModel} scaleModel - The scale model of the chart.
+	 * @returns {Unsubscriber}
 	 */
 	private createYPanHandler(uuid: string, scale: ScaleModel): [Unsubscriber, DragNDropYComponent] {
 		const chartPaneId = CanvasElement.PANE_UUID(uuid);
@@ -259,7 +256,6 @@ export class PaneComponent extends ChartBaseElement {
 		yExtentComponent.activate();
 		this.yExtentComponents.push(yExtentComponent);
 		this.canvasBoundsContainer.updateYAxisWidths();
-		this.yExtentComponentsChangedSubject.next();
 		return yExtentComponent;
 	}
 
@@ -269,36 +265,6 @@ export class PaneComponent extends ChartBaseElement {
 		// re-index extents
 		this.yExtentComponents.forEach((c, idx) => (c.idx = idx));
 		this.canvasBoundsContainer.updateYAxisWidths();
-		this.yExtentComponentsChangedSubject.next();
-	}
-
-	/**
-	 * Create new pane extent and attach data series to it
-	 */
-	public moveDataSeriesToNewExtentComponent(
-		dataSeries: DataSeriesModel[],
-		initialPane: PaneComponent,
-		initialExtent: YExtentComponent,
-		align: YAxisAlign = 'right',
-	) {
-		const extent = this.createExtentComponent();
-		extent.yAxis.setYAxisAlign(align);
-		dataSeries.forEach(series => series.moveToExtent(extent));
-		initialExtent.dataSeries.size === 0 && initialPane.removeExtentComponent(initialExtent);
-	}
-
-	/**
-	 * Attach data series to existing y axis extent
-	 */
-	public moveDataSeriesToExistingExtentComponent(
-		dataSeries: DataSeriesModel[],
-		initialPane: PaneComponent,
-		initialExtent: YExtentComponent,
-		extentComponent: YExtentComponent,
-	) {
-		dataSeries.forEach(series => series.moveToExtent(extentComponent));
-		initialExtent.dataSeries.size === 0 && initialPane.removeExtentComponent(initialExtent);
-		this.yExtentComponentsChangedSubject.next();
 	}
 
 	/**

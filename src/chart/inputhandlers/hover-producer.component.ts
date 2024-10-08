@@ -19,7 +19,6 @@ import VisualCandle from '../model/visual-candle';
 import { isMobile } from '../utils/device/browser.utils';
 import { CrossEvent, CrossEventProducerComponent } from './cross-event-producer.component';
 import { TimeZoneModel } from '../model/time-zone.model';
-import { checkChartIsMoving, MainCanvasTouchHandler } from './main-canvas-touch.handler';
 
 export interface BaseHover {
 	readonly x: number;
@@ -61,9 +60,8 @@ export class HoverProducerComponent extends ChartBaseElement {
 	get hover(): Hover | null {
 		return this.hoverSubject.getValue();
 	}
-	public longTouchActivatedSubject: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+	private longTouchActivatedSubject: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 	private hoverProducerParts: HoverProducerParts;
-
 	xFormatter: DateTimeFormatter = () => '';
 	constructor(
 		private crossEventProducer: CrossEventProducerComponent,
@@ -74,7 +72,6 @@ export class HoverProducerComponent extends ChartBaseElement {
 		private canvasBoundsContainer: CanvasBoundsContainer,
 		private paneManager: PaneManager,
 		private timeZoneModel: TimeZoneModel,
-		private mainCanvasTouchHandler: MainCanvasTouchHandler,
 		private formatterFactory: (format: string) => (timestamp: number) => string,
 	) {
 		super();
@@ -131,105 +128,45 @@ export class HoverProducerComponent extends ChartBaseElement {
 		);
 		this.addRxSubscription(this.scale.xChanged.subscribe(() => this.fireLastCross()));
 		this.addRxSubscription(
-			merge(this.chartModel.candlesSetSubject, this.timeZoneModel.observeTimeZoneChanged()).subscribe(() =>
-				this.recalculateCrossToolXFormatter(),
-			),
-		);
-		//#region crosstool touch events, special handling for mobile
-		this.addRxSubscription(
 			this.canvasInputListener.observeTouchStart().subscribe(event => {
-				this.crossEventProducer.crossToolTouchInfo.isCommonTap = true;
-				const { clientX, clientY } = event.touches[0];
-
-				// if common tap - fire hover
-				if (!this.longTouchActivatedSubject.getValue()) {
-					const paneId = this.paneManager.getPaneIfHit({ x: clientX, y: clientY })?.uuid || '';
-					this.createAndFireHover([clientX, clientY, paneId]);
-				} else {
-					// update crosstool placement coordinates
-					this.crossEventProducer.crossToolTouchInfo.temp = {
-						x: clientX - this.canvasBoundsContainer.canvasOnPageLocation.x,
-						y: clientY - this.canvasBoundsContainer.canvasOnPageLocation.y,
-					};
+				const x = event.touches[0].clientX - this.canvasBoundsContainer.canvasOnPageLocation.x;
+				const y = event.touches[0].clientY - this.canvasBoundsContainer.canvasOnPageLocation.y;
+				const candle = this.chartModel.candleFromX(x, true);
+				const paneId = this.paneManager.getPaneIfHit({ x, y })?.uuid || '';
+				if (candle) {
+					this.createAndFireHover([x, y, paneId]);
 				}
 			}),
 		);
+
+		// special handling for mobile
 		// on long touch - disable panning and show cross tool
 		const hitTest = this.canvasBoundsContainer.getBoundsHitTest(CanvasElement.ALL_PANES);
 		this.addRxSubscription(
 			this.canvasInputListener.observeLongTouchStart(hitTest).subscribe(event => {
-				this.crossEventProducer.crossToolHover = null;
-				this.crossEventProducer.crossToolTouchInfo.isCommonTap = false;
-				// don't lock chart and show crosshair if chart is being moved, crosstool is not enabled or we do pinch event
-				const longTouchCrosshairPredicate =
-					this.mainCanvasTouchHandler.canvasTouchInfo.isMoving ||
-					this.chartModel.config.components.crossTool.type === 'none' ||
-					event.touches.length > 1;
-
-				if (longTouchCrosshairPredicate) {
-					return;
-				}
-
+				this.paneManager.chartPanComponent.deactivatePanHandlers();
 				this.longTouchActivatedSubject.next(true);
-				this.crossEventProducer.crossToolTouchInfo.isSet = false;
-
 				const x = event.touches[0].clientX - this.canvasBoundsContainer.canvasOnPageLocation.x;
 				const y = event.touches[0].clientY - this.canvasBoundsContainer.canvasOnPageLocation.y;
-
-				this.crossEventProducer.crossToolTouchInfo.fixed = {
-					x,
-					y,
-				};
-
 				const paneId = this.paneManager.getPaneIfHit({ x, y })?.uuid || '';
 				this.createAndFireHover([x, y, paneId]);
 				this.crossEventProducer.crossSubject.next([x, y, paneId]);
-				this.paneManager.chartPanComponent.setChartPanningOptions(false, false);
 			}),
 		);
 		this.addRxSubscription(
-			this.canvasInputListener.observeTouchEndDocument().subscribe(event => {
-				const { clientX, clientY } = event.changedTouches[0];
-				const { fixed, temp } = this.crossEventProducer.crossToolTouchInfo;
-
-				const x = clientX - this.canvasBoundsContainer.canvasOnPageLocation.x;
-				const y = clientY - this.canvasBoundsContainer.canvasOnPageLocation.y;
-
-				// common tap without moving, hide crosstool
-				if (
-					this.crossEventProducer.crossToolTouchInfo.isCommonTap &&
-					!checkChartIsMoving(x, temp.x, y, temp.y)
-				) {
-					this.paneManager.chartPanComponent.setChartPanningOptions(true, true);
+			this.canvasInputListener.observeTouchEndDocument().subscribe(() => {
+				this.paneManager.chartPanComponent.activateChartPanHandlers();
+				if (this.longTouchActivatedSubject.getValue()) {
 					this.longTouchActivatedSubject.next(false);
 					this.crossEventProducer.fireCrossClose();
-					this.crossEventProducer.crossToolHover = null;
-				}
-
-				if (!this.crossEventProducer.crossToolTouchInfo.isSet) {
-					this.crossEventProducer.crossToolTouchInfo.isSet = true;
-					this.crossEventProducer.crossToolTouchInfo.fixed = {
-						x,
-						y,
-					};
-					this.crossEventProducer.crossToolTouchInfo.isSet = true;
-				} else {
-					const pane = this.crossEventProducer.crossToolHover?.paneId ?? 'CHART';
-					const paneBounds = this.canvasBoundsContainer.getBounds(CanvasElement.PANE_UUID(pane));
-
-					const paneYStart = paneBounds.y + 5;
-					const paneYEnd = paneBounds.y + paneBounds.height - 5;
-
-					const xDiff = x - temp.x;
-					const yDiff = y - temp.y;
-
-					const newX = fixed.x < 0 ? 0 : fixed.x > paneBounds.width ? paneBounds.width : (fixed.x += xDiff);
-					const newY = fixed.y < paneYStart ? paneYStart : fixed.y > paneYEnd ? paneYEnd : (fixed.y += yDiff);
-					this.crossEventProducer.crossToolTouchInfo.fixed = { x: newX, y: newY };
 				}
 			}),
 		);
-		//#endregion
+		this.addRxSubscription(
+			merge(this.chartModel.candlesSetSubject, this.timeZoneModel.observeTimeZoneChanged()).subscribe(() =>
+				this.recalculateCrossToolXFormatter(),
+			),
+		);
 	}
 
 	/**
@@ -261,7 +198,7 @@ export class HoverProducerComponent extends ChartBaseElement {
 	 * @returns {Hover | undefined} - The hover object or undefined if there are no candles in the chart model.
 	 * @todo Check if uuid is still useful here.
 	 */
-	public createHover(x: number, y: number, uuid: string): Hover | undefined {
+	private createHover(x: number, y: number, uuid: string): Hover | undefined {
 		if (this.chartModel.getCandles().length === 0) {
 			return;
 		}
@@ -338,12 +275,9 @@ export class HoverProducerComponent extends ChartBaseElement {
 	private fireHover(hover?: Hover) {
 		if (hover) {
 			// special handling for mobile
-			// set active candle + show cross tool only when crosstool is active
+			// set active candle + show cross tool only when long tap
 			if (isMobile() && this.config.components.crossTool.type !== 'none') {
-				const crossToolHover = this.crossEventProducer.crossToolHover;
-				const candle = crossToolHover
-					? crossToolHover.candleHover?.visualCandle.candle
-					: hover.candleHover?.visualCandle.candle;
+				const candle = hover.candleHover?.visualCandle.candle;
 				candle && this.chartModel.mainCandleSeries.setActiveCandle(candle);
 			}
 			this.hoverSubject.next(hover);

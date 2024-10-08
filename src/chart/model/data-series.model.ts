@@ -5,7 +5,6 @@
  */
 import { YExtentComponent } from '../components/pane/extent/y-extent-component';
 import { DataSeriesYAxisLabelsProvider } from '../components/y_axis/price_labels/data-series-y-axis-labels.provider';
-import { LabelsGroups } from '../components/y_axis/price_labels/y-axis-labels.model';
 import { binarySearch, create2DArray, lastOf, slice2DArray } from '../utils/array.utils';
 import { floorToDPR } from '../utils/device/device-pixel-ratio.utils';
 import { MathUtils } from '../utils/math.utils';
@@ -152,7 +151,6 @@ export class DataSeriesModel<
 		this.addRxSubscription(
 			this.scale.scaleInversedSubject.subscribe(() => {
 				this.recalculateVisualPoints();
-				this.extentComponent.dynamicObjectsCanvasModel.fireDraw();
 			}),
 		);
 	}
@@ -187,7 +185,6 @@ export class DataSeriesModel<
 	 * @param extent
 	 */
 	public moveToExtent(extent: YExtentComponent) {
-		const prevExtent = { ...this.extentComponent };
 		this.extentComponent.removeDataSeries(this);
 		this.extentComponent = extent;
 		this.scale = extent.scale;
@@ -199,29 +196,6 @@ export class DataSeriesModel<
 		);
 		this.yAxisLabelProvider.yAxisBoundsProvider = extent.getYAxisBounds;
 		this.yAxisLabelProvider.axisState = extent.yAxis?.state;
-		// move data series labels
-		const prevExtentMainLabels = prevExtent.yAxis.model.fancyLabelsModel.labelsProviders[LabelsGroups.MAIN];
-		const dataSeriesLabelsId =
-			prevExtentMainLabels && Object.keys(prevExtentMainLabels).find(p => this.parentId && p === this.parentId);
-		const currentMainLabels = this.extentComponent.yAxis.model.fancyLabelsModel.labelsProviders[LabelsGroups.MAIN];
-		if (dataSeriesLabelsId) {
-			const labelsProvider = prevExtentMainLabels[dataSeriesLabelsId];
-			labelsProvider.yAxisBoundsProvider = extent.getYAxisBounds;
-			// main group is not created yet (new extent without labels) or main group exists but no data series labels so far
-			if (!currentMainLabels || (currentMainLabels && !currentMainLabels[dataSeriesLabelsId])) {
-				// create new data series labels group on the new extent
-				this.extentComponent.yAxis.model.fancyLabelsModel.registerYAxisLabelsProvider(
-					LabelsGroups.MAIN,
-					labelsProvider,
-					dataSeriesLabelsId,
-				);
-				// remove labels from previous extent
-				prevExtent.yAxis.model.fancyLabelsModel.unregisterYAxisLabelsProvider(
-					LabelsGroups.MAIN,
-					dataSeriesLabelsId,
-				);
-			}
-		}
 		// shut down old subscriptions
 		this.deactivate();
 		// and apply new ones (with updated scaleModel)
