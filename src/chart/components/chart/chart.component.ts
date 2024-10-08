@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -37,7 +37,6 @@ import { HitTestCanvasModel } from '../../model/hit-test-canvas.model';
 import { ScaleModel } from '../../model/scale.model';
 import { Timestamp, Unit } from '../../model/scaling/viewport.model';
 import { keys } from '../../utils/object.utils';
-import { ONE_FRAME_MS } from '../../utils/numeric-constants.utils';
 import { PriceIncrementsUtils } from '../../utils/price-increments.utils';
 import { ChartPanComponent } from '../pan/chart-pan.component';
 import { PaneManager } from '../pane/pane-manager.component';
@@ -54,8 +53,6 @@ import { TrendHistogramDrawer } from '../../drawers/data-series-drawers/trend-hi
 import { DynamicObjectsComponent } from '../dynamic-objects/dynamic-objects.component';
 import { ChartResizeHandler } from '../../inputhandlers/chart-resize.handler';
 import { PartialExcept } from '../../utils/types.utils';
-import { debounce } from '../../utils/performance/debounce.utils';
-import { LinearTrendDrawer } from '../../drawers/data-series-drawers/linear-trend.drawer';
 
 /**
  * Represents a financial instrument to be displayed on a chart
@@ -171,15 +168,9 @@ export class ChartComponent extends ChartBaseElement {
 		);
 		// redraw background only when chart is resized
 		this.addRxSubscription(
-			this.canvasBoundsContainer.observeAnyBoundsChanged().subscribe(
-				debounce(() => {
-					// there is multiple calls on this bounds change on lots of sources,
-					// and sometimes this calls mixes with this.chartResizeHandler.canvasResized
-					// and this leads to change of background in situations when it's not needed,
-					// so on multiple calls in one frame we debounced it to avoid that collisions and steam races
-					this.backgroundDrawerPredicateSubject.next(false);
-				}, ONE_FRAME_MS),
-			),
+			this.canvasBoundsContainer.observeAnyBoundsChanged().subscribe(() => {
+				this.backgroundDrawerPredicateSubject.next(false);
+			}),
 		);
 		this.addRxSubscription(
 			this.chartResizeHandler.canvasResized.subscribe(() => {
@@ -263,7 +254,6 @@ export class ChartComponent extends ChartBaseElement {
 		const chartPaneId = CanvasElement.PANE_UUID(CHART_UUID);
 		const mainChartBoundsProvider = () => this.canvasBoundsContainer.getBounds(chartPaneId);
 		this.registerDataSeriesTypeDrawer('LINEAR', new LinearDrawer());
-		this.registerDataSeriesTypeDrawer('LINEAR_TREND', new LinearTrendDrawer());
 		this.registerDataSeriesTypeDrawer('HISTOGRAM', new HistogramDrawer());
 		this.registerDataSeriesTypeDrawer('TREND_HISTOGRAM', new TrendHistogramDrawer());
 		this.registerDataSeriesTypeDrawer('POINTS', new PointsDrawer());
@@ -302,7 +292,6 @@ export class ChartComponent extends ChartBaseElement {
 	 * Sets the timestamp range of the chart by setting the x-axis scale.
 	 * @param {Timestamp} start - The start timestamp of the range.
 	 * @param {Timestamp} end - The end timestamp of the range.
-	 * @param {boolean} forceNoAnimation - true by default
 	 * @returns {void}
 	 */
 	public setTimestampRange(start: Timestamp, end: Timestamp, forceNoAnimation: boolean = true): void {
@@ -313,7 +302,6 @@ export class ChartComponent extends ChartBaseElement {
 	 * Moves the viewport to exactly xStart..xEnd place.
 	 * @param xStart - viewport start in units
 	 * @param xEnd - viewport end in units
-	 * @param {boolean} forceNoAnimation - true by default
 	 */
 	public setXScale(xStart: Unit, xEnd: Unit, forceNoAnimation: boolean = true) {
 		return this.scale.setXScale(xStart, xEnd, forceNoAnimation);
@@ -327,18 +315,6 @@ export class ChartComponent extends ChartBaseElement {
 	public setShowWicks(isShow: boolean) {
 		this.config.components.chart.showWicks = isShow;
 		this.canvasModel.fireDraw();
-	}
-
-	/**
-	 * Sets the options for the background color applying to the chart axes
-	 * @param {Object} options - options for both axes
-	 * @param {boolean} options.x - should the background color apply to the x axis
-	 * @param {boolean} options.y - should the background color apply to the y axis
-	 * @returns {void}
-	 */
-	public setApplyBackgroundToAxes(options: { x: boolean; y: boolean }) {
-		this.config.components.chart.applyBackgroundToAxes = { ...options };
-		this.chartModel.bus.fireDraw();
 	}
 
 	/**
@@ -432,7 +408,7 @@ export class ChartComponent extends ChartBaseElement {
 	/**
 	 * Removes all data points from the main candle series that are newer than the given timestamp.
 	 * Can be useful for data replay.
-	 * @param {Timestamp } timestamp
+	 * @param startTimestamp
 	 */
 	public removeDataFrom(timestamp: Timestamp) {
 		this.chartModel.removeDataFrom(timestamp);
@@ -440,7 +416,7 @@ export class ChartComponent extends ChartBaseElement {
 
 	/**
 	 * Removes chart candles series.
-	 * @param {CandleSeriesModel} series
+	 * @param instrument
 	 */
 	public removeSecondarySeries(series: CandleSeriesModel) {
 		this.chartModel.removeSecondaryCandleSeries(series);
@@ -518,7 +494,7 @@ export class ChartComponent extends ChartBaseElement {
 	/**
 	 * Updates last candle value
 	 * @param candle - updated candle
-	 * @param {string} instrumentSymbol - name of the instrument to update
+	 * @param instrumentSymbol - name of the instrument to update
 	 */
 	public updateLastCandle(candle: Candle, instrumentSymbol?: string) {
 		this.chartModel.updateLastCandle(candle, instrumentSymbol);
@@ -526,8 +502,8 @@ export class ChartComponent extends ChartBaseElement {
 
 	/**
 	 * Updates candle series for instrument. By default takes main instrument.
-	 * @param {Array<Candle>} candles
-	 * @param {string} instrumentSymbol - name of the instrument to update
+	 * @param candles
+	 * @param instrument
 	 */
 	public updateCandles(candles: Array<Candle>, instrumentSymbol?: string): void {
 		this.chartModel.updateCandles(candles, instrumentSymbol);
@@ -553,7 +529,7 @@ export class ChartComponent extends ChartBaseElement {
 	/**
 	 * Registers a new chart type drawer or overrides default drawer if drawerType is {BarType}.
 	 * @param drawerType {string} - a unique name for the drawer, could be {BarType} - in this case will override default drawer for the type
-	 * @param drawer {SeriesDrawer} - an implementation of the drawer
+	 * @param drawer {ChartTypeDrawer} - an implementation of the drawer
 	 */
 	public registerDataSeriesTypeDrawer(drawerType: DataSeriesType, drawer: SeriesDrawer) {
 		this._dataSeriesDrawers[drawerType] = drawer;

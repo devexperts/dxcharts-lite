@@ -1,18 +1,16 @@
 /*
- * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { YAxisConfig } from '../../../chart.config';
-import { DataSeriesModel } from '../../../model/data-series.model';
-import { Unit, unitToPercent } from '../../../model/scaling/viewport.model';
-import { PriceIncrementsUtils } from '../../../utils/price-increments.utils';
-import { YExtentComponent } from '../../pane/extent/y-extent-component';
-import { YExtentFormatters } from '../../pane/pane.component';
-import { treasuryPriceFormatter } from './treasury-price.formatter';
+import { DataSeriesModel } from '../../model/data-series.model';
+import { Unit, unitToPercent } from '../../model/scaling/viewport.model';
+import { PriceIncrementsUtils } from '../../utils/price-increments.utils';
+import { YExtentComponent } from '../pane/extent/y-extent-component';
+import { YExtentFormatters } from '../pane/pane.component';
 
 export const createRegularPriceFormatter =
-	(extent: YExtentComponent, config: YAxisConfig) =>
+	(extent: YExtentComponent) =>
 	(value: unknown): string => {
 		let checkedValue: number;
 		if (typeof value === 'number') {
@@ -21,11 +19,6 @@ export const createRegularPriceFormatter =
 			checkedValue = Number(value);
 		} else {
 			return '—';
-		}
-
-		const treasuryFormatConfig = config.treasuryFormat;
-		if (treasuryFormatConfig && treasuryFormatConfig.enabled) {
-			return treasuryPriceFormatter(checkedValue);
 		}
 
 		const [mainDataSeries] = extent.dataSeries;
@@ -50,7 +43,7 @@ export const createPercentFormatter =
 		return formatted === '−0.00 %' ? '0.00 %' : formatted;
 	};
 
-export const createYExtentFormatters = (extent: YExtentComponent, config: YAxisConfig): YExtentFormatters => ({
+export const createYExtentFormatters = (extent: YExtentComponent): YExtentFormatters => ({
 	percent: createPercentFormatter(extent),
-	regular: createRegularPriceFormatter(extent, config),
+	regular: createRegularPriceFormatter(extent),
 });
