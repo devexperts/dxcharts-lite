@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -13,7 +13,7 @@ import {
 	HitBoundsTest,
 } from '../../canvas/canvas-bounds-container';
 import { CursorHandler } from '../../canvas/cursor.handler';
-import { FullChartConfig, YAxisAlign, YAxisConfig } from '../../chart.config';
+import { FullChartConfig, YAxisConfig } from '../../chart.config';
 import { DrawingManager } from '../../drawers/drawing-manager';
 import EventBus from '../../events/event-bus';
 import { CanvasInputListenerComponent } from '../../inputlisteners/canvas-input-listener.component';
@@ -49,7 +49,6 @@ export class PaneComponent extends ChartBaseElement {
 	public ht: HitBoundsTest;
 
 	public yExtentComponents: YExtentComponent[] = [];
-	public yExtentComponentsChangedSubject: Subject<void> = new Subject();
 
 	get scale() {
 		return this.mainExtent.scale;
@@ -127,10 +126,8 @@ export class PaneComponent extends ChartBaseElement {
 	/**
 	 * Creates a new GridComponent instance with the provided parameters.
 	 * @param {string} uuid - The unique identifier of the pane.
-	 * @param {ScaleModel} scale - The scale model used to calculate the scale of the grid.
-	 * @param {YAxisConfig} yAxisState - y Axis Config
-	 * @param {() => NumericAxisLabel[]} yAxisLabelsGetter
-	 * @param {() => Unit} yAxisBaselineGetter
+	 * @param {ScaleModel} scaleModel - The scale model used to calculate the scale of the grid.
+	 * @param {NumericYAxisLabelsGenerator} yAxisLabelsGenerator - The generator used to create the labels for the y-axis.
 	 * @returns {GridComponent} - The newly created GridComponent instance.
 	 */
 	private createGridComponent(
@@ -162,8 +159,8 @@ export class PaneComponent extends ChartBaseElement {
 	 * Creates a handler for Y-axis panning of the chart.
 	 * @private
 	 * @param {string} uuid - The unique identifier of the chart pane.
-	 * @param {ScaleModel} scale - The scale model of the chart.
-	 * @returns [Unsubscriber, DragNDropYComponent]
+	 * @param {ScaleModel} scaleModel - The scale model of the chart.
+	 * @returns {Unsubscriber}
 	 */
 	private createYPanHandler(uuid: string, scale: ScaleModel): [Unsubscriber, DragNDropYComponent] {
 		const chartPaneId = CanvasElement.PANE_UUID(uuid);
@@ -259,53 +256,15 @@ export class PaneComponent extends ChartBaseElement {
 		yExtentComponent.activate();
 		this.yExtentComponents.push(yExtentComponent);
 		this.canvasBoundsContainer.updateYAxisWidths();
-		this.yExtentComponentsChangedSubject.next();
 		return yExtentComponent;
 	}
 
-	public removeExtentComponents(extentComponents: YExtentComponent[]) {
-		extentComponents.forEach(extentComponent => extentComponent.disable());
-		this.yExtentComponents = this.yExtentComponents.filter(
-			current => !extentComponents.map(excluded => excluded.idx).includes(current.idx),
-		);
+	public removeExtentComponent(extentComponent: YExtentComponent) {
+		extentComponent.disable();
+		this.yExtentComponents.splice(extentComponent.idx, 1);
 		// re-index extents
 		this.yExtentComponents.forEach((c, idx) => (c.idx = idx));
 		this.canvasBoundsContainer.updateYAxisWidths();
-		this.yExtentComponentsChangedSubject.next();
-	}
-
-	/**
-	 * Create new pane extent and attach data series to it
-	 */
-	public moveDataSeriesToNewExtentComponent(
-		dataSeries: DataSeriesModel[],
-		initialPane: PaneComponent,
-		initialExtent: YExtentComponent,
-		align: YAxisAlign = 'right',
-	) {
-		const extent = this.createExtentComponent();
-		extent.yAxis.setYAxisAlign(align);
-		dataSeries.forEach(series => series.moveToExtent(extent));
-		initialExtent.dataSeries.size === 0 && initialPane.removeExtentComponents([initialExtent]);
-	}
-
-	/**
-	 * Attach data series to existing y axis extent
-	 */
-	public moveDataSeriesToExistingExtentComponent(
-		dataSeries: DataSeriesModel[],
-		initialPane: PaneComponent,
-		initialExtent: YExtentComponent,
-		extentComponent: YExtentComponent,
-		// in some cases extent should not be deleted right after data series move,
-		// because the next data series could be moved to it
-		isForceKeepExtent?: boolean,
-	) {
-		dataSeries.forEach(series => series.moveToExtent(extentComponent));
-		!isForceKeepExtent &&
-			initialExtent.dataSeries.size === 0 &&
-			initialPane.removeExtentComponents([initialExtent]);
-		this.yExtentComponentsChangedSubject.next();
 	}
 
 	/**

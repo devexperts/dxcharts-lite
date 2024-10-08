@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -45,12 +45,12 @@ export class BarDrawer implements SeriesDrawer {
 				for (const visualCandle of visualCandles) {
 					this.setFillStyle(ctx, drawerConfig, candleSeries, visualCandle);
 					ctx.beginPath();
-					const bodyLineX = candleSeries.view.toX(visualCandle.centerUnit);
-					const openLineStartX = candleSeries.view.toX(visualCandle.startUnit);
+					const bodyLineX = floorToDPR(candleSeries.view.toX(visualCandle.centerUnit));
+					const openLineStartX = floorToDPR(candleSeries.view.toX(visualCandle.startUnit));
 					const [wickStartY, bodyStartY, bodyEndY, wickEndY] = visualCandle.yBodyKeyPoints(candleSeries.view);
 					const w = floorToDPR(candleSeries.view.xPixels(visualCandle.width) / 2);
-					const bodyCloseY = candleSeries.view.toY(visualCandle.close);
-					const bodyOpenY = candleSeries.view.toY(visualCandle.open);
+					const bodyCloseY = floorToDPR(candleSeries.view.toY(visualCandle.close));
+					const bodyOpenY = floorToDPR(candleSeries.view.toY(visualCandle.open));
 
 					if (this.config.showWicks) {
 						ctx.moveTo(bodyLineX, wickStartY);

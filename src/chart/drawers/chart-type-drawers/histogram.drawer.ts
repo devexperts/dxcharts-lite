@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -40,7 +40,7 @@ export class HistogramDrawer implements SeriesDrawer {
 
 				// histogram cap
 				const baseX = visualCandle.xStart(model.view);
-				const closeY = model.view.toY(visualCandle.close);
+				const closeY = floorToDPR(model.view.toY(visualCandle.close));
 				const width = floorToDPR(model.view.xPixels(visualCandle.width));
 				ctx.fillRect(baseX, closeY, width, capHeight);
 
