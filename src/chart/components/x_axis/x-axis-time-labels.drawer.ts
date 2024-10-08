@@ -1,12 +1,12 @@
 /*
- * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 import { NumericAxisLabel } from '../labels_generator/numeric-axis-labels.generator';
 import { Bounds } from '../../model/bounds.model';
 import { FullChartConfig } from '../../chart.config';
-import { CanvasBoundsContainer, CanvasElement, X_AXIS_MOBILE_PADDING } from '../../canvas/canvas-bounds-container';
+import { CanvasBoundsContainer, CanvasElement } from '../../canvas/canvas-bounds-container';
 import { CanvasModel } from '../../model/canvas.model';
 import { Drawer } from '../../drawers/drawing-manager';
 import { ViewportModel } from '../../model/scaling/viewport.model';
@@ -42,14 +42,11 @@ export class XAxisTimeLabelsDrawer implements Drawer {
 			ctx.font = font;
 			ctx.fillStyle = xAxisColors.backgroundColor;
 			const bounds = this.canvasBoundsContainer.getBounds(CanvasElement.X_AXIS);
-			// draw axis background rect if the background color is not used
-			if (!this.config.components.chart.applyBackgroundToAxes.x) {
-				ctx.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
-			}
+			ctx.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
 
 			const color = this.config.colors.xAxis.labelTextColor;
 			const labels = this.labelsProvider();
-			this.drawLabels(ctx, labels, bounds, color, fontHeight, fontFamily, offsetTop + X_AXIS_MOBILE_PADDING / 2);
+			this.drawLabels(ctx, labels, bounds, color, fontHeight, fontFamily, offsetTop);
 			ctx.restore();
 		}
 	}
