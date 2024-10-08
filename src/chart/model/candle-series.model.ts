@@ -162,7 +162,7 @@ export class CandleSeriesModel extends DataSeriesModel<Candle, VisualCandle> {
 	 */
 	recalculateZippedHighLow(): HighLowWithIndex {
 		return (this.zippedHighLow = calculateCandlesHighLow(
-			this.visualPoints.slice(this.dataIdxStart, this.dataIdxEnd + 1),
+			this.visualPoints.slice(this.dataIdxStart, this.dataIdxEnd),
 		));
 	}
 

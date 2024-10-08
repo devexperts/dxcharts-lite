@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -10,7 +10,6 @@ import { CompositeDrawer } from '../../drawers/composite.drawer';
 import { DrawingManager } from '../../drawers/drawing-manager';
 import { CrossEventProducerComponent } from '../../inputhandlers/cross-event-producer.component';
 import { HoverProducerComponent } from '../../inputhandlers/hover-producer.component';
-import { BaselineModel } from '../../model/baseline.model';
 import { CanvasModel } from '../../model/canvas.model';
 import { ChartBaseElement } from '../../model/chart-base-element';
 import { PaneManager } from '../pane/pane-manager.component';
@@ -33,28 +32,20 @@ export class CrossToolComponent extends ChartBaseElement {
 		private canvasBoundsContainer: CanvasBoundsContainer,
 		private drawingManager: DrawingManager,
 		private paneManager: PaneManager,
-		private crossEventProducer: CrossEventProducerComponent,
-		private hoverProducer: HoverProducerComponent,
-		private baselineModel: BaselineModel,
+		crossEventProducer: CrossEventProducerComponent,
+		hoverProducer: HoverProducerComponent,
 	) {
 		super();
 		this.model = new CrossToolModel(
 			config.components.crossTool,
 			this.crossToolCanvasModel,
-			this.crossEventProducer,
-			this.hoverProducer,
-			this.canvasBoundsContainer,
-			this.baselineModel,
+			crossEventProducer,
+			hoverProducer,
 		);
 		this.addChildEntity(this.model);
 		const clearCanvasDrawer = new ClearCanvasDrawer(this.crossToolCanvasModel);
 		this.registerDefaultDrawerTypes();
-		const crossToolDrawer = new CrossToolDrawer(
-			this.model,
-			this.config,
-			this.crossToolCanvasModel,
-			this.crossToolTypeDrawers,
-		);
+		const crossToolDrawer = new CrossToolDrawer(this.model, this.crossToolCanvasModel, this.crossToolTypeDrawers);
 		const compositeDrawer = new CompositeDrawer();
 		compositeDrawer.addDrawer(clearCanvasDrawer, 'CLEAR_CANVAS');
 		compositeDrawer.addDrawer(crossToolDrawer, 'CROSS_TOOL_DRAWER');
