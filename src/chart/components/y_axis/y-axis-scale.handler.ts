@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -35,8 +35,6 @@ export class YAxisScaleHandler extends ChartBaseElement {
 	lastYEnd: Unit = 0;
 	lastYHeight: Unit = 0;
 	lastYPxHeight: Pixel = 0;
-
-	private dragNDropYComponent: DragNDropYComponent | undefined;
 
 	private dblClickCallback: () => void;
 
@@ -75,15 +73,7 @@ export class YAxisScaleHandler extends ChartBaseElement {
 				},
 			);
 			this.addChildEntity(dragNDropYComponent);
-			this.dragNDropYComponent = dragNDropYComponent;
 		}
-	}
-
-	public isDragging(): boolean {
-		if (!this.dragNDropYComponent) {
-			return false;
-		}
-		return Math.abs(this.dragNDropYComponent.draggedPixels) > 0;
 	}
 
 	protected doActivate(): void {

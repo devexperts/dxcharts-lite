@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -9,7 +9,7 @@ import { CandleSeriesModel } from '../../model/candle-series.model';
 import { DataSeriesModel, VisualSeriesPoint } from '../../model/data-series.model';
 import { Pixel } from '../../model/scaling/viewport.model';
 import { flat } from '../../utils/array.utils';
-import { HTSeriesDrawerConfig, SeriesDrawer } from '../data-series.drawer';
+import { ChartDrawerConfig, SeriesDrawer } from '../data-series.drawer';
 
 export class BaselineDrawer implements SeriesDrawer {
 	constructor(private baseLineModel: BaselineModel, private canvasBoundContainer: CanvasBoundsContainer) {}
@@ -18,9 +18,9 @@ export class BaselineDrawer implements SeriesDrawer {
 		ctx: CanvasRenderingContext2D,
 		points: VisualSeriesPoint[][],
 		model: DataSeriesModel,
-		hitTestDrawerConfig?: HTSeriesDrawerConfig,
+		drawerConfig?: ChartDrawerConfig,
 	) {
-		if (hitTestDrawerConfig !== undefined && model instanceof CandleSeriesModel) {
+		if (drawerConfig !== undefined && model instanceof CandleSeriesModel) {
 			const visualCandles = flat(points);
 			// calculate baseline
 			const baselineYPercents = this.baseLineModel.baselineYPercents;
@@ -41,7 +41,7 @@ export class BaselineDrawer implements SeriesDrawer {
 				const curHigherThanBL = currentCloseYPx < baseLine;
 
 				if (prev !== void 0 && prevHigherThanBL !== curHigherThanBL) {
-					setBaselineFillStyle(ctx, model, hitTestDrawerConfig, prevHigherThanBL);
+					setBaselineFillStyle(ctx, model, drawerConfig, prevHigherThanBL);
 
 					const prevLineXPx = model.view.toX(prev.centerUnit);
 					const prevCloseYPx = model.view.toY(prev.close);
@@ -69,7 +69,7 @@ export class BaselineDrawer implements SeriesDrawer {
 					ctx.beginPath();
 					ctx.moveTo(currentLineXPx, currentCloseYPx);
 				} else if (next === void 0) {
-					setBaselineFillStyle(ctx, model, hitTestDrawerConfig, curHigherThanBL);
+					setBaselineFillStyle(ctx, model, drawerConfig, curHigherThanBL);
 					ctx.lineTo(currentLineXPx, currentCloseYPx);
 					ctx.stroke();
 					ctx.lineTo(currentLineXPx, baseLine);
@@ -93,12 +93,12 @@ export class BaselineDrawer implements SeriesDrawer {
 const setBaselineFillStyle = (
 	ctx: CanvasRenderingContext2D,
 	candleSeries: CandleSeriesModel,
-	hitTestDrawerConfig: HTSeriesDrawerConfig,
+	drawerConfig: ChartDrawerConfig,
 	upper: boolean,
 ): void => {
-	if (hitTestDrawerConfig.color) {
-		ctx.fillStyle = hitTestDrawerConfig.color;
-		ctx.strokeStyle = hitTestDrawerConfig.color;
+	if (drawerConfig.singleColor) {
+		ctx.fillStyle = drawerConfig.singleColor;
+		ctx.strokeStyle = drawerConfig.singleColor;
 	} else {
 		ctx.fillStyle = upper
 			? candleSeries.colors.baseLineTheme.upperSectionFillColor
