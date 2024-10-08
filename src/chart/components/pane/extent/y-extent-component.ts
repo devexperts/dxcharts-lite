@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -19,7 +19,7 @@ import { HighLowProvider, mergeHighLow } from '../../../model/scaling/auto-scale
 import { Pixel, Price, Unit } from '../../../model/scaling/viewport.model';
 import { uuid } from '../../../utils/uuid.utils';
 import { ChartBaseModel } from '../../chart/chart-base.model';
-import { createYExtentFormatters } from '../../chart/price-formatters/price.formatter';
+import { createYExtentFormatters } from '../../chart/price.formatter';
 import { DragNDropYComponent } from '../../dran-n-drop_helper/drag-n-drop-y.component';
 import { YAxisComponent } from '../../y_axis/y-axis.component';
 import { PaneHitTestController } from '../pane-hit-test.controller';
@@ -33,8 +33,6 @@ export interface YExtentCreationOptions {
 	paneFormatters: YExtentFormatters;
 	increment: number | null;
 	initialYAxisState: YAxisConfig;
-	inverse: boolean;
-	lockToPriceRatio: boolean;
 }
 
 export class YExtentComponent extends ChartBaseElement {
@@ -42,7 +40,6 @@ export class YExtentComponent extends ChartBaseElement {
 	public mainDataSeries?: DataSeriesModel;
 
 	constructor(
-		public config: YAxisConfig,
 		public paneUUID: string,
 		public idx: number,
 		public paneComponent: PaneComponent,
@@ -63,7 +60,7 @@ export class YExtentComponent extends ChartBaseElement {
 	) {
 		super();
 		this.addChildEntity(scale);
-		this.setValueFormatters(createYExtentFormatters(this, config));
+		this.setValueFormatters(createYExtentFormatters(this));
 		this.yAxis = createYAxisComponent(this.valueFormatter.bind(this), () => this.mainDataSeries);
 		this.addChildEntity(this.yAxis);
 	}
@@ -139,21 +136,9 @@ export class YExtentComponent extends ChartBaseElement {
 		this.paneComponent.seriesRemovedSubject.next(series);
 	}
 
-	public valueFormatter = (value: Unit, dataSeries?: DataSeriesModel): string => {
-		if (!this.formatters[this.yAxis.getAxisType()]) {
-			return this.formatters.regular(value);
-		}
-		const { regular, percent, logarithmic } = this.formatters;
-		switch (this.yAxis.getAxisType()) {
-			case 'regular':
-				return this.formatters.regular(value);
-			case 'percent':
-				return percent ? percent(value, dataSeries) : regular(value);
-			case 'logarithmic':
-				return logarithmic ? logarithmic(value) : regular(value);
-			default:
-				return this.regularFormatter(value);
-		}
+	public valueFormatter = (value: Unit, dataSeries?: DataSeriesModel) => {
+		const formatter = this.formatters[this.yAxis.getAxisType()] ?? this.formatters.regular;
+		return formatter(value, dataSeries);
 	};
 
 	get regularFormatter() {
