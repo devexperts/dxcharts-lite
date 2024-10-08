@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -127,10 +127,7 @@ export class LastCandleLabelsProvider implements YAxisLabelsProvider {
 
 		// if the label is for the main candle series
 		if (primary) {
-			const isScatterPlot = series.config.type === 'scatterPlot';
-			const textColor = isScatterPlot
-				? rectLabelTextColor
-				: getPrimaryLabelTextColor(series.lastPriceMovement, colors);
+			const textColor = getPrimaryLabelTextColor(series.lastPriceMovement, colors);
 			return {
 				bgColor: boxColor,
 				textColor:

@@ -248,8 +248,10 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 			this.addSubscription(subscribeListener(this.element, doubleTapListenerProducer, 'touchend'));
 
 			// workaround to handle long touch start/end for iOS
-			const longTouchListeners = (e: TouchEvent, delay = 200) => {
+			const longTouchListeners = (e: TouchEvent, delay = 700, pixelsForMoveReset = 3) => {
 				e.preventDefault();
+				const initialCoords = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+				let coords = { x: 0, y: 0 };
 				let longTouchStart = false;
 				let timerLongTouchStart: ReturnType<typeof setTimeout> | null = null;
 
@@ -261,8 +263,13 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 
 				const touchMoveHandler = (e: TouchEvent) => {
 					e.preventDefault();
+					coords = { x: e.touches[0].clientX, y: e.touches[0].clientY };
 					// clear long touch timeout if move area is bigger than pixelsForMove
-					if (e.touches.length > 1) {
+					if (
+						Math.sqrt(Math.pow(coords.x - initialCoords.x, 2) + Math.pow(coords.y - initialCoords.y, 2)) >
+							pixelsForMoveReset ||
+						e.touches.length > 1
+					) {
 						timerLongTouchStart && clearTimeout(timerLongTouchStart);
 					}
 				};
