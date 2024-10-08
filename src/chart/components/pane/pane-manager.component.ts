@@ -34,8 +34,6 @@ import { HitTestCanvasModel } from '../../model/hit-test-canvas.model';
 import { firstOf, flatMap, lastOf } from '../../utils/array.utils';
 import { ChartResizeHandler } from '../../inputhandlers/chart-resize.handler';
 
-export type MoveDataSeriesToPaneDirection = 'above' | 'below';
-
 export class PaneManager extends ChartBaseElement {
 	public panes: Record<string, PaneComponent> = {};
 	public paneRemovedSubject: Subject<PaneComponent> = new Subject();
@@ -286,35 +284,6 @@ export class PaneManager extends ChartBaseElement {
 
 		this.canvasBoundsContainer.showPaneBounds(paneUUID);
 		this.recalculateState();
-	}
-
-	/**
-	 * Move data series to a certain pane, or create a new one if no pane is found
-	 */
-	public moveDataSeriesToPane(
-		dataSeries: DataSeriesModel[],
-		initialPane: PaneComponent,
-		initialExtent: YExtentComponent,
-		paneUUID?: string,
-		extent?: YExtentComponent,
-		direction?: MoveDataSeriesToPaneDirection,
-	) {
-		const pane = paneUUID && this.panes[paneUUID];
-
-		if (!pane) {
-			const order = direction && direction === 'above' ? 0 : this.panesOrder.length;
-			const newPane = this.createPane(undefined, { order });
-			newPane.moveDataSeriesToExistingExtentComponent(dataSeries, initialPane, initialExtent, newPane.mainExtent);
-			initialPane.yExtentComponents.length === 0 && this.removePane(initialPane.uuid);
-			return;
-		}
-
-		if (extent) {
-			pane.moveDataSeriesToExistingExtentComponent(dataSeries, initialPane, initialExtent, extent);
-		} else {
-			pane.moveDataSeriesToNewExtentComponent(dataSeries, initialPane, initialExtent);
-		}
-		initialPane.yExtentComponents.length === 0 && this.removePane(initialPane.uuid);
 	}
 
 	/**

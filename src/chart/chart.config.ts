@@ -3,11 +3,6 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-/*
- * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
- * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
- * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
- */
 import { PriceAxisType } from './components/labels_generator/numeric-axis-labels.generator';
 import { MagnetTarget } from './components/cross_tool/cross-tool.component';
 import { CrossToolType } from './components/cross_tool/cross-tool.model';
@@ -115,7 +110,6 @@ export const getDefaultConfig = (): FullChartConfig => ({
 			histogram: {
 				barCapSize: 1,
 			},
-			maxYAxisScalesAmount: 10,
 			sortCandles: defaultSortCandles,
 		},
 		yAxis: {
@@ -237,7 +231,7 @@ export const getDefaultConfig = (): FullChartConfig => ({
 			logoWidth: 20,
 			logoHeight: 20,
 		},
-		highLow: { visible: false, font: '12px sans-serif', prefix: { high: 'H: ', low: 'L: ' } },
+		highLow: { visible: false, font: '12px sans-serif' },
 		highlights: {
 			visible: false,
 			fontFamily: 'Open Sans',
@@ -985,10 +979,6 @@ export interface ChartConfigComponentsChart {
 	selectedWidth: number;
 	minCandlesOffset: number;
 	histogram: ChartConfigComponentsHistogram;
-	/**
-	 * The maximum amount of Y axis scales on a single chart
-	 */
-	maxYAxisScalesAmount: number;
 	// optional because backward compability
 	sortCandles?: (candles: Candle[]) => Candle[];
 }
@@ -1158,7 +1148,6 @@ export interface ChartConfigComponentsHighLow {
 	 * Font config of high/low labels.
 	 */
 	font: string;
-	prefix: { high: string; low: string };
 }
 export interface ChartConfigComponentsCrossTool {
 	/**

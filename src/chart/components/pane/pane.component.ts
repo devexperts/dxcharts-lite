@@ -13,7 +13,7 @@ import {
 	HitBoundsTest,
 } from '../../canvas/canvas-bounds-container';
 import { CursorHandler } from '../../canvas/cursor.handler';
-import { FullChartConfig, YAxisAlign, YAxisConfig } from '../../chart.config';
+import { FullChartConfig, YAxisConfig } from '../../chart.config';
 import { DrawingManager } from '../../drawers/drawing-manager';
 import EventBus from '../../events/event-bus';
 import { CanvasInputListenerComponent } from '../../inputlisteners/canvas-input-listener.component';
@@ -265,34 +265,6 @@ export class PaneComponent extends ChartBaseElement {
 		// re-index extents
 		this.yExtentComponents.forEach((c, idx) => (c.idx = idx));
 		this.canvasBoundsContainer.updateYAxisWidths();
-	}
-
-	/**
-	 * Create new pane extent and attach data series to it
-	 */
-	public moveDataSeriesToNewExtentComponent(
-		dataSeries: DataSeriesModel[],
-		initialPane: PaneComponent,
-		initialExtent: YExtentComponent,
-		align: YAxisAlign = 'right',
-	) {
-		const extent = this.createExtentComponent();
-		extent.yAxis.setYAxisAlign(align);
-		dataSeries.forEach(series => series.moveToExtent(extent));
-		initialExtent.dataSeries.size === 0 && initialPane.removeExtentComponent(initialExtent);
-	}
-
-	/**
-	 * Attach data series to existing y axis extent
-	 */
-	public moveDataSeriesToExistingExtentComponent(
-		dataSeries: DataSeriesModel[],
-		initialPane: PaneComponent,
-		initialExtent: YExtentComponent,
-		extentComponent: YExtentComponent,
-	) {
-		dataSeries.forEach(series => series.moveToExtent(extentComponent));
-		initialExtent.dataSeries.size === 0 && initialPane.removeExtentComponent(initialExtent);
 	}
 
 	/**
