@@ -1,10 +1,5 @@
 /*
- * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
- * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
- * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
- */
-/*
- * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -65,9 +60,6 @@ const N_MAP_BUTTON_W = 15;
 const KNOTS_W_MOBILE_MULTIPLIER = 1.5;
 const N_MAP_KNOT_W = isMobile() ? 8 * KNOTS_W_MOBILE_MULTIPLIER : 8;
 
-// additional x axis height padding for mobiles, used for better usability on mobile devices
-export const X_AXIS_MOBILE_PADDING = isMobile() ? 5 : 0;
-
 /**
  * we need to check that: heightRatios - 1 <  0.000001 after calculations between decimals
  */
@@ -90,7 +82,6 @@ export class CanvasBoundsContainer {
 	// holds ordered "top to bottom" array of panes UUID's (studies in past)
 	panesOrder: Array<string> = [];
 	panesOrderChangedSubject = new Subject<string[]>();
-	paneMovedSubject = new Subject<void>();
 	paneVisibilityChangedSubject: Subject<void> = new Subject();
 
 	// both will be calculated based on font/content size
@@ -185,7 +176,6 @@ export class CanvasBoundsContainer {
 			this.recalculateBounds();
 			this.eventBus.fireDraw();
 			this.panesOrderChangedSubject.next(this.panesOrder);
-			this.paneMovedSubject.next();
 		}
 	}
 	/**
@@ -200,7 +190,6 @@ export class CanvasBoundsContainer {
 			this.recalculateBounds();
 			this.eventBus.fireDraw();
 			this.panesOrderChangedSubject.next(this.panesOrder);
-			this.paneMovedSubject.next();
 		}
 	}
 
@@ -453,16 +442,11 @@ export class CanvasBoundsContainer {
 	 */
 	private getXAxisBounds(nMap: Bounds, canvas: Bounds): Bounds {
 		const xAxis = this.getBounds(CanvasElement.X_AXIS);
-		const isSingleYAxis = this.yAxisWidths.left.length + this.yAxisWidths.right.length === 1;
-
-		const leftOffset = isSingleYAxis ? 0 : this.yAxisWidths.left.reduce((acc, width) => (acc += width), 0);
-		const rightOffset = isSingleYAxis ? 0 : this.yAxisWidths.right.reduce((acc, width) => (acc += width), 0);
-
 		if (this.config.components.xAxis.visible) {
 			const xAxisHeight = this.getXAxisHeight();
-			xAxis.x = leftOffset;
+			xAxis.x = 0;
 			xAxis.y = canvas.height - xAxisHeight - nMap.height;
-			xAxis.width = canvas.width - rightOffset;
+			xAxis.width = canvas.width;
 			xAxis.height = xAxisHeight;
 		} else {
 			this.applyDefaultBounds(xAxis);
@@ -482,8 +466,7 @@ export class CanvasBoundsContainer {
 			this.xAxisHeight =
 				fontHeight +
 				(this.config.components.xAxis.padding.top ?? 0) +
-				(this.config.components.xAxis.padding.bottom ?? 0) +
-				X_AXIS_MOBILE_PADDING;
+				(this.config.components.xAxis.padding.bottom ?? 0);
 		}
 		return this.xAxisHeight;
 	}
@@ -568,11 +551,11 @@ export class CanvasBoundsContainer {
 		}
 
 		//#region chart height ratio logic
-		if (!this.graphsHeightRatio[CHART_UUID] || this.graphsHeightRatio[CHART_UUID] === 0) {
+		if (this.graphsHeightRatio[CHART_UUID] === 0) {
 			chartRatio = 0;
 		}
 
-		if (this.graphsHeightRatio[CHART_UUID] && this.graphsHeightRatio[CHART_UUID] !== 0) {
+		if (this.graphsHeightRatio[CHART_UUID] !== 0) {
 			if (paneIsAdded) {
 				chartRatio = 1 * ratioForOldPec;
 			} else {
@@ -777,10 +760,10 @@ export class CanvasBoundsContainer {
 	/**
 	 * Gets hit-test fn for canvas element.
 	 * @param {string} el - CanvasElement.ELEMENT_NAME
-	 * @param {Object} options - An object containing options for the hit test.
-	 * @param {number} [options.extensionX=0] - The amount of extension in the x-axis.
-	 * @param {number} [options.extensionY=0] - The amount of extension in the y-axis.
-	 * @param {boolean} [options.wholePage=false] - Whether to test against the whole page or just the bounds object.
+	 * @param {boolean} reverse - reverses the hit test condition
+	 * @param {number} extensionX - extended hitBoundsTest in horizontal direction
+	 * @param {number} extensionY - extended hitBoundsTest in vertical direction
+	 * @param wholePage
 	 * @return {HitBoundsTest} hit-test fn
 	 */
 	getBoundsHitTest(el: string, options: AtLeastOne<HitBoundsTestOptions> = DEFAULT_HIT_TEST_OPTIONS): HitBoundsTest {
@@ -849,10 +832,6 @@ export class CanvasBoundsContainer {
 	public isChartBoundsAvailable() {
 		const canvasBounds = this.getBounds(CanvasElement.CANVAS);
 		return canvasBounds.width > 0 && canvasBounds.height > 0;
-	}
-
-	public isAllBoundsAvailable() {
-		return Object.values(this.bounds).every(el => el.width >= 0 && el.height >= 0);
 	}
 
 	/**

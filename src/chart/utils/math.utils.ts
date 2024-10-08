@@ -1,15 +1,10 @@
-/*
- * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
- * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
- * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
- */
-/*
- * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
- * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
- * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
- */
 import { StringTMap } from './object.utils';
 
+/*
+ * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
+ * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+ * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
 const MAX_DECIMAL_DIGITS = 14;
 // Array of powers of 10. Used in roundDecimal to walk through mantissa.
 
@@ -61,36 +56,13 @@ export class MathUtils {
 		return Math.round(x);
 	}
 
-	public static makeDecimal(value: number, precision: number, decimal?: string, thousandsSeparator?: string): string {
-		if (!isFinite(value)) {
+	public static makeDecimal(value: number, precision: number, decimal?: string): string {
+		if (isFinite(value)) {
+			const stringValue = value.toFixed(precision);
+			return decimal ? stringValue.replace('.', decimal) : stringValue;
+		} else {
 			return '';
 		}
-		if (isFinite(value)) {
-			let stringValue = value.toFixed(precision);
-			if (!thousandsSeparator) {
-				return decimal ? stringValue.replace('.', decimal) : stringValue;
-			}
-
-			if (decimal === thousandsSeparator) {
-				throw new Error('Grouping symbol cannot be the same as decimal separator.');
-			}
-
-			const splittedValue = stringValue.split('.');
-			let integerPart = splittedValue[0];
-			const fractionPart = splittedValue[1];
-
-			if (Math.abs(value) >= 1000) {
-				integerPart = integerPart.replace(RegExp('\\d(?=(\\d{3})+$)', 'g'), `$&${thousandsSeparator}`);
-			}
-
-			if (fractionPart) {
-				stringValue = [integerPart, fractionPart].join(decimal);
-				return stringValue;
-			} else {
-				return integerPart;
-			}
-		}
-		return '';
 	}
 
 	public static compare(a: number, b: number, eps: number): number {
@@ -166,16 +138,3 @@ export const ceil = (value: number): number => ~~(value + 1);
 export const round = (value: number): number => ~~(value + 0.5);
 // eslint-disable-next-line no-bitwise
 export const shiftRight = (value: number, shift: number): number => value >> shift;
-
-export function countDecimalPlaces(number: number): number {
-	if (!Number.isFinite(number)) {
-		throw new Error('Input must be a finite number.');
-	}
-
-	const numberString = number.toString();
-	if (numberString.includes('.')) {
-		return numberString.split('.')[1].length;
-	} else {
-		return 0; // No decimal places
-	}
-}
