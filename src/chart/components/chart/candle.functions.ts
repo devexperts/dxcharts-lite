@@ -24,7 +24,6 @@ export const prepareCandle = (candle: PartialCandle): Candle | undefined => {
 		const preparedCandleLo = finite(candle.lo, Math.min(candle.open, candle.close), settlementPrice);
 		const preparedCandleOpen = finite(candle.open, candle.lo, settlementPrice);
 		const preparedCandleClose = finite(candle.close, candle.hi, settlementPrice);
-		const preparedVwap = Number.isNaN(candle.vwap) ? undefined : candle.vwap;
 		return {
 			id: candle.id,
 			hi: preparedCandleHi,
@@ -36,7 +35,6 @@ export const prepareCandle = (candle: PartialCandle): Candle | undefined => {
 			expansion: candle.expansion,
 			idx: candle.idx,
 			impVolatility: candle.impVolatility,
-			vwap: preparedVwap,
 		};
 	} catch (e) {
 		console.warn(e);
@@ -47,7 +45,6 @@ export const prepareCandle = (candle: PartialCandle): Candle | undefined => {
 /**
  * Adds index to candles according to their array index.
  * @param candles
- * @param startIdx {number}
  */
 export const reindexCandles = (candles: Array<Candle>, startIdx: number = 0) => {
 	for (let i = startIdx; i < candles.length; ++i) {

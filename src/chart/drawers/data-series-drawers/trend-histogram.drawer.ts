@@ -6,6 +6,7 @@
 
 import { VisualSeriesPoint, DataSeriesModel } from '../../model/data-series.model';
 import { flat } from '../../utils/array.utils';
+import { floor } from '../../utils/math.utils';
 import { SeriesDrawer } from '../data-series.drawer';
 
 export class TrendHistogramDrawer implements SeriesDrawer {
@@ -31,8 +32,8 @@ export class TrendHistogramDrawer implements SeriesDrawer {
 				ctx.beginPath();
 				const x = model.view.toX(point.centerUnit);
 				const y = model.view.toY(point.close);
-				ctx.moveTo(x, zero);
-				ctx.lineTo(x, y);
+				ctx.moveTo(x, floor(zero));
+				ctx.lineTo(x, floor(y));
 				ctx.stroke();
 				return;
 			}
@@ -55,8 +56,8 @@ export class TrendHistogramDrawer implements SeriesDrawer {
 				ctx.beginPath();
 				const x = model.view.toX(point.centerUnit);
 				const y = model.view.toY(point.close);
-				ctx.moveTo(x, zero);
-				ctx.lineTo(x, y);
+				ctx.moveTo(x, floor(zero));
+				ctx.lineTo(x, floor(y));
 				ctx.stroke();
 				return;
 			}
@@ -66,8 +67,8 @@ export class TrendHistogramDrawer implements SeriesDrawer {
 			ctx.beginPath();
 			const x = model.view.toX(point.centerUnit);
 			const y = model.view.toY(point.close);
-			ctx.moveTo(x, zero);
-			ctx.lineTo(x, y);
+			ctx.moveTo(x, floor(zero));
+			ctx.lineTo(x, floor(y));
 			ctx.stroke();
 		});
 	}

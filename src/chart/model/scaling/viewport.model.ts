@@ -424,15 +424,14 @@ export abstract class ViewportModel extends ChartBaseElement implements Viewable
 	 *
 	 * @returns {boolean} - Returns true if the viewport is valid, false otherwise.
 	 */
-	isViewportValid(validateZoom: boolean = true) {
-		// zoom is checked separately because sometimes we need to recalculate zoom based on X and Y and zoom could be incorrect
-		const isZoomValid = validateZoom === false || (this.zoomX > 0 && this.zoomY > 0);
+	isViewportValid() {
 		return (
 			this.xStart !== this.xEnd &&
 			this.yStart !== this.yEnd &&
 			isFinite(this.yStart) &&
 			isFinite(this.yEnd) &&
-			isZoomValid
+			this.zoomX > 0 &&
+			this.zoomY > 0
 		);
 	}
 }

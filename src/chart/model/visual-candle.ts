@@ -3,6 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
+import { floorToDPR, roundToDPR } from '../utils/device/device-pixel-ratio.utils';
 import { Candle } from './candle.model';
 import { Pixel, Unit, Viewable } from './scaling/viewport.model';
 import { PriceMovement } from './candle-series.model';
@@ -65,7 +66,7 @@ export default class VisualCandle extends VisualSeriesPoint {
 	 * @returns {Pixel} - The height of the body in pixels.
 	 */
 	bodyHeight(viewable: Viewable): Pixel {
-		return Math.max(Math.abs(viewable.toY(this.open) - viewable.toY(this.close)), 1);
+		return floorToDPR(Math.max(Math.abs(viewable.toY(this.open) - viewable.toY(this.close)), 1));
 	}
 	/**
 	 * Calculates the height of a candle in pixels based on the high and low values of the candle and the viewable area.
@@ -74,7 +75,7 @@ export default class VisualCandle extends VisualSeriesPoint {
 	 * @returns {Pixel} - The height of the candle in pixels.
 	 */
 	candleHeight(viewable: Viewable): Pixel {
-		return Math.abs(viewable.toY(this.high) - viewable.toY(this.low));
+		return floorToDPR(Math.abs(viewable.toY(this.high) - viewable.toY(this.low)));
 	}
 	/**
 	 * Returns coordinates of vertical line used to draw candle's body in case of small candle width
@@ -105,10 +106,10 @@ export default class VisualCandle extends VisualSeriesPoint {
 	 * Returns candle Y points in ascending order
 	 */
 	yBodyKeyPoints(viewable: Viewable): [Pixel, Pixel, Pixel, Pixel] {
-		const highY = viewable.toY(this.high);
-		const lowY = viewable.toY(this.low);
-		const openY = viewable.toY(this.open);
-		const closeY = viewable.toY(this.close);
+		const highY = floorToDPR(viewable.toY(this.high));
+		const lowY = floorToDPR(viewable.toY(this.low));
+		const openY = floorToDPR(viewable.toY(this.open));
+		const closeY = floorToDPR(viewable.toY(this.close));
 		const [bodyStart, bodyEnd] = openY > closeY ? [closeY, openY] : [openY, closeY];
 		const [lineStart, lineEnd] = highY > lowY ? [lowY, highY] : [highY, lowY];
 		return [lineStart, bodyStart, bodyEnd, lineEnd];
@@ -119,7 +120,7 @@ export default class VisualCandle extends VisualSeriesPoint {
 	 * @returns {Pixel} - The y-coordinate of the end of the line segment in pixels.
 	 */
 	yLineEnd(viewable: Viewable): Pixel {
-		return Math.max(viewable.toY(this.high), viewable.toY(this.low));
+		return floorToDPR(Math.max(viewable.toY(this.high), viewable.toY(this.low)));
 	}
 	/**
 	 * Returns the pixel value of the starting point of the y-axis line on the given viewable area.
@@ -127,7 +128,7 @@ export default class VisualCandle extends VisualSeriesPoint {
 	 * @returns {Pixel} - The pixel value of the starting point of the y-axis line.
 	 */
 	yLineStart(viewable: Viewable): Pixel {
-		return Math.min(viewable.toY(this.high), viewable.toY(this.low));
+		return floorToDPR(Math.min(viewable.toY(this.high), viewable.toY(this.low)));
 	}
 	/**
 	 * Calculates the starting y-coordinate of the body of a viewable object.
@@ -135,7 +136,7 @@ export default class VisualCandle extends VisualSeriesPoint {
 	 * @returns {Pixel} - The starting y-coordinate of the body of the viewable object.
 	 */
 	yBodyStart(viewable: Viewable): Pixel {
-		return Math.min(viewable.toY(this.open), viewable.toY(this.close));
+		return floorToDPR(Math.min(viewable.toY(this.open), viewable.toY(this.close)));
 	}
 	/**
 	 * Calculates the maximum pixel value of the y-coordinate of the viewable object's end point and the open and close values of the current object.
@@ -143,7 +144,7 @@ export default class VisualCandle extends VisualSeriesPoint {
 	 * @returns {Pixel} - The maximum pixel value of the y-coordinate of the viewable object's end point and the open and close values of the current object.
 	 */
 	yBodyEnd(viewable: Viewable): Pixel {
-		return Math.max(viewable.toY(this.open), viewable.toY(this.close));
+		return floorToDPR(Math.max(viewable.toY(this.open), viewable.toY(this.close)));
 	}
 	/**
 	 * Calculates the x-coordinate of the center of a viewable object in pixels.
@@ -160,6 +161,6 @@ export default class VisualCandle extends VisualSeriesPoint {
 	 * @returns {Pixel} - The starting pixel position of the viewable object
 	 */
 	xStart(viewable: Viewable): Pixel {
-		return viewable.toX(this.startUnit);
+		return roundToDPR(viewable.toX(this.startUnit));
 	}
 }

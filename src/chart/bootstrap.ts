@@ -506,7 +506,6 @@ export default class ChartBootstrap {
 			this.canvasBoundsContainer,
 			this.paneManager,
 			timeZoneModel,
-			chartPanComponent.mainCanvasTouchHandler,
 			formatterFactory,
 		);
 		this.chartComponents.push(this.hoverProducer);
@@ -519,7 +518,6 @@ export default class ChartBootstrap {
 			paneManager,
 			this.crossEventProducer,
 			this.hoverProducer,
-			this.chartComponent.baselineModel,
 		);
 
 		this.chartComponents.push(this.crossToolComponent);

@@ -1,9 +1,4 @@
 /*
- * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
- * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
- * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
- */
-/*
  * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
@@ -23,8 +18,6 @@ import { ChartPanComponent } from '../pan/chart-pan.component';
 import { BarResizerDrawer } from './bar-resizer.drawer';
 import { BoundsProvider } from '../../model/bounds.model';
 import { HitTestCanvasModel } from '../../model/hit-test-canvas.model';
-
-export const RESIZER_HIT_TEST_EXTENSION: number = 8;
 
 /**
  * Bar separator between panes.

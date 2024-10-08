@@ -7,7 +7,7 @@ import { CandleSeriesModel } from '../../model/candle-series.model';
 import { CandleTheme, ChartConfigComponentsChart } from '../../chart.config';
 import VisualCandle from '../../model/visual-candle';
 import { avoidAntialiasing } from '../../utils/canvas/canvas-drawing-functions.utils';
-import { dpr } from '../../utils/device/device-pixel-ratio.utils';
+import { dpr, floorToDPR } from '../../utils/device/device-pixel-ratio.utils';
 import { ChartDrawerConfig, SeriesDrawer, setLineWidth } from '../data-series.drawer';
 import { DataSeriesModel, VisualSeriesPoint } from '../../model/data-series.model';
 import { flat } from '../../utils/array.utils';
@@ -83,8 +83,8 @@ export class CandleDrawer implements SeriesDrawer {
 			ctx.fillStyle = currentCandleTheme[`${direction}Color`];
 		}
 
-		const baseX = candleSeries.view.toX(visualCandle.startUnit);
-		const width = candleSeries.view.xPixels(visualCandle.width);
+		const baseX = floorToDPR(candleSeries.view.toX(visualCandle.startUnit));
+		const width = floorToDPR(candleSeries.view.xPixels(visualCandle.width));
 		const bodyH = visualCandle.bodyHeight(candleSeries.view);
 
 		const [lineStart, bodyStart, _bodyEnd, _lineEnd] = visualCandle.yBodyKeyPoints(candleSeries.view);
@@ -149,9 +149,9 @@ export class CandleDrawer implements SeriesDrawer {
 			const wickX = visualCandle.x(candleSeries.view);
 			// candles' wick doesn't touch body end, so subtract 1
 			// we will rework the drawer in future, so let's keep it this way for now
-			this.drawCandlesWicks(ctx, wickX, lineStart, lineEnd, bodyStart, bodyEnd);
+			this.drawCandlesWicks(ctx, wickX, lineStart, lineEnd, bodyStart, bodyEnd - 1);
 			const paddingPercent = this.config.candlePaddingPercent;
-			const paddingWidthOffset = Math.max((width * paddingPercent) / 2, this.pixelLength);
+			const paddingWidthOffset = Math.max(floorToDPR((width * paddingPercent) / 2), this.pixelLength);
 			const paddingBaseX = baseX + paddingWidthOffset;
 			const paddingWidth = width - paddingWidthOffset * 2;
 			if (!isHollow) {

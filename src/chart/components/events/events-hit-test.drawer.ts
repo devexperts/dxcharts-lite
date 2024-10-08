@@ -38,11 +38,6 @@ export class EventsHitTestDrawer implements Drawer {
 			const bounds = this.canvasBoundsContainer.getBounds(CanvasElement.EVENTS);
 			ctx.save();
 			this.model.events.forEach((event, idx) => {
-				const visible = this.config.components.events.eventsVisibility[event.type];
-				if (!visible) {
-					return;
-				}
-
 				const prevEvent = this.model.events[idx - 1];
 				const prevX =
 					prevEvent &&
@@ -58,8 +53,7 @@ export class EventsHitTestDrawer implements Drawer {
 					const hoverSize = (size + hoverExtendedAreaPixels) * 2;
 					if (prevX !== undefined) {
 						const prevSize = getEventSize(prevEvent);
-						const prevVisible = this.config.components.events.eventsVisibility[prevEvent.type];
-						const isIntersectsWithPrev = prevVisible && prevX + prevSize > x - hoverSize / 2;
+						const isIntersectsWithPrev = prevX + prevSize > x - hoverSize / 2;
 						if (isIntersectsWithPrev) {
 							const hoverSize = size * 2 + hoverExtendedAreaPixels;
 							ctx.fillRect(prevX + prevSize, bounds.y, hoverSize, bounds.height);

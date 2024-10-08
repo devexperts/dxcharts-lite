@@ -40,7 +40,7 @@ export class HistogramDrawer implements SeriesDrawer {
 
 				// histogram cap
 				const baseX = visualCandle.xStart(model.view);
-				const closeY = model.view.toY(visualCandle.close);
+				const closeY = floorToDPR(model.view.toY(visualCandle.close));
 				const width = floorToDPR(model.view.xPixels(visualCandle.width));
 				ctx.fillRect(baseX, closeY, width, capHeight);
 

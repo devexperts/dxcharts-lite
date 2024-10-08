@@ -9,9 +9,7 @@ import { CrossEventProducerComponent } from '../../inputhandlers/cross-event-pro
 import { Hover, HoverProducerComponent } from '../../inputhandlers/hover-producer.component';
 import { CanvasModel } from '../../model/canvas.model';
 import { ChartBaseElement } from '../../model/chart-base-element';
-import { CanvasBoundsContainer, CanvasElement, CHART_UUID } from '../../canvas/canvas-bounds-container';
-import { isMobile } from '../../utils/device/browser.utils';
-import { BaselineModel } from '../../model/baseline.model';
+import { CHART_UUID } from '../../canvas/canvas-bounds-container';
 
 export type CrossToolType = 'cross-and-labels' | 'only-labels' | 'none' | string;
 
@@ -31,16 +29,16 @@ export class CrossToolModel extends ChartBaseElement {
 	set currentHover(value: CrossToolHover | null) {
 		this.currentHoverSubject.next(value);
 	}
+	type: CrossToolType = 'cross-and-labels';
 
 	constructor(
 		private config: Required<ChartConfigComponentsCrossTool>,
 		private crossToolCanvasModel: CanvasModel,
 		private crossEventProducer: CrossEventProducerComponent,
 		private hoverProducer: HoverProducerComponent,
-		private canvasBoundsContainer: CanvasBoundsContainer,
-		private baselineModel: BaselineModel,
 	) {
 		super();
+		this.type = config.type;
 	}
 
 	/**
@@ -50,47 +48,25 @@ export class CrossToolModel extends ChartBaseElement {
 	 * @returns {void}
 	 */
 	public setType(type: CrossToolType) {
-		this.config.type = type;
+		this.type = type;
 	}
 
 	/**
 	 * Method to activate the cross tool.
-	 * It subscribes to the hoverProducer's hover event and updates the crosstool.
+	 * It subscribes to the canvasInputListener's mouse move event and fires the draw event.
+	 * It also subscribes to the eventBus's hover and close hover events and updates the hover and fires the draw event accordingly.
+	 * It also subscribes to the chartModel's candlesSetSubject and timeZoneModel's observeTimeZoneChanged events and recalculates the cross tool X formatter.
 	 */
 	protected doActivate() {
 		super.doActivate();
 		this.addRxSubscription(
 			this.hoverProducer.hoverSubject.subscribe(hover => {
 				if (this.crossEventProducer.crossSubject.getValue() !== null && hover !== null) {
-					isMobile() ? this.updateCrossToolMobile(hover) : this.updateCrossTool(hover);
+					this.updateHover(hover);
 				} else {
 					this.currentHover = null;
 				}
 				this.fireDraw();
-			}),
-		);
-		// don't change mobile crosstool hover and position if baseline is being dragged
-		this.addRxSubscription(
-			this.baselineModel.dragPredicate.subscribe(isDragging => {
-				if (!isMobile()) {
-					return;
-				}
-
-				if (isDragging) {
-					this.hoverProducer.deactivate();
-				} else {
-					// set the crosstool position before baseline drag happened to keep hover the same
-					const crossToolInfo = this.crossEventProducer.crossToolTouchInfo;
-					// if cross tool is on chart - update hover with it's coordinates
-					if (crossToolInfo.isSet) {
-						this.crossEventProducer.crossSubject.next([
-							crossToolInfo.temp.x,
-							crossToolInfo.temp.y,
-							CHART_UUID,
-						]);
-					}
-					this.hoverProducer.activate();
-				}
 			}),
 		);
 	}
@@ -100,7 +76,7 @@ export class CrossToolModel extends ChartBaseElement {
 	 * @private
 	 */
 	private fireDraw() {
-		if (this.config.type !== 'none') {
+		if (this.type !== 'none') {
 			this.crossToolCanvasModel.fireDraw();
 		}
 	}
@@ -108,7 +84,6 @@ export class CrossToolModel extends ChartBaseElement {
 	/**
 	 * Updates the current hover position with the provided hover object.
 	 * @param {Object} hover - The hover object containing the x and y coordinates and time formatted.
-	 * @param magnetTarget {MagnetTarget}
 	 * @param {number} hover.x - The x coordinate of the hover.
 	 * @param {number} hover.y - The y coordinate of the hover.
 	 * @param {string} hover.timeFormatted - The formatted time of the hover.
@@ -120,7 +95,7 @@ export class CrossToolModel extends ChartBaseElement {
 	 * @param {number} hover.candleHover.closestOHLCY - The y coordinate of the closest OHLC price of the candle.
 	 * @returns {void}
 	 */
-	public updateCrossTool(hover: Hover, magnetTarget = this.config.magnetTarget) {
+	public updateHover(hover: Hover, magnetTarget = this.config.magnetTarget) {
 		if (this.currentHover === null) {
 			this.currentHover = { x: hover.x, y: 0, time: hover.timeFormatted, paneId: hover.paneId };
 		} else {
@@ -153,50 +128,5 @@ export class CrossToolModel extends ChartBaseElement {
 		}
 		this.currentHover.paneId = hover.paneId;
 		this.currentHoverSubject.next(this.currentHover);
-	}
-
-	private updateCrossToolMobile(hover: Hover) {
-		// mobile crosstool works only after long touch event
-		if (!this.hoverProducer.longTouchActivatedSubject.getValue()) {
-			return;
-		}
-
-		const { fixed, temp, isSet } = this.crossEventProducer.crossToolTouchInfo;
-
-		// long touch makes crosstool fixed and the further moving will place crosstool under the current hover coordinates (ordinary logic)
-		// if crosstool is already set (long touch end event happened) the moving of chart will move crosstool according to it's initial (fixed position)
-		if (!isSet) {
-			this.updateCrossTool(hover);
-			return;
-		}
-
-		// additional crosstool move logic
-		const paneBounds = this.canvasBoundsContainer.getBounds(CanvasElement.PANE_UUID(hover.paneId));
-		const offset = 5;
-
-		// take a difference inbetween current hover and temporary crosstool coordinates
-		const xDiff = hover.x - temp.x;
-		const yDiff = hover.y - temp.y;
-
-		// apply the difference to the fixed coordinates
-		const rawX = fixed.x + xDiff;
-		const rawY = fixed.y + yDiff;
-
-		const paneYStart = paneBounds.y + offset;
-		const paneYEnd = paneBounds.y + paneBounds.height - offset;
-
-		// check for chart bounds and don't move crosstool outside of it
-		const x = rawX < offset ? offset : rawX > paneBounds.width - offset ? paneBounds.width - offset : rawX;
-		const y = rawY < paneYStart ? paneYStart : rawY > paneYEnd ? paneYEnd : rawY;
-		const crossToolHover = this.hoverProducer.createHover(x, y, hover.paneId) ?? hover;
-
-		const updatedHover = {
-			...crossToolHover,
-			x,
-			y,
-		};
-
-		this.crossEventProducer.crossToolHover = updatedHover;
-		this.updateCrossTool(updatedHover);
 	}
 }

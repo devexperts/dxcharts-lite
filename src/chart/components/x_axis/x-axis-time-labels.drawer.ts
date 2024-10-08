@@ -6,7 +6,7 @@
 import { NumericAxisLabel } from '../labels_generator/numeric-axis-labels.generator';
 import { Bounds } from '../../model/bounds.model';
 import { FullChartConfig } from '../../chart.config';
-import { CanvasBoundsContainer, CanvasElement, X_AXIS_MOBILE_PADDING } from '../../canvas/canvas-bounds-container';
+import { CanvasBoundsContainer, CanvasElement } from '../../canvas/canvas-bounds-container';
 import { CanvasModel } from '../../model/canvas.model';
 import { Drawer } from '../../drawers/drawing-manager';
 import { ViewportModel } from '../../model/scaling/viewport.model';
@@ -46,7 +46,7 @@ export class XAxisTimeLabelsDrawer implements Drawer {
 
 			const color = this.config.colors.xAxis.labelTextColor;
 			const labels = this.labelsProvider();
-			this.drawLabels(ctx, labels, bounds, color, fontHeight, fontFamily, offsetTop + X_AXIS_MOBILE_PADDING / 2);
+			this.drawLabels(ctx, labels, bounds, color, fontHeight, fontFamily, offsetTop);
 			ctx.restore();
 		}
 	}

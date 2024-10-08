@@ -14,16 +14,12 @@ import { DragNDropXComponent } from '../dran-n-drop_helper/drag-n-drop-x.compone
 import { ChartPanComponent } from '../pan/chart-pan.component';
 import { HitTestCanvasModel } from '../../model/hit-test-canvas.model';
 
-// if you drag full X width from left to right - you will have x3 zoom, and vice-versa
-const FULL_X_WIDTH_ZOOM_FACTOR = 3;
-
 /**
  * Handles the mouse drag on X axis - to zoom the viewport horizontally.
  * @doc-tags scaling,zoom,viewport
  */
 export class XAxisScaleHandler extends ChartBaseElement {
 	lastXStart: Unit = 0;
-	lastXEnd: Unit = 0;
 	lastXWidth: Unit = 0;
 	lastXPxWidth: Pixel = 0;
 
@@ -101,7 +97,6 @@ export class XAxisScaleHandler extends ChartBaseElement {
 
 	private onXDragStart = () => {
 		this.lastXStart = this.scale.xStart;
-		this.lastXEnd = this.scale.xEnd;
 		this.lastXWidth = this.scale.xEnd - this.scale.xStart;
 		const bounds = this.canvasBoundsContainer.getBounds(CanvasElement.X_AXIS);
 		this.lastXPxWidth = bounds.width - this.canvasInputListener.currentPoint.x;
@@ -110,44 +105,16 @@ export class XAxisScaleHandler extends ChartBaseElement {
 	};
 
 	private onXDragTick = (dragInfo: DragInfo) => {
-		let { delta: absoluteXDelta } = dragInfo;
-
-		// mouse click or single tap drag
-		if (!this.touches || this.touches.length === 1) {
-			const newPxWidth = this.lastXPxWidth - absoluteXDelta;
-			// cursor goes beyond x-axis - maximum scale is reached
-			if (newPxWidth < 0) {
-				return;
-			}
-			const xZoomMult = this.lastXPxWidth / newPxWidth;
-			const newWidth = this.lastXWidth * xZoomMult;
-			const newXStart = this.lastXStart + (this.lastXWidth - newWidth);
-			this.scale.setXScale(newXStart, this.scale.xEnd);
+		const { delta: absoluteXDelta } = dragInfo;
+		const newPxWidth = this.lastXPxWidth - absoluteXDelta;
+		// cursor goes beyond x-axis - maximum scale is reached
+		if (newPxWidth < 0) {
 			return;
 		}
-
-		// if multitouch - take the first two touch events and apply delta the following way:
-		// the touch on the left keeps the initial delta because left => right gesture
-		// the touch on the right has the reversed delta because the gesture is right => left
-		if (this.touches.length > 1) {
-			const left = Math.min(this.touches[0].clientX, this.touches[1].clientX);
-			absoluteXDelta = left === this.touches[0].clientX ? absoluteXDelta : -absoluteXDelta;
-
-			let xZoomMult;
-			if (absoluteXDelta < 0) {
-				xZoomMult = 1 / (1 + (-absoluteXDelta / this.lastXPxWidth) * (FULL_X_WIDTH_ZOOM_FACTOR - 1));
-			} else {
-				xZoomMult = 1 + (absoluteXDelta / this.lastXPxWidth) * (FULL_X_WIDTH_ZOOM_FACTOR - 1);
-			}
-
-			const newXWidth = this.lastXWidth * xZoomMult;
-			const delta = (newXWidth - this.lastXWidth) / 2;
-			const newXStart = this.lastXStart - delta;
-			const newXEnd = this.lastXEnd + delta;
-			if (this.lastXStart !== newXStart || this.lastXEnd !== newXEnd) {
-				this.scale.setXScale(newXStart, newXEnd);
-			}
-		}
+		const xZoomMult = this.lastXPxWidth / newPxWidth;
+		const newWidth = this.lastXWidth * xZoomMult;
+		const newXStart = this.lastXStart + (this.lastXWidth - newWidth);
+		this.scale.setXScale(newXStart, this.scale.xEnd);
 	};
 
 	private onXDragEnd = () => {

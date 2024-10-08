@@ -60,9 +60,6 @@ const N_MAP_BUTTON_W = 15;
 const KNOTS_W_MOBILE_MULTIPLIER = 1.5;
 const N_MAP_KNOT_W = isMobile() ? 8 * KNOTS_W_MOBILE_MULTIPLIER : 8;
 
-// additional x axis height padding for mobiles, used for better usability on mobile devices
-export const X_AXIS_MOBILE_PADDING = isMobile() ? 5 : 0;
-
 /**
  * we need to check that: heightRatios - 1 <  0.000001 after calculations between decimals
  */
@@ -469,8 +466,7 @@ export class CanvasBoundsContainer {
 			this.xAxisHeight =
 				fontHeight +
 				(this.config.components.xAxis.padding.top ?? 0) +
-				(this.config.components.xAxis.padding.bottom ?? 0) +
-				X_AXIS_MOBILE_PADDING;
+				(this.config.components.xAxis.padding.bottom ?? 0);
 		}
 		return this.xAxisHeight;
 	}
@@ -555,11 +551,11 @@ export class CanvasBoundsContainer {
 		}
 
 		//#region chart height ratio logic
-		if (!this.graphsHeightRatio[CHART_UUID] || this.graphsHeightRatio[CHART_UUID] === 0) {
+		if (this.graphsHeightRatio[CHART_UUID] === 0) {
 			chartRatio = 0;
 		}
 
-		if (this.graphsHeightRatio[CHART_UUID] && this.graphsHeightRatio[CHART_UUID] !== 0) {
+		if (this.graphsHeightRatio[CHART_UUID] !== 0) {
 			if (paneIsAdded) {
 				chartRatio = 1 * ratioForOldPec;
 			} else {
@@ -764,10 +760,10 @@ export class CanvasBoundsContainer {
 	/**
 	 * Gets hit-test fn for canvas element.
 	 * @param {string} el - CanvasElement.ELEMENT_NAME
-	 * @param {Object} options - An object containing options for the hit test.
-	 * @param {number} [options.extensionX=0] - The amount of extension in the x-axis.
-	 * @param {number} [options.extensionY=0] - The amount of extension in the y-axis.
-	 * @param {boolean} [options.wholePage=false] - Whether to test against the whole page or just the bounds object.
+	 * @param {boolean} reverse - reverses the hit test condition
+	 * @param {number} extensionX - extended hitBoundsTest in horizontal direction
+	 * @param {number} extensionY - extended hitBoundsTest in vertical direction
+	 * @param wholePage
 	 * @return {HitBoundsTest} hit-test fn
 	 */
 	getBoundsHitTest(el: string, options: AtLeastOne<HitBoundsTestOptions> = DEFAULT_HIT_TEST_OPTIONS): HitBoundsTest {
@@ -836,10 +832,6 @@ export class CanvasBoundsContainer {
 	public isChartBoundsAvailable() {
 		const canvasBounds = this.getBounds(CanvasElement.CANVAS);
 		return canvasBounds.width > 0 && canvasBounds.height > 0;
-	}
-
-	public isAllBoundsAvailable() {
-		return Object.values(this.bounds).every(el => el.width >= 0 && el.height >= 0);
 	}
 
 	/**
