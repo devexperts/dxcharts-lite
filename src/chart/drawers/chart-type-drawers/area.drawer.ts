@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -9,7 +9,7 @@ import { DataSeriesModel, VisualSeriesPoint } from '../../model/data-series.mode
 import VisualCandle from '../../model/visual-candle';
 import { flat } from '../../utils/array.utils';
 import { floor } from '../../utils/math.utils';
-import { HTSeriesDrawerConfig, SeriesDrawer } from '../data-series.drawer';
+import { ChartDrawerConfig, SeriesDrawer } from '../data-series.drawer';
 
 export class AreaDrawer implements SeriesDrawer {
 	constructor(private config: ChartConfigComponentsChart) {}
@@ -18,7 +18,7 @@ export class AreaDrawer implements SeriesDrawer {
 		ctx: CanvasRenderingContext2D,
 		points: VisualSeriesPoint[][],
 		model: DataSeriesModel,
-		hitTestDrawerConfig: HTSeriesDrawerConfig,
+		drawerConfig: ChartDrawerConfig,
 	) {
 		if (model instanceof CandleSeriesModel) {
 			// @ts-ignore
@@ -26,8 +26,8 @@ export class AreaDrawer implements SeriesDrawer {
 			if (visualCandles.length === 0) {
 				return;
 			}
-			if (hitTestDrawerConfig.color) {
-				ctx.strokeStyle = hitTestDrawerConfig.color;
+			if (drawerConfig.singleColor) {
+				ctx.strokeStyle = drawerConfig.singleColor;
 			} else {
 				ctx.strokeStyle = model.colors.areaTheme.lineColor;
 			}
@@ -62,8 +62,8 @@ export class AreaDrawer implements SeriesDrawer {
 					ctx.closePath();
 
 					let fillColor: CanvasGradient;
-					if (hitTestDrawerConfig.color) {
-						ctx.fillStyle = hitTestDrawerConfig.color;
+					if (drawerConfig.singleColor) {
+						ctx.fillStyle = drawerConfig.singleColor;
 					} else {
 						ctx.fillStyle =
 							model.colors.areaTheme.startColor && model.colors.areaTheme.stopColor
@@ -75,7 +75,7 @@ export class AreaDrawer implements SeriesDrawer {
 					}
 					ctx.fill();
 				} else {
-					ctx.lineTo(lineX, closeY);
+					ctx.lineTo(floor(lineX), closeY);
 				}
 			}
 		}
