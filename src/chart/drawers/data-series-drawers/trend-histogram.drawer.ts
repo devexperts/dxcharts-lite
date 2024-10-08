@@ -1,44 +1,39 @@
 /*
- * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
+
 import { VisualSeriesPoint, DataSeriesModel } from '../../model/data-series.model';
 import { flat } from '../../utils/array.utils';
-import { HTSeriesDrawerConfig, SeriesDrawer, setLineWidth } from '../data-series.drawer';
+import { floor } from '../../utils/math.utils';
+import { SeriesDrawer } from '../data-series.drawer';
 
 export class TrendHistogramDrawer implements SeriesDrawer {
 	constructor() {}
 
-	draw(
-		ctx: CanvasRenderingContext2D,
-		allPoints: VisualSeriesPoint[][],
-		model: DataSeriesModel,
-		hitTestDrawerConfig: HTSeriesDrawerConfig,
-	): void {
+	draw(ctx: CanvasRenderingContext2D, allPoints: VisualSeriesPoint[][], model: DataSeriesModel): void {
 		const zero = model.view.toY(0);
 		//  here I do flat, thinks that there is no more that 1 series
 		const allPointsFlat = flat(allPoints);
 		const config = model.getPaintConfig(0);
-		setLineWidth(ctx, config.lineWidth, model, hitTestDrawerConfig, config.hoveredLineWidth);
 
 		allPointsFlat.forEach((point, idx) => {
 			// odd width is crucial to draw histogram without antialiasing
 			// 2 colors: Negative and Positive
 			if (config.multiplyColors?.length === 2) {
 				ctx.strokeStyle =
-					hitTestDrawerConfig.color ??
-					((point.close < this.previousValue(allPointsFlat, idx)
+					(point.close < this.previousValue(allPointsFlat, idx)
 						? config.multiplyColors[1]
 						: config.multiplyColors[0]) ||
-						config.color ||
-						'#FF00FF');
-
+					config.color ||
+					'#FF00FF';
+				ctx.lineWidth = config.lineWidth;
 				ctx.beginPath();
 				const x = model.view.toX(point.centerUnit);
 				const y = model.view.toY(point.close);
-				ctx.moveTo(x, zero);
-				ctx.lineTo(x, y);
+				ctx.moveTo(x, floor(zero));
+				ctx.lineTo(x, floor(y));
 				ctx.stroke();
 				return;
 			}
@@ -46,36 +41,34 @@ export class TrendHistogramDrawer implements SeriesDrawer {
 			if (config.multiplyColors?.length === 4) {
 				const prevPointClose = this.previousValue(allPointsFlat, idx);
 				if (point.close < prevPointClose && point.close < 0) {
-					ctx.strokeStyle =
-						hitTestDrawerConfig.color ?? (config.multiplyColors[0] || config.color || '#FF00FF');
+					ctx.strokeStyle = config.multiplyColors[0] || config.color || '#FF00FF';
 				}
 				if (point.close > prevPointClose && point.close < 0) {
-					ctx.strokeStyle =
-						hitTestDrawerConfig.color ?? (config.multiplyColors[1] || config.color || '#FF00FF');
+					ctx.strokeStyle = config.multiplyColors[1] || config.color || '#FF00FF';
 				}
 				if (point.close < prevPointClose && point.close > 0) {
-					ctx.strokeStyle =
-						hitTestDrawerConfig.color ?? (config.multiplyColors[2] || config.color || '#FF00FF');
+					ctx.strokeStyle = config.multiplyColors[2] || config.color || '#FF00FF';
 				}
 				if (point.close > prevPointClose && point.close > 0) {
-					ctx.strokeStyle =
-						hitTestDrawerConfig.color ?? (config.multiplyColors[3] || config.color || '#FF00FF');
+					ctx.strokeStyle = config.multiplyColors[3] || config.color || '#FF00FF';
 				}
+				ctx.lineWidth = config.lineWidth;
 				ctx.beginPath();
 				const x = model.view.toX(point.centerUnit);
 				const y = model.view.toY(point.close);
-				ctx.moveTo(x, zero);
-				ctx.lineTo(x, y);
+				ctx.moveTo(x, floor(zero));
+				ctx.lineTo(x, floor(y));
 				ctx.stroke();
 				return;
 			}
 			// 1 color
-			ctx.strokeStyle = hitTestDrawerConfig.color ?? (config.color || '#FF00FF');
+			ctx.strokeStyle = config.color || '#FF00FF';
+			ctx.lineWidth = config.lineWidth;
 			ctx.beginPath();
 			const x = model.view.toX(point.centerUnit);
 			const y = model.view.toY(point.close);
-			ctx.moveTo(x, zero);
-			ctx.lineTo(x, y);
+			ctx.moveTo(x, floor(zero));
+			ctx.lineTo(x, floor(y));
 			ctx.stroke();
 		});
 	}
