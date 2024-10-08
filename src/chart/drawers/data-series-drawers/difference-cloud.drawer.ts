@@ -1,15 +1,10 @@
 /*
- * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
- * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
- * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
- */
-/*
- * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 import { DataSeriesModel, VisualSeriesPoint } from '../../model/data-series.model';
-import { HTSeriesDrawerConfig, SeriesDrawer, setLineWidth } from '../data-series.drawer';
+import { ChartDrawerConfig, SeriesDrawer, setLineWidth } from '../data-series.drawer';
 import { Viewable } from '../../model/scaling/viewport.model';
 import { buildLinePath } from './data-series-drawers.utils';
 import { Point } from '../../inputlisteners/canvas-input-listener.component';
@@ -30,14 +25,14 @@ export class DifferenceCloudDrawer implements SeriesDrawer {
 		ctx: CanvasRenderingContext2D,
 		allPoints: VisualSeriesPoint[][],
 		model: DataSeriesModel,
-		hitTestDrawerConfig: HTSeriesDrawerConfig,
+		drawerConfig: ChartDrawerConfig,
 	): void {
 		if (model.config.visible) {
 			// draw main line
 			allPoints.forEach((points, idx) => {
 				const config = model.getPaintConfig(idx);
-				setLineWidth(ctx, config.lineWidth, model, hitTestDrawerConfig, config.hoveredLineWidth);
-				const lineColor = hitTestDrawerConfig.color ?? config.color;
+				setLineWidth(ctx, config.lineWidth, model, drawerConfig, config.hoveredLineWidth);
+				const lineColor = drawerConfig.singleColor ?? config.color;
 				ctx.strokeStyle = lineColor;
 
 				this.drawLine(ctx, points, model.view);
@@ -64,7 +59,7 @@ export class DifferenceCloudDrawer implements SeriesDrawer {
 					);
 
 					allPointsMain.forEach((points, idx) => {
-						const to = Math.min(points.length, allPointsLinked[idx]?.length ?? 0);
+						const to = Math.min(points.length, allPointsLinked[idx].length);
 						for (let k = 0; k < to; k++) {
 							const diffPoints: [VisualSeriesPoint, VisualSeriesPoint] = [
 								points[k].clone(),
@@ -83,7 +78,7 @@ export class DifferenceCloudDrawer implements SeriesDrawer {
 							differencePoints,
 							mainSeries,
 							linkedSeries,
-							hitTestDrawerConfig,
+							drawerConfig,
 						);
 					});
 				}
@@ -97,14 +92,14 @@ export class DifferenceCloudDrawer implements SeriesDrawer {
 		ctx.stroke();
 	}
 
-	protected drawDifference(
+	private drawDifference(
 		ctx: CanvasRenderingContext2D,
 		lineColor: string,
 		nextLineColor: string,
 		diffPoints: DifferencePoint[],
 		curSeries: DataSeriesModel,
 		nextSeries: DataSeriesModel,
-		hitTestDrawerConfig: HTSeriesDrawerConfig,
+		drawerConfig: ChartDrawerConfig,
 	) {
 		const [linePoints, nextLinePoints]: [VisualSeriesPoint[], VisualSeriesPoint[]] = [[], []];
 		diffPoints.forEach(points => {
@@ -112,18 +107,18 @@ export class DifferenceCloudDrawer implements SeriesDrawer {
 			linePoints.push(point);
 			nextLinePoints.push(nextPoint);
 		});
-		const curSeriesPoints = this.mapDataSeriesDiffPointsIntoPoints(linePoints, curSeries.view);
-		const nextSeriesPoints = this.mapDataSeriesDiffPointsIntoPoints(nextLinePoints, nextSeries.view);
-		this.fillCloud(ctx, nextLineColor, curSeriesPoints, nextSeriesPoints, hitTestDrawerConfig);
-		this.fillCloud(ctx, lineColor, nextSeriesPoints, curSeriesPoints, hitTestDrawerConfig);
+		const curSeriesPoints = mapDataSeriesDiffPointsIntoPoints(linePoints, curSeries.view);
+		const nextSeriesPoints = mapDataSeriesDiffPointsIntoPoints(nextLinePoints, nextSeries.view);
+		this.fillCloud(ctx, nextLineColor, curSeriesPoints, nextSeriesPoints, drawerConfig);
+		this.fillCloud(ctx, lineColor, nextSeriesPoints, curSeriesPoints, drawerConfig);
 	}
 
-	protected fillCloud(
+	private fillCloud(
 		ctx: CanvasRenderingContext2D,
 		color: string,
 		linePoints: Point[],
 		nextLinePoints: Point[],
-		hitTestDrawerConfig: HTSeriesDrawerConfig,
+		drawerConfig: ChartDrawerConfig,
 	) {
 		ctx.save();
 		// clip above lowerLine
@@ -153,19 +148,19 @@ export class DifferenceCloudDrawer implements SeriesDrawer {
 				ctx.lineTo(p.x, p.y);
 			});
 		ctx.closePath();
-		ctx.fillStyle = hitTestDrawerConfig.color ? hitTestDrawerConfig.color : toRGBA(color ? color : '#383838', 0.3);
+		ctx.fillStyle = drawerConfig.singleColor ? drawerConfig.singleColor : toRGBA(color ? color : '#383838', 0.3);
 		ctx.fill();
 		ctx.restore();
 	}
-
-	protected mapDataSeriesDiffPointsIntoPoints(points: VisualSeriesPoint[], view: Viewable): Point[] {
-		return points.map(p => {
-			const { centerUnit, close } = p;
-			const x = view.toX(centerUnit);
-			const y = view.toY(close);
-			return { x, y };
-		});
-	}
 }
+
+const mapDataSeriesDiffPointsIntoPoints = (points: VisualSeriesPoint[], view: Viewable): Point[] => {
+	return points.map(p => {
+		const { centerUnit, close } = p;
+		const x = view.toX(centerUnit);
+		const y = view.toY(close);
+		return { x, y };
+	});
+};
 
 export const isDifferenceTool = (type: string) => type === 'DIFFERENCE';

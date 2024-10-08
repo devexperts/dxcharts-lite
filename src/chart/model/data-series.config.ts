@@ -1,10 +1,5 @@
 /*
- * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
- * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
- * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
- */
-/*
- * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -23,17 +18,12 @@ export type DataSeriesType =
 	| 'TRIANGLE'
 	| 'COLOR_CANDLE'
 	| 'RECTANGULAR'
-	| 'EMA_CLOUD_LINE'
-	| 'LINEAR_TREND'
 	| keyof BarTypes
 	| string;
 
 export interface DataSeriesConfig {
 	paintConfig: Array<DataSeriesPaintConfig>;
 	visible: boolean;
-	// some drawers are complex and everything inside it can't be toggled with visible true/false,
-	// this object is used to partially render some of the drawer entities, see `ema-cloud-line.drawer.ts`
-	additionalVisibilityPredicatesMap?: any;
 	highLowActive: boolean;
 	type: DataSeriesType;
 	/**
