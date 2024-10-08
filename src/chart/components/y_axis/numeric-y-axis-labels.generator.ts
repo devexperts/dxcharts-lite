@@ -1,14 +1,12 @@
 /*
- * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { YAxisConfig, YAxisConfigTreasuryFormat } from '../../chart.config';
 import { DataSeriesModel } from '../../model/data-series.model';
 import { ViewportModel } from '../../model/scaling/viewport.model';
 import { lastOf } from '../../utils/array.utils';
 import { precisionsToIncrement } from '../../utils/price-increments.utils';
-import { TREASURY_32ND } from '../chart/price-formatters/treasury-price.formatter';
 import { NumericAxisLabelsGenerator, PriceAxisType } from '../labels_generator/numeric-axis-labels.generator';
 
 /**
@@ -22,7 +20,6 @@ export class NumericYAxisLabelsGenerator extends NumericAxisLabelsGenerator {
 		valueFormatter: (value: number) => string,
 		axisTypeProvider: () => PriceAxisType = () => 'regular',
 		singleLabelHeightPixels: number = 23,
-		config: YAxisConfig,
 	) {
 		super(
 			increment,
@@ -34,7 +31,6 @@ export class NumericYAxisLabelsGenerator extends NumericAxisLabelsGenerator {
 			() => dataSeriesProvider()?.getBaseline() ?? 1,
 			undefined,
 			singleLabelHeightPixels,
-			config,
 		);
 	}
 
@@ -43,10 +39,6 @@ export class NumericYAxisLabelsGenerator extends NumericAxisLabelsGenerator {
 			(maxLengthText, label) => (label.text.length > maxLengthText.length ? label.text : maxLengthText),
 			'',
 		);
-	}
-
-	public updateTreasuryFormat(treasuryFormat: YAxisConfigTreasuryFormat) {
-		this.treasuryFormat = treasuryFormat;
 	}
 
 	/**
@@ -60,8 +52,7 @@ export class NumericYAxisLabelsGenerator extends NumericAxisLabelsGenerator {
 			const lastCandle = lastOf(dataSeries.dataPoints);
 			const priceIncrementBasis = lastCandle?.close ?? 0;
 			const increment = precisionsToIncrement(priceIncrementBasis, dataSeries.pricePrecisions);
-			const calculatedIncrement = this.treasuryFormat?.enabled ? TREASURY_32ND : increment;
-			return this.adjustIncrementOnAxisType(calculatedIncrement);
+			return this.adjustIncrementOnAxisType(increment);
 		}
 		// auto-generated increment
 		return super.calculateIncrement(valueLength);

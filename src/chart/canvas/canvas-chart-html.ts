@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -12,7 +12,6 @@ export default (devexpertsPromoLink: boolean) =>
 	'\t\t\t<canvas data-element="mainCanvas"></canvas>\n' +
 	'\t\t\t<canvas data-element="yAxisLabelsCanvas"></canvas>\n' +
 	'\t\t\t<canvas data-element="dynamicObjectsCanvas"></canvas>\n' +
-	'\t\t\t<canvas data-element="yAxisDescriptionsCanvas"></canvas>\n' +
 	'\t\t\t<canvas data-element="crossToolCanvas"></canvas>\n' +
 	'\t\t\t<canvas data-element="hitTestCanvas"></canvas>\n' +
 	`${

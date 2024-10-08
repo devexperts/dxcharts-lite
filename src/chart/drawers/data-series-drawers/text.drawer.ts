@@ -1,12 +1,12 @@
 /*
- * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 import { FullChartConfig } from '../../chart.config';
 import { DataSeriesModel, VisualSeriesPoint } from '../../model/data-series.model';
 import { calculateSymbolHeight, calculateTextWidth } from '../../utils/canvas/canvas-font-measure-tool.utils';
-import { HTSeriesDrawerConfig, SeriesDrawer } from '../data-series.drawer';
+import { ChartDrawerConfig, SeriesDrawer } from '../data-series.drawer';
 
 export class TextDrawer implements SeriesDrawer {
 	constructor(private config: FullChartConfig) {}
@@ -15,12 +15,12 @@ export class TextDrawer implements SeriesDrawer {
 		ctx: CanvasRenderingContext2D,
 		allPoints: VisualSeriesPoint[][],
 		model: DataSeriesModel,
-		hitTestDrawerConfig: HTSeriesDrawerConfig,
+		drawerConfig: ChartDrawerConfig,
 	): void {
 		ctx.save();
 		allPoints.forEach((points, idx) => {
 			const config = model.getPaintConfig(idx);
-			ctx.fillStyle = hitTestDrawerConfig.color ?? config.color;
+			ctx.fillStyle = drawerConfig.singleColor ?? config.color;
 			const font = config.lineWidth + 'px ' + this.config.components.yAxis.fontFamily;
 			ctx.font = font;
 			points.forEach(p => {

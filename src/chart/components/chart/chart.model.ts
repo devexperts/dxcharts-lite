@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -165,8 +165,8 @@ export class ChartModel extends ChartBaseElement {
 			const nextChartWidth = this.canvasBoundsContainer.getEffectiveChartWidth();
 			const nextYAxisWidth = this.canvasBoundsContainer.getEffectiveYAxisWidth();
 
-			if (this.prevChartWidth === 0 && this.scale) {
-				this.scale.isViewportValid(false) ? this.scale.recalculateZoom() : this.doBasicScale();
+			if (this.prevChartWidth === 0) {
+				this.scale.isViewportValid() ? this.scale.recalculateZoom() : this.doBasicScale();
 				this.prevChartWidth = nextChartWidth;
 				this.prevYWidth = nextYAxisWidth;
 				return;
@@ -654,14 +654,11 @@ export class ChartModel extends ChartBaseElement {
 	 */
 	public candleFromTimestamp(
 		timestamp: Timestamp,
-		options: {
-			extrapolate: boolean;
-			isDaysPeriod?: boolean;
-		} = { extrapolate: true },
+		extrapolate: boolean = true,
 		selectedCandleSeries: CandleSeriesModel = this.mainCandleSeries,
 	): VisualCandle {
 		const dataPointsSource = selectedCandleSeries.dataPoints;
-		return this.chartBaseModel.dataFromTimestamp(timestamp, options, dataPointsSource);
+		return this.chartBaseModel.dataFromTimestamp(timestamp, extrapolate, dataPointsSource);
 	}
 
 	/**
@@ -880,7 +877,7 @@ export class ChartModel extends ChartBaseElement {
 		return series.reduce((candles: Array<Candle>, candle: Candle) => {
 			const timestamp = candle.timestamp;
 			// find index of candle in baseSeries
-			const result = searchCandleIndex(timestamp, { extrapolate: false }, baseSeries, this.chartBaseModel.period);
+			const result = searchCandleIndex(timestamp, false, baseSeries, this.chartBaseModel.period);
 			if (result.index >= 0 && result.index < baseSeries.length) {
 				candle.idx = result.index;
 				candles[result.index] = candle;
@@ -933,7 +930,7 @@ export class ChartModel extends ChartBaseElement {
 					return;
 				}
 				// detect index of updating candle
-				const result = searchCandleIndex(candle.timestamp, { extrapolate: true }, curCandles, this.getPeriod());
+				const result = searchCandleIndex(candle.timestamp, true, curCandles, this.getPeriod());
 				const idx = Math.min(result.index, curCandles.length);
 				isNewCandle = isNewCandle || idx === curCandles.length;
 				// update the candle and index
@@ -1049,7 +1046,7 @@ export class ChartModel extends ChartBaseElement {
 		const prepend: Candle[] = [];
 
 		prependUpdate.forEach(c => {
-			const result = searchCandleIndex(c.timestamp, { extrapolate: false }, target);
+			const result = searchCandleIndex(c.timestamp, false, target);
 			const idx = result.index;
 			if (idx < 0) {
 				prepend.push(c);
@@ -1216,7 +1213,7 @@ const updateCandles = (target: Candle[], update: Candle[]): UpdateCandlesResult 
 	const append: Candle[] = [];
 
 	update.forEach(c => {
-		const result = searchCandleIndex(c.timestamp, { extrapolate: true }, target);
+		const result = searchCandleIndex(c.timestamp, true, target);
 		const idx = result.index;
 		if (idx < 0) {
 			prepend.push(c);
