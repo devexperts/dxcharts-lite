@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -7,7 +7,7 @@ import { Subject } from 'rxjs';
 import { CanvasAnimation } from '../../animation/canvas-animation';
 import { CHART_UUID, CanvasBoundsContainer, CanvasElement } from '../../canvas/canvas-bounds-container';
 import { CursorHandler } from '../../canvas/cursor.handler';
-import { FullChartConfig, YAxisAlign } from '../../chart.config';
+import { FullChartConfig } from '../../chart.config';
 import { DrawingManager } from '../../drawers/drawing-manager';
 import EventBus from '../../events/event-bus';
 import { CrossEventProducerComponent } from '../../inputhandlers/cross-event-producer.component';
@@ -20,7 +20,7 @@ import { uuid as generateUuid } from '../../utils/uuid.utils';
 import { ChartBaseModel } from '../chart/chart-base.model';
 import { createHighLowOffsetCalculator } from '../chart/data-series.high-low-provider';
 import { ChartPanComponent } from '../pan/chart-pan.component';
-import { BarResizerComponent, RESIZER_HIT_TEST_EXTENSION } from '../resizer/bar-resizer.component';
+import { BarResizerComponent } from '../resizer/bar-resizer.component';
 import {
 	YExtentComponent,
 	YExtentCreationOptions,
@@ -33,20 +33,6 @@ import { DataSeriesModel } from '../../model/data-series.model';
 import { HitTestCanvasModel } from '../../model/hit-test-canvas.model';
 import { firstOf, flatMap, lastOf } from '../../utils/array.utils';
 import { ChartResizeHandler } from '../../inputhandlers/chart-resize.handler';
-
-export type MoveDataSeriesToPaneDirection = 'above' | 'below';
-
-interface MoveDataSeriesToPaneOptions {
-	paneUUID?: string;
-	extent?: YExtentComponent;
-	direction?: MoveDataSeriesToPaneDirection;
-	align?: YAxisAlign;
-	extentIdx?: number;
-	// in some cases pane should not be deleted right after data series move,
-	// because the next data series could be moved to it
-	isForceKeepPane?: boolean;
-	index?: number;
-}
 
 export class PaneManager extends ChartBaseElement {
 	public panes: Record<string, PaneComponent> = {};
@@ -109,7 +95,7 @@ export class PaneManager extends ChartBaseElement {
 	 */
 	private addResizer(uuid: string) {
 		const resizerHT = this.canvasBoundsContainer.getBoundsHitTest(CanvasElement.PANE_UUID_RESIZER(uuid), {
-			extensionY: this.config.components.paneResizer.dragZone + RESIZER_HIT_TEST_EXTENSION,
+			extensionY: this.config.components.paneResizer.dragZone,
 		});
 		const dragPredicate = () => this.chartBaseModel.mainVisualPoints.length !== 0;
 		const dragTick = () => {
@@ -155,7 +141,6 @@ export class PaneManager extends ChartBaseElement {
 	/**
 	 * Creates sub-plot on the chart with y-axis
 	 * @param uuid
-	 * @param {AtLeastOne<YExtentCreationOptions>} options
 	 * @returns
 	 */
 	public createPane(uuid = generateUuid(), options?: AtLeastOne<YExtentCreationOptions>): PaneComponent {
@@ -302,52 +287,6 @@ export class PaneManager extends ChartBaseElement {
 	}
 
 	/**
-	 * Move data series to a certain pane, or create a new one if no pane is found
-	 */
-	public moveDataSeriesToPane(
-		dataSeries: DataSeriesModel[],
-		initialPane: PaneComponent,
-		initialExtent: YExtentComponent,
-		options: MoveDataSeriesToPaneOptions,
-	) {
-		const { paneUUID, extent, direction, align, extentIdx, isForceKeepPane, index = 0 } = options;
-		const pane = paneUUID && this.panes[paneUUID];
-		const initialYAxisState = align ? { ...initialExtent.yAxis.state, align } : undefined;
-		const onNewScale = extentIdx && extentIdx > 0;
-
-		if (!pane) {
-			const order = direction && direction === 'above' ? index : index + 1;
-			const newPane = this.createPane(paneUUID, {
-				order,
-				initialYAxisState,
-				inverse: initialExtent.scale.state.inverse,
-				lockToPriceRatio: initialExtent.scale.state.lockPriceToBarRatio,
-			});
-			newPane.moveDataSeriesToExistingExtentComponent(
-				dataSeries,
-				initialPane,
-				initialExtent,
-				newPane.mainExtent,
-				isForceKeepPane,
-			);
-			!isForceKeepPane && initialPane.yExtentComponents.length === 0 && this.removePane(initialPane.uuid);
-			return;
-		}
-
-		if (extent && !onNewScale) {
-			pane.moveDataSeriesToExistingExtentComponent(dataSeries, initialPane, initialExtent, extent);
-		} else {
-			pane.moveDataSeriesToNewExtentComponent(
-				dataSeries,
-				initialPane,
-				initialExtent,
-				align ?? initialExtent.yAxis.state.align,
-			);
-		}
-		!isForceKeepPane && initialPane.yExtentComponents.length === 0 && this.removePane(initialPane.uuid);
-	}
-
-	/**
 	 * Adds cursors to the chart elements based on the provided uuid and cursor type.
 	 * @private
 	 * @param {string} uuid - The unique identifier for the chart element.
@@ -363,7 +302,7 @@ export class PaneManager extends ChartBaseElement {
 			this.cursorHandler.setCursorForCanvasEl(
 				paneResizer,
 				this.config.components.paneResizer.cursor,
-				this.config.components.paneResizer.dragZone + RESIZER_HIT_TEST_EXTENSION,
+				this.config.components.paneResizer.dragZone,
 			);
 
 		return () => {

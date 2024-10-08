@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -19,7 +19,6 @@ import { ChartPanComponent } from '../components/pan/chart-pan.component';
 import { CanvasModel } from './canvas.model';
 import { CanvasInputListenerComponent } from '../inputlisteners/canvas-input-listener.component';
 import { Bounds } from './bounds.model';
-import { BehaviorSubject } from 'rxjs';
 
 export const BASELINE_RESIZER_UUID = 'BASELINE_RESIZER';
 
@@ -29,8 +28,6 @@ export const BASELINE_RESIZER_UUID = 'BASELINE_RESIZER';
  */
 export class BaselineModel extends ChartBaseElement {
 	public readonly resizerBounds: Bounds = { x: 0, y: 0, pageX: 0, pageY: 0, height: 0, width: 0 };
-	public readonly dragPredicate = new BehaviorSubject<boolean>(false);
-
 	// the position of a baseline in percents relatively to chart height
 	public baselineYPercents: number = 50;
 	public ht: HitBoundsTest = CanvasBoundsContainer.hitTestOf(this.resizerBounds, {
@@ -81,14 +78,8 @@ export class BaselineModel extends ChartBaseElement {
 		});
 	}
 
-	private dragStartCb = () => {
-		this.chartPanComponent.deactivatePanHandlers();
-		this.dragPredicate.next(true);
-	};
-	private dragEndCb = () => {
-		this.chartPanComponent.activateChartPanHandlers();
-		this.dragPredicate.next(false);
-	};
+	private dragStartCb = () => this.chartPanComponent.deactivatePanHandlers();
+	private dragEndCb = () => this.chartPanComponent.activateChartPanHandlers();
 
 	private dragTickCb = (dragInfo: DragInfo): void => {
 		const { delta: yDelta } = dragInfo;
