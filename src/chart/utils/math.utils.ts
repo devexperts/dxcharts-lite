@@ -1,10 +1,10 @@
-import { StringTMap } from './object.utils';
-
 /*
  * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
+import { StringTMap } from './object.utils';
+
 const MAX_DECIMAL_DIGITS = 14;
 // Array of powers of 10. Used in roundDecimal to walk through mantissa.
 
