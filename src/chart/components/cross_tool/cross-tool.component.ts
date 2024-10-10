@@ -41,11 +41,17 @@ export class CrossToolComponent extends ChartBaseElement {
 			this.crossToolCanvasModel,
 			crossEventProducer,
 			hoverProducer,
+			this.canvasBoundsContainer,
 		);
 		this.addChildEntity(this.model);
 		const clearCanvasDrawer = new ClearCanvasDrawer(this.crossToolCanvasModel);
 		this.registerDefaultDrawerTypes();
-		const crossToolDrawer = new CrossToolDrawer(this.model, this.crossToolCanvasModel, this.crossToolTypeDrawers);
+		const crossToolDrawer = new CrossToolDrawer(
+			this.model,
+			this.config,
+			this.crossToolCanvasModel,
+			this.crossToolTypeDrawers,
+		);
 		const compositeDrawer = new CompositeDrawer();
 		compositeDrawer.addDrawer(clearCanvasDrawer, 'CLEAR_CANVAS');
 		compositeDrawer.addDrawer(crossToolDrawer, 'CROSS_TOOL_DRAWER');
