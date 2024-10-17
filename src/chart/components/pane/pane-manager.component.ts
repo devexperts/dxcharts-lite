@@ -287,6 +287,20 @@ export class PaneManager extends ChartBaseElement {
 	}
 
 	/**
+	 * Moves data series to a certain pane, or creates a new one if no pane is found
+	 */
+	public moveDataSeriesToPane(dataSeries: DataSeriesModel, paneUUID?: string) {
+		const initialPane = dataSeries.extentComponent.paneComponent;
+
+		const pane = paneUUID && this.panes[paneUUID] ? this.panes[paneUUID] : this.createPane();
+		pane.moveDataSeriesToExistingExtentComponent(dataSeries, pane.mainExtent);
+
+		if (initialPane.yExtentComponents.length === 0) {
+			this.removePane(initialPane.uuid);
+		}
+	}
+
+	/**
 	 * Adds cursors to the chart elements based on the provided uuid and cursor type.
 	 * @private
 	 * @param {string} uuid - The unique identifier for the chart element.

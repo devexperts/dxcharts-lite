@@ -13,7 +13,7 @@ import {
 	HitBoundsTest,
 } from '../../canvas/canvas-bounds-container';
 import { CursorHandler } from '../../canvas/cursor.handler';
-import { FullChartConfig, YAxisConfig } from '../../chart.config';
+import { FullChartConfig, YAxisAlign, YAxisConfig } from '../../chart.config';
 import { DrawingManager } from '../../drawers/drawing-manager';
 import EventBus from '../../events/event-bus';
 import { CanvasInputListenerComponent } from '../../inputlisteners/canvas-input-listener.component';
@@ -265,6 +265,23 @@ export class PaneComponent extends ChartBaseElement {
 		// re-index extents
 		this.yExtentComponents.forEach((c, idx) => (c.idx = idx));
 		this.canvasBoundsContainer.updateYAxisWidths();
+	}
+
+	public moveDataSeriesToNewExtentComponent(dataSeries: DataSeriesModel, align: YAxisAlign = 'right') {
+		const extent = this.createExtentComponent();
+		extent.yAxis.setYAxisAlign(align);
+		dataSeries.moveToExtent(extent);
+	}
+
+	public moveDataSeriesToExistingExtentComponent(dataSeries: DataSeriesModel, extentComponent: YExtentComponent) {
+		const initialPane = dataSeries.extentComponent.paneComponent;
+		const initialExtent = dataSeries.extentComponent;
+		dataSeries.moveToExtent(extentComponent);
+
+		const initialExtentDataSeriesSize = initialExtent.dataSeries.size;
+		if (initialExtentDataSeriesSize === 0) {
+			initialPane.removeExtentComponent(initialExtent);
+		}
 	}
 
 	/**
