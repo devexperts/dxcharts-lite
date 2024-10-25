@@ -3,6 +3,11 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
+/*
+ * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
+ * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+ * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
 import { Drawer } from '../../drawers/drawing-manager';
 import { CanvasBoundsContainer, CanvasElement } from '../../canvas/canvas-bounds-container';
 import { FullChartConfig } from '../../chart.config';
@@ -84,7 +89,8 @@ export class HighLowDrawer implements Drawer {
 	 */
 	private getMarkerText(yValue: number, type: MarkerType): string {
 		const formattedValue = this.chartModel.pane.regularFormatter(yValue);
-		const prefix = type === 'high' ? 'H:' : 'L:';
+		const prefix =
+			type === 'high' ? this.config.components.highLow.prefix.high : this.config.components.highLow.prefix.low;
 		return `${prefix} ${formattedValue}`;
 	}
 
