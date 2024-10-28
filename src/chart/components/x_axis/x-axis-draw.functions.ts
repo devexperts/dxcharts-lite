@@ -3,7 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { CanvasBoundsContainer, CanvasElement } from '../../canvas/canvas-bounds-container';
+import { CanvasBoundsContainer, CanvasElement, X_AXIS_MOBILE_PADDING } from '../../canvas/canvas-bounds-container';
 import { FullChartConfig } from '../../chart.config';
 import { XAxisLabel } from './x-axis-labels.model';
 
@@ -63,7 +63,7 @@ export function drawXAxisLabel(
 
 	ctx.fillStyle = label.color;
 	const xTextPos = boxStart + DEFAULT_X_LABEL_PADDING.x;
-	const yTextPos = xAxisBounds.y + offsetTop + fontSize; // -2 for vertical adjustment
+	const yTextPos = xAxisBounds.y + offsetTop + fontSize + X_AXIS_MOBILE_PADDING / 2;
 	ctx.fillText(label.text, xTextPos, yTextPos);
 	ctx.restore();
 }
