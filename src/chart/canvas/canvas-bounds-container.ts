@@ -60,6 +60,9 @@ const N_MAP_BUTTON_W = 15;
 const KNOTS_W_MOBILE_MULTIPLIER = 1.5;
 const N_MAP_KNOT_W = isMobile() ? 8 * KNOTS_W_MOBILE_MULTIPLIER : 8;
 
+// additional x axis height padding for mobiles, used for better usability on mobile devices
+export const X_AXIS_MOBILE_PADDING = isMobile() ? 5 : 0;
+
 /**
  * we need to check that: heightRatios - 1 <  0.000001 after calculations between decimals
  */
@@ -466,7 +469,8 @@ export class CanvasBoundsContainer {
 			this.xAxisHeight =
 				fontHeight +
 				(this.config.components.xAxis.padding.top ?? 0) +
-				(this.config.components.xAxis.padding.bottom ?? 0);
+				(this.config.components.xAxis.padding.bottom ?? 0) +
+				X_AXIS_MOBILE_PADDING;
 		}
 		return this.xAxisHeight;
 	}
