@@ -3,7 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { CanvasBoundsContainer, CanvasElement } from '../../../canvas/canvas-bounds-container';
+import { CanvasBoundsContainer, CanvasElement, X_AXIS_MOBILE_PADDING } from '../../../canvas/canvas-bounds-container';
 import { FullChartConfig } from '../../../chart.config';
 import { avoidAntialiasing, drawRoundedRect } from '../../../utils/canvas/canvas-drawing-functions.utils';
 import { PaneManager } from '../../pane/pane-manager.component';
@@ -112,12 +112,12 @@ export class CrossAndLabelsDrawerType implements CrossToolTypeDrawer {
 			const boxWidth = width + xLabelPaddingLeft + xLabelPaddingRight;
 			const boxHeight = fontHeight + xLabelPaddingTop + xLabelPaddingBottom;
 			const xBoxPos = Math.max(x - boxWidth / 2, 0);
-			const yBoxPos = xAxis.y + xLabelMarginTop;
+			const yBoxPos = xAxis.y + xLabelMarginTop + X_AXIS_MOBILE_PADDING / 2;
 			drawRoundedRect(ctx, xBoxPos, yBoxPos, boxWidth, boxHeight);
 			// label
 			ctx.fillStyle = crossToolColors.labelTextColor;
 			const xTextPos = Math.max(x - width / 2, xLabelPaddingLeft);
-			const yTextPos = xAxis.y + xLabelMarginTop + fontHeight + xLabelPaddingTop - 1; // -1 for vertical adjustment
+			const yTextPos = xAxis.y + xLabelMarginTop + fontHeight + X_AXIS_MOBILE_PADDING / 2 + xLabelPaddingTop - 1; // -1 for vertical adjustment
 			ctx.fillText(labelText, xTextPos, yTextPos);
 			ctx.restore();
 		}
