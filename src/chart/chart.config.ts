@@ -115,6 +115,7 @@ export const getDefaultConfig = (): FullChartConfig => ({
 			histogram: {
 				barCapSize: 1,
 			},
+			maxYAxisScalesAmount: 10,
 			sortCandles: defaultSortCandles,
 		},
 		yAxis: {
@@ -984,6 +985,10 @@ export interface ChartConfigComponentsChart {
 	selectedWidth: number;
 	minCandlesOffset: number;
 	histogram: ChartConfigComponentsHistogram;
+	/**
+	 * The maximum amount of Y axis scales on a single chart
+	 */
+	maxYAxisScalesAmount: number;
 	// optional because backward compability
 	sortCandles?: (candles: Candle[]) => Candle[];
 }
