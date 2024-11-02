@@ -267,21 +267,32 @@ export class PaneComponent extends ChartBaseElement {
 		this.canvasBoundsContainer.updateYAxisWidths();
 	}
 
-	public moveDataSeriesToNewExtentComponent(dataSeries: DataSeriesModel, align: YAxisAlign = 'right') {
+	/**
+	 * Create new pane extent and attach data series to it
+	 */
+	public moveDataSeriesToNewExtentComponent(
+		dataSeries: DataSeriesModel[],
+		initialPane: PaneComponent,
+		initialExtent: YExtentComponent,
+		align: YAxisAlign = 'right',
+	) {
 		const extent = this.createExtentComponent();
 		extent.yAxis.setYAxisAlign(align);
-		dataSeries.moveToExtent(extent);
+		dataSeries.forEach(series => series.moveToExtent(extent));
+		initialExtent.dataSeries.size === 0 && initialPane.removeExtentComponent(initialExtent);
 	}
 
-	public moveDataSeriesToExistingExtentComponent(dataSeries: DataSeriesModel, extentComponent: YExtentComponent) {
-		const initialPane = dataSeries.extentComponent.paneComponent;
-		const initialExtent = dataSeries.extentComponent;
-		dataSeries.moveToExtent(extentComponent);
-
-		const initialExtentDataSeriesSize = initialExtent.dataSeries.size;
-		if (initialExtentDataSeriesSize === 0) {
-			initialPane.removeExtentComponent(initialExtent);
-		}
+	/**
+	 * Attach data series to existing y axis extent
+	 */
+	public moveDataSeriesToExistingExtentComponent(
+		dataSeries: DataSeriesModel[],
+		initialPane: PaneComponent,
+		initialExtent: YExtentComponent,
+		extentComponent: YExtentComponent,
+	) {
+		dataSeries.forEach(series => series.moveToExtent(extentComponent));
+		initialExtent.dataSeries.size === 0 && initialPane.removeExtentComponent(initialExtent);
 	}
 
 	/**
