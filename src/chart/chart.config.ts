@@ -3,11 +3,6 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-/*
- * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
- * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
- * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
- */
 import { PriceAxisType } from './components/labels_generator/numeric-axis-labels.generator';
 import { MagnetTarget } from './components/cross_tool/cross-tool.component';
 import { CrossToolType } from './components/cross_tool/cross-tool.model';
@@ -436,10 +431,30 @@ export const getDefaultConfig = (): FullChartConfig => ({
 			bgHoverColor: 'rgba(55,55,54,0.6)',
 		},
 		events: {
-			earnings: { color: 'rgba(217,44,64,1)' },
-			dividends: { color: 'rgba(169,38,251,1)' },
-			splits: { color: 'rgba(244,187,63,1)' },
-			'conference-calls': { color: 'rgba(48,194,97,1)' },
+			earnings: {
+				color: 'rgba(217,44,64,1)',
+				normal: 'rgba(217,44,64,1)',
+				hover: 'rgba(217,44,64,1)',
+				line: 'rgba(217,44,64,1)',
+			},
+			dividends: {
+				color: 'rgba(169,38,251,1)',
+				normal: 'rgba(169,38,251,1)',
+				hover: 'rgba(169,38,251,1)',
+				line: 'rgba(169,38,251,1)',
+			},
+			splits: {
+				color: 'rgba(244,187,63,1)',
+				normal: 'rgba(244,187,63,1)',
+				hover: 'rgba(244,187,63,1)',
+				line: 'rgba(244,187,63,1)',
+			},
+			'conference-calls': {
+				color: 'rgba(48,194,97,1)',
+				normal: 'rgba(48,194,97,1)',
+				hover: 'rgba(48,194,97,1)',
+				line: 'rgba(48,194,97,1)',
+			},
 		},
 		secondaryChartTheme: [
 			{
@@ -777,12 +792,7 @@ export interface FullChartColors {
 		labelBoxColor: string;
 		labelTextColor: string;
 	};
-	events: {
-		earnings: EventColors;
-		dividends: EventColors;
-		splits: EventColors;
-		'conference-calls': EventColors;
-	};
+	events: ChartConfigComponentsEventsColors;
 	navigationMap: {
 		buttonColor: string;
 		knotColor: string;
@@ -1021,6 +1031,17 @@ export interface ChartConfigComponentsEvents {
 	 * 	</svg>'
 	 */
 	icons?: ChartConfigComponentsEventsIcons;
+	/**
+	 * Configure the event type vertical line appearance
+	 */
+	line?: ChartConfigComponentsEventsLine;
+}
+
+export interface ChartConfigComponentsEventsColors {
+	earnings: EventColors;
+	dividends: EventColors;
+	splits: EventColors;
+	'conference-calls': EventColors;
 }
 
 export interface DateTimeFormatConfig {
@@ -1348,8 +1369,17 @@ export interface HighlightsColors {
 	label: string;
 }
 
-export interface EventColors {
+/**
+ * @deprecated use {normal}, {hover} instead, will be removed in v6
+ */
+export interface EventColorsOld {
 	color: string;
+}
+
+export interface EventColors extends EventColorsOld {
+	line?: string;
+	normal?: string;
+	hover?: string;
 }
 
 export interface HistogramColors {
@@ -1491,7 +1521,14 @@ export interface ChartConfigComponentsEventsIcons {
 	earnings?: CustomIcon;
 	dividends?: CustomIcon;
 	splits?: CustomIcon;
-	conferenceCalls?: CustomIcon;
+	'conference-calls'?: CustomIcon;
+}
+
+export interface ChartConfigComponentsEventsLine {
+	earnings?: { width: number; dash: Array<number> };
+	dividends?: { width: number; dash: Array<number> };
+	splits?: { width: number; dash: Array<number> };
+	'conference-calls'?: { width: number; dash: Array<number> };
 }
 
 export type CursorType = string;
