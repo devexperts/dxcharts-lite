@@ -3,6 +3,11 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
+/*
+ * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
+ * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+ * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
 import { Subject } from 'rxjs';
 import { distinctUntilChanged } from 'rxjs/operators';
 import { CanvasAnimation } from '../../animation/canvas-animation';
@@ -49,6 +54,7 @@ export class PaneComponent extends ChartBaseElement {
 	public ht: HitBoundsTest;
 
 	public yExtentComponents: YExtentComponent[] = [];
+	public yExtentComponentsChangedSubject: Subject<void> = new Subject();
 
 	get scale() {
 		return this.mainExtent.scale;
@@ -256,6 +262,7 @@ export class PaneComponent extends ChartBaseElement {
 		yExtentComponent.activate();
 		this.yExtentComponents.push(yExtentComponent);
 		this.canvasBoundsContainer.updateYAxisWidths();
+		this.yExtentComponentsChangedSubject.next();
 		return yExtentComponent;
 	}
 
@@ -265,6 +272,7 @@ export class PaneComponent extends ChartBaseElement {
 		// re-index extents
 		this.yExtentComponents.forEach((c, idx) => (c.idx = idx));
 		this.canvasBoundsContainer.updateYAxisWidths();
+		this.yExtentComponentsChangedSubject.next();
 	}
 
 	/**
@@ -293,6 +301,7 @@ export class PaneComponent extends ChartBaseElement {
 	) {
 		dataSeries.forEach(series => series.moveToExtent(extentComponent));
 		initialExtent.dataSeries.size === 0 && initialPane.removeExtentComponent(initialExtent);
+		this.yExtentComponentsChangedSubject.next();
 	}
 
 	/**
