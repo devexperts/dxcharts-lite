@@ -5,7 +5,7 @@
  */
 import { Bounds } from '../../model/bounds.model';
 import { CanvasBoundsContainer, CanvasElement } from '../../canvas/canvas-bounds-container';
-import { CustomIcon, FullChartConfig } from '../../chart.config';
+import { CustomIcon, EventColors, FullChartConfig } from '../../chart.config';
 import { CanvasModel } from '../../model/canvas.model';
 import { Drawer } from '../../drawers/drawing-manager';
 import { DateTimeFormatter } from '../../model/date-time.formatter';
@@ -42,7 +42,7 @@ export class EventsDrawer implements Drawer {
 			this.createCustomIcon('earnings', iconsConfig.earnings);
 			this.createCustomIcon('dividends', iconsConfig.dividends);
 			this.createCustomIcon('splits', iconsConfig.splits);
-			this.createCustomIcon('conference-calls', iconsConfig.conferenceCalls);
+			this.createCustomIcon('conference-calls', iconsConfig['conference-calls']);
 		}
 	}
 
@@ -107,18 +107,24 @@ export class EventsDrawer implements Drawer {
 			.forEach(event => {
 				const x = this.chartModel.candleFromTimestamp(event.timestamp).xCenter(this.chartModel.scale);
 				if (x > chartBounds.x && x < chartBounds.x + chartBounds.width) {
-					const color = this.config.colors.events[event.type].color;
-					ctx.strokeStyle = color;
+					const colors = this.config.colors.events[event.type];
+					ctx.strokeStyle = colors.line ?? colors.normal ?? colors.color;
 
 					// check custom icon in cache
 					if (this.customIcons[getIconHash(event.type, 'hover')] !== undefined) {
 						this.drawCustomSvgEvent(ctx, x, bounds, event);
 					} else {
-						this.drawDefaultEvent(ctx, x, bounds, event, color);
+						this.drawDefaultEvent(ctx, x, bounds, event, colors);
 					}
 					// draw vertical line and label for the hovered event
 					if (this.model.hoveredEvent.getValue() === event) {
+						const line = this.config.components.events.line;
+						const width = line && line[event.type] && line[event.type]?.width;
+						const dash = line && line[event.type] && line[event.type]?.dash;
+
+						ctx.lineWidth = width ?? 1;
 						ctx.beginPath();
+						ctx.setLineDash(dash ?? []);
 						ctx.moveTo(x, chartBounds.y);
 						ctx.lineTo(x, bounds.y + bounds.height / 2);
 						ctx.stroke();
@@ -161,9 +167,15 @@ export class EventsDrawer implements Drawer {
 	 * @param {string} color - The color of the event.
 	 * @returns {void}
 	 */
-	drawDefaultEvent(ctx: CanvasRenderingContext2D, x: number, bounds: Bounds, event: EventWithId, color: string) {
+	drawDefaultEvent(
+		ctx: CanvasRenderingContext2D,
+		x: number,
+		bounds: Bounds,
+		event: EventWithId,
+		colors: EventColors,
+	) {
 		const y = bounds.y + bounds.height / 2;
-		ctx.fillStyle = color;
+		ctx.fillStyle = colors.normal ?? colors.color;
 		// draw figure
 		ctx.lineWidth = 1.5; // 1.5 pixels
 		const size = getEventSize(event);
@@ -174,8 +186,10 @@ export class EventsDrawer implements Drawer {
 		ctx.lineTo(x, y + size);
 		ctx.closePath();
 		if (this.model.hoveredEvent.getValue() === event) {
+			ctx.fillStyle = colors.hover ?? colors.color;
 			ctx.fill();
 		} else {
+			ctx.strokeStyle = colors.normal ?? colors.color;
 			ctx.stroke();
 		}
 	}
