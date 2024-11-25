@@ -15,6 +15,7 @@ import { DateTimeFormatter, TimeFormatterConfig } from './model/date-time.format
 import { DEFAULT_MERGE_OPTIONS, merge, MergeOptions } from './utils/merge.utils';
 import { DeepPartial } from './utils/object.utils';
 import { Candle, defaultSortCandles } from './model/candle.model';
+import { CustomIcon } from './components/events/events-custom-icons';
 
 export const MAIN_FONT = 'Open Sans Semibold, sans-serif';
 
@@ -1509,12 +1510,6 @@ export interface YAxisLabelsColors extends Record<YAxisLabelType, Record<string,
 	highLow: YAxisHighLowLabelColorConfig;
 	prePostMarket: YAxisPrePostMarketLabelColorConfig;
 	prevDayClose: YAxisLabelColorConfig;
-}
-//#endregion
-
-export interface CustomIcon {
-	normal: string;
-	hover: string;
 }
 
 export interface ChartConfigComponentsEventsIcons {
