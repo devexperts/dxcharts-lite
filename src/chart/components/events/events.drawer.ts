@@ -5,17 +5,14 @@
  */
 import { Bounds } from '../../model/bounds.model';
 import { CanvasBoundsContainer, CanvasElement } from '../../canvas/canvas-bounds-container';
-import { CustomIcon, EventColors, FullChartConfig } from '../../chart.config';
+import { ChartConfigComponentsEventsIcons, FullChartConfig, EventColors } from '../../chart.config';
 import { CanvasModel } from '../../model/canvas.model';
 import { Drawer } from '../../drawers/drawing-manager';
 import { DateTimeFormatter } from '../../model/date-time.formatter';
 import { ChartModel } from '../chart/chart.model';
-import { EconomicEvent, EventsModel, EventType, EventWithId } from './events.model';
-
-interface CreatedCustomIcon {
-	img: HTMLImageElement;
-	svgHeight: number;
-}
+import { EconomicEvent, EventsModel, EventWithId } from './events.model';
+import { createCustomIcon, CustomIconImage, drawCustomSvgIcon, getIconHash } from './events-custom-icons';
+import { Point } from '../../inputlisteners/canvas-input-listener.component';
 
 const eventsSizesDict = {
 	'rhombus-small': 4,
@@ -23,11 +20,16 @@ const eventsSizesDict = {
 	'rhombus-large': 8,
 };
 
-const getIconHash = (type: EventType, state: keyof CustomIcon) => `${type}_${state}`;
+const iconTypes: Array<keyof ChartConfigComponentsEventsIcons> = [
+	'earnings',
+	'dividends',
+	'splits',
+	'conference-calls',
+];
 
 export class EventsDrawer implements Drawer {
 	// cache of created icons
-	private customIcons: Record<string, CreatedCustomIcon> = {};
+	private customIcons: Record<string, CustomIconImage> = {};
 
 	constructor(
 		private canvasModel: CanvasModel,
@@ -39,49 +41,14 @@ export class EventsDrawer implements Drawer {
 	) {
 		const iconsConfig = this.config.components.events.icons;
 		if (iconsConfig) {
-			this.createCustomIcon('earnings', iconsConfig.earnings);
-			this.createCustomIcon('dividends', iconsConfig.dividends);
-			this.createCustomIcon('splits', iconsConfig.splits);
-			this.createCustomIcon('conference-calls', iconsConfig['conference-calls']);
+			iconTypes.forEach(type => {
+				const customIcon = createCustomIcon(type, iconsConfig[type]);
+				if (customIcon) {
+					this.customIcons[getIconHash(customIcon.type, 'normal')] = customIcon.normal;
+					this.customIcons[getIconHash(customIcon.type, 'hover')] = customIcon.hover;
+				}
+			});
 		}
-	}
-
-	/**
-	 * Creates a custom icon for a given event type.
-	 * @param {EventType} type - The type of the event.
-	 * @param {CustomIcon} [icon] - The custom icon object containing the normal and hover images.
-	 * @returns {void}
-	 */
-	createCustomIcon(type: EventType, icon?: CustomIcon) {
-		if (icon) {
-			const normal = this.createIconImage(icon.normal);
-			const hover = this.createIconImage(icon.hover);
-			this.customIcons[getIconHash(type, 'normal')] = normal;
-			this.customIcons[getIconHash(type, 'hover')] = hover;
-		}
-	}
-
-	/**
-	 * Creates an icon image from a string containing SVG data.
-	 * @param {string} iconString - The string containing SVG data.
-	 * @returns {Object} An object containing an Image object and the height of the SVG element.
-	 */
-	createIconImage(iconString: string) {
-		const parser = new DOMParser();
-		const svgSelector = parser.parseFromString(iconString, 'text/html').querySelector('svg');
-		let svgHeight = 0;
-		if (svgSelector) {
-			svgHeight = parseInt(svgSelector.getAttribute('height') ?? '', 10);
-		}
-		const svg64 = btoa(iconString);
-		const b64Start = 'data:image/svg+xml;base64,';
-		const image64 = b64Start + svg64;
-		const img = new Image();
-		img.src = image64;
-		return {
-			img,
-			svgHeight,
-		};
 	}
 
 	/**
@@ -112,7 +79,9 @@ export class EventsDrawer implements Drawer {
 
 					// check custom icon in cache
 					if (this.customIcons[getIconHash(event.type, 'hover')] !== undefined) {
-						this.drawCustomSvgEvent(ctx, x, bounds, event);
+						const point: Point = { x, y: bounds.y + bounds.height / 2 };
+						const isHovered = this.model.hoveredEvent.getValue() === event;
+						drawCustomSvgIcon(ctx, this.customIcons, point, event.type, isHovered);
 					} else {
 						this.drawDefaultEvent(ctx, x, bounds, event, colors);
 					}
@@ -137,25 +106,6 @@ export class EventsDrawer implements Drawer {
 			});
 
 		ctx.restore();
-	}
-
-	/**
-	 * Draws a custom SVG event on a canvas context.
-	 * @param {CanvasRenderingContext2D} ctx - The canvas context to draw on.
-	 * @param {number} x - The x coordinate of the event.
-	 * @param {Bounds} bounds - The bounds of the event.
-	 * @param {EventWithId} event - The event to draw.
-	 * @returns {void}
-	 */
-	drawCustomSvgEvent(ctx: CanvasRenderingContext2D, x: number, bounds: Bounds, event: EventWithId) {
-		const y = bounds.y + bounds.height / 2;
-		const normal = this.customIcons[getIconHash(event.type, 'normal')];
-		const hover = this.customIcons[getIconHash(event.type, 'hover')];
-		if (this.model.hoveredEvent.getValue() === event) {
-			ctx.drawImage(hover.img, x - hover.svgHeight / 2, y - hover.svgHeight / 2);
-		} else {
-			ctx.drawImage(normal.img, x - normal.svgHeight / 2, y - normal.svgHeight / 2);
-		}
 	}
 
 	/**
