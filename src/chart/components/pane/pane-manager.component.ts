@@ -143,6 +143,7 @@ export class PaneManager extends ChartBaseElement {
 	/**
 	 * Creates sub-plot on the chart with y-axis
 	 * @param uuid
+	 * @param {AtLeastOne<YExtentCreationOptions>} options
 	 * @returns
 	 */
 	public createPane(uuid = generateUuid(), options?: AtLeastOne<YExtentCreationOptions>): PaneComponent {
@@ -298,12 +299,13 @@ export class PaneManager extends ChartBaseElement {
 		paneUUID?: string,
 		extent?: YExtentComponent,
 		direction?: MoveDataSeriesToPaneDirection,
+		index = 0,
 	) {
 		const pane = paneUUID && this.panes[paneUUID];
 
 		if (!pane) {
-			const order = direction && direction === 'above' ? 0 : this.panesOrder.length;
-			const newPane = this.createPane(undefined, { order });
+			const order = direction && direction === 'above' ? index : this.panesOrder.length + index;
+			const newPane = this.createPane(paneUUID, { order });
 			newPane.moveDataSeriesToExistingExtentComponent(dataSeries, initialPane, initialExtent, newPane.mainExtent);
 			initialPane.yExtentComponents.length === 0 && this.removePane(initialPane.uuid);
 			return;
