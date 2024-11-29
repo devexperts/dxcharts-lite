@@ -3,11 +3,6 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-/*
- * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
- * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
- * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
- */
 import { Subject } from 'rxjs';
 import { distinctUntilChanged } from 'rxjs/operators';
 import { CanvasAnimation } from '../../animation/canvas-animation';
@@ -132,8 +127,10 @@ export class PaneComponent extends ChartBaseElement {
 	/**
 	 * Creates a new GridComponent instance with the provided parameters.
 	 * @param {string} uuid - The unique identifier of the pane.
-	 * @param {ScaleModel} scaleModel - The scale model used to calculate the scale of the grid.
-	 * @param {NumericYAxisLabelsGenerator} yAxisLabelsGenerator - The generator used to create the labels for the y-axis.
+	 * @param {ScaleModel} scale - The scale model used to calculate the scale of the grid.
+	 * @param {YAxisConfig} yAxisState - y Axis Config
+	 * @param {() => NumericAxisLabel[]} yAxisLabelsGetter
+	 * @param {() => Unit} yAxisBaselineGetter
 	 * @returns {GridComponent} - The newly created GridComponent instance.
 	 */
 	private createGridComponent(
@@ -165,8 +162,8 @@ export class PaneComponent extends ChartBaseElement {
 	 * Creates a handler for Y-axis panning of the chart.
 	 * @private
 	 * @param {string} uuid - The unique identifier of the chart pane.
-	 * @param {ScaleModel} scaleModel - The scale model of the chart.
-	 * @returns {Unsubscriber}
+	 * @param {ScaleModel} scale - The scale model of the chart.
+	 * @returns [Unsubscriber, DragNDropYComponent]
 	 */
 	private createYPanHandler(uuid: string, scale: ScaleModel): [Unsubscriber, DragNDropYComponent] {
 		const chartPaneId = CanvasElement.PANE_UUID(uuid);

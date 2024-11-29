@@ -124,7 +124,7 @@ export class EventsDrawer implements Drawer {
 	 * @param {number} x - The x coordinate of the event.
 	 * @param {Bounds} bounds - The bounds of the event.
 	 * @param {EventWithId} event - The event to draw.
-	 * @param {string} color - The color of the event.
+	 * @param {EventColors} colors - The colors of the event.
 	 * @returns {void}
 	 */
 	drawDefaultEvent(
@@ -193,7 +193,7 @@ export class EventsDrawer implements Drawer {
  * Returns the size of an event based on its style
  * @param {EconomicEvent} event - The event to get the size of
  * @returns {number} - The size of the event
- 
+
 */
 export function getEventSize(event: EconomicEvent) {
 	return eventsSizesDict[event.style];
