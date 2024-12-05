@@ -36,6 +36,8 @@ export class YAxisScaleHandler extends ChartBaseElement {
 	lastYHeight: Unit = 0;
 	lastYPxHeight: Pixel = 0;
 
+	private dragNDropYComponent: DragNDropYComponent | undefined;
+
 	private dblClickCallback: () => void;
 
 	private touches: TouchList | undefined;
@@ -73,7 +75,15 @@ export class YAxisScaleHandler extends ChartBaseElement {
 				},
 			);
 			this.addChildEntity(dragNDropYComponent);
+			this.dragNDropYComponent = dragNDropYComponent;
 		}
+	}
+
+	public isDragging(): boolean {
+		if (!this.dragNDropYComponent) {
+			return false;
+		}
+		return Math.abs(this.dragNDropYComponent.draggedPixels) > 0;
 	}
 
 	protected doActivate(): void {
