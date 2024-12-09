@@ -19,6 +19,8 @@ import { BarResizerDrawer } from './bar-resizer.drawer';
 import { BoundsProvider } from '../../model/bounds.model';
 import { HitTestCanvasModel } from '../../model/hit-test-canvas.model';
 
+export const RESIZER_HIT_TEST_EXTENSION: number = 8;
+
 /**
  * Bar separator between panes.
  * Used to resize the areas height or just draw a fixed line.
