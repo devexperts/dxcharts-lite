@@ -20,7 +20,7 @@ import { uuid as generateUuid } from '../../utils/uuid.utils';
 import { ChartBaseModel } from '../chart/chart-base.model';
 import { createHighLowOffsetCalculator } from '../chart/data-series.high-low-provider';
 import { ChartPanComponent } from '../pan/chart-pan.component';
-import { BarResizerComponent } from '../resizer/bar-resizer.component';
+import { BarResizerComponent, RESIZER_HIT_TEST_EXTENSION } from '../resizer/bar-resizer.component';
 import {
 	YExtentComponent,
 	YExtentCreationOptions,
@@ -97,7 +97,7 @@ export class PaneManager extends ChartBaseElement {
 	 */
 	private addResizer(uuid: string) {
 		const resizerHT = this.canvasBoundsContainer.getBoundsHitTest(CanvasElement.PANE_UUID_RESIZER(uuid), {
-			extensionY: this.config.components.paneResizer.dragZone,
+			extensionY: this.config.components.paneResizer.dragZone + RESIZER_HIT_TEST_EXTENSION,
 		});
 		const dragPredicate = () => this.chartBaseModel.mainVisualPoints.length !== 0;
 		const dragTick = () => {
@@ -335,7 +335,7 @@ export class PaneManager extends ChartBaseElement {
 			this.cursorHandler.setCursorForCanvasEl(
 				paneResizer,
 				this.config.components.paneResizer.cursor,
-				this.config.components.paneResizer.dragZone,
+				this.config.components.paneResizer.dragZone + RESIZER_HIT_TEST_EXTENSION,
 			);
 
 		return () => {
