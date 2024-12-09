@@ -437,7 +437,7 @@ export const getDefaultConfig = (): FullChartConfig => ({
 		highLowTheme: { highColor: 'rgba(223,222,223,1)', lowColor: 'rgba(223,222,223,1)' },
 		instrumentInfo: { textColor: '#aeb1b3' },
 		paneResizer: {
-			lineColor: 'rgba(55,55,54,1)',
+			lineColor: 'rgba(61,61,61,1)',
 			bgColor: 'rgba(20,20,19,1)',
 			bgHoverColor: 'rgba(55,55,54,0.6)',
 		},
