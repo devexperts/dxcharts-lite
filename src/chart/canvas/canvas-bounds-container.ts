@@ -764,10 +764,10 @@ export class CanvasBoundsContainer {
 	/**
 	 * Gets hit-test fn for canvas element.
 	 * @param {string} el - CanvasElement.ELEMENT_NAME
-	 * @param {boolean} reverse - reverses the hit test condition
-	 * @param {number} extensionX - extended hitBoundsTest in horizontal direction
-	 * @param {number} extensionY - extended hitBoundsTest in vertical direction
-	 * @param wholePage
+	 * @param {Object} options - An object containing options for the hit test.
+	 * @param {number} [options.extensionX=0] - The amount of extension in the x-axis.
+	 * @param {number} [options.extensionY=0] - The amount of extension in the y-axis.
+	 * @param {boolean} [options.wholePage=false] - Whether to test against the whole page or just the bounds object.
 	 * @return {HitBoundsTest} hit-test fn
 	 */
 	getBoundsHitTest(el: string, options: AtLeastOne<HitBoundsTestOptions> = DEFAULT_HIT_TEST_OPTIONS): HitBoundsTest {
