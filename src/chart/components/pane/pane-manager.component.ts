@@ -314,7 +314,12 @@ export class PaneManager extends ChartBaseElement {
 		if (extent) {
 			pane.moveDataSeriesToExistingExtentComponent(dataSeries, initialPane, initialExtent, extent);
 		} else {
-			pane.moveDataSeriesToNewExtentComponent(dataSeries, initialPane, initialExtent);
+			pane.moveDataSeriesToNewExtentComponent(
+				dataSeries,
+				initialPane,
+				initialExtent,
+				initialExtent.yAxis.state.align,
+			);
 		}
 		initialPane.yExtentComponents.length === 0 && this.removePane(initialPane.uuid);
 	}
