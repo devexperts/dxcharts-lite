@@ -10,6 +10,7 @@ import { CompositeDrawer } from '../../drawers/composite.drawer';
 import { DrawingManager } from '../../drawers/drawing-manager';
 import { CrossEventProducerComponent } from '../../inputhandlers/cross-event-producer.component';
 import { HoverProducerComponent } from '../../inputhandlers/hover-producer.component';
+import { BaselineModel } from '../../model/baseline.model';
 import { CanvasModel } from '../../model/canvas.model';
 import { ChartBaseElement } from '../../model/chart-base-element';
 import { PaneManager } from '../pane/pane-manager.component';
@@ -32,16 +33,18 @@ export class CrossToolComponent extends ChartBaseElement {
 		private canvasBoundsContainer: CanvasBoundsContainer,
 		private drawingManager: DrawingManager,
 		private paneManager: PaneManager,
-		crossEventProducer: CrossEventProducerComponent,
-		hoverProducer: HoverProducerComponent,
+		private crossEventProducer: CrossEventProducerComponent,
+		private hoverProducer: HoverProducerComponent,
+		private baselineModel: BaselineModel,
 	) {
 		super();
 		this.model = new CrossToolModel(
 			config.components.crossTool,
 			this.crossToolCanvasModel,
-			crossEventProducer,
-			hoverProducer,
+			this.crossEventProducer,
+			this.hoverProducer,
 			this.canvasBoundsContainer,
+			this.baselineModel,
 		);
 		this.addChildEntity(this.model);
 		const clearCanvasDrawer = new ClearCanvasDrawer(this.crossToolCanvasModel);

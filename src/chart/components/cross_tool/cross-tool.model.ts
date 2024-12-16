@@ -11,6 +11,7 @@ import { CanvasModel } from '../../model/canvas.model';
 import { ChartBaseElement } from '../../model/chart-base-element';
 import { CanvasBoundsContainer, CanvasElement, CHART_UUID } from '../../canvas/canvas-bounds-container';
 import { isMobile } from '../../utils/device/browser.utils';
+import { BaselineModel } from '../../model/baseline.model';
 
 export type CrossToolType = 'cross-and-labels' | 'only-labels' | 'none' | string;
 
@@ -37,6 +38,7 @@ export class CrossToolModel extends ChartBaseElement {
 		private crossEventProducer: CrossEventProducerComponent,
 		private hoverProducer: HoverProducerComponent,
 		private canvasBoundsContainer: CanvasBoundsContainer,
+		private baselineModel: BaselineModel,
 	) {
 		super();
 	}
@@ -65,6 +67,30 @@ export class CrossToolModel extends ChartBaseElement {
 					this.currentHover = null;
 				}
 				this.fireDraw();
+			}),
+		);
+		// don't change mobile crosstool hover and position if baseline is being dragged
+		this.addRxSubscription(
+			this.baselineModel.dragPredicate.subscribe(isDragging => {
+				if (!isMobile()) {
+					return;
+				}
+
+				if (isDragging) {
+					this.hoverProducer.deactivate();
+				} else {
+					// set the crosstool position before baseline drag happened to keep hover the same
+					const crossToolInfo = this.crossEventProducer.crossToolTouchInfo;
+					// if cross tool is on chart - update hover with it's coordinates
+					if (crossToolInfo.isSet) {
+						this.crossEventProducer.crossSubject.next([
+							crossToolInfo.temp.x,
+							crossToolInfo.temp.y,
+							CHART_UUID,
+						]);
+					}
+					this.hoverProducer.activate();
+				}
 			}),
 		);
 	}
