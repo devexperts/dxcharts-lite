@@ -204,6 +204,8 @@ export class HoverProducerComponent extends ChartBaseElement {
 					this.longTouchActivatedSubject.next(false);
 					this.crossEventProducer.fireCrossClose();
 					this.crossEventProducer.crossToolHover = null;
+					this.crossEventProducer.crossToolTouchInfo.isSet = false;
+					return;
 				}
 
 				if (!this.crossEventProducer.crossToolTouchInfo.isSet) {
