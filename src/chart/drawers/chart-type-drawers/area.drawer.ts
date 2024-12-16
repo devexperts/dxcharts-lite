@@ -75,7 +75,7 @@ export class AreaDrawer implements SeriesDrawer {
 					}
 					ctx.fill();
 				} else {
-					ctx.lineTo(floor(lineX), closeY);
+					ctx.lineTo(lineX, closeY);
 				}
 			}
 		}
