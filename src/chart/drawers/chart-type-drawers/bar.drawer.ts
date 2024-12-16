@@ -45,12 +45,12 @@ export class BarDrawer implements SeriesDrawer {
 				for (const visualCandle of visualCandles) {
 					this.setFillStyle(ctx, drawerConfig, candleSeries, visualCandle);
 					ctx.beginPath();
-					const bodyLineX = floorToDPR(candleSeries.view.toX(visualCandle.centerUnit));
-					const openLineStartX = floorToDPR(candleSeries.view.toX(visualCandle.startUnit));
+					const bodyLineX = candleSeries.view.toX(visualCandle.centerUnit);
+					const openLineStartX = candleSeries.view.toX(visualCandle.startUnit);
 					const [wickStartY, bodyStartY, bodyEndY, wickEndY] = visualCandle.yBodyKeyPoints(candleSeries.view);
 					const w = floorToDPR(candleSeries.view.xPixels(visualCandle.width) / 2);
-					const bodyCloseY = floorToDPR(candleSeries.view.toY(visualCandle.close));
-					const bodyOpenY = floorToDPR(candleSeries.view.toY(visualCandle.open));
+					const bodyCloseY = candleSeries.view.toY(visualCandle.close);
+					const bodyOpenY = candleSeries.view.toY(visualCandle.open);
 
 					if (this.config.showWicks) {
 						ctx.moveTo(bodyLineX, wickStartY);
