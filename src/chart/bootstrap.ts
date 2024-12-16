@@ -519,6 +519,7 @@ export default class ChartBootstrap {
 			paneManager,
 			this.crossEventProducer,
 			this.hoverProducer,
+			this.chartComponent.baselineModel,
 		);
 
 		this.chartComponents.push(this.crossToolComponent);
