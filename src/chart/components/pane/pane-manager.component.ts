@@ -299,6 +299,9 @@ export class PaneManager extends ChartBaseElement {
 		paneUUID?: string,
 		extent?: YExtentComponent,
 		direction?: MoveDataSeriesToPaneDirection,
+		// in some cases pane should not be deleted right after data series move,
+		// because the next data series could be moved to it
+		forceKeepPane?: boolean,
 		index = 0,
 	) {
 		const pane = paneUUID && this.panes[paneUUID];
@@ -306,8 +309,14 @@ export class PaneManager extends ChartBaseElement {
 		if (!pane) {
 			const order = direction && direction === 'above' ? index : this.panesOrder.length + index;
 			const newPane = this.createPane(paneUUID, { order });
-			newPane.moveDataSeriesToExistingExtentComponent(dataSeries, initialPane, initialExtent, newPane.mainExtent);
-			initialPane.yExtentComponents.length === 0 && this.removePane(initialPane.uuid);
+			newPane.moveDataSeriesToExistingExtentComponent(
+				dataSeries,
+				initialPane,
+				initialExtent,
+				newPane.mainExtent,
+				forceKeepPane,
+			);
+			!forceKeepPane && initialPane.yExtentComponents.length === 0 && this.removePane(initialPane.uuid);
 			return;
 		}
 
@@ -321,7 +330,7 @@ export class PaneManager extends ChartBaseElement {
 				initialExtent.yAxis.state.align,
 			);
 		}
-		initialPane.yExtentComponents.length === 0 && this.removePane(initialPane.uuid);
+		!forceKeepPane && initialPane.yExtentComponents.length === 0 && this.removePane(initialPane.uuid);
 	}
 
 	/**
