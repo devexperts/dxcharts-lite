@@ -210,6 +210,11 @@ export class HoverProducerComponent extends ChartBaseElement {
 
 				if (!this.crossEventProducer.crossToolTouchInfo.isSet) {
 					this.crossEventProducer.crossToolTouchInfo.isSet = true;
+					// previous fixed goes to temporary to prevent crosstool jumps outside the candle on candle update tick
+					this.crossEventProducer.crossToolTouchInfo.temp = {
+						x: this.crossEventProducer.crossToolTouchInfo.fixed.x,
+						y: this.crossEventProducer.crossToolTouchInfo.fixed.y,
+					};
 					this.crossEventProducer.crossToolTouchInfo.fixed = {
 						x,
 						y,
@@ -260,6 +265,7 @@ export class HoverProducerComponent extends ChartBaseElement {
 	 * Creates a hover object based on the provided x and y coordinates.
 	 * @param {number} x - The x coordinate of the hover.
 	 * @param {number} y - The y coordinate of the hover.
+	 * @param {string} uuid
 	 * @returns {Hover | undefined} - The hover object or undefined if there are no candles in the chart model.
 	 * @todo Check if uuid is still useful here.
 	 */
@@ -334,7 +340,6 @@ export class HoverProducerComponent extends ChartBaseElement {
 	 * If no hover event is provided, it fires the EVENT_CLOSE_HOVER event.
 	 *
 	 * @param {Hover} [hover] - The hover event to handle.
-	 * @param {boolean} [showCrossTool=true] - A boolean value indicating whether to show the cross tool or not.
 	 * @returns {void}
 	 */
 	private fireHover(hover?: Hover) {
