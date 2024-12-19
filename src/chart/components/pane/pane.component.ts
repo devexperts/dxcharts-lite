@@ -3,6 +3,11 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
+/*
+ * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
+ * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+ * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
 import { Subject } from 'rxjs';
 import { distinctUntilChanged } from 'rxjs/operators';
 import { CanvasAnimation } from '../../animation/canvas-animation';
@@ -295,9 +300,12 @@ export class PaneComponent extends ChartBaseElement {
 		initialPane: PaneComponent,
 		initialExtent: YExtentComponent,
 		extentComponent: YExtentComponent,
+		// in some cases extent should not be deleted right after data series move,
+		// because the next data series could be moved to it
+		forceKeepExtent?: boolean,
 	) {
 		dataSeries.forEach(series => series.moveToExtent(extentComponent));
-		initialExtent.dataSeries.size === 0 && initialPane.removeExtentComponent(initialExtent);
+		!forceKeepExtent && initialExtent.dataSeries.size === 0 && initialPane.removeExtentComponent(initialExtent);
 		this.yExtentComponentsChangedSubject.next();
 	}
 
