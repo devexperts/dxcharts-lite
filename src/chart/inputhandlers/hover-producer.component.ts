@@ -111,10 +111,10 @@ export class HoverProducerComponent extends ChartBaseElement {
 		);
 		this.addRxSubscription(
 			this.chartModel.candlesUpdatedSubject.subscribe(() => {
-				// update hover if it was the last candle
+				// update hover if its timestamp is equal or greater than last candle's one
 				const lastCandle = this.chartModel.getLastVisualCandle();
 				if (this.hover !== null && lastCandle !== undefined) {
-					if (lastCandle.candle.timestamp === this.hover.timestamp) {
+					if (lastCandle.candle.timestamp <= this.hover.timestamp) {
 						this.updateHover(lastCandle);
 					}
 				}
