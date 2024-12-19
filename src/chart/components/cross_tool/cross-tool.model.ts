@@ -108,6 +108,7 @@ export class CrossToolModel extends ChartBaseElement {
 	/**
 	 * Updates the current hover position with the provided hover object.
 	 * @param {Object} hover - The hover object containing the x and y coordinates and time formatted.
+	 * @param magnetTarget {MagnetTarget}
 	 * @param {number} hover.x - The x coordinate of the hover.
 	 * @param {number} hover.y - The y coordinate of the hover.
 	 * @param {string} hover.timeFormatted - The formatted time of the hover.
