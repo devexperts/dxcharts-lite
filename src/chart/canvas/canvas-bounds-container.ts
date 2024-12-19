@@ -3,6 +3,11 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
+/*
+ * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
+ * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+ * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
 import { BehaviorSubject, Subject } from 'rxjs';
 import { distinctUntilChanged, map } from 'rxjs/operators';
 import { arrayCompare, arrayRemove2, flat, moveInArrayMutable, reorderArray } from '../utils/array.utils';
@@ -836,6 +841,10 @@ export class CanvasBoundsContainer {
 	public isChartBoundsAvailable() {
 		const canvasBounds = this.getBounds(CanvasElement.CANVAS);
 		return canvasBounds.width > 0 && canvasBounds.height > 0;
+	}
+
+	public isAllBoundsAvailable() {
+		return Object.values(this.bounds).every(el => el.width >= 0 && el.height >= 0);
 	}
 
 	/**
