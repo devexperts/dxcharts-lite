@@ -3,11 +3,6 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-/*
- * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
- * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
- * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
- */
 import { BehaviorSubject, Subject } from 'rxjs';
 import { distinctUntilChanged, map } from 'rxjs/operators';
 import { arrayCompare, arrayRemove2, flat, moveInArrayMutable, reorderArray } from '../utils/array.utils';
@@ -560,11 +555,11 @@ export class CanvasBoundsContainer {
 		}
 
 		//#region chart height ratio logic
-		if (this.graphsHeightRatio[CHART_UUID] === 0) {
+		if (!this.graphsHeightRatio[CHART_UUID] || this.graphsHeightRatio[CHART_UUID] === 0) {
 			chartRatio = 0;
 		}
 
-		if (this.graphsHeightRatio[CHART_UUID] !== 0) {
+		if (this.graphsHeightRatio[CHART_UUID] && this.graphsHeightRatio[CHART_UUID] !== 0) {
 			if (paneIsAdded) {
 				chartRatio = 1 * ratioForOldPec;
 			} else {
