@@ -1,4 +1,9 @@
 /*
+ * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
+ * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+ * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
+/*
  * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
@@ -47,8 +52,7 @@ interface ChartPanningOptions {
  * @param {CanvasBoundsContainer} canvasBoundsContainer - An instance of the CanvasBoundsContainer class.
  * @param {CanvasAnimation} canvasAnimation - An instance of the CanvasAnimation class.
  * @param {ChartPanComponent} chartPanComponent - An instance of the ChartPanComponent class.
-
-*/
+ */
 export class ChartAreaPanHandler extends ChartBaseElement {
 	private currentPoint: Point = { x: 0, y: 0 };
 	// number of candles delta changed during X dragging: 1, 5 or -3 for ex.
