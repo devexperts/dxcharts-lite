@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -35,6 +35,16 @@ import { firstOf, flatMap, lastOf } from '../../utils/array.utils';
 import { ChartResizeHandler } from '../../inputhandlers/chart-resize.handler';
 
 export type MoveDataSeriesToPaneDirection = 'above' | 'below';
+
+interface MoveDataSeriesToPaneOptions {
+	paneUUID?: string;
+	extent?: YExtentComponent;
+	direction?: MoveDataSeriesToPaneDirection;
+	// in some cases pane should not be deleted right after data series move,
+	// because the next data series could be moved to it
+	isForceKeepPane?: boolean;
+	index?: number;
+}
 
 export class PaneManager extends ChartBaseElement {
 	public panes: Record<string, PaneComponent> = {};
@@ -296,14 +306,9 @@ export class PaneManager extends ChartBaseElement {
 		dataSeries: DataSeriesModel[],
 		initialPane: PaneComponent,
 		initialExtent: YExtentComponent,
-		paneUUID?: string,
-		extent?: YExtentComponent,
-		direction?: MoveDataSeriesToPaneDirection,
-		// in some cases pane should not be deleted right after data series move,
-		// because the next data series could be moved to it
-		forceKeepPane?: boolean,
-		index = 0,
+		options: MoveDataSeriesToPaneOptions,
 	) {
+		const { paneUUID, extent, direction, isForceKeepPane, index = 0 } = options;
 		const pane = paneUUID && this.panes[paneUUID];
 
 		if (!pane) {
@@ -314,9 +319,9 @@ export class PaneManager extends ChartBaseElement {
 				initialPane,
 				initialExtent,
 				newPane.mainExtent,
-				forceKeepPane,
+				isForceKeepPane,
 			);
-			!forceKeepPane && initialPane.yExtentComponents.length === 0 && this.removePane(initialPane.uuid);
+			!isForceKeepPane && initialPane.yExtentComponents.length === 0 && this.removePane(initialPane.uuid);
 			return;
 		}
 
@@ -330,7 +335,7 @@ export class PaneManager extends ChartBaseElement {
 				initialExtent.yAxis.state.align,
 			);
 		}
-		!forceKeepPane && initialPane.yExtentComponents.length === 0 && this.removePane(initialPane.uuid);
+		!isForceKeepPane && initialPane.yExtentComponents.length === 0 && this.removePane(initialPane.uuid);
 	}
 
 	/**
