@@ -1,4 +1,9 @@
 /*
+ * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
+ * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+ * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
+/*
  * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
@@ -57,6 +62,7 @@ export class YAxisComponent extends ChartBaseElement {
 	public yAxisScaleHandler: YAxisScaleHandler;
 	public model: YAxisModel;
 	public axisTypeSetSubject: Subject<PriceAxisType> = new Subject<PriceAxisType>();
+	public axisAlignSetSubject: Subject<YAxisAlign> = new Subject<YAxisAlign>();
 	public readonly state: YAxisConfig;
 
 	constructor(
@@ -266,6 +272,7 @@ export class YAxisComponent extends ChartBaseElement {
 	public setYAxisAlign(align: YAxisAlign) {
 		this.state.align = align;
 		this.canvasBoundsContainer.updateYAxisWidths();
+		this.axisAlignSetSubject.next(align);
 		this.eventBus.fireDraw();
 	}
 

@@ -1,10 +1,5 @@
 /*
- * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
- * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
- * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
- */
-/*
- * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -302,10 +297,10 @@ export class PaneComponent extends ChartBaseElement {
 		extentComponent: YExtentComponent,
 		// in some cases extent should not be deleted right after data series move,
 		// because the next data series could be moved to it
-		forceKeepExtent?: boolean,
+		isForceKeepExtent?: boolean,
 	) {
 		dataSeries.forEach(series => series.moveToExtent(extentComponent));
-		!forceKeepExtent && initialExtent.dataSeries.size === 0 && initialPane.removeExtentComponent(initialExtent);
+		!isForceKeepExtent && initialExtent.dataSeries.size === 0 && initialPane.removeExtentComponent(initialExtent);
 		this.yExtentComponentsChangedSubject.next();
 	}
 
