@@ -3,11 +3,6 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-/*
- * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
- * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
- * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
- */
 import { Subject } from 'rxjs';
 import { distinctUntilChanged, skip, startWith, filter } from 'rxjs/operators';
 import { CanvasAnimation } from '../../animation/canvas-animation';
@@ -23,6 +18,7 @@ import { ChartPanComponent } from '../pan/chart-pan.component';
 import { BarResizerDrawer } from './bar-resizer.drawer';
 import { BoundsProvider } from '../../model/bounds.model';
 import { HitTestCanvasModel } from '../../model/hit-test-canvas.model';
+import { isMobile } from '../../utils/device/browser.utils';
 
 export const RESIZER_HIT_TEST_EXTENSION: number = 8;
 
@@ -76,8 +72,8 @@ export class BarResizerComponent extends ChartBaseElement {
 				this.hitTest,
 				{
 					onDragTick: this.onYDragTick,
-					onDragStart: this.onYDragStart,
-					onDragEnd: this.onYDragEnd,
+					onDragStart: isMobile() ? this.onYDragStartMobile : this.onYDragStart,
+					onDragEnd: isMobile() ? this.onYDragEndMobile : this.onYDragEnd,
 				},
 				this.canvasInputListener,
 				this.chartPanComponent,
@@ -118,16 +114,24 @@ export class BarResizerComponent extends ChartBaseElement {
 		this.addSubscription(() => this.drawingManager.removeDrawerByName(DynamicDrawerType.paneResizer(this.id)));
 	}
 
-	private onYDragStart = () => {
+	private onYDragStartMobile = () => {
 		this.config.components.crossTool.type = 'none';
+		this.onYDragStart();
+	};
+
+	private onYDragStart = () => {
 		this.initialY = this.boundsProvider().y;
 		// Stop redrawing hit test
 		this.hitTestCanvasModel.hitTestDrawersPredicateSubject.next(false);
 		this.chartPanComponent.deactivatePanHandlers();
 	};
 
-	private onYDragEnd = () => {
+	private onYDragEndMobile = () => {
 		this.config.components.crossTool.type = 'cross-and-labels';
+		this.onYDragEnd();
+	};
+
+	private onYDragEnd = () => {
 		this.initialY = this.boundsProvider().y;
 		this.canvasBoundsContainer.graphsHeightRatioChangedSubject.next(this.canvasBoundsContainer.graphsHeightRatio);
 		// Continue redrawing hit test
