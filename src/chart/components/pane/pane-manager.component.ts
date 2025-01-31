@@ -7,7 +7,7 @@ import { Subject } from 'rxjs';
 import { CanvasAnimation } from '../../animation/canvas-animation';
 import { CHART_UUID, CanvasBoundsContainer, CanvasElement } from '../../canvas/canvas-bounds-container';
 import { CursorHandler } from '../../canvas/cursor.handler';
-import { FullChartConfig } from '../../chart.config';
+import { FullChartConfig, YAxisAlign } from '../../chart.config';
 import { DrawingManager } from '../../drawers/drawing-manager';
 import EventBus from '../../events/event-bus';
 import { CrossEventProducerComponent } from '../../inputhandlers/cross-event-producer.component';
@@ -40,6 +40,8 @@ interface MoveDataSeriesToPaneOptions {
 	paneUUID?: string;
 	extent?: YExtentComponent;
 	direction?: MoveDataSeriesToPaneDirection;
+	align?: YAxisAlign;
+	extentIdx?: number;
 	// in some cases pane should not be deleted right after data series move,
 	// because the next data series could be moved to it
 	isForceKeepPane?: boolean;
@@ -308,12 +310,14 @@ export class PaneManager extends ChartBaseElement {
 		initialExtent: YExtentComponent,
 		options: MoveDataSeriesToPaneOptions,
 	) {
-		const { paneUUID, extent, direction, isForceKeepPane, index = 0 } = options;
+		const { paneUUID, extent, direction, align, extentIdx, isForceKeepPane, index = 0 } = options;
 		const pane = paneUUID && this.panes[paneUUID];
+		const initialYAxisState = align ? { ...this.panes[CHART_UUID].yAxis.state, align } : undefined;
+		const onNewScale = extentIdx && extentIdx > 0;
 
 		if (!pane) {
 			const order = direction && direction === 'above' ? index : this.panesOrder.length + index;
-			const newPane = this.createPane(paneUUID, { order });
+			const newPane = this.createPane(paneUUID, { order, initialYAxisState });
 			newPane.moveDataSeriesToExistingExtentComponent(
 				dataSeries,
 				initialPane,
@@ -325,14 +329,14 @@ export class PaneManager extends ChartBaseElement {
 			return;
 		}
 
-		if (extent) {
+		if (extent && !onNewScale) {
 			pane.moveDataSeriesToExistingExtentComponent(dataSeries, initialPane, initialExtent, extent);
 		} else {
 			pane.moveDataSeriesToNewExtentComponent(
 				dataSeries,
 				initialPane,
 				initialExtent,
-				initialExtent.yAxis.state.align,
+				align ?? initialExtent.yAxis.state.align,
 			);
 		}
 		!isForceKeepPane && initialPane.yExtentComponents.length === 0 && this.removePane(initialPane.uuid);
