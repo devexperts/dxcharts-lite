@@ -166,7 +166,7 @@ export class ChartModel extends ChartBaseElement {
 			const nextYAxisWidth = this.canvasBoundsContainer.getEffectiveYAxisWidth();
 
 			if (this.prevChartWidth === 0 && this.scale) {
-				this.scale.isViewportValid(false) && this.scale.recalculateZoom();
+				this.scale.isViewportValid(false) ? this.scale.recalculateZoom() : this.doBasicScale();
 				this.prevChartWidth = nextChartWidth;
 				this.prevYWidth = nextYAxisWidth;
 				return;
