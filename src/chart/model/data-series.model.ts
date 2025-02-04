@@ -3,11 +3,6 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-/*
- * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
- * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
- * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
- */
 import { YExtentComponent } from '../components/pane/extent/y-extent-component';
 import { DataSeriesYAxisLabelsProvider } from '../components/y_axis/price_labels/data-series-y-axis-labels.provider';
 import { LabelsGroups } from '../components/y_axis/price_labels/y-axis-labels.model';
@@ -308,7 +303,8 @@ export class DataSeriesModel<
 	 * @param {number} [idx=this.dataIdxStart] - The index of the visual point to retrieve the close value for.
 	 * @returns {Unit} The close value of the visual point at the given index, or 1 if the visual point is not defined.
 	 */
-	public getBaseline = (idx = this.dataIdxStart): Unit => this.visualPoints[idx]?.close ?? 1;
+	public getBaseline = (idx = this.dataIdxStart): Unit =>
+		this.visualPoints[idx]?.close && this.visualPoints[idx]?.close >= 0 ? this.visualPoints[idx]?.close : 1;
 
 	/**
 	 * Returns the string representation of the close value of the given visual point.
