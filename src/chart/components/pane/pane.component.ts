@@ -263,9 +263,11 @@ export class PaneComponent extends ChartBaseElement {
 		return yExtentComponent;
 	}
 
-	public removeExtentComponent(extentComponent: YExtentComponent) {
-		extentComponent.disable();
-		this.yExtentComponents.splice(extentComponent.idx, 1);
+	public removeExtentComponents(extentComponents: YExtentComponent[]) {
+		extentComponents.forEach(extentComponent => extentComponent.disable());
+		this.yExtentComponents = this.yExtentComponents.filter(
+			current => !extentComponents.map(excluded => excluded.idx).includes(current.idx),
+		);
 		// re-index extents
 		this.yExtentComponents.forEach((c, idx) => (c.idx = idx));
 		this.canvasBoundsContainer.updateYAxisWidths();
@@ -284,7 +286,7 @@ export class PaneComponent extends ChartBaseElement {
 		const extent = this.createExtentComponent();
 		extent.yAxis.setYAxisAlign(align);
 		dataSeries.forEach(series => series.moveToExtent(extent));
-		initialExtent.dataSeries.size === 0 && initialPane.removeExtentComponent(initialExtent);
+		initialExtent.dataSeries.size === 0 && initialPane.removeExtentComponents([initialExtent]);
 	}
 
 	/**
@@ -300,7 +302,9 @@ export class PaneComponent extends ChartBaseElement {
 		isForceKeepExtent?: boolean,
 	) {
 		dataSeries.forEach(series => series.moveToExtent(extentComponent));
-		!isForceKeepExtent && initialExtent.dataSeries.size === 0 && initialPane.removeExtentComponent(initialExtent);
+		!isForceKeepExtent &&
+			initialExtent.dataSeries.size === 0 &&
+			initialPane.removeExtentComponents([initialExtent]);
 		this.yExtentComponentsChangedSubject.next();
 	}
 
