@@ -316,7 +316,7 @@ export class PaneManager extends ChartBaseElement {
 		const onNewScale = extentIdx && extentIdx > 0;
 
 		if (!pane) {
-			const order = direction && direction === 'above' ? index : this.panesOrder.length + index;
+			const order = direction && direction === 'above' ? index : index + 1;
 			const newPane = this.createPane(paneUUID, { order, initialYAxisState });
 			newPane.moveDataSeriesToExistingExtentComponent(
 				dataSeries,
@@ -330,7 +330,13 @@ export class PaneManager extends ChartBaseElement {
 		}
 
 		if (extent && !onNewScale) {
-			pane.moveDataSeriesToExistingExtentComponent(dataSeries, initialPane, initialExtent, extent);
+			pane.moveDataSeriesToExistingExtentComponent(
+				dataSeries,
+				initialPane,
+				initialExtent,
+				extent,
+				isForceKeepPane,
+			);
 		} else {
 			pane.moveDataSeriesToNewExtentComponent(
 				dataSeries,
