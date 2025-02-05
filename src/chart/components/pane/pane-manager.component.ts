@@ -330,13 +330,7 @@ export class PaneManager extends ChartBaseElement {
 		}
 
 		if (extent && !onNewScale) {
-			pane.moveDataSeriesToExistingExtentComponent(
-				dataSeries,
-				initialPane,
-				initialExtent,
-				extent,
-				isForceKeepPane,
-			);
+			pane.moveDataSeriesToExistingExtentComponent(dataSeries, initialPane, initialExtent, extent);
 		} else {
 			pane.moveDataSeriesToNewExtentComponent(
 				dataSeries,
