@@ -1,26 +1,28 @@
 /*
- * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 import EventBus from '../events/event-bus';
-import { Animation } from './types/animation';
-import { ColorAlphaAnimationConfig, ColorAlphaAnimation } from './types/color-alpha-animation';
-import { ColorTransitionAnimationConfig, ColorTransitionAnimation } from './types/color-transition-animation';
-import { ViewportMovementAnimationConfig, ViewportMovementAnimation } from './types/viewport-movement-animation';
-import { ViewportModel } from '../model/scaling/viewport.model';
-import { StringTMap } from '../utils/object.utils';
 import { BehaviorSubject } from 'rxjs';
+import { ViewportModel } from '../model/scaling/viewport.model';
+import {
+	animationFrameThrottledPrior,
+	cancelThrottledAnimationFrame,
+} from '../utils/performance/request-animation-frame-throttle.utils';
+import { uuid } from '../utils/uuid.utils';
+import { ColorAlphaAnimation, ColorAlphaAnimationConfig } from './types/color-alpha-animation';
+import { ColorTransitionAnimation, ColorTransitionAnimationConfig } from './types/color-transition-animation';
+import { ViewportMovementAnimation, ViewportMovementAnimationConfig } from './types/viewport-movement-animation';
 
-const DEFAULT_ANIMATION_TIME = 10;
+const DEFAULT_ANIMATION_TIME_MS = 400;
+
+export const VIEWPORT_ANIMATION_ID = 'VIEWPORT_ANIMATION';
 
 export interface AnimationConfig {
 	duration: number;
 	timeLeft?: number;
 }
-
-export const VIEWPORT_ANIMATION_ID = 'VIEWPORT_ANIMATION';
-type AnimationsStatus = boolean;
 
 /**
  * Singleton animation container for all chart animations.
@@ -34,11 +36,14 @@ type AnimationsStatus = boolean;
  * @doc-tags chart-core,animation
  */
 export class CanvasAnimation {
-	animationIntervalId?: number;
-	animations: StringTMap<Animation> = {};
-	animationInProgressSubject = new BehaviorSubject<AnimationsStatus>(false);
+	eventBus;
+	animations: Record<string, any> = {};
+	animationInProgressSubject = new BehaviorSubject(false);
+	animFrameId = `canvas_animation_${uuid()}`;
 
-	constructor(private eventBus: EventBus) {}
+	constructor(eventBus: EventBus) {
+		this.eventBus = eventBus;
+	}
 
 	/**
 	 * Starts a viewport movement animation with the given configuration and adds it to the list of animations.
@@ -51,12 +56,12 @@ export class CanvasAnimation {
 	startViewportMovementAnimation(
 		viewportModel: ViewportModel,
 		config: ViewportMovementAnimationConfig,
-		uniqueAnimationId: string = VIEWPORT_ANIMATION_ID,
-		onTickFunction?: () => void,
-	): ViewportMovementAnimation {
+		uniqueAnimationId = VIEWPORT_ANIMATION_ID,
+		onTickFunction: { (): boolean; (): void },
+	) {
 		const animation = new ViewportMovementAnimation(viewportModel, config, onTickFunction);
 		this.animations[uniqueAnimationId] = animation;
-		this.ensureIntervalStarted();
+		this.processAnimation();
 		return animation;
 	}
 
@@ -71,16 +76,19 @@ export class CanvasAnimation {
 	startColorAlphaAnimation(
 		uniqueAnimationId: string,
 		colorConfigs: Array<ColorAlphaAnimationConfig>,
-		onTickFunction?: () => void,
-		animationConfig?: Partial<AnimationConfig>,
-	): ColorAlphaAnimation {
+		onTickFunction?: (() => void) | undefined,
+		animationConfig?: AnimationConfig,
+	) {
 		const animation = new ColorAlphaAnimation(
-			{ ...animationConfig, duration: (animationConfig && animationConfig.duration) || DEFAULT_ANIMATION_TIME },
+			{
+				...animationConfig,
+				duration: (animationConfig && animationConfig.duration) || DEFAULT_ANIMATION_TIME_MS,
+			},
 			colorConfigs,
 			onTickFunction,
 		);
 		this.animations[uniqueAnimationId] = animation;
-		this.ensureIntervalStarted();
+		this.processAnimation();
 		return animation;
 	}
 
@@ -95,18 +103,18 @@ export class CanvasAnimation {
 	startColorTransitionAnimation(
 		uniqueAnimationId: string,
 		colorConfigs: Array<ColorTransitionAnimationConfig>,
-		duration = DEFAULT_ANIMATION_TIME,
+		duration = DEFAULT_ANIMATION_TIME_MS,
 		onTickFunction?: () => void,
 	) {
 		const animation = new ColorTransitionAnimation({ duration }, colorConfigs, onTickFunction);
 		this.animations[uniqueAnimationId] = animation;
-		this.ensureIntervalStarted();
+		this.processAnimation();
 		return animation;
 	}
 	/**
 	 * This function takes an id as a string and returns an animation container object of type T. It retrieves the animation container object from the animations object using the provided id. The @ts-ignore comment is used to ignore any TypeScript errors that may occur due to the dynamic nature of the function.
 	 */
-	getAnimation<T extends Animation>(id: string): T {
+	getAnimation(id: string | number) {
 		// @ts-ignore
 		return this.animations[id];
 	}
@@ -117,7 +125,7 @@ export class CanvasAnimation {
 	 * @param {string} id - The ID of the animation to retrieve.
 	 * @returns {ColorAlphaAnimation} - The ColorAlphaAnimation object for the given ID.
 	 */
-	getColorAlphaAnimation(id: string): ColorAlphaAnimation {
+	getColorAlphaAnimation(id: string) {
 		return this.getAnimation(id);
 	}
 
@@ -126,7 +134,7 @@ export class CanvasAnimation {
 	 * @param {string} id - The id of the animation to retrieve.
 	 * @returns {ColorTransitionAnimation} - The ColorTransitionAnimation object for the given id.
 	 */
-	getColorTransitionAnimation(id: string): ColorTransitionAnimation {
+	getColorTransitionAnimation(id: string) {
 		return this.getAnimation(id);
 	}
 
@@ -135,30 +143,28 @@ export class CanvasAnimation {
 	 * @param {string} id - The ID of the animation to be stopped.
 	 * @returns {void}
 	 */
-	forceStopAnimation(id: string): void {
+	forceStopAnimation(id: string) {
 		const animation = this.animations[id];
 		if (animation) {
-			animation.animationTimeLeft = -1;
 			animation.animationInProgress = false;
+			animation.animationStartTime = 0;
 		}
 	}
 
 	/**
 	 * This method ensures that the animation interval is started. If the animation interval ID is not set, it sets it to a new interval ID using `window.setInterval()` with a callback function of `this.tick()` and a delay of 20 milliseconds.
 	 */
-	private ensureIntervalStarted() {
-		if (!this.animationIntervalId) {
-			this.animationIntervalId = window.setInterval(() => this.tick(), 20);
-		}
+	processAnimation() {
+		animationFrameThrottledPrior(this.animFrameId, () => this.tick());
 	}
 
 	/**
 	 * This is a private method that iterates through all the animations in the container and calls their tick method. If any animation is still in progress, it sets the allCompleted flag to false. If all animations are completed, it stops the interval. If not, it fires the draw event.
 	 */
-	private tick() {
+	tick() {
 		let allCompleted = true;
 		for (const i of Object.keys(this.animations)) {
-			const animation: Animation = this.animations[i];
+			const animation = this.animations[i];
 			animation.tick();
 			if (animation.animationInProgress) {
 				allCompleted = false;
@@ -166,17 +172,16 @@ export class CanvasAnimation {
 		}
 		this.animationInProgressSubject.next(!allCompleted);
 		if (!allCompleted) {
-			this.eventBus.fireDraw();
+			queueMicrotask(() => {
+				this.processAnimation();
+				this.eventBus.fireDraw();
+			});
 		} else {
 			this.stopInterval();
 		}
 	}
 
-	/**
-	 * Stops the interval for the animation.
-	 */
-	private stopInterval() {
-		clearInterval(this.animationIntervalId);
-		this.animationIntervalId = undefined;
+	stopInterval() {
+		cancelThrottledAnimationFrame(this.animFrameId);
 	}
 }
