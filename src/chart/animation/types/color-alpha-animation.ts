@@ -1,8 +1,9 @@
 /*
- * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
+import { clamp } from '../../utils/math.utils';
 import { AnimationConfig } from '../canvas-animation';
 import { Animation } from './animation';
 import Color from 'color';
@@ -45,22 +46,15 @@ export class ColorAlphaAnimation extends Animation {
 	 */
 	tick() {
 		super.tick();
-		if (this.animationInProgress) {
-			this.colorConfigs.forEach(config => {
-				if (config.initialAlpha === undefined || config.rgbColor === undefined) {
-					return;
-				}
-				if (config.type === 'fading') {
-					config.currentAnimationColor = config.rgbColor.alpha(
-						(config.initialAlpha * this.animationTimeLeft) / this.animationTime,
-					);
-				} else if (config.type === 'appearing') {
-					config.currentAnimationColor = config.rgbColor.alpha(
-						config.initialAlpha * (1 - this.animationTimeLeft / this.animationTime),
-					);
-				}
-			});
-		}
+
+		this.colorConfigs.forEach(config => {
+			if (config.initialAlpha === undefined || config.rgbColor === undefined) {
+				return;
+			}
+			const alpha =
+				config.initialAlpha * (config.type === 'fading' ? 1 - this.getProgress() : this.getProgress());
+			config.currentAnimationColor = config.rgbColor.alpha(alpha);
+		});
 	}
 	/**
 	 * Returns the color of the current animation for a given index.
@@ -74,14 +68,10 @@ export class ColorAlphaAnimation extends Animation {
 	 * This function reverts the animation by changing the type of color configurations from 'fading' to 'appearing' and vice versa. It also ensures that the animationTimeLeft is not zero to avoid getting stuck in the middle of the animation.
 	 */
 	revert() {
-		// if animationTimeLeft becomes zero it halts the animation and we'll stuck in the middle of animation
-		this.animationTimeLeft = Math.max(this.animationTime - this.animationTimeLeft, 1);
+		const timePassed = clamp(Date.now() - this.animationStartTime, 0, this.animationTime);
+		this.animationStartTime = Date.now() - this.animationTime + timePassed;
 		this.colorConfigs.forEach(config => {
-			if (config.type === 'fading') {
-				config.type = 'appearing';
-			} else {
-				config.type = 'fading';
-			}
+			config.type = config.type === 'fading' ? 'appearing' : 'fading';
 		});
 	}
 }
