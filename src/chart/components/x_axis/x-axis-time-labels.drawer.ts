@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -42,7 +42,10 @@ export class XAxisTimeLabelsDrawer implements Drawer {
 			ctx.font = font;
 			ctx.fillStyle = xAxisColors.backgroundColor;
 			const bounds = this.canvasBoundsContainer.getBounds(CanvasElement.X_AXIS);
-			ctx.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
+			// draw axis background rect if the background color is not used
+			if (!this.config.components.chart.applyBackgroundToAxes.x) {
+				ctx.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
+			}
 
 			const color = this.config.colors.xAxis.labelTextColor;
 			const labels = this.labelsProvider();
