@@ -112,6 +112,10 @@ export const getDefaultConfig = (): FullChartConfig => ({
 				barCapSize: 1,
 			},
 			maxYAxisScalesAmount: 10,
+			applyBackgroundToAxes: {
+				x: true,
+				y: true,
+			},
 			sortCandles: defaultSortCandles,
 		},
 		yAxis: {
@@ -1000,6 +1004,13 @@ export interface ChartConfigComponentsChart {
 	 * The maximum amount of Y axis scales on a single chart
 	 */
 	maxYAxisScalesAmount: number;
+	/**
+	 * Background color will be also applied to the chart axes
+	 */
+	applyBackgroundToAxes: {
+		x: boolean;
+		y: boolean;
+	};
 	// optional because backward compability
 	sortCandles?: (candles: Candle[]) => Candle[];
 }
