@@ -5,28 +5,35 @@
  */
 import { VisualSeriesPoint, DataSeriesModel } from '../../model/data-series.model';
 import { flat } from '../../utils/array.utils';
-import { SeriesDrawer } from '../data-series.drawer';
+import { HTSeriesDrawerConfig, SeriesDrawer, setLineWidth } from '../data-series.drawer';
 
 export class TrendHistogramDrawer implements SeriesDrawer {
 	constructor() {}
 
-	draw(ctx: CanvasRenderingContext2D, allPoints: VisualSeriesPoint[][], model: DataSeriesModel): void {
+	draw(
+		ctx: CanvasRenderingContext2D,
+		allPoints: VisualSeriesPoint[][],
+		model: DataSeriesModel,
+		hitTestDrawerConfig: HTSeriesDrawerConfig,
+	): void {
 		const zero = model.view.toY(0);
 		//  here I do flat, thinks that there is no more that 1 series
 		const allPointsFlat = flat(allPoints);
 		const config = model.getPaintConfig(0);
+		setLineWidth(ctx, config.lineWidth, model, hitTestDrawerConfig, config.hoveredLineWidth);
 
 		allPointsFlat.forEach((point, idx) => {
 			// odd width is crucial to draw histogram without antialiasing
 			// 2 colors: Negative and Positive
 			if (config.multiplyColors?.length === 2) {
 				ctx.strokeStyle =
-					(point.close < this.previousValue(allPointsFlat, idx)
+					hitTestDrawerConfig.color ??
+					((point.close < this.previousValue(allPointsFlat, idx)
 						? config.multiplyColors[1]
 						: config.multiplyColors[0]) ||
-					config.color ||
-					'#FF00FF';
-				ctx.lineWidth = config.lineWidth;
+						config.color ||
+						'#FF00FF');
+
 				ctx.beginPath();
 				const x = model.view.toX(point.centerUnit);
 				const y = model.view.toY(point.close);
@@ -39,18 +46,21 @@ export class TrendHistogramDrawer implements SeriesDrawer {
 			if (config.multiplyColors?.length === 4) {
 				const prevPointClose = this.previousValue(allPointsFlat, idx);
 				if (point.close < prevPointClose && point.close < 0) {
-					ctx.strokeStyle = config.multiplyColors[0] || config.color || '#FF00FF';
+					ctx.strokeStyle =
+						hitTestDrawerConfig.color ?? (config.multiplyColors[0] || config.color || '#FF00FF');
 				}
 				if (point.close > prevPointClose && point.close < 0) {
-					ctx.strokeStyle = config.multiplyColors[1] || config.color || '#FF00FF';
+					ctx.strokeStyle =
+						hitTestDrawerConfig.color ?? (config.multiplyColors[1] || config.color || '#FF00FF');
 				}
 				if (point.close < prevPointClose && point.close > 0) {
-					ctx.strokeStyle = config.multiplyColors[2] || config.color || '#FF00FF';
+					ctx.strokeStyle =
+						hitTestDrawerConfig.color ?? (config.multiplyColors[2] || config.color || '#FF00FF');
 				}
 				if (point.close > prevPointClose && point.close > 0) {
-					ctx.strokeStyle = config.multiplyColors[3] || config.color || '#FF00FF';
+					ctx.strokeStyle =
+						hitTestDrawerConfig.color ?? (config.multiplyColors[3] || config.color || '#FF00FF');
 				}
-				ctx.lineWidth = config.lineWidth;
 				ctx.beginPath();
 				const x = model.view.toX(point.centerUnit);
 				const y = model.view.toY(point.close);
@@ -60,8 +70,7 @@ export class TrendHistogramDrawer implements SeriesDrawer {
 				return;
 			}
 			// 1 color
-			ctx.strokeStyle = config.color || '#FF00FF';
-			ctx.lineWidth = config.lineWidth;
+			ctx.strokeStyle = hitTestDrawerConfig.color ?? (config.color || '#FF00FF');
 			ctx.beginPath();
 			const x = model.view.toX(point.centerUnit);
 			const y = model.view.toY(point.close);
