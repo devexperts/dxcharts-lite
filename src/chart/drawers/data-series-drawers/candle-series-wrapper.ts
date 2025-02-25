@@ -1,12 +1,12 @@
 /*
- * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 import { BarType, FullChartConfig } from '../../chart.config';
 import { BoundsProvider } from '../../model/bounds.model';
 import { DataSeriesModel, VisualSeriesPoint } from '../../model/data-series.model';
-import { ChartDrawerConfig, SeriesDrawer } from '../data-series.drawer';
+import { HTSeriesDrawerConfig, SeriesDrawer } from '../data-series.drawer';
 import { clipToBounds } from '../../utils/canvas/canvas-drawing-functions.utils';
 
 export const candleTypesList: BarType[] = [
@@ -31,11 +31,11 @@ export class CandleSeriesWrapper implements SeriesDrawer {
 		ctx: CanvasRenderingContext2D,
 		allPoints: VisualSeriesPoint[][],
 		model: DataSeriesModel,
-		config: ChartDrawerConfig,
+		hitTestDrawerConfig: HTSeriesDrawerConfig,
 	): void {
 		if (this.isChartTypeAllowed()) {
 			this.beforeDraw(ctx);
-			this.drawer.draw(ctx, allPoints, model, config);
+			this.drawer.draw(ctx, allPoints, model, hitTestDrawerConfig);
 			this.afterDraw(ctx, model);
 		}
 	}
