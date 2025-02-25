@@ -1,12 +1,12 @@
 /*
- * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 import { PaneManager } from '../components/pane/pane-manager.component';
 import { DataSeriesModel } from '../model/data-series.model';
 import { HitTestCanvasModel } from '../model/hit-test-canvas.model';
-import { ChartDrawerConfig, SeriesDrawer } from './data-series.drawer';
+import { HTSeriesDrawerConfig, SeriesDrawer } from './data-series.drawer';
 import { clipToBounds } from '../utils/canvas/canvas-drawing-functions.utils';
 import { Drawer } from './drawing-manager';
 
@@ -38,9 +38,9 @@ export class HTDataSeriesDrawer implements Drawer {
 			const paintTool = series.config.type;
 			const drawer = this.seriesDrawers[paintTool];
 			if (drawer) {
-				const drawConfig: ChartDrawerConfig = {
-					singleColor: this.canvasModel.idToColor(series.htId),
-					forceBold: 7,
+				const drawConfig: HTSeriesDrawerConfig = {
+					color: this.canvasModel.idToColor(series.htId),
+					hoverWidth: 7,
 				};
 				// +- 1 to correctly draw points which are partly inside bounds
 				drawer.draw(
