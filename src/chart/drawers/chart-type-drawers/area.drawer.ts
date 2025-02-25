@@ -9,7 +9,7 @@ import { DataSeriesModel, VisualSeriesPoint } from '../../model/data-series.mode
 import VisualCandle from '../../model/visual-candle';
 import { flat } from '../../utils/array.utils';
 import { floor } from '../../utils/math.utils';
-import { ChartDrawerConfig, SeriesDrawer } from '../data-series.drawer';
+import { HTSeriesDrawerConfig, SeriesDrawer } from '../data-series.drawer';
 
 export class AreaDrawer implements SeriesDrawer {
 	constructor(private config: ChartConfigComponentsChart) {}
@@ -18,7 +18,7 @@ export class AreaDrawer implements SeriesDrawer {
 		ctx: CanvasRenderingContext2D,
 		points: VisualSeriesPoint[][],
 		model: DataSeriesModel,
-		drawerConfig: ChartDrawerConfig,
+		hitTestDrawerConfig: HTSeriesDrawerConfig,
 	) {
 		if (model instanceof CandleSeriesModel) {
 			// @ts-ignore
@@ -26,8 +26,8 @@ export class AreaDrawer implements SeriesDrawer {
 			if (visualCandles.length === 0) {
 				return;
 			}
-			if (drawerConfig.singleColor) {
-				ctx.strokeStyle = drawerConfig.singleColor;
+			if (hitTestDrawerConfig.color) {
+				ctx.strokeStyle = hitTestDrawerConfig.color;
 			} else {
 				ctx.strokeStyle = model.colors.areaTheme.lineColor;
 			}
@@ -62,8 +62,8 @@ export class AreaDrawer implements SeriesDrawer {
 					ctx.closePath();
 
 					let fillColor: CanvasGradient;
-					if (drawerConfig.singleColor) {
-						ctx.fillStyle = drawerConfig.singleColor;
+					if (hitTestDrawerConfig.color) {
+						ctx.fillStyle = hitTestDrawerConfig.color;
 					} else {
 						ctx.fillStyle =
 							model.colors.areaTheme.startColor && model.colors.areaTheme.stopColor
