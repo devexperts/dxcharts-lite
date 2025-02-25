@@ -6,7 +6,7 @@
 import { ScatterPlotStyle } from '../../chart.config';
 import { DataSeriesModel, VisualSeriesPoint } from '../../model/data-series.model';
 import { flat } from '../../utils/array.utils';
-import { ChartDrawerConfig, SeriesDrawer } from '../data-series.drawer';
+import { HTSeriesDrawerConfig, SeriesDrawer } from '../data-series.drawer';
 
 const SCATTER_PLOT_RADIUS = 1.5;
 
@@ -17,14 +17,16 @@ export class ScatterPlotDrawer implements SeriesDrawer {
 		ctx: CanvasRenderingContext2D,
 		points: VisualSeriesPoint[][],
 		model: DataSeriesModel,
-		drawerConfig: ChartDrawerConfig,
+		hitTestDrawerConfig: HTSeriesDrawerConfig,
 	) {
-		ctx.fillStyle = drawerConfig.singleColor ?? this.config.mainColor;
+		const radius = hitTestDrawerConfig.hoverWidth ? hitTestDrawerConfig.hoverWidth / 2 : SCATTER_PLOT_RADIUS;
+
+		ctx.fillStyle = hitTestDrawerConfig.color ?? this.config.mainColor;
 		for (const visualCandle of flat(points)) {
 			ctx.beginPath();
 			const lineX = model.view.toX(visualCandle.centerUnit);
 			const closeY = model.view.toY(visualCandle.close);
-			ctx.arc(lineX, closeY, SCATTER_PLOT_RADIUS, 0, Math.PI * 2, true);
+			ctx.arc(lineX, closeY, radius, 0, Math.PI * 2, true);
 			ctx.fill();
 		}
 	}
