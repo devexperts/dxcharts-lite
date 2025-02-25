@@ -10,19 +10,19 @@ import VisualCandle from '../../model/visual-candle';
 import { flat } from '../../utils/array.utils';
 import { avoidAntialiasing } from '../../utils/canvas/canvas-drawing-functions.utils';
 import { floorToDPR } from '../../utils/device/device-pixel-ratio.utils';
-import { ChartDrawerConfig, SeriesDrawer, setLineWidth } from '../data-series.drawer';
+import { HTSeriesDrawerConfig, SeriesDrawer, setLineWidth } from '../data-series.drawer';
 
 export class BarDrawer implements SeriesDrawer {
 	constructor(private config: ChartConfigComponentsChart) {}
 
 	private setFillStyle(
 		ctx: CanvasRenderingContext2D,
-		drawerConfig: ChartDrawerConfig,
+		hitTestDrawerConfig: HTSeriesDrawerConfig,
 		candleSeries: CandleSeriesModel,
 		visualCandle: VisualCandle,
 	) {
-		if (drawerConfig.singleColor) {
-			ctx.strokeStyle = drawerConfig.singleColor;
+		if (hitTestDrawerConfig.color) {
+			ctx.strokeStyle = hitTestDrawerConfig.color;
 		} else {
 			const barTheme = candleSeries.colors.barTheme;
 			if (barTheme) {
@@ -35,15 +35,15 @@ export class BarDrawer implements SeriesDrawer {
 		ctx: CanvasRenderingContext2D,
 		points: VisualSeriesPoint[][],
 		candleSeries: DataSeriesModel,
-		drawerConfig: ChartDrawerConfig,
+		hitTestDrawerConfig: HTSeriesDrawerConfig,
 	) {
 		if (candleSeries instanceof CandleSeriesModel) {
 			// @ts-ignore
 			const visualCandles: VisualCandle[] = flat(points);
-			setLineWidth(ctx, this.config.barLineWidth, candleSeries, drawerConfig);
+			setLineWidth(ctx, this.config.barLineWidth, candleSeries, hitTestDrawerConfig);
 			avoidAntialiasing(ctx, () => {
 				for (const visualCandle of visualCandles) {
-					this.setFillStyle(ctx, drawerConfig, candleSeries, visualCandle);
+					this.setFillStyle(ctx, hitTestDrawerConfig, candleSeries, visualCandle);
 					ctx.beginPath();
 					const bodyLineX = candleSeries.view.toX(visualCandle.centerUnit);
 					const openLineStartX = candleSeries.view.toX(visualCandle.startUnit);

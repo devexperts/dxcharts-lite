@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -9,9 +9,9 @@ import { CanvasModel } from '../model/canvas.model';
 import { DataSeriesModel, VisualSeriesPoint } from '../model/data-series.model';
 import { clipToBounds } from '../utils/canvas/canvas-drawing-functions.utils';
 
-export interface ChartDrawerConfig {
-	singleColor?: string;
-	forceBold?: number;
+export interface HTSeriesDrawerConfig {
+	color?: string;
+	hoverWidth?: number;
 }
 
 export interface SeriesDrawer {
@@ -22,7 +22,7 @@ export interface SeriesDrawer {
 		 */
 		points: VisualSeriesPoint[][],
 		model: DataSeriesModel,
-		drawerConfig: ChartDrawerConfig,
+		hitTestDrawerConfig: HTSeriesDrawerConfig,
 	) => void;
 }
 
@@ -73,11 +73,11 @@ export const setLineWidth = (
 	ctx: CanvasRenderingContext2D,
 	lineWidth: number,
 	dataSeries: DataSeriesModel,
-	drawerConfig: ChartDrawerConfig,
+	hitTestDrawerConfig: HTSeriesDrawerConfig,
 	seriesSelectedWidth: number = lineWidth,
 ) => {
-	if (drawerConfig.forceBold) {
-		ctx.lineWidth = drawerConfig.forceBold;
+	if (hitTestDrawerConfig.hoverWidth) {
+		ctx.lineWidth = hitTestDrawerConfig.hoverWidth;
 	} else if (dataSeries.highlighted) {
 		ctx.lineWidth = lineWidth !== seriesSelectedWidth ? lineWidth + 1 : seriesSelectedWidth;
 	} else {

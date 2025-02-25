@@ -37,7 +37,7 @@
 					ctx, // CanvasRenderingContext2D
 					allPoints, // VisualSeriesPoint[][]
 					model, // DataSeriesModel - can be also CandleSeriesModel - in this case points have all candle fields
-					drawerConfig, // ChartDrawerConfig
+					hitTestDrawerConfig, // HTSeriesDrawerConfig
 				) {
 					allPoints.forEach((points, idx) => {
 						const allPoints = points.flat();
@@ -49,12 +49,12 @@
 							if (point.close > prevPoint?.close) {
 								// it is not necessary to save and restore when modifying the context state
 								// - it is done by DataSeriesDrawer, which calls draw() method of specific data series drawer
-								ctx.fillStyle = drawerConfig.singleColor ?? 'green';
+								ctx.fillStyle = hitTestDrawerConfig.color ?? 'green';
 								ctx.fillText('⬆', x, y);
 							} else {
-								// drawerConfig.singleColor is defined when the drawer is drawn by hit test drawer
-								// in order to work with hit test correctly you have to use drawerConfig.singleColor if it's defined
-								ctx.fillStyle = drawerConfig.singleColor ?? 'red';
+								// hitTestDrawerConfig.color is defined when the drawer is drawn by hit test drawer
+								// in order to work with hit test correctly you have to use hitTestDrawerConfig.color if it's defined
+								ctx.fillStyle = hitTestDrawerConfig.color ?? 'red';
 								ctx.fillText('⬇', x, y);
 							}
 						}
