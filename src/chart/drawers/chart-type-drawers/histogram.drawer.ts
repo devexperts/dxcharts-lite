@@ -8,7 +8,7 @@ import { CandleSeriesModel } from '../../model/candle-series.model';
 import { DataSeriesModel, VisualSeriesPoint } from '../../model/data-series.model';
 import VisualCandle from '../../model/visual-candle';
 import { floorToDPR } from '../../utils/device/device-pixel-ratio.utils';
-import { ChartDrawerConfig, SeriesDrawer } from '../data-series.drawer';
+import { HTSeriesDrawerConfig, SeriesDrawer } from '../data-series.drawer';
 
 export class HistogramDrawer implements SeriesDrawer {
 	constructor(private config: ChartConfigComponentsHistogram) {}
@@ -17,7 +17,7 @@ export class HistogramDrawer implements SeriesDrawer {
 		ctx: CanvasRenderingContext2D,
 		points: VisualSeriesPoint[][],
 		model: DataSeriesModel,
-		drawerConfig: ChartDrawerConfig,
+		hitTestDrawerConfig: HTSeriesDrawerConfig,
 	) {
 		if (model instanceof CandleSeriesModel) {
 			// @ts-ignore
@@ -32,8 +32,8 @@ export class HistogramDrawer implements SeriesDrawer {
 				if (histogramColors === undefined) {
 					return;
 				}
-				if (drawerConfig.singleColor) {
-					ctx.fillStyle = drawerConfig.singleColor;
+				if (hitTestDrawerConfig.color) {
+					ctx.fillStyle = hitTestDrawerConfig.color;
 				} else {
 					ctx.fillStyle = histogramColors[`${direction}Bright`];
 				}
@@ -46,8 +46,8 @@ export class HistogramDrawer implements SeriesDrawer {
 
 				// the bar itself
 				const gradient = ctx.createLinearGradient(0, closeY + capHeight, 0, bottomY);
-				if (drawerConfig.singleColor) {
-					ctx.fillStyle = drawerConfig.singleColor;
+				if (hitTestDrawerConfig.color) {
+					ctx.fillStyle = hitTestDrawerConfig.color;
 				} else {
 					gradient.addColorStop(0, histogramColors[`${direction}Cap`]);
 					gradient.addColorStop(1, histogramColors[`${direction}Bottom`]);
