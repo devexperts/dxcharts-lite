@@ -8,7 +8,7 @@ import { CandleTheme, ChartConfigComponentsChart } from '../../chart.config';
 import VisualCandle from '../../model/visual-candle';
 import { avoidAntialiasing } from '../../utils/canvas/canvas-drawing-functions.utils';
 import { dpr } from '../../utils/device/device-pixel-ratio.utils';
-import { ChartDrawerConfig, SeriesDrawer, setLineWidth } from '../data-series.drawer';
+import { HTSeriesDrawerConfig, SeriesDrawer, setLineWidth } from '../data-series.drawer';
 import { DataSeriesModel, VisualSeriesPoint } from '../../model/data-series.model';
 import { flat } from '../../utils/array.utils';
 
@@ -42,13 +42,13 @@ export class CandleDrawer implements SeriesDrawer {
 		 */
 		points: VisualSeriesPoint[][],
 		model: DataSeriesModel,
-		drawerConfig: ChartDrawerConfig,
+		hitTestDrawerConfig: HTSeriesDrawerConfig,
 	) {
 		if (model instanceof CandleSeriesModel) {
 			// @ts-ignore
 			const visualCandles: VisualCandle[] = flat(points);
 			// TODO FIXME draw called 3-4 times on single candle update even if multichart is off
-			setLineWidth(ctx, this.config.candleLineWidth, model, drawerConfig, this.config.candleLineWidth);
+			setLineWidth(ctx, this.config.candleLineWidth, model, hitTestDrawerConfig, this.config.candleLineWidth);
 			avoidAntialiasing(ctx, () => {
 				this.pixelLength = 1 / dpr;
 				this.halfLineWidthCU = ctx.lineWidth / 2;
@@ -56,7 +56,7 @@ export class CandleDrawer implements SeriesDrawer {
 				for (const visualCandle of visualCandles) {
 					const { candleTheme, activeCandleTheme } = model.colors;
 					if (candleTheme && activeCandleTheme) {
-						this.drawCandle(ctx, drawerConfig, model, visualCandle);
+						this.drawCandle(ctx, hitTestDrawerConfig, model, visualCandle);
 					}
 				}
 			});
@@ -65,7 +65,7 @@ export class CandleDrawer implements SeriesDrawer {
 
 	drawCandle(
 		ctx: CanvasRenderingContext2D,
-		drawerConfig: ChartDrawerConfig,
+		hitTestDrawerConfig: HTSeriesDrawerConfig,
 		candleSeries: CandleSeriesModel,
 		visualCandle: VisualCandle,
 	) {
@@ -75,8 +75,8 @@ export class CandleDrawer implements SeriesDrawer {
 		const isHollow = visualCandle.isHollow;
 
 		// choose candle filling color
-		if (drawerConfig.singleColor) {
-			ctx.fillStyle = drawerConfig.singleColor;
+		if (hitTestDrawerConfig.color) {
+			ctx.fillStyle = hitTestDrawerConfig.color;
 		} else if (isHollow) {
 			ctx.fillStyle = currentCandleTheme[`${direction}WickColor`];
 		} else {
@@ -96,8 +96,8 @@ export class CandleDrawer implements SeriesDrawer {
 		ctx.fillStyle = candleColor;
 
 		// wick style, borders are drawn after the wicks, so style for borders will be changed in drawBorder method
-		if (drawerConfig.singleColor) {
-			ctx.strokeStyle = drawerConfig.singleColor;
+		if (hitTestDrawerConfig.color) {
+			ctx.strokeStyle = hitTestDrawerConfig.color;
 		} else {
 			ctx.strokeStyle = wickColor;
 		}
@@ -136,7 +136,7 @@ export class CandleDrawer implements SeriesDrawer {
 			}
 			this.drawCandleBorder(
 				ctx,
-				drawerConfig,
+				hitTestDrawerConfig,
 				currentCandleTheme,
 				visualCandle,
 				baseX + this.halfLineWidthCU,
@@ -155,16 +155,20 @@ export class CandleDrawer implements SeriesDrawer {
 			const paddingBaseX = baseX + paddingWidthOffset;
 			const paddingWidth = width - paddingWidthOffset * 2;
 			if (!isHollow) {
-				if (drawerConfig.singleColor) {
-					ctx.fillStyle = drawerConfig.singleColor;
+				if (hitTestDrawerConfig.color) {
+					ctx.fillStyle = hitTestDrawerConfig.color;
 				}
-				ctx.fillRect(paddingBaseX, bodyStart, paddingWidth, bodyH);
+				const bodyWidth = hitTestDrawerConfig.hoverWidth ? width + paddingWidthOffset : paddingWidth;
+				const bodyHeight = hitTestDrawerConfig.hoverWidth
+					? bodyH + hitTestDrawerConfig.hoverWidth + paddingWidthOffset
+					: bodyH;
+				ctx.fillRect(paddingBaseX, bodyStart, bodyWidth, bodyHeight);
 			}
 			// choose border color around candle and draw candle
 			if (showCandleBorder) {
 				this.drawCandleBorder(
 					ctx,
-					drawerConfig,
+					hitTestDrawerConfig,
 					currentCandleTheme,
 					visualCandle,
 					paddingBaseX + this.halfLineWidthCU,
@@ -199,7 +203,7 @@ export class CandleDrawer implements SeriesDrawer {
 
 	private drawCandleBorder(
 		ctx: CanvasRenderingContext2D,
-		drawerConfig: ChartDrawerConfig,
+		hitTestDrawerConfig: HTSeriesDrawerConfig,
 		candleTheme: CandleTheme,
 		visualCandle: VisualCandle,
 		x: number,
@@ -207,8 +211,8 @@ export class CandleDrawer implements SeriesDrawer {
 		w: number,
 		h: number,
 	) {
-		if (drawerConfig.singleColor) {
-			ctx.strokeStyle = drawerConfig.singleColor;
+		if (hitTestDrawerConfig.color) {
+			ctx.strokeStyle = hitTestDrawerConfig.color;
 		} else {
 			const direction = visualCandle.name;
 			ctx.strokeStyle =

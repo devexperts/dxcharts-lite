@@ -7,8 +7,8 @@ import { ChartModel } from '../../components/chart/chart.model';
 import { DataSeriesModel, VisualSeriesPoint } from '../../model/data-series.model';
 import { unitToPixels } from '../../model/scaling/viewport.model';
 import { floorToDPR } from '../../utils/device/device-pixel-ratio.utils';
+import { HTSeriesDrawerConfig, SeriesDrawer } from '../data-series.drawer';
 import { floor } from '../../utils/math.utils';
-import { ChartDrawerConfig, SeriesDrawer } from '../data-series.drawer';
 
 /**
  * Some series have candles which are highlighted.
@@ -21,11 +21,11 @@ export class ColorCandleDrawer implements SeriesDrawer {
 		ctx: CanvasRenderingContext2D,
 		allPoints: VisualSeriesPoint[][],
 		model: DataSeriesModel,
-		drawerConfig: ChartDrawerConfig,
+		hitTestDrawerConfig: HTSeriesDrawerConfig,
 	): void {
 		allPoints.forEach((points, idx) => {
 			const config = model.getPaintConfig(idx);
-			ctx.fillStyle = drawerConfig.singleColor ?? config.color;
+			ctx.fillStyle = hitTestDrawerConfig.color ?? config.color;
 			points.forEach(p => {
 				const visualCandle = this.chartModel.getVisualCandle(floor(p.centerUnit));
 				const value = p.close;
