@@ -3,11 +3,6 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-/*
- * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
- * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
- * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
- */
 import { Subject } from 'rxjs';
 import { CanvasBoundsContainer, CanvasElement } from '../../canvas/canvas-bounds-container';
 import { CursorHandler } from '../../canvas/cursor.handler';
@@ -70,15 +65,15 @@ export class YAxisComponent extends ChartBaseElement {
 		private config: FullChartConfig,
 		private canvasModel: CanvasModel,
 		public scale: ScaleModel,
-		canvasInputListeners: CanvasInputListenerComponent,
+		private canvasInputListeners: CanvasInputListenerComponent,
 		private canvasBoundsContainer: CanvasBoundsContainer,
-		chartPanComponent: ChartPanComponent,
+		private chartPanComponent: ChartPanComponent,
 		private cursors: CursorHandler,
 		valueFormatter: (value: number) => string,
 		dataSeriesProvider: () => DataSeriesModel | undefined,
 		public paneUUID: string,
 		public extentIdx: number,
-		hitTestCanvasModel: HitTestCanvasModel,
+		private hitTestCanvasModel: HitTestCanvasModel,
 		private chartResizeHandler: ChartResizeHandler,
 		initialState?: YAxisConfig,
 	) {
@@ -120,6 +115,24 @@ export class YAxisComponent extends ChartBaseElement {
 		this.registerDefaultLabelColorResolvers();
 	}
 
+	public setExtentIdx(extentIdx: number) {
+		this.extentIdx = extentIdx;
+		this.model.extentIdx = extentIdx;
+		this.yAxisScaleHandler.deactivate();
+		this.removeChildEntity(this.yAxisScaleHandler);
+		this.yAxisScaleHandler = new YAxisScaleHandler(
+			this.eventBus,
+			this.state,
+			this.chartPanComponent,
+			this.scale,
+			this.canvasInputListeners,
+			this.canvasBoundsContainer,
+			this.canvasBoundsContainer.getBoundsHitTest(CanvasElement.PANE_UUID_Y_AXIS(this.paneUUID, extentIdx)),
+			this.hitTestCanvasModel,
+		);
+		this.addChildEntity(this.yAxisScaleHandler);
+	}
+
 	/**
 	 * Registers default label color resolvers for different chart types.
 	 * @private
@@ -147,7 +160,7 @@ export class YAxisComponent extends ChartBaseElement {
 		);
 	}
 
-	private updateCursor() {
+	public updateCursor() {
 		if (this.state.type === 'percent') {
 			this.cursors.setCursorForCanvasEl(
 				CanvasElement.PANE_UUID_Y_AXIS(this.paneUUID, this.extentIdx),
