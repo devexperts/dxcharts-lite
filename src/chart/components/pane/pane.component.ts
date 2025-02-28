@@ -269,7 +269,11 @@ export class PaneComponent extends ChartBaseElement {
 			current => !extentComponents.map(excluded => excluded.idx).includes(current.idx),
 		);
 		// re-index extents
-		this.yExtentComponents.forEach((c, idx) => (c.idx = idx));
+		this.yExtentComponents.forEach((c, idx) => {
+			c.yAxis.setExtentIdx(idx);
+			c.idx = idx;
+			c.yAxis.updateCursor();
+		});
 		this.canvasBoundsContainer.updateYAxisWidths();
 		this.yExtentComponentsChangedSubject.next();
 	}
