@@ -342,7 +342,9 @@ export class YAxisComponent extends ChartBaseElement {
 	public togglePriceScaleInverse(inverse: boolean): void {
 		this.scale.state.inverse = inverse;
 		this.scale.inverseY = inverse;
+		this.model.fancyLabelsModel.updateLabels();
 		this.scale.scaleInversedSubject.next(inverse);
+		this.canvasModel.fireDraw();
 	}
 
 	/**
