@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -20,8 +20,10 @@ export class BackgroundDrawer implements Drawer {
 	// we need to save previous state to avoid unnecessary redraws
 	private prevState: Partial<ChartAreaTheme> = {};
 
+	public isColorsChanged = () => !deepEqual(this.config.colors.chartAreaTheme, this.prevState);
+
 	draw(): void {
-		if (this.drawPredicate() || !deepEqual(this.config.colors.chartAreaTheme, this.prevState)) {
+		if (this.drawPredicate() || this.isColorsChanged()) {
 			this.canvasModel.clear();
 			const ctx = this.canvasModel.ctx;
 			if (this.config.colors.chartAreaTheme.backgroundMode === 'gradient') {
