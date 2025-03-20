@@ -223,6 +223,14 @@ export default class ChartBootstrap {
 			this.canvasModels,
 			elements.chartResizer,
 		);
+		const yAxisDescriptionsCanvasModel = createCanvasModel(
+			eventBus,
+			elements.yAxisDescriptionsCanvas,
+			config,
+			drawingManager,
+			this.canvasModels,
+			elements.chartResizer,
+		);
 		const canvasBoundsContainer = new CanvasBoundsContainer(
 			config,
 			eventBus,
@@ -457,7 +465,7 @@ export default class ChartBootstrap {
 		);
 		this.chartComponents.push(highLowComponent);
 
-		this.initYAxisDrawer(yAxisLabelsCanvasModel);
+		this.initYAxisDrawer(yAxisLabelsCanvasModel, yAxisDescriptionsCanvasModel);
 
 		this.yAxisComponent = mainPane.mainExtent.yAxis;
 		// default labels provider
@@ -558,24 +566,27 @@ export default class ChartBootstrap {
 		this.clearer = clearerSafe(this.components);
 	}
 
-	private initYAxisDrawer(yAxisLabelsCanvasModel: CanvasModel) {
+	private initYAxisDrawer(yAxisLabelsCanvasModel: CanvasModel, yAxisDescriptionsCanvasModel: CanvasModel) {
 		const yAxisCompositeDrawer = new CompositeDrawer();
 		const clearYAxis = new ClearCanvasDrawer(yAxisLabelsCanvasModel);
+		const clearYAxisDescriptions = new ClearCanvasDrawer(yAxisDescriptionsCanvasModel);
 		yAxisCompositeDrawer.addDrawer(clearYAxis, 'YAXIS_CLEAR');
+		yAxisCompositeDrawer.addDrawer(clearYAxisDescriptions, 'Y_AXIS_DESCRIPTIONS_CLEAR');
 
 		this.drawingManager.addDrawer(yAxisCompositeDrawer, 'Y_AXIS');
 
 		const yAxisDrawer = new YAxisDrawer(this.config, yAxisLabelsCanvasModel, this.paneManager);
 		yAxisCompositeDrawer.addDrawer(yAxisDrawer);
 
-		const yAxisLabelsDrawer = new YAxisPriceLabelsDrawer(
+		const yAxisPriceLabelsDrawer = new YAxisPriceLabelsDrawer(
 			yAxisLabelsCanvasModel,
+			yAxisDescriptionsCanvasModel,
 			this.backgroundCanvasModel,
 			this.canvasBoundsContainer,
 			this.config,
 			this.paneManager,
 		);
-		yAxisCompositeDrawer.addDrawer(yAxisLabelsDrawer);
+		this.drawingManager.addDrawer(yAxisPriceLabelsDrawer, 'Y_AXIS_PRICE_LABELS');
 	}
 
 	// TODO remove chartModel dependency, put period to global config somewhere

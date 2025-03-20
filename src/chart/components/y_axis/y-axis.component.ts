@@ -58,6 +58,7 @@ export class YAxisComponent extends ChartBaseElement {
 	public model: YAxisModel;
 	public axisTypeSetSubject: Subject<PriceAxisType> = new Subject<PriceAxisType>();
 	public axisAlignSetSubject: Subject<YAxisAlign> = new Subject<YAxisAlign>();
+	public axisAlignMovedSubject: Subject<YAxisAlign> = new Subject<YAxisAlign>();
 	public readonly state: YAxisConfig;
 
 	constructor(
