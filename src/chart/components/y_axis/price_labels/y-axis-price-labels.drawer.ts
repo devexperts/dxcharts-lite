@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -20,6 +20,7 @@ import { LabelGroup, VisualYAxisLabel } from './y-axis-labels.model';
 export class YAxisPriceLabelsDrawer implements Drawer {
 	constructor(
 		private yAxisLabelsCanvasModel: CanvasModel,
+		private yAxisDescriptionsCanvasModel: CanvasModel,
 		private backgroundCanvasModel: CanvasModel,
 		private canvasBoundsContainer: CanvasBoundsContainer,
 		private fullConfig: FullChartConfig,
@@ -29,6 +30,7 @@ export class YAxisPriceLabelsDrawer implements Drawer {
 	draw() {
 		const ctx = this.yAxisLabelsCanvasModel.ctx;
 		const backgroundCtx = this.backgroundCanvasModel.ctx;
+		const descriptionsCtx = this.yAxisDescriptionsCanvasModel.ctx;
 
 		this.paneManager.yExtents.forEach(extent => {
 			if (extent.yAxis.state.visible) {
@@ -41,6 +43,7 @@ export class YAxisPriceLabelsDrawer implements Drawer {
 					l.labels.forEach(vl =>
 						drawLabel(
 							ctx,
+							descriptionsCtx,
 							backgroundCtx,
 							bounds,
 							paneBounds,
@@ -55,6 +58,7 @@ export class YAxisPriceLabelsDrawer implements Drawer {
 				Object.values(extent.yAxis.model.fancyLabelsModel.customLabels).forEach(l =>
 					drawLabel(
 						ctx,
+						descriptionsCtx,
 						backgroundCtx,
 						yAxisBounds,
 						paneBounds,
