@@ -445,11 +445,16 @@ export class CanvasBoundsContainer {
 	 */
 	private getXAxisBounds(nMap: Bounds, canvas: Bounds): Bounds {
 		const xAxis = this.getBounds(CanvasElement.X_AXIS);
+		const isSingleYAxis = this.yAxisWidths.left.length + this.yAxisWidths.right.length === 1;
+
+		const leftOffset = isSingleYAxis ? 0 : this.yAxisWidths.left.reduce((acc, width) => (acc += width), 0);
+		const rightOffset = isSingleYAxis ? 0 : this.yAxisWidths.right.reduce((acc, width) => (acc += width), 0);
+
 		if (this.config.components.xAxis.visible) {
 			const xAxisHeight = this.getXAxisHeight();
-			xAxis.x = 0;
+			xAxis.x = leftOffset;
 			xAxis.y = canvas.height - xAxisHeight - nMap.height;
-			xAxis.width = canvas.width;
+			xAxis.width = canvas.width - rightOffset;
 			xAxis.height = xAxisHeight;
 		} else {
 			this.applyDefaultBounds(xAxis);
