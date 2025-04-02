@@ -31,6 +31,7 @@ export default class VisualCandle extends VisualSeriesPoint {
 	public name: PriceMovement; // candle's direction
 	public candle: Candle; // original candle
 	public startUnit: Unit; // leftmost coordinate
+	public endUnit: Unit; // rightmost coordinate
 	public hasBorder: boolean; // flag denoting if border should be drawn
 	public isActive: boolean;
 	public isHollow: boolean;
@@ -49,6 +50,7 @@ export default class VisualCandle extends VisualSeriesPoint {
 	) {
 		super(x, close);
 		this.startUnit = x - width / 2;
+		this.endUnit = x + width / 2
 		this.width = width;
 		this.open = open;
 		this.high = high;
