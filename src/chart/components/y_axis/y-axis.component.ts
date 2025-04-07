@@ -340,7 +340,7 @@ export class YAxisComponent extends ChartBaseElement {
 	 * Inversion also works for candles, drawings and overlay studies.
 	 * @param inverse - true or false
 	 */
-	public togglePriceScaleInverse(inverse: boolean): void {
+	public togglePriceScaleInverse(inverse: boolean = false): void {
 		this.scale.state.inverse = inverse;
 		this.scale.inverseY = inverse;
 		this.model.fancyLabelsModel.updateLabels();
