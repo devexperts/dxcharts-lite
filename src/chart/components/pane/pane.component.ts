@@ -25,7 +25,7 @@ import { ScaleModel, SyncedByXScaleModel } from '../../model/scale.model';
 import { Pixel, Price, Unit } from '../../model/scaling/viewport.model';
 import { firstOf, flatMap, lastOf } from '../../utils/array.utils';
 import { Unsubscriber } from '../../utils/function.utils';
-import { AtLeastOne } from '../../utils/object.utils';
+import { AtLeastOne, cloneUnsafe } from '../../utils/object.utils';
 import { ChartBaseModel } from '../chart/chart-base.model';
 import { createCandlesOffsetProvider } from '../chart/data-series.high-low-provider';
 import { DragNDropYComponent } from '../dran-n-drop_helper/drag-n-drop-y.component';
@@ -41,6 +41,7 @@ import {
 import { PaneHitTestController } from './pane-hit-test.controller';
 import { HitTestCanvasModel } from '../../model/hit-test-canvas.model';
 import { ChartResizeHandler } from '../../inputhandlers/chart-resize.handler';
+import { merge } from '../../utils/merge.utils';
 
 export class PaneComponent extends ChartBaseElement {
 	/**
@@ -235,6 +236,8 @@ export class PaneComponent extends ChartBaseElement {
 		yExtentComponent.addSubscription(this.addCursors(extentIdx, yExtentComponent.yAxis));
 
 		options?.paneFormatters && yExtentComponent.setValueFormatters(options.paneFormatters);
+		yExtentComponent.yAxis.togglePriceScaleInverse(options?.inverse);
+		yExtentComponent.scale.setLockPriceToBarRatio(options?.lockToPriceRatio);
 
 		const useDefaultHighLow = options?.useDefaultHighLow ?? true;
 		if (useDefaultHighLow) {
@@ -287,7 +290,18 @@ export class PaneComponent extends ChartBaseElement {
 		initialExtent: YExtentComponent,
 		align: YAxisAlign = 'right',
 	) {
-		const extent = this.createExtentComponent();
+		const yAxisConfigCopy = cloneUnsafe(initialExtent.yAxis.state);
+		const scaleConfigCopy = cloneUnsafe(initialExtent.scale.state);
+		const initialYAxisState = merge(yAxisConfigCopy, this.config.components.yAxis, {
+			overrideExisting: false,
+			addIfMissing: true,
+		});
+
+		const extent = this.createExtentComponent({
+			initialYAxisState,
+			inverse: scaleConfigCopy.inverse,
+			lockToPriceRatio: scaleConfigCopy.lockPriceToBarRatio,
+		});
 		extent.yAxis.setYAxisAlign(align);
 		dataSeries.forEach(series => series.moveToExtent(extent));
 		initialExtent.dataSeries.size === 0 && initialPane.removeExtentComponents([initialExtent]);
