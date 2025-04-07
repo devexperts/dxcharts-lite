@@ -312,12 +312,17 @@ export class PaneManager extends ChartBaseElement {
 	) {
 		const { paneUUID, extent, direction, align, extentIdx, isForceKeepPane, index = 0 } = options;
 		const pane = paneUUID && this.panes[paneUUID];
-		const initialYAxisState = align ? { ...this.panes[CHART_UUID].yAxis.state, align } : undefined;
+		const initialYAxisState = align ? { ...initialExtent.yAxis.state, align } : undefined;
 		const onNewScale = extentIdx && extentIdx > 0;
 
 		if (!pane) {
 			const order = direction && direction === 'above' ? index : index + 1;
-			const newPane = this.createPane(paneUUID, { order, initialYAxisState });
+			const newPane = this.createPane(paneUUID, {
+				order,
+				initialYAxisState,
+				inverse: initialExtent.scale.state.inverse,
+				lockToPriceRatio: initialExtent.scale.state.lockPriceToBarRatio,
+			});
 			newPane.moveDataSeriesToExistingExtentComponent(
 				dataSeries,
 				initialPane,

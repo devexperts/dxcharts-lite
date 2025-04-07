@@ -33,6 +33,8 @@ export interface YExtentCreationOptions {
 	paneFormatters: YExtentFormatters;
 	increment: number | null;
 	initialYAxisState: YAxisConfig;
+	inverse: boolean;
+	lockToPriceRatio: boolean;
 }
 
 export class YExtentComponent extends ChartBaseElement {
