@@ -26,7 +26,11 @@ export interface Candle {
 	readonly expansion?: boolean;
 	idx?: number;
 	readonly impVolatility?: number;
+	/**
+	 * @deprecated might be removed in next major version
+	 */
 	readonly vwap?: number;
+	readonly typicalPrice?: number;
 }
 
 export const defaultSortCandles = (candles: Candle[]): Candle[] =>
@@ -74,7 +78,7 @@ export function hollowDirection(open: number, close: number): PriceMovement {
  * @returns {Candle} A new Candle object with the same properties as the base object, with the option to modify the prices.
  */
 export function copyCandle(base: Candle, idx: number, pricesAsClose: boolean = false): Candle {
-	const { id, expansion, impVolatility, vwap, volume, timestamp } = base;
+	const { id, expansion, impVolatility, vwap, typicalPrice, volume, timestamp } = base;
 	let hi = base.hi;
 	let lo = base.lo;
 	let open = base.open;
@@ -100,5 +104,6 @@ export function copyCandle(base: Candle, idx: number, pricesAsClose: boolean = f
 		idx: _idx,
 		impVolatility,
 		vwap,
+		typicalPrice,
 	};
 }
