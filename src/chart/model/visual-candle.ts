@@ -50,7 +50,7 @@ export default class VisualCandle extends VisualSeriesPoint {
 	) {
 		super(x, close);
 		this.startUnit = x - width / 2;
-		this.endUnit = x + width / 2
+		this.endUnit = x + width / 2;
 		this.width = width;
 		this.open = open;
 		this.high = high;
