@@ -59,7 +59,7 @@ export class DifferenceCloudDrawer implements SeriesDrawer {
 					);
 
 					allPointsMain.forEach((points, idx) => {
-						const to = Math.min(points.length, allPointsLinked[idx].length);
+						const to = Math.min(points.length, allPointsLinked[idx]?.length ?? 0);
 						for (let k = 0; k < to; k++) {
 							const diffPoints: [VisualSeriesPoint, VisualSeriesPoint] = [
 								points[k].clone(),
@@ -92,7 +92,7 @@ export class DifferenceCloudDrawer implements SeriesDrawer {
 		ctx.stroke();
 	}
 
-	private drawDifference(
+	protected drawDifference(
 		ctx: CanvasRenderingContext2D,
 		lineColor: string,
 		nextLineColor: string,
@@ -107,13 +107,13 @@ export class DifferenceCloudDrawer implements SeriesDrawer {
 			linePoints.push(point);
 			nextLinePoints.push(nextPoint);
 		});
-		const curSeriesPoints = mapDataSeriesDiffPointsIntoPoints(linePoints, curSeries.view);
-		const nextSeriesPoints = mapDataSeriesDiffPointsIntoPoints(nextLinePoints, nextSeries.view);
+		const curSeriesPoints = this.mapDataSeriesDiffPointsIntoPoints(linePoints, curSeries.view);
+		const nextSeriesPoints = this.mapDataSeriesDiffPointsIntoPoints(nextLinePoints, nextSeries.view);
 		this.fillCloud(ctx, nextLineColor, curSeriesPoints, nextSeriesPoints, hitTestDrawerConfig);
 		this.fillCloud(ctx, lineColor, nextSeriesPoints, curSeriesPoints, hitTestDrawerConfig);
 	}
 
-	private fillCloud(
+	protected fillCloud(
 		ctx: CanvasRenderingContext2D,
 		color: string,
 		linePoints: Point[],
@@ -152,15 +152,15 @@ export class DifferenceCloudDrawer implements SeriesDrawer {
 		ctx.fill();
 		ctx.restore();
 	}
-}
 
-const mapDataSeriesDiffPointsIntoPoints = (points: VisualSeriesPoint[], view: Viewable): Point[] => {
-	return points.map(p => {
-		const { centerUnit, close } = p;
-		const x = view.toX(centerUnit);
-		const y = view.toY(close);
-		return { x, y };
-	});
-};
+	protected mapDataSeriesDiffPointsIntoPoints(points: VisualSeriesPoint[], view: Viewable): Point[] {
+		return points.map(p => {
+			const { centerUnit, close } = p;
+			const x = view.toX(centerUnit);
+			const y = view.toY(close);
+			return { x, y };
+		});
+	}
+}
 
 export const isDifferenceTool = (type: string) => type === 'DIFFERENCE';

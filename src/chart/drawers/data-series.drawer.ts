@@ -8,6 +8,7 @@ import { PaneManager } from '../components/pane/pane-manager.component';
 import { CanvasModel } from '../model/canvas.model';
 import { DataSeriesModel, VisualSeriesPoint } from '../model/data-series.model';
 import { clipToBounds } from '../utils/canvas/canvas-drawing-functions.utils';
+import { isEmpty } from '../utils/object.utils';
 
 export interface HTSeriesDrawerConfig {
 	color?: string;
@@ -53,7 +54,8 @@ export class DataSeriesDrawer implements DynamicModelDrawer<DataSeriesModel> {
 	}
 
 	public drawSeries(ctx: CanvasRenderingContext2D, series: DataSeriesModel) {
-		if (series.config.visible) {
+		const visibilityPredicates = series.config.additionalVisibilityPredicatesMap;
+		if (series.config.visible || (visibilityPredicates && !isEmpty(visibilityPredicates))) {
 			const paintTool = series.config.type;
 			const drawer = this.seriesDrawers[paintTool];
 			if (drawer) {
