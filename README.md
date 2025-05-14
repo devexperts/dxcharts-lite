@@ -3,14 +3,14 @@
   <img src="docs/images/logo.png" alt="devexperts-logo" width="294px" height="100px"/>
 </p>
 
-<h1 align="center">DXCharts Lite - one of the most powerful financial charting tools</h1>
+<h1 align="center">DXCharts Lite: Powerful financial charting tool</h1>
 
 <p align="center">
   <i>
-    DXcharts Lite is a modern solution made for visualization financial data with full variety of charts.<br>
-    It's been created and tempered as a part of big tradings apps with millions of users.<br>
-    Now it's grown enough to be recognized as independent product capable to support any from your needs<br>
-    as a simple widget for blog and as a part of big enterprise solution for trading.
+    DXcharts Lite is a modern solution for visualizing financial data with a wide variety of chart types.<br>
+    Originally developed as part of large tradings applications used by millions of users,<br>
+	  DXcharts Lite has matured into an independent product.<br>
+    It can be used as a simple widget for blogs or as a component in enterprise trading solutions.<br>
   </i>
   <br>
 </p>
@@ -37,7 +37,7 @@
 
 ## Overview
 
-Get started with DXCharts Lite, install the library and configure it as you want.
+Get started with DXCharts Lite by installing the library and configuring it to your needs.
 
 -   🚀 [Quick start](#quick-start)
     -   📦 [Installation](#installation)
@@ -53,7 +53,7 @@ Get started with DXCharts Lite, install the library and configure it as you want
 
 ### Installation
 
-Install library to your project:
+Install the library in your project:
 
 ```js
 npm install @devexperts/dxcharts-lite
@@ -70,7 +70,7 @@ Your `package.json` after installation:
 
 ### Create chart
 
-If you use webpack or any other bundler - import `createChart` method and pass element where the chart will be rendered as a first argument.
+If you use webpack or another bundler, import the `createChart` method and pass the element where the chart will be rendered as the first argument.
 
 ```js
 export const createChartInstance = () => {
@@ -80,23 +80,22 @@ export const createChartInstance = () => {
 };
 ```
 
-`createChart` - method, that creates a new chart instance using ChartBootstrap class and returns it.
+The `createChart` method creates a new chart instance using `ChartBootstrap` class and returns it.
 
-Method accepts 2 parameters:
+It accepts two parameters:
 
--   `element` - The HTML element where the chart will be rendered
--   `config` (optional) - instance of [ChartConfig](/chart/chart-config/overview)
+-   `element`: The HTML element where the chart will be rendered.
+-   `config` (optional): An instance of [ChartConfig](/chart/chart-config/overview).
 
-> Also, please, set `width: 100%` and `height: 100%` for parent container
-> by default chart is auto-resizing to parent
-> you can change it by setting `fixedSize` in config
+> Note: Set `width: 100%` and `height: 100%` for the parent container.
+> By default, the chart auto-resizes to the parent, but you can change this by setting `fixedSize` in the config.
 
-Now you should have empty chart on screen.
+You should now see an empty chart on the screen.
 
 ### Set data
 
-Let's pass in some data i.e. `Candles`. You can use bundled function to generate some mock data.
-Import `generateCandlesData` and call it to generate candles.
+To display data (e.g. `Candles`), you can use the bundled function to generate mock data.
+Import `generateCandlesData` and use it to generate candles.
 
 ```js
 export const generateMockData = () => {
@@ -105,7 +104,7 @@ export const generateMockData = () => {
 };
 ```
 
-Now you should see chart just like image below:
+You should now see a basic chart like the image below:
 
 <p align="center">
   <img src="docs/images/basicchart.png" width="1000px" alt="Basic chart"/>
@@ -113,7 +112,7 @@ Now you should see chart just like image below:
 
 ### HTML-markup
 
-Here is full quick-start code example:
+Here is complete quick-start code example:
 
 ```html
 <html>
@@ -145,39 +144,38 @@ Here is full quick-start code example:
 
 ## Configuration
 
-You can configure chart with `ChartConfig` object. It is optional.
+You can configure the chart using a `ChartConfig` object (optional).
 
-`ChartConfig` is used to set initial properties for chart instance.
-Below you can see full table of it, and other options, that `ChartConfig` consists of.
+`ChartConfig` sets the initial properties for the chart instance.
+Below is a table of available options (see documentation for details).
 
 -   [`FullChartConfig`](docs/generated/FullChartConfig.md)
 
 ## API
 
-Every chart component has an API allowing change a lot of params on the fly.
-Change appearance at runtime.
-Subscribe on different events in chart (like HOVER on candle)
+Each chart component has an API that allows you to change many parameters on the fly, modify appearance at runtime, and subscribe to various chart events (such as hovering over a candle).
 
-Here are the links of the main components:
+Main components include:
 
--   [`ChartComponent`](docs/generated/ChartComponent.md) - set data, subscribe on data changes
--   [`XAxisComponent`](docs/generated/XAxisComponent.md) - configure x-labels
--   [`YAxisComponent`](docs/generated/YAxisComponent.md) - configure labels and set y-axis type
--   [`CrossToolComponent`](docs/generated/CrossToolComponent.md) - cross-hair type, OHLC magnet
--   [`EventsComponent`](docs/generated/EventsComponent.md) - set events data
--   [`VolumesComponent`](docs/generated/VolumesComponent.md) - set volumes
--   [`WaterMarkComponent`](docs/generated/WaterMarkComponent.md) - create and manage a watermark
--   [`NavigationMapComponent`](docs/generated/NavigationMapComponent.md) - create a navigation map
--   [`SnapshotComponent`](docs/generated/SnapshotComponent.md) - create a snapshot
--   [`HighlightsComponent`](docs/generated/HighlightsComponent.md) - allows to draw highlights of some canvas objects such as labels
--   [`PaneManager`](docs/generated/PaneManager.md) - create and manage panes
--   [`PaneComponent`](docs/generated/PaneComponent.md) - create and manage panes data series
+-   [`ChartComponent`](docs/generated/ChartComponent.md): Set data, subscribe to data changes
+-   [`XAxisComponent`](docs/generated/XAxisComponent.md): Configure x-axis labels
+-   [`YAxisComponent`](docs/generated/YAxisComponent.md): Configure y-axis labels and type
+-   [`CrossToolComponent`](docs/generated/CrossToolComponent.md): Crosshair type, OHLC magnet
+-   [`EventsComponent`](docs/generated/EventsComponent.md): Set events data
+-   [`VolumesComponent`](docs/generated/VolumesComponent.md): Set volume data
+-   [`WaterMarkComponent`](docs/generated/WaterMarkComponent.md): Create and manage a watermark
+-   [`NavigationMapComponent`](docs/generated/NavigationMapComponent.md): Create a navigation map
+-   [`SnapshotComponent`](docs/generated/SnapshotComponent.md): Create a snapshot
+-   [`HighlightsComponent`](docs/generated/HighlightsComponent.md): Draw highlights on canvas objects such as labels
+-   [`PaneManager`](docs/generated/PaneManager.md): Create and manage panes
+-   [`PaneComponent`](docs/generated/PaneComponent.md): Create and manage pane data series
 
 ## Examples
 
-We have created a lot of examples with different chart configuration.
+We have created many examples with different chart configurations.
 You can find them [here](https://github.com/devexperts/dxcharts-lite/tree/master/docs/how-to).
 
 ## Demo
 
-To show you how it's beautiful, we have created [Demo version](https://devexperts.com/dxcharts-demo/), based on DXCharts Lite. Feel all power of our library!
+To demonstrate its capabilities, we've created a [Demo version](https://devexperts.com/dxcharts-demo/) based on DXCharts Lite.
+Explore the full power of our library!
