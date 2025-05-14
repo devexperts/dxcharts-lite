@@ -25,12 +25,12 @@ export class TrendHistogramDrawer implements SeriesDrawer {
 		allPointsFlat.forEach((point, idx) => {
 			// odd width is crucial to draw histogram without antialiasing
 			// 2 colors: Negative and Positive
-			const previousClose = previousValue(allPointsFlat, idx);
-			const isNegativeTrend = previousClose && point.close < previousClose;
 			if (config.multiplyColors?.length === 2) {
 				ctx.strokeStyle =
 					hitTestDrawerConfig.color ??
-					((isNegativeTrend ? config.multiplyColors[1] : config.multiplyColors[0]) ||
+					((point.close < this.previousValue(allPointsFlat, idx)
+						? config.multiplyColors[1]
+						: config.multiplyColors[0]) ||
 						config.color ||
 						'#FF00FF');
 
@@ -44,19 +44,20 @@ export class TrendHistogramDrawer implements SeriesDrawer {
 			}
 			// 4 colors: Negative and Down, Negative and Up, Positive and Down, Positive and Up
 			if (config.multiplyColors?.length === 4) {
-				if (isNegativeTrend && point.close < 0) {
+				const prevPointClose = this.previousValue(allPointsFlat, idx);
+				if (point.close < prevPointClose && point.close < 0) {
 					ctx.strokeStyle =
 						hitTestDrawerConfig.color ?? (config.multiplyColors[0] || config.color || '#FF00FF');
 				}
-				if (!isNegativeTrend && point.close < 0) {
+				if (point.close > prevPointClose && point.close < 0) {
 					ctx.strokeStyle =
 						hitTestDrawerConfig.color ?? (config.multiplyColors[1] || config.color || '#FF00FF');
 				}
-				if (isNegativeTrend && point.close > 0) {
+				if (point.close < prevPointClose && point.close > 0) {
 					ctx.strokeStyle =
 						hitTestDrawerConfig.color ?? (config.multiplyColors[2] || config.color || '#FF00FF');
 				}
-				if (!isNegativeTrend && point.close > 0) {
+				if (point.close > prevPointClose && point.close > 0) {
 					ctx.strokeStyle =
 						hitTestDrawerConfig.color ?? (config.multiplyColors[3] || config.color || '#FF00FF');
 				}
@@ -78,12 +79,12 @@ export class TrendHistogramDrawer implements SeriesDrawer {
 			ctx.stroke();
 		});
 	}
-}
 
-// weird but works
-export const previousValue = (arr: VisualSeriesPoint[], idx: number): number | undefined => {
-	do {
-		idx--;
-	} while (idx >= 0 && !isFinite(arr[idx] && arr[idx].close));
-	return arr[idx] ? arr[idx].close : undefined;
-};
+	//weird but works
+	private previousValue(arr: VisualSeriesPoint[], idx: number): number {
+		do {
+			idx--;
+		} while (idx >= 0 && !isFinite(arr[idx] && arr[idx].close));
+		return arr[idx] ? arr[idx].close : Number.NaN;
+	}
+}
