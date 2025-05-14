@@ -25,7 +25,6 @@ export const prepareCandle = (candle: PartialCandle): Candle | undefined => {
 		const preparedCandleOpen = finite(candle.open, candle.lo, settlementPrice);
 		const preparedCandleClose = finite(candle.close, candle.hi, settlementPrice);
 		const preparedVwap = Number.isNaN(candle.vwap) ? undefined : candle.vwap;
-
 		return {
 			id: candle.id,
 			hi: preparedCandleHi,
@@ -38,7 +37,6 @@ export const prepareCandle = (candle: PartialCandle): Candle | undefined => {
 			idx: candle.idx,
 			impVolatility: candle.impVolatility,
 			vwap: preparedVwap,
-			typicalPrice: candle.typicalPrice,
 		};
 	} catch (e) {
 		console.warn(e);
