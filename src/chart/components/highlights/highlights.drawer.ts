@@ -1,5 +1,10 @@
 /*
- * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
+ * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+ * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
+/*
+ * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -71,7 +76,10 @@ export class HighlightsDrawer implements Drawer {
 							const fromXCandle = this.chartModel.candleFromTimestamp(item.from);
 							const fromXCandleWidth = unitToPixels(fromXCandle.width, this.chartModel.scale.zoomX);
 							const fromX = fromXCandle.xStart(this.chartModel.scale);
-							const toXCandle = this.chartModel.candleFromTimestamp(item.to);
+							// currently endTime timestamp for PRE_MARKET type includes same timestamp for REGULAR type startTime
+							// so we have to take previous timestamp based on current period to exclude PRE_MARKET highlighting
+							const xCandleTimestamp = item.to - this.chartModel.chartBaseModel.period;
+							const toXCandle = this.chartModel.candleFromTimestamp(xCandleTimestamp);
 							const toXCandleWidth = unitToPixels(toXCandle.width, this.chartModel.scale.zoomX);
 							const toX = toXCandle.xStart(this.chartModel.scale) + toXCandleWidth;
 							// draw highlight' borders
