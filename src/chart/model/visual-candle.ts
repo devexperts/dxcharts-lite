@@ -3,6 +3,11 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
+/*
+ * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
+ * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+ * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
 import { Candle } from './candle.model';
 import { Pixel, Unit, Viewable } from './scaling/viewport.model';
 import { PriceMovement } from './candle-series.model';
@@ -50,7 +55,7 @@ export default class VisualCandle extends VisualSeriesPoint {
 	) {
 		super(x, close);
 		this.startUnit = x - width / 2;
-		this.endUnit = x + width / 2
+		this.endUnit = x + width / 2;
 		this.width = width;
 		this.open = open;
 		this.high = high;
