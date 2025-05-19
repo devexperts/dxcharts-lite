@@ -3,11 +3,6 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-/*
- * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
- * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
- * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
- */
 import { CanvasBoundsContainer, CanvasElement } from '../../../canvas/canvas-bounds-container';
 import { YAxisConfig } from '../../../chart.config';
 import { Bounds } from '../../../model/bounds.model';
@@ -143,9 +138,21 @@ export class YExtentComponent extends ChartBaseElement {
 		this.paneComponent.seriesRemovedSubject.next(series);
 	}
 
-	public valueFormatter = (value: Unit, dataSeries?: DataSeriesModel) => {
-		const formatter = this.formatters[this.yAxis.getAxisType()] ?? this.formatters.regular;
-		return formatter(value, dataSeries);
+	public valueFormatter = (value: Unit, dataSeries?: DataSeriesModel): string => {
+		if (!this.formatters[this.yAxis.getAxisType()]) {
+			return this.formatters.regular(value);
+		}
+		const { regular, percent, logarithmic } = this.formatters;
+		switch (this.yAxis.getAxisType()) {
+			case 'regular':
+				return this.formatters.regular(value);
+			case 'percent':
+				return percent ? percent(value, dataSeries) : regular(value);
+			case 'logarithmic':
+				return logarithmic ? logarithmic(value) : regular(value);
+			default:
+				return this.regularFormatter(value);
+		}
 	};
 
 	get regularFormatter() {
