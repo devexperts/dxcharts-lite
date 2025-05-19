@@ -477,7 +477,7 @@ export class PaneComponent extends ChartBaseElement {
 }
 
 export interface YExtentFormatters {
-	regular: (value: number) => string;
+	regular: (value: number, precision?: number) => string;
 	percent?: (value: number, dataSeries?: DataSeriesModel) => string;
 	logarithmic?: (value: number) => string;
 }
