@@ -70,6 +70,10 @@ export const getDefaultConfig = (): FullChartConfig => ({
 	shortDays: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
 	shortMonths: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
 	rtl: false,
+	intlFormatter: {
+		decimalSeparator: '.',
+		thousandsSeparator: '',
+	},
 	scale: {
 		keepZoomXOnYAxisChange: true,
 		auto: true,
@@ -875,6 +879,7 @@ export interface FullChartConfig extends TimeFormatterConfig {
 	 * Initial visual order of chart drawers. Reorder to put volumes on top of candles for example.
 	 */
 	drawingOrder: DrawerType[];
+	intlFormatter: IntlFormatter;
 	useUTCTimeOverride: boolean;
 	animation: AnimationConfig;
 	devexpertsPromoLink: boolean;
@@ -944,6 +949,11 @@ export interface AutoScaleDisableOnDrag {
 	 * Distance that mouse should travel vertically in px. Default - 80.
 	 */
 	yDiff: number;
+}
+
+export interface IntlFormatter {
+	decimalSeparator?: string;
+	thousandsSeparator?: string;
 }
 
 export interface ChartComponents {
