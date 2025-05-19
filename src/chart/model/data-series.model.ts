@@ -293,7 +293,7 @@ export class DataSeriesModel<
 	 * @returns {string} The formatted value as a string.
 	 */
 	public valueFormatter(value: number) {
-		return defaultValueFormatter(value);
+		return this.extentComponent.formatters.regular(value);
 	}
 
 	/**
