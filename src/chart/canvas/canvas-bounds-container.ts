@@ -85,6 +85,7 @@ export class CanvasBoundsContainer {
 	// holds ordered "top to bottom" array of panes UUID's (studies in past)
 	panesOrder: Array<string> = [];
 	panesOrderChangedSubject = new Subject<string[]>();
+	paneMovedSubject = new Subject<void>();
 	paneVisibilityChangedSubject: Subject<void> = new Subject();
 
 	// both will be calculated based on font/content size
@@ -179,6 +180,7 @@ export class CanvasBoundsContainer {
 			this.recalculateBounds();
 			this.eventBus.fireDraw();
 			this.panesOrderChangedSubject.next(this.panesOrder);
+			this.paneMovedSubject.next();
 		}
 	}
 	/**
@@ -193,6 +195,7 @@ export class CanvasBoundsContainer {
 			this.recalculateBounds();
 			this.eventBus.fireDraw();
 			this.panesOrderChangedSubject.next(this.panesOrder);
+			this.paneMovedSubject.next();
 		}
 	}
 
