@@ -3,7 +3,7 @@
   <img src="docs/images/logo.png" alt="devexperts-logo" width="294px" height="100px"/>
 </p>
 
-<h1 align="center">DXCharts Lite: Powerful financial charting tool</h1>
+<h1 align="center">DXcharts Lite: Powerful financial charting tool</h1>
 
 <p align="center">
   <i>
@@ -37,7 +37,7 @@
 
 ## Overview
 
-Get started with DXCharts Lite by installing the library and configuring it to your needs.
+Get started with DXcharts Lite by installing the library and configuring it to your needs.
 
 -   🚀 [Quick start](#quick-start)
     -   📦 [Installation](#installation)
@@ -177,5 +177,5 @@ You can find them [here](https://github.com/devexperts/dxcharts-lite/tree/master
 
 ## Demo
 
-To demonstrate its capabilities, we've created a [Demo version](https://devexperts.com/dxcharts-demo/) based on DXCharts Lite.
+To demonstrate its capabilities, we've created a [Demo version](https://devexperts.com/dxcharts-demo/) based on DXcharts Lite.
 Explore the full power of our library!
