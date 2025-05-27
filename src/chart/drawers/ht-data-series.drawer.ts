@@ -10,6 +10,8 @@ import { HTSeriesDrawerConfig, SeriesDrawer } from './data-series.drawer';
 import { clipToBounds } from '../utils/canvas/canvas-drawing-functions.utils';
 import { Drawer } from './drawing-manager';
 
+export const HIT_TEST_HOVER_WIDTH = 7;
+
 /***
  * HitTest Chart drawer. It's used to draw hit test for chart types on the hit-test canvas.
  */
@@ -40,7 +42,7 @@ export class HTDataSeriesDrawer implements Drawer {
 			if (drawer) {
 				const drawConfig: HTSeriesDrawerConfig = {
 					color: this.canvasModel.idToColor(series.htId),
-					hoverWidth: 7,
+					hoverWidth: HIT_TEST_HOVER_WIDTH,
 				};
 				// +- 1 to correctly draw points which are partly inside bounds
 				drawer.draw(
