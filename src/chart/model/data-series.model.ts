@@ -3,6 +3,11 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
+/*
+ * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
+ * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+ * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
 import { YExtentComponent } from '../components/pane/extent/y-extent-component';
 import { DataSeriesYAxisLabelsProvider } from '../components/y_axis/price_labels/data-series-y-axis-labels.provider';
 import { LabelsGroups } from '../components/y_axis/price_labels/y-axis-labels.model';
