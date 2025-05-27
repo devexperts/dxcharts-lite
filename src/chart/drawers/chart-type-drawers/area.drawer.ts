@@ -20,6 +20,8 @@ export class AreaDrawer implements SeriesDrawer {
 		model: DataSeriesModel,
 		hitTestDrawerConfig: HTSeriesDrawerConfig,
 	) {
+		const isHitTestDrawer = !!hitTestDrawerConfig.color;
+
 		if (model instanceof CandleSeriesModel) {
 			// @ts-ignore
 			const visualCandles: VisualCandle[] = flat(points);
@@ -32,7 +34,9 @@ export class AreaDrawer implements SeriesDrawer {
 				ctx.strokeStyle = model.colors.areaTheme.lineColor;
 			}
 
-			if (model.highlighted) {
+			if (isHitTestDrawer) {
+				ctx.lineWidth = hitTestDrawerConfig.hoverWidth ?? this.config.selectedWidth * 3;
+			} else if (model.highlighted) {
 				ctx.lineWidth = this.config.selectedWidth;
 			} else {
 				ctx.lineWidth = this.config.areaLineWidth;
@@ -73,7 +77,9 @@ export class AreaDrawer implements SeriesDrawer {
 								  fillColor)
 								: '';
 					}
-					ctx.fill();
+					if (!isHitTestDrawer) {
+						ctx.fill();
+					}
 				} else {
 					ctx.lineTo(lineX, closeY);
 				}
