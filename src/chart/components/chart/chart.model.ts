@@ -654,11 +654,14 @@ export class ChartModel extends ChartBaseElement {
 	 */
 	public candleFromTimestamp(
 		timestamp: Timestamp,
-		extrapolate: boolean = true,
+		options: {
+			extrapolate: boolean;
+			isDaysPeriod?: boolean;
+		} = { extrapolate: true },
 		selectedCandleSeries: CandleSeriesModel = this.mainCandleSeries,
 	): VisualCandle {
 		const dataPointsSource = selectedCandleSeries.dataPoints;
-		return this.chartBaseModel.dataFromTimestamp(timestamp, extrapolate, dataPointsSource);
+		return this.chartBaseModel.dataFromTimestamp(timestamp, options, dataPointsSource);
 	}
 
 	/**
@@ -877,7 +880,7 @@ export class ChartModel extends ChartBaseElement {
 		return series.reduce((candles: Array<Candle>, candle: Candle) => {
 			const timestamp = candle.timestamp;
 			// find index of candle in baseSeries
-			const result = searchCandleIndex(timestamp, false, baseSeries, this.chartBaseModel.period);
+			const result = searchCandleIndex(timestamp, { extrapolate: false }, baseSeries, this.chartBaseModel.period);
 			if (result.index >= 0 && result.index < baseSeries.length) {
 				candle.idx = result.index;
 				candles[result.index] = candle;
@@ -930,7 +933,7 @@ export class ChartModel extends ChartBaseElement {
 					return;
 				}
 				// detect index of updating candle
-				const result = searchCandleIndex(candle.timestamp, true, curCandles, this.getPeriod());
+				const result = searchCandleIndex(candle.timestamp, { extrapolate: true }, curCandles, this.getPeriod());
 				const idx = Math.min(result.index, curCandles.length);
 				isNewCandle = isNewCandle || idx === curCandles.length;
 				// update the candle and index
@@ -1046,7 +1049,7 @@ export class ChartModel extends ChartBaseElement {
 		const prepend: Candle[] = [];
 
 		prependUpdate.forEach(c => {
-			const result = searchCandleIndex(c.timestamp, false, target);
+			const result = searchCandleIndex(c.timestamp, { extrapolate: false }, target);
 			const idx = result.index;
 			if (idx < 0) {
 				prepend.push(c);
@@ -1213,7 +1216,7 @@ const updateCandles = (target: Candle[], update: Candle[]): UpdateCandlesResult 
 	const append: Candle[] = [];
 
 	update.forEach(c => {
-		const result = searchCandleIndex(c.timestamp, true, target);
+		const result = searchCandleIndex(c.timestamp, { extrapolate: true }, target);
 		const idx = result.index;
 		if (idx < 0) {
 			prepend.push(c);
