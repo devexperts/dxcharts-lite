@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -14,11 +14,11 @@ import { DragNDropXComponent } from '../dran-n-drop_helper/drag-n-drop-x.compone
 import { ChartPanComponent } from '../pan/chart-pan.component';
 
 // TODO find out why do we need this correction
-const NAV_MAP_KNOT_CORRECTION = 4;
+export const NAV_MAP_KNOT_CORRECTION = 4;
 
 export class NavigationMapMoveHandler extends ChartBaseElement {
-	private leftKnotDragStartXRelative: number = 0;
-	private rightKnotDragStartXRelative: number = 0;
+	public leftKnotDragStartXRelative: number = 0;
+	public rightKnotDragStartXRelative: number = 0;
 	private lastMousePosition: number = 0;
 
 	constructor(
@@ -116,12 +116,12 @@ export class NavigationMapMoveHandler extends ChartBaseElement {
 		//#endregion
 	}
 
-	private leftKnotDragStart = (point: Point) => {
+	public leftKnotDragStart = (point: Point) => {
 		const nMapChart = this.canvasBoundsContainer.getBounds(CanvasElement.N_MAP_CHART);
 		this.leftKnotDragStartXRelative = point.x - nMapChart.x - NAV_MAP_KNOT_CORRECTION;
 	};
 
-	private leftKnotDragTick = (dragInfo: DragInfo) => {
+	public leftKnotDragTick = (dragInfo: DragInfo) => {
 		const { delta: xDelta } = dragInfo;
 		const chart = this.canvasBoundsContainer.getBounds(CanvasElement.N_MAP_CHART);
 		const knotsWindowWidth = chart.width;
@@ -133,12 +133,12 @@ export class NavigationMapMoveHandler extends ChartBaseElement {
 		);
 	};
 
-	private rightKnotDragStart = (point: Point) => {
+	public rightKnotDragStart = (point: Point) => {
 		const nMapChart = this.canvasBoundsContainer.getBounds(CanvasElement.N_MAP_CHART);
 		this.rightKnotDragStartXRelative = point.x - nMapChart.x + NAV_MAP_KNOT_CORRECTION;
 	};
 
-	private rightKnotDragTick = (dragInfo: DragInfo) => {
+	public rightKnotDragTick = (dragInfo: DragInfo) => {
 		const { delta: xDelta } = dragInfo;
 		const nMapChart = this.canvasBoundsContainer.getBounds(CanvasElement.N_MAP_CHART);
 		const nMapChartWidth = nMapChart.width;
