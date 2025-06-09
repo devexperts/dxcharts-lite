@@ -102,7 +102,7 @@ export class PaneComponent extends ChartBaseElement {
 		this.mainExtent = yExtentComponent;
 		this.ht = this.canvasBoundsContainer.getBoundsHitTest(CanvasElement.PANE_UUID(uuid), {
 			// this is needed to reduce cross event fire zone, so cross event won't be fired when hover resizer
-			// maybe we need to rework it, this isn't perfect - top and bottom panes will have small no-hover area
+			// maybe we need to rework it, this isn't perfect: top and bottom panes will have small no-hover area
 			extensionY: -this.config.components.paneResizer.dragZone,
 		});
 	}
