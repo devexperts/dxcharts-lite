@@ -14,7 +14,7 @@ import { DragNDropXComponent } from '../dran-n-drop_helper/drag-n-drop-x.compone
 import { ChartPanComponent } from '../pan/chart-pan.component';
 
 // TODO find out why do we need this correction
-export const NAV_MAP_KNOT_CORRECTION = 4;
+const NAV_MAP_KNOT_CORRECTION = 4;
 
 export class NavigationMapMoveHandler extends ChartBaseElement {
 	public leftKnotDragStartXRelative: number = 0;
