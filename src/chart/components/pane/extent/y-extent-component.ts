@@ -3,11 +3,6 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-/*
- * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
- * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
- * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
- */
 import { CanvasBoundsContainer, CanvasElement } from '../../../canvas/canvas-bounds-container';
 import { YAxisConfig } from '../../../chart.config';
 import { Bounds } from '../../../model/bounds.model';
@@ -24,7 +19,7 @@ import { HighLowProvider, mergeHighLow } from '../../../model/scaling/auto-scale
 import { Pixel, Price, Unit } from '../../../model/scaling/viewport.model';
 import { uuid } from '../../../utils/uuid.utils';
 import { ChartBaseModel } from '../../chart/chart-base.model';
-import { createYExtentFormatters } from '../../chart/price.formatter';
+import { createYExtentFormatters } from '../../chart/price-formatters/price.formatter';
 import { DragNDropYComponent } from '../../dran-n-drop_helper/drag-n-drop-y.component';
 import { YAxisComponent } from '../../y_axis/y-axis.component';
 import { PaneHitTestController } from '../pane-hit-test.controller';
@@ -47,6 +42,7 @@ export class YExtentComponent extends ChartBaseElement {
 	public mainDataSeries?: DataSeriesModel;
 
 	constructor(
+		public config: YAxisConfig,
 		public paneUUID: string,
 		public idx: number,
 		public paneComponent: PaneComponent,
@@ -67,7 +63,7 @@ export class YExtentComponent extends ChartBaseElement {
 	) {
 		super();
 		this.addChildEntity(scale);
-		this.setValueFormatters(createYExtentFormatters(this));
+		this.setValueFormatters(createYExtentFormatters(this, config));
 		this.yAxis = createYAxisComponent(this.valueFormatter.bind(this), () => this.mainDataSeries);
 		this.addChildEntity(this.yAxis);
 	}
