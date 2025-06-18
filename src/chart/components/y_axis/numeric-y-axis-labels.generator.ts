@@ -1,8 +1,9 @@
 /*
- * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
+import { YAxisConfig } from '../../chart.config';
 import { DataSeriesModel } from '../../model/data-series.model';
 import { ViewportModel } from '../../model/scaling/viewport.model';
 import { lastOf } from '../../utils/array.utils';
@@ -20,6 +21,7 @@ export class NumericYAxisLabelsGenerator extends NumericAxisLabelsGenerator {
 		valueFormatter: (value: number) => string,
 		axisTypeProvider: () => PriceAxisType = () => 'regular',
 		singleLabelHeightPixels: number = 23,
+		config: YAxisConfig,
 	) {
 		super(
 			increment,
@@ -31,6 +33,7 @@ export class NumericYAxisLabelsGenerator extends NumericAxisLabelsGenerator {
 			() => dataSeriesProvider()?.getBaseline() ?? 1,
 			undefined,
 			singleLabelHeightPixels,
+			config,
 		);
 	}
 
