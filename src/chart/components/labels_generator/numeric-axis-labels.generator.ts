@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -9,6 +9,8 @@ import { AnimationFrameCache } from '../../utils/performance/animation-frame-cac
 import { identity } from '../../utils/function.utils';
 import { MathUtils } from '../../utils/math.utils';
 import { PriceIncrementsUtils } from '../../utils/price-increments.utils';
+import { TREASURY_32ND } from '../chart/price-formatters/treasury-price.formatter';
+import { YAxisConfig, YAxisConfigTreasuryFormat } from '../../chart.config';
 
 export type PriceAxisType = 'regular' | 'percent' | 'logarithmic';
 
@@ -40,6 +42,8 @@ export class NumericAxisLabelsGenerator implements LabelsGenerator {
 	private lastStart: number = 0;
 	private lastEnd: number = 0;
 
+	private treasuryFormat: YAxisConfigTreasuryFormat | undefined;
+
 	constructor(
 		private increment: number | null,
 		private startEndProvider: () => [Unit, Unit],
@@ -50,14 +54,17 @@ export class NumericAxisLabelsGenerator implements LabelsGenerator {
 		private baseLineProvider: () => number,
 		private labelFilter: (labels: NumericAxisLabel[]) => NumericAxisLabel[] = identity,
 		private singleLabelHeightPixels: number = 23,
+		private yAxisConfig?: YAxisConfig | undefined,
 	) {
 		this.labelsCache = new AnimationFrameCache(() => this.labelFilter(this.doGenerateLabels()));
+		this.treasuryFormat = this.yAxisConfig && this.yAxisConfig.treasuryFormat;
 	}
 
 	private generateRegularLabels(min: Unit, max: Unit, singleLabelHeightValue: number): NumericAxisLabel[] {
 		const newLabels: NumericAxisLabel[] = [];
 		this.withZero && newLabels.push({ value: 0, text: '0' });
 		let value = MathUtils.roundToNearest(min, singleLabelHeightValue);
+
 		while (value < max) {
 			// Adjust value to increment
 			const adjustedValue = MathUtils.roundToNearest(value, singleLabelHeightValue);
@@ -68,6 +75,7 @@ export class NumericAxisLabelsGenerator implements LabelsGenerator {
 			});
 			value = MathUtils.roundDecimal(value + singleLabelHeightValue);
 		}
+
 		return newLabels;
 	}
 
@@ -170,24 +178,28 @@ export class NumericAxisLabelsGenerator implements LabelsGenerator {
 		}
 		// auto-generated increment
 		if (!isNaN(valueLength)) {
-			const calculatedIncrement = PriceIncrementsUtils.autoDetectIncrementOfValueRange(valueLength);
+			const calculatedIncrement = this.treasuryFormat?.enabled
+				? TREASURY_32ND
+				: PriceIncrementsUtils.autoDetectIncrementOfValueRange(valueLength);
 			return this.adjustIncrementOnAxisType(calculatedIncrement);
 		}
 		return this.adjustIncrementOnAxisType(DEFAULT_REGULAR_INCREMENT);
 	}
 
 	protected adjustIncrementOnAxisType(increment: number) {
+		const calculatedIncrement = this.treasuryFormat?.enabled ? TREASURY_32ND : increment;
+
 		switch (this.axisTypeProvider()) {
 			case 'percent':
 				return increment;
 			case 'logarithmic':
 				const [logMin] = this.calculateMinMax();
 				const regularMin = logValueToUnit(logMin);
-				const regularIncrementedValue = regularMin + increment;
+				const regularIncrementedValue = regularMin + calculatedIncrement;
 				const incrementedLogValue = calcLogValue(regularIncrementedValue);
 				return incrementedLogValue - logMin;
 			case 'regular':
-				return increment;
+				return calculatedIncrement;
 		}
 	}
 
