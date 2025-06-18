@@ -221,6 +221,7 @@ export class PaneComponent extends ChartBaseElement {
 			);
 
 		const yExtentComponent = new YExtentComponent(
+			this.config.components.yAxis,
 			this.uuid,
 			extentIdx,
 			this,
