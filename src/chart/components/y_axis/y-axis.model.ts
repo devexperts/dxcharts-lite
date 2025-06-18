@@ -41,6 +41,7 @@ export class YAxisModel extends ChartBaseElement {
 			valueFormatter,
 			() => this.state.type,
 			state.labelHeight,
+			state,
 		);
 		this.baseLabelsModel = new YAxisBaseLabelsModel(
 			scale,
