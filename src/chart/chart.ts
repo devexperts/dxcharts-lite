@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 import ChartBootstrap from './bootstrap';
-import { BarType, PartialChartConfig } from './chart.config';
+import { BarType, PartialChartConfig, YAxisConfigTreasuryFormat } from './chart.config';
 import { CandleSeries } from './components/chart/chart.component';
 import { PaneComponent, YExtentFormatters } from './components/pane/pane.component';
 
@@ -112,6 +112,18 @@ export class Chart extends ChartBootstrap {
 	public setChartType(type: BarType): void {
 		this.data.setChartType(type);
 		this.yAxis.updateOrderedLabels();
+	}
+
+	/**
+	 * Sets if regular or logarithmic price types should apply treasury format
+	 */
+	public setTreasuryFormat(treasuryFormat: YAxisConfigTreasuryFormat) {
+		this.config.components.yAxis.treasuryFormat = treasuryFormat;
+		this.paneManager.yExtents.forEach(ext => {
+			ext.yAxis.updateOrderedLabels(true);
+			ext.yAxis.model.fancyLabelsModel.updateLabels(true);
+			ext.yAxis.model.baseLabelsModel.updateLabels();
+		});
 	}
 
 	public createPane(): PaneComponent {
