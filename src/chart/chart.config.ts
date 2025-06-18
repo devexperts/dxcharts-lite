@@ -3,11 +3,6 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-/*
- * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
- * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
- * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
- */
 import { PriceAxisType } from './components/labels_generator/numeric-axis-labels.generator';
 import { MagnetTarget } from './components/cross_tool/cross-tool.component';
 import { CrossToolType } from './components/cross_tool/cross-tool.model';
@@ -178,6 +173,9 @@ export const getDefaultConfig = (): FullChartConfig => ({
 						type: 'rectangle',
 					},
 				},
+			},
+			treasuryFormat: {
+				enabled: false,
 			},
 		},
 		xAxis: {
@@ -1141,6 +1139,10 @@ export interface YAxisConfig {
 	};
 	fontSize: number;
 	fontFamily: string;
+	/**
+	 * Treasury format for price values (1/32 tick format for bonds)
+	 */
+	treasuryFormat?: YAxisConfigTreasuryFormat;
 }
 
 export interface ChartConfigComponentsOffsets {
@@ -1516,6 +1518,10 @@ export interface YAxisLabels {
 	 * and optional labels ('bidAsk', 'highLow', 'prevDayClose', 'prePostMarket').
 	 */
 	settings: Record<YAxisLabelType, YAxisLabelConfig>;
+}
+
+export interface YAxisConfigTreasuryFormat {
+	enabled: boolean;
 }
 
 export interface YAxisTypeConfigProps {
