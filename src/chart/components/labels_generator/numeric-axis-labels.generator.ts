@@ -42,7 +42,7 @@ export class NumericAxisLabelsGenerator implements LabelsGenerator {
 	private lastStart: number = 0;
 	private lastEnd: number = 0;
 
-	private treasuryFormat: YAxisConfigTreasuryFormat | undefined;
+	protected treasuryFormat: YAxisConfigTreasuryFormat | undefined;
 
 	constructor(
 		private increment: number | null,
@@ -187,19 +187,17 @@ export class NumericAxisLabelsGenerator implements LabelsGenerator {
 	}
 
 	protected adjustIncrementOnAxisType(increment: number) {
-		const calculatedIncrement = this.treasuryFormat?.enabled ? TREASURY_32ND : increment;
-
 		switch (this.axisTypeProvider()) {
 			case 'percent':
 				return increment;
 			case 'logarithmic':
 				const [logMin] = this.calculateMinMax();
 				const regularMin = logValueToUnit(logMin);
-				const regularIncrementedValue = regularMin + calculatedIncrement;
+				const regularIncrementedValue = regularMin + increment;
 				const incrementedLogValue = calcLogValue(regularIncrementedValue);
 				return incrementedLogValue - logMin;
 			case 'regular':
-				return calculatedIncrement;
+				return increment;
 		}
 	}
 
