@@ -120,7 +120,8 @@ export class Chart extends ChartBootstrap {
 	public setTreasuryFormat(treasuryFormat: YAxisConfigTreasuryFormat) {
 		this.config.components.yAxis.treasuryFormat = treasuryFormat;
 		this.paneManager.yExtents.forEach(ext => {
-			ext.yAxis.updateOrderedLabels(true);
+			ext.yAxis.model.labelsGenerator.updateTreasuryFormat(treasuryFormat);
+			ext.yAxis.model.labelsGenerator.doGenerateLabels();
 			ext.yAxis.model.fancyLabelsModel.updateLabels(true);
 			ext.yAxis.model.baseLabelsModel.updateLabels();
 		});
