@@ -31,3 +31,5 @@ export const treasuryPriceFormatter = (value: number): string => {
 
 	return `${integerValue}'${thirtySecondsFormatted}`;
 };
+
+export const isTreasuryPriceFormat = (value: string) => Boolean(value.match(/^\-?0*(\d+)'(\d{2})$/));
