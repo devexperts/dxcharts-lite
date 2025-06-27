@@ -65,12 +65,13 @@ export interface DataSeriesViewportIndexes {
 export class DataSeriesModel<
 	D extends DataSeriesPoint = DataSeriesPoint,
 	V extends VisualSeriesPoint = VisualSeriesPoint,
+	C extends DataSeriesConfig = DataSeriesConfig,
 > extends ChartBaseElement {
 	public name: string = '';
 
 	public highlighted = false;
 	public yAxisLabelProvider: DataSeriesYAxisLabelsProvider;
-	public readonly config: DataSeriesConfig;
+	public readonly config: C;
 	public scale: ScaleModel;
 	public view: DataSeriesView;
 	protected _dataPoints: D[][] = [];
@@ -78,7 +79,7 @@ export class DataSeriesModel<
 	/**
 	 * Should be used for paint tools like rectangular drawing or diff cloud
 	 */
-	public linkedDataSeriesModels: DataSeriesModel<D, V>[] = [];
+	public linkedDataSeriesModels: DataSeriesModel<D, V, C>[] = [];
 
 	// provides high-low regarding axis type
 	public highLowProvider: HighLowProvider;
@@ -125,10 +126,11 @@ export class DataSeriesModel<
 		public id: string,
 		public htId: number,
 		public parentId?: number | string,
-		_config: AtLeastOne<DataSeriesConfig> = cloneUnsafe(DEFAULT_DATA_SERIES_CONFIG),
+		_config?: AtLeastOne<C>,
 	) {
 		super();
-		this.config = merge(_config, DEFAULT_DATA_SERIES_CONFIG);
+		const config = _config ?? cloneUnsafe(DEFAULT_DATA_SERIES_CONFIG);
+		this.config = merge(config, DEFAULT_DATA_SERIES_CONFIG);
 		this.scale = extentComponent.scale;
 		this.view = new DataSeriesView(
 			this,
