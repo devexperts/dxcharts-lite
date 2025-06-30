@@ -31,7 +31,7 @@ export interface BaseHover {
 
 export interface HoverParts {
 	readonly candleHover: CandleHover | undefined;
-	readonly compareSeriesHover: CompareSeriesHover[];
+	readonly compareSeriesHover: CompareSeriesHover[] | undefined;
 	[key: string]: unknown;
 }
 
