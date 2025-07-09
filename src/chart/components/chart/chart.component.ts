@@ -55,6 +55,7 @@ import { DynamicObjectsComponent } from '../dynamic-objects/dynamic-objects.comp
 import { ChartResizeHandler } from '../../inputhandlers/chart-resize.handler';
 import { PartialExcept } from '../../utils/types.utils';
 import { debounce } from '../../utils/performance/debounce.utils';
+import { LinearTrendDrawer } from '../../drawers/data-series-drawers/linear-trend.drawer';
 
 /**
  * Represents a financial instrument to be displayed on a chart
@@ -262,6 +263,7 @@ export class ChartComponent extends ChartBaseElement {
 		const chartPaneId = CanvasElement.PANE_UUID(CHART_UUID);
 		const mainChartBoundsProvider = () => this.canvasBoundsContainer.getBounds(chartPaneId);
 		this.registerDataSeriesTypeDrawer('LINEAR', new LinearDrawer());
+		this.registerDataSeriesTypeDrawer('LINEAR_TREND', new LinearTrendDrawer());
 		this.registerDataSeriesTypeDrawer('HISTOGRAM', new HistogramDrawer());
 		this.registerDataSeriesTypeDrawer('TREND_HISTOGRAM', new TrendHistogramDrawer());
 		this.registerDataSeriesTypeDrawer('POINTS', new PointsDrawer());
