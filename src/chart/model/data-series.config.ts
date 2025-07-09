@@ -24,6 +24,7 @@ export type DataSeriesType =
 	| 'COLOR_CANDLE'
 	| 'RECTANGULAR'
 	| 'EMA_CLOUD_LINE'
+	| 'LINEAR_TREND'
 	| keyof BarTypes
 	| string;
 
