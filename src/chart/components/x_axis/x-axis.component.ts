@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -136,21 +136,13 @@ export class XAxisComponent extends ChartBaseElement {
 				}),
 		);
 
-		// recalculate existing ones, the number of labels is static
-		if (this.config.components.chart.minCandlesOffset) {
-			this.addRxSubscription(
-				merge(this.scale.xChanged, this.chartResizeHandler.canvasResized)
-					.pipe(throttleTime(50, animationFrameScheduler, { trailing: true, leading: true }))
-					.subscribe(() => this.xAxisLabelsGenerator.recalculateLabels()),
-			);
-			// generate visible viewport range labels (real and fake candles), the number of labels is dynamic
-		} else {
-			this.addRxSubscription(
-				merge(this.scale.xChanged, this.chartResizeHandler.canvasResized)
-					.pipe(throttleTime(150, animationFrameScheduler, { trailing: true, leading: true }))
-					.subscribe(() => this.xAxisLabelsGenerator.generateLabels(undefined, true)),
-			);
-		}
+		this.addRxSubscription(
+			merge(this.scale.xChanged, this.chartResizeHandler.canvasResized)
+				.pipe(throttleTime(50, animationFrameScheduler, { trailing: true, leading: true }))
+				.subscribe(() => {
+					this.xAxisLabelsGenerator.recalculateLabels();
+				}),
+		);
 
 		this.addRxSubscription(
 			this.chartComponent.chartModel.candlesUpdatedSubject
