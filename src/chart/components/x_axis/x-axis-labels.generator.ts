@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -29,6 +29,7 @@ import {
 	generateWeightsMapForConfig,
 	mapCandlesToWeightedPoints,
 } from './time/x-axis-weights.generator';
+import { Candle } from '../../model/candle.model';
 
 export interface XAxisLabelsGenerator {
 	/**
@@ -69,6 +70,7 @@ export class XAxisTimeLabelsGenerator implements XAxisLabelsGenerator {
 	private labelsGroupedByWeight: Record<number, XAxisLabelWeighted[]> = {};
 	private weightedCache?: { labels: XAxisLabelWeighted[]; coverUpLevel: number };
 	private levelsCache: Record<number, XAxisLabelWeighted[]> = {};
+	private labelCache: Map<string, XAxisLabelWeighted> = new Map();
 
 	get labels(): XAxisLabelWeighted[] {
 		return this.filterLabelsInViewport(this.getLabelsFromChartType());
@@ -127,10 +129,21 @@ export class XAxisTimeLabelsGenerator implements XAxisLabelsGenerator {
 		}
 	}
 
-	/**
-	 * Make a prediction(750) about how many candles we need to fake to fill all X axis by labels
-	 */
-	private getAllCandlesWithFake(prependedCandles: VisualCandle[] = []) {
+	private getVisualCandleAtIndex(
+		idx: number,
+		dataPoints: Candle[],
+		visualPoints: VisualCandle[],
+		meanCandleWidth: number,
+		period: number,
+	): VisualCandle {
+		if (idx >= 0 && idx < visualPoints.length) {
+			return visualPoints[idx];
+		}
+		// generate fake candle for out-of-range index
+		return fakeVisualCandle(dataPoints, visualPoints, meanCandleWidth, idx, period);
+	}
+
+	private getVisualCandlesWithFake(prependedCandles: VisualCandle[] = []): VisualCandle[] {
 		const visualCandles = this.chartModel.mainCandleSeries.visualPoints;
 		if (visualCandles.length === 0) {
 			return [];
@@ -147,6 +160,59 @@ export class XAxisTimeLabelsGenerator implements XAxisLabelsGenerator {
 		);
 
 		return [...prependedCandles, ...visualCandles, ...appendFakeCandle];
+	}
+
+	private getViewportCandlesWithFake(): VisualCandle[] {
+		const visualCandles = this.chartModel.mainCandleSeries.visualPoints;
+		if (visualCandles.length === 0 || this.scale.xEnd - this.scale.xStart <= 1) {
+			return [];
+		}
+		const meanCandleWidth = this.chartModel.mainCandleSeries.meanCandleWidth;
+		const period = this.chartModel.getPeriod();
+		const dataPoints = this.chartModel.mainCandleSeries.dataPoints;
+
+		// calculate visible pixel range for the chart area
+		const bounds = this.canvasBoundsContainer.getBounds(CanvasElement.CHART);
+		const leftPx = 0;
+		const rightPx = bounds.width;
+
+		// convert to units
+		const leftUnit = this.scale.fromX(leftPx);
+		const rightUnit = this.scale.fromX(rightPx);
+
+		// anchor everything to index 0 (absolute index)
+		// find the X position of index 0 (anchor)
+		let anchorX = 0;
+		if (visualCandles.length > 0) {
+			// if we have visible candles, use the X of the first visible candle at its idx
+			const firstVisible = visualCandles[0];
+			anchorX = firstVisible.centerUnit - (firstVisible.candle.idx ?? 0) * meanCandleWidth;
+		}
+
+		// buffer is needed to to avoid empty space when moving viewport
+		const buffer = 500;
+		// allows to round labels better
+		const modulus = 500;
+		// use anchorX and meanCandleWidth to map units to indices
+		const rawFirstIdx = Math.floor((leftUnit - anchorX) / meanCandleWidth) - buffer;
+		const rawLastIdx = Math.ceil((rightUnit - anchorX) / meanCandleWidth) + buffer;
+		const firstIdx = Math.floor(rawFirstIdx / modulus) * modulus;
+		const lastIdx = Math.ceil(rawLastIdx / modulus) * modulus;
+
+		const allCandles: VisualCandle[] = [];
+		for (let idx = firstIdx; idx <= lastIdx; idx++) {
+			allCandles.push(this.getVisualCandleAtIndex(idx, dataPoints, visualCandles, meanCandleWidth, period));
+		}
+
+		return [...allCandles];
+	}
+
+	private getAllCandlesWithFake(prependedCandles: VisualCandle[] = []): VisualCandle[] {
+		if (this.config.components.chart.minCandlesOffset) {
+			return this.getVisualCandlesWithFake(prependedCandles);
+		} else {
+			return this.getViewportCandlesWithFake();
+		}
 	}
 
 	/**
@@ -183,6 +249,7 @@ export class XAxisTimeLabelsGenerator implements XAxisLabelsGenerator {
 	 * @returns {void}
 	 */
 	public setFormatsForLabelsConfig(newFormatsByWeightMap: Record<TimeFormatWithDuration, string>) {
+		this.clearLabelCache();
 		const { weightToTimeFormatsDict, weightToTimeFormatMatcherDict } =
 			generateWeightsMapForConfig(newFormatsByWeightMap);
 		this.formatsByWeightMap = newFormatsByWeightMap;
@@ -200,14 +267,25 @@ export class XAxisTimeLabelsGenerator implements XAxisLabelsGenerator {
 	 * @function
 	 * @returns {void}
 	 */
-	private generateWeightedLabels(prependedCandles: VisualCandle[] = []) {
+	private generateWeightedLabels(prependedCandles?: VisualCandle[]): void {
 		const allCandlesWithFake = this.getAllCandlesWithFake(prependedCandles);
 		const weightedPoints = mapCandlesToWeightedPoints(
 			allCandlesWithFake,
 			this.weightToTimeFormatMatcherArray,
 			this.timeZoneModel.tzOffset(this.config.timezone),
 		);
-		const weightedLabels = this.mapWeightedPointsToLabels(weightedPoints, allCandlesWithFake);
+		const weightedLabels: XAxisLabelWeighted[] = [];
+		for (let i = 0; i < allCandlesWithFake.length; i++) {
+			const idx = allCandlesWithFake[i].candle.idx ?? i;
+			const ts = allCandlesWithFake[i].candle.timestamp;
+			const cacheKey = `${idx}_${ts}`;
+			let label = this.labelCache.get(cacheKey);
+			if (!label) {
+				label = this.mapWeightedPointsToLabels([weightedPoints[i]], [allCandlesWithFake[i]])[0];
+				this.labelCache.set(cacheKey, label);
+			}
+			weightedLabels.push(label);
+		}
 		this.labelsGroupedByWeight = groupLabelsByWeight(weightedLabels);
 		this.weightedCache = undefined;
 		this.levelsCache = {};
@@ -498,5 +576,9 @@ export class XAxisTimeLabelsGenerator implements XAxisLabelsGenerator {
 			},
 			{},
 		);
+	}
+
+	private clearLabelCache() {
+		this.labelCache.clear();
 	}
 }
