@@ -3,7 +3,12 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { CanvasBoundsContainer, CanvasElement } from '../../../canvas/canvas-bounds-container';
+/*
+ * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
+ * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+ * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
+import { CanvasBoundsContainer, CanvasElement, CHART_UUID } from '../../../canvas/canvas-bounds-container';
 import { YAxisConfig } from '../../../chart.config';
 import { Bounds } from '../../../model/bounds.model';
 import { CanvasModel } from '../../../model/canvas.model';
@@ -118,6 +123,11 @@ export class YExtentComponent extends ChartBaseElement {
 		this.dataSeries.add(series);
 		if (this.dataSeries.size === 1) {
 			this.mainDataSeries = series;
+		} else if (this.paneComponent.yExtentComponents.length > 1 && this.paneUUID !== CHART_UUID) {
+			this.mainDataSeries = series;
+
+			const ds = Array.from(this.paneComponent.mainExtent.dataSeries);
+			this.paneComponent.mainExtent.mainDataSeries = ds[ds.length - 1];
 		}
 		this.paneComponent.updateView();
 		this.paneComponent.seriesAddedSubject.next(series);
