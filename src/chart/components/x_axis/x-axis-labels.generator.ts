@@ -35,7 +35,7 @@ export interface XAxisLabelsGenerator {
 	/**
 	 * Generates x-axis labels from scratch. Heavy operation.
 	 */
-	generateLabels(prependedCandles?: VisualCandle[]): void;
+	generateLabels(prependedCandles?: VisualCandle[], generateFromCache?: boolean): void;
 	/**
 	 * Updates current labels state (x-position). Lightweight operation.
 	 */
@@ -258,38 +258,7 @@ export class XAxisTimeLabelsGenerator implements XAxisLabelsGenerator {
 			.map<[number, TimeFormatMatcher]>(([k, v]) => [parseInt(k, 10), v])
 			.sort(([a], [b]) => b - a);
 		this.weightToTimeFormatsDict = weightToTimeFormatsDict;
-		this.generateWeightedLabels();
-	}
-
-	/**
-	 * Generates weighted labels based on allCandlesWithFake, weightToTimeFormatMatcherDict and timeZoneModel.
-	 * @private
-	 * @function
-	 * @returns {void}
-	 */
-	private generateWeightedLabels(prependedCandles?: VisualCandle[]): void {
-		const allCandlesWithFake = this.getAllCandlesWithFake(prependedCandles);
-		const weightedPoints = mapCandlesToWeightedPoints(
-			allCandlesWithFake,
-			this.weightToTimeFormatMatcherArray,
-			this.timeZoneModel.tzOffset(this.config.timezone),
-		);
-		const weightedLabels: XAxisLabelWeighted[] = [];
-		for (let i = 0; i < allCandlesWithFake.length; i++) {
-			const idx = allCandlesWithFake[i].candle.idx ?? i;
-			const ts = allCandlesWithFake[i].candle.timestamp;
-			const cacheKey = `${idx}_${ts}`;
-			let label = this.labelCache.get(cacheKey);
-			if (!label) {
-				label = this.mapWeightedPointsToLabels([weightedPoints[i]], [allCandlesWithFake[i]])[0];
-				this.labelCache.set(cacheKey, label);
-			}
-			weightedLabels.push(label);
-		}
-		this.labelsGroupedByWeight = groupLabelsByWeight(weightedLabels);
-		this.weightedCache = undefined;
-		this.levelsCache = {};
-		this.recalculateCachedLabels();
+		this.generateLabels();
 	}
 
 	/**
@@ -414,11 +383,37 @@ export class XAxisTimeLabelsGenerator implements XAxisLabelsGenerator {
 	}
 
 	/**
-	 * Calls the method generateWeightedLabels to generate labels.
+	 * Generates labels based on allCandlesWithFake, weightToTimeFormatMatcherDict and timeZoneModel.
 	 * @returns {void}
 	 */
-	public generateLabels(prependedCandles?: VisualCandle[]): void {
-		this.generateWeightedLabels(prependedCandles);
+	public generateLabels(prependedCandles?: VisualCandle[], generateFromCache = false): void {
+		const allCandlesWithFake = this.getAllCandlesWithFake(prependedCandles);
+		const weightedPoints = mapCandlesToWeightedPoints(
+			allCandlesWithFake,
+			this.weightToTimeFormatMatcherArray,
+			this.timeZoneModel.tzOffset(this.config.timezone),
+		);
+		let weightedLabels: XAxisLabelWeighted[] = [];
+		if (generateFromCache) {
+			for (let i = 0; i < allCandlesWithFake.length; i++) {
+				const idx = allCandlesWithFake[i].candle.idx ?? i;
+				const ts = allCandlesWithFake[i].candle.timestamp;
+				const cacheKey = `${idx}_${ts}`;
+				let label = this.labelCache.get(cacheKey);
+				if (!label) {
+					label = this.mapWeightedPointsToLabels([weightedPoints[i]], [allCandlesWithFake[i]])[0];
+					this.labelCache.set(cacheKey, label);
+				}
+				weightedLabels.push(label);
+			}
+		} else {
+			weightedLabels = this.mapWeightedPointsToLabels(weightedPoints, allCandlesWithFake);
+		}
+
+		this.labelsGroupedByWeight = groupLabelsByWeight(weightedLabels);
+		this.weightedCache = undefined;
+		this.levelsCache = {};
+		this.recalculateCachedLabels();
 	}
 
 	/**
