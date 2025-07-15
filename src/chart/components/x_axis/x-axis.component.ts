@@ -148,7 +148,7 @@ export class XAxisComponent extends ChartBaseElement {
 			this.addRxSubscription(
 				merge(this.scale.xChanged, this.chartResizeHandler.canvasResized)
 					.pipe(throttleTime(150, animationFrameScheduler, { trailing: true, leading: true }))
-					.subscribe(() => this.xAxisLabelsGenerator.generateLabels()),
+					.subscribe(() => this.xAxisLabelsGenerator.generateLabels(undefined, true)),
 			);
 		}
 
