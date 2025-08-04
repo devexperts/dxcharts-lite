@@ -222,10 +222,20 @@ export class YAxisComponent extends ChartBaseElement {
 	/**
 	 * An easier way to manage custom y-axis labels, than y-axis labels providers.
 	 * However, overlapping avoidance is not supported
+	 * deprecated because of naming, use updateCustomYAxisLabel instead
 	 * @param name
 	 * @param label
 	 */
 	public addSimpleYAxisLabel(name: string, label: VisualYAxisLabel) {
+		this.model.fancyLabelsModel.customLabels[name] = label;
+		this.canvasModel.fireDraw();
+	}
+	/**
+	 * Update custom y-axis label
+	 * @param name
+	 * @param label
+	 */
+	public updateCustomYAxisLabel(name: string, label: VisualYAxisLabel) {
 		this.model.fancyLabelsModel.customLabels[name] = label;
 		this.canvasModel.fireDraw();
 	}
