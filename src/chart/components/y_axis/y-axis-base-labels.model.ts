@@ -71,9 +71,7 @@ export class YAxisBaseLabelsModel extends ChartBaseElement {
 	 * Then, it calls the updateYAxisWidth method to update the width of the y-axis.
 	 */
 	public updateLabels() {
-		animationFrameThrottledPrior(this.animFrameId, () => {
-			this.labels = this.labelsGenerator.generateNumericLabels();
-			this.canvasBoundsContainer.updateYAxisWidths();
-		});
+		this.labels = this.labelsGenerator.generateNumericLabels();
+		animationFrameThrottledPrior(this.animFrameId, () => this.canvasBoundsContainer.updateYAxisWidths());
 	}
 }
