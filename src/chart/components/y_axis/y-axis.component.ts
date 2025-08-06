@@ -64,7 +64,6 @@ export class YAxisComponent extends ChartBaseElement {
 	constructor(
 		private eventBus: EventBus,
 		private config: FullChartConfig,
-		private mainCanvasModel: CanvasModel,
 		private canvasModel: CanvasModel,
 		public scale: ScaleModel,
 		private canvasInputListeners: CanvasInputListenerComponent,
@@ -223,7 +222,7 @@ export class YAxisComponent extends ChartBaseElement {
 	/**
 	 * An easier way to manage custom y-axis labels, than y-axis labels providers.
 	 * However, overlapping avoidance is not supported
-	 * deprecated because of naming, use updateCustomYAxisLabel instead
+  	 * deprecated because of naming, use updateCustomYAxisLabel instead
 	 * @param name
 	 * @param label
 	 */
@@ -287,7 +286,6 @@ export class YAxisComponent extends ChartBaseElement {
 			this.scale.autoScale(true);
 			this.model.fancyLabelsModel.updateLabels(true);
 			this.updateCursor();
-			this.mainCanvasModel.fireDraw();
 		}
 	}
 
