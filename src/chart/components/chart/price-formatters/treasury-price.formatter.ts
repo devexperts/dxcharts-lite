@@ -32,29 +32,4 @@ export const treasuryPriceFormatter = (value: number): string => {
 	return `${integerValue}'${thirtySecondsFormatted}`;
 };
 
-const getTreasuryPriceMatch = (value: string): RegExpMatchArray | null => value.match(/^\-?0*(\d+)'(\d{2})$/);
-export const isTreasuryPriceFormat = (value: string) => Boolean(getTreasuryPriceMatch(value));
-
-/**
- * Parses treasury price format back to decimal number
- * 
- * Examples:
- * 132'00 => 132.0
- * 132'02 => 132.0625
- * 132'10 => 132.3125
- */
-export const parseTreasuryPrice = (value: string): number => {
-	const match = getTreasuryPriceMatch(value);
-	if (match) {
-		const integerPart = parseInt(match[1], 10);
-		const thirtySeconds = parseInt(match[2], 10);
-		
-		// Convert 32nds to decimal
-		const decimalPart = (thirtySeconds * TREASURY_32ND);
-		
-		return integerPart + decimalPart;
-	}
-
-	// Return Number(value) for non-treasury formats (this will be NaN for invalid strings)
-	return Number(value);
-};
+export const isTreasuryPriceFormat = (value: string) => Boolean(value.match(/^\-?0*(\d+)'(\d{2})$/));
