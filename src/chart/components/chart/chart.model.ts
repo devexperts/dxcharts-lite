@@ -4,7 +4,7 @@
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 import { Observable, Subject, merge } from 'rxjs';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { distinctUntilChanged } from 'rxjs/operators';
 import {
 	CHART_UUID,
 	CanvasBoundsContainer,
@@ -39,7 +39,6 @@ import { CandleSeries, ChartInstrument, PartialCandle } from './chart.component'
 import { fakeCandle } from './fake-candles';
 import { SecondaryChartColorsPool } from './secondary-chart-colors-pool';
 import { uuid } from '../../utils/uuid.utils';
-import { ONE_FRAME_MS } from '../../utils/numeric-constants.utils';
 
 export type VisualCandleCalculator = (
 	candle: Candle,
@@ -152,12 +151,6 @@ export class ChartModel extends ChartBaseElement {
 				.subscribe(bounds => {
 					this.handleChartResize(bounds);
 				}),
-		);
-
-		this.addRxSubscription(
-			this.scale.changed
-				.pipe(debounceTime(ONE_FRAME_MS))
-				.subscribe(() => this.paneManager.yExtents.forEach(e => e.yAxis.updateOrderedLabels(true))),
 		);
 	}
 
