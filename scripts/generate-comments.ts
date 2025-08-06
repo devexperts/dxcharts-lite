@@ -4,7 +4,7 @@ import * as path from 'path';
 import * as diff from 'diff';
 import { exit } from 'process';
 
-const apiToken = 'sk-zzz';
+const apiToken = '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';
 
 const generateComment = (codeText: string): Promise<string> =>
 	fetch('https://api.openai.com/v1/chat/completions', {
