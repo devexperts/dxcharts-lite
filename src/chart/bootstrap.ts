@@ -502,6 +502,7 @@ export default class ChartBootstrap {
 			() => this.xAxisComponent.xAxisLabelsGenerator.labels,
 			() => [],
 			undefined,
+			undefined,
 			() => config.components.grid.visible,
 		);
 		this.chartComponents.push(verticalGridComponent);
