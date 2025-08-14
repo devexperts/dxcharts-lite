@@ -26,6 +26,7 @@ export class GridComponent extends ChartBaseElement {
 		yBoundsProvider: BoundsProvider,
 		xLabelsProvider: () => NumericAxisLabel[],
 		yLabelsProvider: () => NumericAxisLabel[],
+		extentIdx?: number,
 		getBaseline?: () => Unit,
 		drawPredicate?: () => boolean,
 	) {
@@ -40,6 +41,7 @@ export class GridComponent extends ChartBaseElement {
 			xLabelsProvider,
 			yLabelsProvider,
 			drawPredicate,
+			extentIdx,
 			getBaseline,
 		);
 	}
