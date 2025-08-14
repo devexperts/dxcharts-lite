@@ -33,6 +33,7 @@ export class GridDrawer implements Drawer {
 		private xLabelsProvider: () => NumericAxisLabel[],
 		private yLabelsProvider: () => NumericAxisLabel[],
 		private drawPredicate: () => boolean = () => true,
+		private extentIdx?: number,
 		private getBaseline?: () => Unit,
 	) {}
 
@@ -56,6 +57,7 @@ export class GridDrawer implements Drawer {
 	drawZeroLine(ctx: CanvasRenderingContext2D) {
 		const yAxisLabels = this.yLabelsProvider();
 		if (
+			this.extentIdx === 0 &&
 			this.getBaseline &&
 			this.yAxisState.type === 'percent' &&
 			this.yAxisState.zeroPercentLine &&
