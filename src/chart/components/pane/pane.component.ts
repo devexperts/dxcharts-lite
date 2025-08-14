@@ -136,6 +136,7 @@ export class PaneComponent extends ChartBaseElement {
 	 */
 	private createGridComponent(
 		uuid: string,
+		extentIdx: number,
 		scale: ScaleModel,
 		yAxisState: YAxisConfig,
 		yAxisLabelsGetter: () => NumericAxisLabel[],
@@ -147,12 +148,13 @@ export class PaneComponent extends ChartBaseElement {
 			scale,
 			this.config,
 			yAxisState,
-			`PANE_${uuid}_grid_drawer`,
+			`PANE_${uuid}_${extentIdx}_grid_drawer`,
 			this.drawingManager,
 			() => this.canvasBoundsContainer.getBounds(chartPaneId),
 			() => this.canvasBoundsContainer.getBounds(chartPaneId),
 			() => [],
 			yAxisLabelsGetter,
+			extentIdx,
 			yAxisBaselineGetter,
 			() => this.config.components.grid.visible,
 		);
@@ -205,6 +207,7 @@ export class PaneComponent extends ChartBaseElement {
 			new YAxisComponent(
 				this.eventBus,
 				this.config,
+				this.mainCanvasModel,
 				this.yAxisLabelsCanvasModel,
 				scaleModel,
 				this.canvasInputListener,
@@ -253,6 +256,7 @@ export class PaneComponent extends ChartBaseElement {
 
 		const gridComponent = this.createGridComponent(
 			this.uuid,
+			yExtentComponent.idx,
 			scaleModel,
 			yExtentComponent.yAxis.state,
 			() => yExtentComponent.yAxis.model.baseLabelsModel.labels,
