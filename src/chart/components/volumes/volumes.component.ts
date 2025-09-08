@@ -48,7 +48,7 @@ export class VolumesComponent extends ChartBaseElement {
 			config,
 			this.volumesModel,
 			chartComponent.chartModel,
-			() => (this.config.components.volumes.showSeparately ? (this.separateVolumes.pane?.scale ?? scale) : scale),
+			() => (this.config.components.volumes.showSeparately ? this.separateVolumes.pane?.scale ?? scale : scale),
 			this.volumesColorByChartTypeMap,
 			() => true,
 		);
@@ -77,16 +77,6 @@ export class VolumesComponent extends ChartBaseElement {
 	 * @param {boolean} separate - A boolean value indicating whether the volumes should be shown separately or not.
 	 * @returns {void}
 	 */
-	/** Restores separate volumes pane and dynamic object after study pane cleanup. */
-	public ensureSeparateVolumesHost(): void {
-		if (!this.config.components.volumes.showSeparately) {
-			return;
-		}
-		this.separateVolumes.activateSeparateVolumes();
-		this.syncVolumesDynamicObject();
-		this.canvasModel.fireDraw();
-	}
-
 	public setShowVolumesSeparatly(separate: boolean) {
 		if (this.config.components.volumes.showSeparately !== separate) {
 			this.config.components.volumes.showSeparately = separate;

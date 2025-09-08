@@ -72,7 +72,7 @@ export const getDefaultConfig = (): FullChartConfig => ({
 	rtl: false,
 	intlFormatter: {
 		decimalSeparator: '.',
-		thousandsSeparator: ',',
+		thousandsSeparator: '',
 	},
 	scale: {
 		keepZoomXOnYAxisChange: true,
@@ -121,7 +121,6 @@ export const getDefaultConfig = (): FullChartConfig => ({
 				y: true,
 			},
 			sortCandles: defaultSortCandles,
-			candleTimestampAnchor: 'open',
 		},
 		yAxis: {
 			type: 'regular',
@@ -138,8 +137,8 @@ export const getDefaultConfig = (): FullChartConfig => ({
 			labelBoxMargin: {
 				top: 4,
 				bottom: 4,
-				end: 12,
-				start: 12,
+				end: 8,
+				start: 10,
 			},
 			typeConfig: {
 				badge: {
@@ -200,7 +199,6 @@ export const getDefaultConfig = (): FullChartConfig => ({
 				bottom: 16,
 			},
 			fontStyle: '',
-			showNonTimeBasedFutureLabels: true,
 		},
 		events: {
 			visible: false,
@@ -246,7 +244,7 @@ export const getDefaultConfig = (): FullChartConfig => ({
 			logoWidth: 20,
 			logoHeight: 20,
 		},
-		highLow: { visible: false, font: '12px sans-serif', prefix: { high: 'H: ', low: 'L: ' }, lineDash: [2, 4] },
+		highLow: { visible: false, font: '12px sans-serif', prefix: { high: 'H: ', low: 'L: ' } },
 		highlights: {
 			visible: false,
 			fontFamily: 'Open Sans',
@@ -258,7 +256,7 @@ export const getDefaultConfig = (): FullChartConfig => ({
 		},
 		crossTool: {
 			type: 'cross-and-labels',
-			discrete: true,
+			discrete: false,
 			magnetTarget: 'none',
 			lineDash: [4, 6],
 			xAxisLabelFormat: [
@@ -540,10 +538,6 @@ export const getDefaultConfig = (): FullChartConfig => ({
 			rectLabelTextColor: 'rgba(255,255,255,1)',
 			rectLabelInvertedTextColor: 'rgba(20,20,19,1)',
 			zeroPercentLine: 'rgba(55,55,54,1)',
-			highlight: {
-				backgroundColor: 'rgba(255,255,255,0.1)',
-				labelTextColor: 'rgba(255,255,255,1)',
-			},
 		},
 		labels: {
 			lastPrice: {
@@ -617,8 +611,8 @@ export const getDefaultConfig = (): FullChartConfig => ({
 		'GRID',
 		'X_AXIS',
 		'Y_AXIS',
-		'WATERMARK',
 		'DYNAMIC_OBJECTS',
+		'WATERMARK',
 		'N_MAP_CHART',
 		'EVENTS',
 	],
@@ -770,20 +764,6 @@ export interface DateFormats {
 	day: DateFormat;
 }
 
-export interface YAxisMainColors {
-	backgroundColor: string;
-	labelTextColor: string;
-}
-
-export interface YAxisColors extends YAxisMainColors {
-	zeroPercentLine: string;
-	labelInvertedTextColor: string;
-	labelBoxColor: string;
-	rectLabelTextColor: string;
-	rectLabelInvertedTextColor: string;
-	highlight: YAxisMainColors;
-}
-
 export interface FullChartColors {
 	candleTheme: CandleTheme;
 	activeCandleTheme: CandleTheme;
@@ -806,7 +786,15 @@ export interface FullChartColors {
 		highColor: string;
 		lowColor: string;
 	};
-	yAxis: YAxisColors;
+	yAxis: {
+		backgroundColor: string;
+		zeroPercentLine: string;
+		labelTextColor: string;
+		labelInvertedTextColor: string;
+		labelBoxColor: string;
+		rectLabelTextColor: string;
+		rectLabelInvertedTextColor: string;
+	};
 	xAxis: {
 		backgroundColor: string;
 		labelTextColor: string;
@@ -991,9 +979,6 @@ export interface ChartComponents {
 	paneResizer: ChartConfigComponentsPaneResizer;
 }
 
-export const candleTimestampAnchor = ['open', 'close'] as const;
-export type CandleTimestampAnchor = (typeof candleTimestampAnchor)[number];
-
 export interface ChartConfigComponentsChart {
 	/**
 	 * The type of chart. Candle, bar, area and others.
@@ -1041,11 +1026,6 @@ export interface ChartConfigComponentsChart {
 	};
 	// optional because backward compability
 	sortCandles?: (candles: Candle[]) => Candle[];
-	/**
-	 * Defines whether `Candle.timestamp` represents candle open (start) or close (end) time.
-	 * @default 'open'
-	 */
-	candleTimestampAnchor?: CandleTimestampAnchor;
 }
 
 export interface ChartConfigComponentsEvents {
@@ -1109,11 +1089,6 @@ export interface ChartConfigComponentsXAxis {
 	fontSize: number;
 	fontFamily: string;
 	fontStyle: string;
-	/**
-	 * `false`: no x-axis labels in the empty future area for ranges and ticks
-	 * `true`: draw future labels there
-	 */
-	showNonTimeBasedFutureLabels: boolean;
 }
 
 export type YAxisAlign = 'left' | 'right';
@@ -1234,7 +1209,6 @@ export interface ChartConfigComponentsHighLow {
 	 */
 	font: string;
 	prefix: { high: string; low: string };
-	lineDash: Array<number>;
 }
 export interface ChartConfigComponentsCrossTool {
 	/**
@@ -1511,7 +1485,6 @@ export interface YAxisLabelColorConfig {
 	boxColor: string;
 	textColor?: string;
 	descriptionText?: string;
-	descriptionTextColor?: string;
 }
 
 export interface YAxisLastPriceLabelColorConfig {

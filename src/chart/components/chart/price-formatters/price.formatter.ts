@@ -6,27 +6,14 @@
 import { YAxisConfig } from '../../../chart.config';
 import { DataSeriesModel } from '../../../model/data-series.model';
 import { Unit, unitToPercent } from '../../../model/scaling/viewport.model';
-import { MathUtils, replaceMinusSign } from '../../../utils/math.utils';
 import { PriceIncrementsUtils } from '../../../utils/price-increments.utils';
-import { MINUS_SIGN } from '../../../utils/symbol-constants';
 import { YExtentComponent } from '../../pane/extent/y-extent-component';
 import { YExtentFormatters } from '../../pane/pane.component';
 import { treasuryPriceFormatter } from './treasury-price.formatter';
 
-export interface FormatterOptions {
-	withDecimalSeparator?: boolean;
-	withThousandsSeparator?: boolean;
-}
-
-export const DEFAULT_FORMATTER_OPTIONS: FormatterOptions = {
-	withDecimalSeparator: true,
-	withThousandsSeparator: false,
-};
-
 export const createRegularPriceFormatter =
 	(extent: YExtentComponent, config: YAxisConfig) =>
-	(value: unknown, options?: FormatterOptions): string => {
-		const { withDecimalSeparator, withThousandsSeparator } = { ...DEFAULT_FORMATTER_OPTIONS, ...options };
+	(value: unknown): string => {
 		let checkedValue: number;
 		if (typeof value === 'number') {
 			checkedValue = value;
@@ -35,31 +22,15 @@ export const createRegularPriceFormatter =
 		} else {
 			return '—';
 		}
-		const separators = extent.paneComponent.intlFormatter;
-
-		const formatWithIntlSeparators = (precision: number): string => {
-			return MathUtils.makeDecimal(
-				checkedValue,
-				precision,
-				withDecimalSeparator ? separators.decimalSeparator : undefined,
-				withThousandsSeparator ? separators.thousandsSeparator : undefined,
-			);
-		};
 
 		const treasuryFormatConfig = config.treasuryFormat;
 		if (treasuryFormatConfig && treasuryFormatConfig.enabled) {
-			return treasuryPriceFormatter(
-				checkedValue,
-				withThousandsSeparator ? separators.thousandsSeparator : undefined,
-			);
+			return treasuryPriceFormatter(checkedValue);
 		}
 
 		const [mainDataSeries] = extent.dataSeries;
 		if (mainDataSeries !== undefined) {
 			const precision = PriceIncrementsUtils.getPricePrecision(checkedValue, mainDataSeries.pricePrecisions);
-			if (Math.abs(checkedValue) >= 1000) {
-				return formatWithIntlSeparators(precision);
-			}
 			return checkedValue.toFixed(precision);
 		}
 		return `${checkedValue}`;
@@ -68,9 +39,6 @@ export const createRegularPriceFormatter =
 export const createPercentFormatter =
 	(extent: YExtentComponent) =>
 	(value: Unit, dataSeries?: DataSeriesModel): string => {
-		if (value === 0) {
-			return '0.00%';
-		}
 		const [mainDataSeries] = extent.dataSeries;
 		let valueUnit = value;
 		const series = dataSeries ?? mainDataSeries;
@@ -78,8 +46,8 @@ export const createPercentFormatter =
 			valueUnit = unitToPercent(value, series.getBaseline());
 		}
 		// always apply default precision for percent
-		const formatted = replaceMinusSign(valueUnit.toFixed(PriceIncrementsUtils.DEFAULT_PRECISION)) + '%';
-		return formatted === `${MINUS_SIGN}0.00%` ? '0.00%' : formatted;
+		const formatted = valueUnit.toFixed(PriceIncrementsUtils.DEFAULT_PRECISION).replace('-', '−') + ' %';
+		return formatted === '−0.00 %' ? '0.00 %' : formatted;
 	};
 
 export const createYExtentFormatters = (extent: YExtentComponent, config: YAxisConfig): YExtentFormatters => ({

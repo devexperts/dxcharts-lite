@@ -39,7 +39,7 @@ export class NumericYAxisLabelsGenerator extends NumericAxisLabelsGenerator {
 	}
 
 	public getLargestLabel(): string {
-		return this.generateNumericLabels().reduce(
+		return (this.labelsCache.getLastCachedValue() ?? []).reduce(
 			(maxLengthText, label) => (label.text.length > maxLengthText.length ? label.text : maxLengthText),
 			'',
 		);

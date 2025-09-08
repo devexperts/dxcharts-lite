@@ -10,7 +10,7 @@
  */
 import { Bounds } from '../../model/bounds.model';
 import { calculateTextWidth } from '../../utils/canvas/canvas-font-measure-tool.utils';
-import { CandleTimestampAnchor, FullChartConfig } from '../../chart.config';
+import { FullChartConfig } from '../../chart.config';
 import { HIGHLIGHTS_TYPES, HighlightsModel, HighlightTextPlacement, HighlightBorder } from './highlights.model';
 import { CanvasModel } from '../../model/canvas.model';
 import { CanvasBoundsContainer, CanvasElement } from '../../canvas/canvas-bounds-container';
@@ -18,7 +18,6 @@ import { Drawer } from '../../drawers/drawing-manager';
 import { ChartModel } from '../chart/chart.model';
 import { unitToPixels } from '../../model/scaling/viewport.model';
 import { clipToBounds } from '../../utils/canvas/canvas-drawing-functions.utils';
-import { findCandleIndicesInHighlight, resolveHighlightBoundaryEdge } from './highlights.utils';
 
 const LABEL_PADDINGS = [20, 10];
 
@@ -66,7 +65,7 @@ export class HighlightsDrawer implements Drawer {
 					if (items) {
 						const itemColors = this.config.colors.highlights[highlightType];
 						const strokeStyle = itemColors?.border ?? '#ffffff';
-						const fillStyle = itemColors?.background ?? 'transparent';
+						const fillStyle = itemColors?.background ?? '#ffffff';
 						ctx.save();
 						// start line path to draw highlights' borders
 						// it is done once for all highlights because it is more perfomant
@@ -74,24 +73,27 @@ export class HighlightsDrawer implements Drawer {
 						ctx.fillStyle = fillStyle;
 						ctx.strokeStyle = strokeStyle;
 						items.forEach(item => {
-							const anchor = this.chartModel.getCandleTimestampAnchor();
-							const periodMs = this.chartModel.chartBaseModel.period;
-							const candles = this.chartModel.getCandles();
-							const inRange = findCandleIndicesInHighlight(candles, item.from, item.to, periodMs, anchor);
-							const highlightFromX = this.getHighlightBoundaryX(item.from, anchor);
-							const highlightToX = this.getHighlightBoundaryX(item.to, anchor);
-							if (item.border) {
-								this.drawBorders(item.border, ctx, highlightFromX, highlightToX, chartBounds);
-							}
-							if (!inRange) {
-								return;
-							}
-							const fromXCandle = this.chartModel.candleFromIdx(inRange.startIdx);
-							const toXCandle = this.chartModel.candleFromIdx(inRange.endIdx);
-							const fillFromX = fromXCandle.xStart(this.chartModel.scale);
+							const fromXCandle = this.chartModel.candleFromTimestamp(item.from);
+							const fromXCandleWidth = unitToPixels(fromXCandle.width, this.chartModel.scale.zoomX);
+							const fromX = fromXCandle.xStart(this.chartModel.scale);
+							// currently endTime timestamp for PRE_MARKET type includes same timestamp for REGULAR type startTime
+							// so we have to take previous timestamp based on current period to exclude PRE_MARKET highlighting
+							const xCandleTimestamp = item.to - this.chartModel.chartBaseModel.period;
+							const toXCandle = this.chartModel.candleFromTimestamp(xCandleTimestamp);
 							const toXCandleWidth = unitToPixels(toXCandle.width, this.chartModel.scale.zoomX);
-							const fillToX = toXCandle.xStart(this.chartModel.scale) + toXCandleWidth;
-							ctx.fillRect(fillFromX, chartBounds.y, fillToX - fillFromX, chartBounds.height);
+							const toX = toXCandle.xStart(this.chartModel.scale) + toXCandleWidth;
+							// draw highlight' borders
+							if (item.border) {
+								this.drawBorders(
+									item.border,
+									ctx,
+									fromX + fromXCandleWidth,
+									toX - toXCandleWidth,
+									chartBounds,
+								);
+							}
+							// draw highlight' background
+							ctx.fillRect(fromX, chartBounds.y, toX - fromX, chartBounds.y + chartBounds.height);
 							// draw highlight' label
 							if (item.label) {
 								const label = item.label.text ?? '';
@@ -102,7 +104,7 @@ export class HighlightsDrawer implements Drawer {
 								const [labelX, labelY] = this.resolveHighlightLabelPosition(
 									item.label.placement ?? 'left-left',
 									chartBounds,
-									[fillFromX, fillToX],
+									[fromX, toX],
 									labelWidth,
 								);
 								ctx.fillText(label, labelX, labelY);
@@ -116,14 +118,6 @@ export class HighlightsDrawer implements Drawer {
 				ctx.restore();
 			}
 		}
-	}
-
-	private getHighlightBoundaryX(highlightTimestamp: number, anchor: CandleTimestampAnchor): number {
-		const candle = this.chartModel.candleFromTimestamp(highlightTimestamp, { extrapolate: true });
-		const width = unitToPixels(candle.width, this.chartModel.scale.zoomX);
-		const xStart = candle.xStart(this.chartModel.scale);
-		const edge = resolveHighlightBoundaryEdge(highlightTimestamp, candle.candle.timestamp, anchor);
-		return edge === 'end' ? xStart + width : xStart;
 	}
 
 	/**

@@ -61,6 +61,14 @@ module.exports = {
 		],
 
 		'@typescript-eslint/no-non-null-assertion': 'error',
+		'@typescript-eslint/ban-types': [
+			'error',
+			{
+				types: {
+					Function: 'Use () => void instead',
+				},
+			},
+		],
 		'@typescript-eslint/consistent-type-definitions': ['error', 'interface'],
 		'@typescript-eslint/no-unused-vars': 'error',
 		'@typescript-eslint/no-redeclare': ['error'],
