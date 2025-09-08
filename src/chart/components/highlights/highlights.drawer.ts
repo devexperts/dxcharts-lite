@@ -10,7 +10,7 @@
  */
 import { Bounds } from '../../model/bounds.model';
 import { calculateTextWidth } from '../../utils/canvas/canvas-font-measure-tool.utils';
-import { CandleTimestampAnchor, FullChartConfig } from '../../chart.config';
+import { FullChartConfig } from '../../chart.config';
 import { HIGHLIGHTS_TYPES, HighlightsModel, HighlightTextPlacement, HighlightBorder } from './highlights.model';
 import { CanvasModel } from '../../model/canvas.model';
 import { CanvasBoundsContainer, CanvasElement } from '../../canvas/canvas-bounds-container';
@@ -18,9 +18,6 @@ import { Drawer } from '../../drawers/drawing-manager';
 import { ChartModel } from '../chart/chart.model';
 import { unitToPixels } from '../../model/scaling/viewport.model';
 import { clipToBounds } from '../../utils/canvas/canvas-drawing-functions.utils';
-import { getCandleStart, searchCandleIndex } from '../../utils/candles.utils';
-import VisualCandle from '../../model/visual-candle';
-import { DataSeriesPoint } from '../../model/data-series.model';
 
 const LABEL_PADDINGS = [20, 10];
 
@@ -76,13 +73,13 @@ export class HighlightsDrawer implements Drawer {
 						ctx.fillStyle = fillStyle;
 						ctx.strokeStyle = strokeStyle;
 						items.forEach(item => {
-							const period = this.chartModel.chartBaseModel.period;
-							const anchor = this.chartModel.getCandleTimestampAnchor();
-							const candles = this.chartModel.getCandles();
-							const fromXCandle = this.resolveHighlightFromCandle(item.from, candles, period, anchor);
+							const fromXCandle = this.chartModel.candleFromTimestamp(item.from);
 							const fromXCandleWidth = unitToPixels(fromXCandle.width, this.chartModel.scale.zoomX);
 							const fromX = fromXCandle.xStart(this.chartModel.scale);
-							const toXCandle = this.resolveHighlightToCandle(item.to, candles, period, anchor);
+							// currently endTime timestamp for PRE_MARKET type includes same timestamp for REGULAR type startTime
+							// so we have to take previous timestamp based on current period to exclude PRE_MARKET highlighting
+							const xCandleTimestamp = item.to - this.chartModel.chartBaseModel.period;
+							const toXCandle = this.chartModel.candleFromTimestamp(xCandleTimestamp);
 							const toXCandleWidth = unitToPixels(toXCandle.width, this.chartModel.scale.zoomX);
 							const toX = toXCandle.xStart(this.chartModel.scale) + toXCandleWidth;
 							// draw highlight' borders
@@ -121,51 +118,6 @@ export class HighlightsDrawer implements Drawer {
 				ctx.restore();
 			}
 		}
-	}
-
-	private findHighlightStartIndex(
-		candles: DataSeriesPoint[],
-		sessionFrom: number,
-		periodMs: number,
-		anchor: CandleTimestampAnchor,
-	): number {
-		if (anchor === 'open') {
-			const result = searchCandleIndex(
-				sessionFrom,
-				{ extrapolate: false, candleTimestampAnchor: 'open' },
-				candles,
-				periodMs,
-			);
-			return result.index;
-		}
-		return candles.findIndex((_, index) => getCandleStart(candles, index, periodMs, 'close') === sessionFrom);
-	}
-
-	private resolveHighlightFromCandle(
-		sessionFrom: number,
-		candles: ReturnType<ChartModel['getCandles']>,
-		period: number,
-		anchor: ReturnType<ChartModel['getCandleTimestampAnchor']>,
-	): VisualCandle {
-		const startIdx = this.findHighlightStartIndex(candles, sessionFrom, period, anchor);
-		if (startIdx >= 0) {
-			return this.chartModel.candleFromIdx(startIdx);
-		}
-		return this.chartModel.candleFromTimestamp(sessionFrom);
-	}
-
-	private resolveHighlightToCandle(
-		sessionTo: number,
-		candles: ReturnType<ChartModel['getCandles']>,
-		period: number,
-		anchor: ReturnType<ChartModel['getCandleTimestampAnchor']>,
-	): VisualCandle {
-		const lookupTimestamp = this.getHighlightEndLookupTimestamp(sessionTo, period, anchor);
-		return this.chartModel.candleFromTimestamp(lookupTimestamp);
-	}
-
-	private getHighlightEndLookupTimestamp(sessionTo: number, periodMs: number, anchor: CandleTimestampAnchor): number {
-		return anchor === 'close' ? sessionTo - 1 : sessionTo - periodMs;
 	}
 
 	/**

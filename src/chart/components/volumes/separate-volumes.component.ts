@@ -38,10 +38,6 @@ export class SeparateVolumesComponent extends ChartBaseElement {
 		this.addRxSubscription(this.volumesModel.volumeMax.subscribe(() => this.pane?.scale.doAutoScale()));
 	}
 
-	private paneHasStudyDataSeries(pane: PaneComponent): boolean {
-		return pane.dataSeries.length > 0;
-	}
-
 	/**
 	 * Activates the separate volumes feature.
 	 * If the pane component for separate volumes does not exist, it creates a new pane with the specified UUID and options.
@@ -49,8 +45,7 @@ export class SeparateVolumesComponent extends ChartBaseElement {
 	 * A new VolumesDrawer is created and added to the drawing manager with the specified parameters.
 	 */
 	activateSeparateVolumes() {
-		const existingPane = this.paneManager.panes[SeparateVolumesComponent.UUID];
-		if (existingPane === undefined) {
+		if (this.paneManager.panes[SeparateVolumesComponent.UUID] === undefined) {
 			const precision = 1;
 			const volumePane = this.paneManager.createPane(SeparateVolumesComponent.UUID, {
 				paneFormatters: {
@@ -59,6 +54,7 @@ export class SeparateVolumesComponent extends ChartBaseElement {
 				useDefaultHighLow: false,
 				increment: 1,
 			});
+			this.pane = volumePane;
 			volumePane.mainExtent.yAxis.setAxisType('regular');
 			const { scale: scaleModel } = volumePane;
 			const volumesHighLowProvider = createCandlesOffsetProvider(
@@ -67,29 +63,13 @@ export class SeparateVolumesComponent extends ChartBaseElement {
 			);
 			scaleModel.autoScaleModel.setHighLowProvider('volumes', volumesHighLowProvider);
 			scaleModel.doAutoScale(true);
-			this.pane = volumePane;
-			return;
 		}
-		this.pane = existingPane;
 	}
 
 	/**
-	 * Deactivates the separate volumes feature by removing the separate volumes pane when it has no study data series,
-	 * or by keeping the pane when studies remain on it.
+	 * Deactivates the separate volumes feature by removing the separate volumes pane, deleting the scale model, and removing the underlay volumes area drawer.
 	 */
 	deactiveSeparateVolumes() {
-		const pane = this.paneManager.panes[SeparateVolumesComponent.UUID];
-
-		if (pane === undefined) {
-			delete this.pane;
-			return;
-		}
-
-		if (this.paneHasStudyDataSeries(pane)) {
-			this.pane = undefined;
-			return;
-		}
-
 		this.paneManager.removePane(SeparateVolumesComponent.UUID);
 		delete this.pane;
 	}

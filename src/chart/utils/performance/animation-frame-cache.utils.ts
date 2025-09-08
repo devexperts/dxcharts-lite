@@ -16,10 +16,7 @@ export class AnimationFrameCache<T> {
 	calculatedInThisFrame: boolean = false;
 	cache?: T;
 	private animFrameId = `anim_cache_${uuid()}`;
-	constructor(
-		private dataProvider: () => T,
-		private dataUpdatedPredicate = () => true,
-	) {}
+	constructor(private dataProvider: () => T, private dataUpdatedPredicate = () => true) {}
 
 	/**
 	 * Calculates or retrieves a cached value.
