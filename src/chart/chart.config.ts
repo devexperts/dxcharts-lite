@@ -256,7 +256,7 @@ export const getDefaultConfig = (): FullChartConfig => ({
 		},
 		crossTool: {
 			type: 'cross-and-labels',
-			discrete: true,
+			discrete: false,
 			magnetTarget: 'none',
 			lineDash: [4, 6],
 			xAxisLabelFormat: [
