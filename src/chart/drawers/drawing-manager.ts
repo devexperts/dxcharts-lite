@@ -14,7 +14,6 @@ import { uuid } from '../utils/uuid.utils';
 
 export const HIT_TEST_PREFIX = 'HIT_TEST_';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const drawerTypes = [
 	'MAIN_BACKGROUND',
 	'MAIN_CLEAR',
@@ -40,7 +39,7 @@ const drawerTypes = [
 	'PL_ZERO_LINE_BACKGROUND',
 	'CROSS_TOOL',
 ] as const;
-export type DrawerType = (typeof drawerTypes)[number];
+export type DrawerType = typeof drawerTypes[number];
 
 /**
  * Manages the drawing process.
@@ -54,10 +53,8 @@ export class DrawingManager {
 	private canvasIdsList: Array<string> | undefined = [];
 	private animFrameId = `draw_${uuid()}`;
 
-	constructor(
-		eventBus: EventBus,
-		private chartResizeHandler: ChartResizeHandler,
-	) {
+	constructor(eventBus: EventBus, private chartResizeHandler: ChartResizeHandler) {
+		// eventBus.on(EVENT_DRAW_LAST_CANDLE, () => animationFrameThrottled(this.animFrameId + 'last', () => this.drawLastBar()));
 		this.drawHitTestCanvas = () => {
 			this.drawingOrder.forEach(drawer => {
 				if (drawer.indexOf(HIT_TEST_PREFIX) !== -1) {

@@ -29,10 +29,7 @@ export interface YAxisWidths {
 export class YAxisBoundsContainer {
 	public extentsOrder: ExtentsOrder = new Map();
 
-	constructor(
-		private config: FullChartConfig,
-		private mainCanvasModel: CanvasModel,
-	) {}
+	constructor(private config: FullChartConfig, private mainCanvasModel: CanvasModel) {}
 
 	yAxisWidthContributors: YAxisWidthContributor[] = [];
 	/**
