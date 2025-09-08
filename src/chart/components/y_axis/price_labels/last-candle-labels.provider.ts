@@ -41,7 +41,7 @@ export class LastCandleLabelsProvider implements YAxisLabelsProvider {
 			? {
 					...yAxisVisualLabel,
 					...this.getLabelDrawConfig(this.chartModel.mainCandleSeries, true),
-				}
+			  }
 			: yAxisVisualLabel;
 		if (mainCandleSeriesVisualLabel) {
 			const mainCandleSeriesLabels: LabelGroup = { labels: [mainCandleSeriesVisualLabel] };
@@ -61,7 +61,7 @@ export class LastCandleLabelsProvider implements YAxisLabelsProvider {
 				? {
 						...yAxisVisualLabel,
 						...this.getLabelDrawConfig(series, false),
-					}
+				  }
 				: yAxisVisualLabel;
 			if (secondarySeriesVisualLabel) {
 				const secondarySeriesLabel: LabelGroup = {
@@ -92,10 +92,7 @@ export class LastCandleLabelsProvider implements YAxisLabelsProvider {
 				return {
 					y,
 					labelWeight: 0,
-					labelText: this.chartModel.pane.valueFormatter(lastCandle.close, {
-						dataSeries: series,
-						withThousandsSeparator: true,
-					}),
+					labelText: this.chartModel.pane.valueFormatter(lastCandle.close, series),
 					mode,
 					labelType: appearanceType,
 					description: series.instrument.symbol,

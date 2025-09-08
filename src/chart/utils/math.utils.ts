@@ -4,7 +4,6 @@
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 import { StringTMap } from './object.utils';
-import { MINUS_SIGN, TRUE_MINUS_SIGN } from './symbol-constants';
 
 const MAX_DECIMAL_DIGITS = 14;
 // Array of powers of 10. Used in roundDecimal to walk through mantissa.
@@ -57,15 +56,6 @@ export class MathUtils {
 		return Math.round(x);
 	}
 
-	static readonly THOUSANDS_SEPARATOR_REGEX = /\d(?=(\d{3})+$)/g;
-
-	public static formatIntegerWithSeparator(integerValue: number, thousandsSeparator: string): string {
-		if (Math.abs(integerValue) < 1000) {
-			return integerValue.toString();
-		}
-		return integerValue.toString().replace(MathUtils.THOUSANDS_SEPARATOR_REGEX, `$&${thousandsSeparator}`);
-	}
-
 	public static makeDecimal(value: number, precision: number, decimal?: string, thousandsSeparator?: string): string {
 		if (!isFinite(value)) {
 			return '';
@@ -85,7 +75,7 @@ export class MathUtils {
 			const fractionPart = splittedValue[1];
 
 			if (Math.abs(value) >= 1000) {
-				integerPart = integerPart.replace(MathUtils.THOUSANDS_SEPARATOR_REGEX, `$&${thousandsSeparator}`);
+				integerPart = integerPart.replace(RegExp('\\d(?=(\\d{3})+$)', 'g'), `$&${thousandsSeparator}`);
 			}
 
 			if (fractionPart) {
@@ -142,7 +132,7 @@ export function clamp(value: number, min: number, max: number) {
 }
 
 export function easeExpOut(value: number) {
-	return 1 - (Math.pow(2, -10 * value) - 0.0009765625) * 1.0009775171065494;
+	return 1 - (Math.pow(2, -5 * value) - 0.0009765625) * 1.0009775171065494;
 }
 
 /**
@@ -184,7 +174,3 @@ export function countDecimalPlaces(number: number): number {
 		return 0; // No decimal places
 	}
 }
-
-export const replaceMinusSign = (stringValue: string) => {
-	return stringValue.replace(TRUE_MINUS_SIGN, MINUS_SIGN);
-};

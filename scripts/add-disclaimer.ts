@@ -1,4 +1,4 @@
-import { globSync } from 'glob';
+import * as glob from 'glob';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as commander from 'commander';
@@ -14,7 +14,7 @@ program
 		const files = src
 			.map(filepath => {
 				if (isGlob(filepath)) {
-					return globSync(path.resolve(filepath));
+					return glob.sync(path.resolve(filepath));
 				}
 				return path.resolve(filepath);
 			})

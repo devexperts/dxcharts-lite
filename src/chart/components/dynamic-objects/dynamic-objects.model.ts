@@ -3,7 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { BehaviorSubject, Subject } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import { ChartBaseElement } from '../../model/chart-base-element';
 import { LinkedList, ListNode } from '../../utils/linkedList.utils';
 import { DynamicModelDrawer } from './dynamic-objects.drawer';
@@ -25,7 +25,6 @@ export class DynamicObjectsModel extends ChartBaseElement {
 	private _objects: BehaviorSubject<Record<PaneId, LinkedList<DynamicObject>>>;
 	private modelIdToObjectMap: Map<DynamicObjectId, DynamicObject> = new Map();
 	private _uniqueObjects: Record<PaneId, Set<DynamicObjectId>> = {};
-	public orderChangedSubject = new Subject<void>();
 
 	constructor(private canvasModel: CanvasModel) {
 		super();
@@ -161,61 +160,12 @@ export class DynamicObjectsModel extends ChartBaseElement {
 		this.setDynamicObjects(this.objects);
 	}
 
-	getPaneObjectIds(paneId: PaneId): DynamicObjectId[] {
-		const paneList = this.objects[paneId];
-		if (!paneList) {
-			return [];
-		}
-		return [...paneList].map(obj => obj.id);
-	}
-
-	setPaneOrder(paneId: PaneId, orderedIds: DynamicObjectId[], forceUpdate = true) {
-		const paneList = this.objects[paneId];
-		if (!paneList || orderedIds.length === 0) {
-			return;
-		}
-
-		const currentIds = this.getPaneObjectIds(paneId);
-		const filteredOrderedIds = orderedIds.filter(id => currentIds.includes(id));
-		const missingIds = currentIds.filter(id => !filteredOrderedIds.includes(id));
-		const targetOrder = [...filteredOrderedIds, ...missingIds];
-
-		for (let i = 0; i < targetOrder.length; i++) {
-			const id = targetOrder[i];
-			const currentPos = this.getObjectPosition(id);
-			if (currentPos >= 0 && currentPos !== i) {
-				this.moveToPosition(id, i);
-			}
-		}
-
-		if (forceUpdate) {
-			this.notifyOrderChanged();
-		}
-	}
-
-	reorderObjectIds(paneId: PaneId, orderedIds: DynamicObjectId[], forceUpdate = true) {
-		const orderedIdSet = new Set(orderedIds);
-		const paneObjectIds = this.getPaneObjectIds(paneId).filter(id => orderedIdSet.has(id));
-		if (paneObjectIds.length === 0) {
-			return;
-		}
-
-		for (const id of orderedIds) {
-			if (paneObjectIds.includes(id)) {
-				this.moveObjectToFront(id);
-			}
-		}
-
-		if (forceUpdate) {
-			this.notifyOrderChanged();
-		}
-	}
-
-	private notifyOrderChanged() {
-		this.orderChangedSubject.next();
-	}
-
-	private moveObjectToFront(id: DynamicObjectId) {
+	/**
+	 * Moves the object inside the drawing order so it's being drawn before the other elements
+	 * @param paneId
+	 * @param listNode
+	 */
+	bringToFront(id: DynamicObjectId) {
 		const objInfo = this.getObjectInfoById(id);
 
 		if (!objInfo) {
@@ -230,16 +180,6 @@ export class DynamicObjectsModel extends ChartBaseElement {
 			paneList.insertAtEnd(obj);
 			this.setDynamicObjects(this.objects);
 		}
-	}
-
-	/**
-	 * Moves the object inside the drawing order so it's being drawn before the other elements
-	 * @param paneId
-	 * @param listNode
-	 */
-	bringToFront(id: DynamicObjectId) {
-		this.moveObjectToFront(id);
-		this.notifyOrderChanged();
 	}
 
 	/**
@@ -261,7 +201,6 @@ export class DynamicObjectsModel extends ChartBaseElement {
 			paneList.removeAt(targetPos);
 			paneList.insertAt(0, obj);
 			this.setDynamicObjects(this.objects);
-			this.notifyOrderChanged();
 		}
 	}
 
@@ -284,7 +223,6 @@ export class DynamicObjectsModel extends ChartBaseElement {
 			paneList.removeAt(targetPos);
 			paneList.insertAt(targetPos + 1, obj);
 			this.setDynamicObjects(this.objects);
-			this.notifyOrderChanged();
 		}
 	}
 
@@ -307,7 +245,6 @@ export class DynamicObjectsModel extends ChartBaseElement {
 			paneList.removeAt(targetPos);
 			paneList.insertAt(targetPos - 1, obj);
 			this.setDynamicObjects(this.objects);
-			this.notifyOrderChanged();
 		}
 	}
 

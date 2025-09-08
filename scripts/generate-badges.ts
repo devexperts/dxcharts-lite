@@ -1,9 +1,9 @@
-import { globSync } from 'glob';
+import * as glob from 'glob';
 import * as fs from 'fs';
 import * as packageJson from '../package.json';
 
 const version = packageJson.version;
-const readmeFile = globSync('./README.md')[0];
+const readmeFile = glob.sync('./README.md')[0];
 const fileContent = fs.readFileSync(readmeFile, 'utf-8');
 
 const header = fileContent.split('\n')[0];

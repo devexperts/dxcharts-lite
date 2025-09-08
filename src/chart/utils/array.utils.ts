@@ -118,7 +118,7 @@ export const uniqueArray = <T extends string | number>(arr: T[]): T[] => {
 	return arr.filter(item => (hashTable[item] ? false : (hashTable[item] = true)));
 };
 
-export const groupBy = <T, K extends keyof T, KV extends (T[K] extends string | number ? T[K] : never)>(
+export const groupBy = <T, K extends keyof T, KV extends T[K] extends string | number ? T[K] : never>(
 	array: Array<T>,
 	key: K,
 ): Record<KV, Array<T>> => {
@@ -162,7 +162,7 @@ export const slice2DArray = <T>(arr: Array<T[]>, startIdx: number, endIdx: numbe
 export const at = <T>(idx: number, arr: T[]) => (idx >= 0 ? arr[idx] : arr[arr.length + idx]);
 
 // Array.flat() polyfill (support for chrome 66)
-export const flat = <T>(arr: T[][]): T[] => {
+export const flat = <T>(arr: T[][]) => {
 	// @ts-ignore
 	if (Array.prototype.flat) {
 		return arr.flat();
@@ -199,11 +199,13 @@ export interface BinarySearchResult {
  * @doc-tags tricky,math,utility
  */
 export function binarySearch(array: Array<number>, what: number): BinarySearchResult;
+// eslint-disable-next-line no-redeclare
 export function binarySearch<Item>(
 	array: Array<Item>,
 	what: number,
 	transform: (item: Item) => number,
 ): BinarySearchResult;
+// eslint-disable-next-line no-redeclare
 export function binarySearch<Item>(
 	array: Array<Item>,
 	what: number,
