@@ -529,6 +529,7 @@ export default class ChartBootstrap {
 			this.crossEventProducer,
 			this.hoverProducer,
 			this.chartComponent.baselineModel,
+			this.chartModel,
 		);
 
 		this.chartComponents.push(this.crossToolComponent);
