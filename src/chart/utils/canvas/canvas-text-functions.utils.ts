@@ -23,7 +23,6 @@ export interface CanvasTextProperties {
  * Baseline Height in Project
  */
 const BASELINE = 1.33;
-const WCAG_AA_CONTRAST_RATIO = 4.5;
 
 /**
  * Sets the font, fill style and text alignment of a canvas context based on the provided properties.
@@ -208,40 +207,16 @@ export function getFontSizeInPx(fontSize: number): string {
 	return `${fontSize}px`;
 }
 
-function getRelativeLuminance(color: string): number {
-	const rgb = Color.rgb(color).array();
-	const [r, g, b] = rgb.map(channel => {
-		const sRGB = channel / 255;
-		return sRGB <= 0.03928 ? sRGB / 12.92 : Math.pow((sRGB + 0.055) / 1.055, 2.4);
-	});
-	return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-}
-
-function getContrastRatio(color1: string, color2: string): number {
-	const lum1 = getRelativeLuminance(color1);
-	const lum2 = getRelativeLuminance(color2);
-	const lighter = Math.max(lum1, lum2);
-	const darker = Math.min(lum1, lum2);
-	return (lighter + 0.05) / (darker + 0.05);
-}
-
 export function getLabelTextColorByBackgroundColor(
 	bgColor: string,
 	textColor: string,
 	invertedTextColor: string,
 ): string {
-	const contrastWithTextColor = getContrastRatio(bgColor, textColor);
-	const contrastWithInvertedTextColor = getContrastRatio(bgColor, invertedTextColor);
+	const rgb = Color.rgb(bgColor).array();
+	const r = rgb[0];
+	const g = rgb[1];
+	const b = rgb[2];
+	const yiq = (r * 299 + g * 587 + b * 114) / 1000;
 
-	const textColorMeetsThreshold = contrastWithTextColor >= WCAG_AA_CONTRAST_RATIO;
-	const invertedTextColorMeetsThreshold = contrastWithInvertedTextColor >= WCAG_AA_CONTRAST_RATIO;
-
-	if (textColorMeetsThreshold && !invertedTextColorMeetsThreshold) {
-		return textColor;
-	}
-	if (invertedTextColorMeetsThreshold && !textColorMeetsThreshold) {
-		return invertedTextColor;
-	}
-
-	return contrastWithTextColor >= contrastWithInvertedTextColor ? textColor : invertedTextColor;
+	return yiq < 128 ? textColor : invertedTextColor;
 }

@@ -32,8 +32,6 @@ export class XAxisScaleHandler extends ChartBaseElement {
 	private touches: TouchList | undefined;
 	private dblTapCallback: () => void;
 
-	public dragNDropXComponent: DragNDropXComponent;
-
 	constructor(
 		private scale: ScaleModel,
 		private canvasInputListener: CanvasInputListenerComponent,
@@ -48,8 +46,7 @@ export class XAxisScaleHandler extends ChartBaseElement {
 		this.dblClickCallback = () => chartModel.doBasicScale();
 		this.dblTapCallback = () => chartModel.doBasicScale();
 
-		//#region drag-n-drop logic
-		this.dragNDropXComponent = new DragNDropXComponent(
+		const dragNDropXComponent = new DragNDropXComponent(
 			hitTest,
 			{
 				onDragStart: this.onXDragStart,
@@ -63,15 +60,7 @@ export class XAxisScaleHandler extends ChartBaseElement {
 			},
 		);
 
-		this.addChildEntity(this.dragNDropXComponent);
-		//#endregion
-	}
-
-	/**
-	 * Throttles chart-area horizontal drag to one animation frame when needed (percent Y-axis).
-	 */
-	public setChartAreaXDragThrottled(shouldThrottle: boolean): void {
-		this.dragNDropXComponent.setShouldThrottle(shouldThrottle);
+		this.addChildEntity(dragNDropXComponent);
 	}
 
 	/**

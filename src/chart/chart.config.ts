@@ -121,7 +121,6 @@ export const getDefaultConfig = (): FullChartConfig => ({
 				y: true,
 			},
 			sortCandles: defaultSortCandles,
-			candleTimestampAnchor: 'open',
 		},
 		yAxis: {
 			type: 'regular',
@@ -245,7 +244,7 @@ export const getDefaultConfig = (): FullChartConfig => ({
 			logoWidth: 20,
 			logoHeight: 20,
 		},
-		highLow: { visible: false, font: '12px sans-serif', prefix: { high: 'H: ', low: 'L: ' }, lineDash: [2, 4] },
+		highLow: { visible: false, font: '12px sans-serif', prefix: { high: 'H: ', low: 'L: ' } },
 		highlights: {
 			visible: false,
 			fontFamily: 'Open Sans',
@@ -257,7 +256,7 @@ export const getDefaultConfig = (): FullChartConfig => ({
 		},
 		crossTool: {
 			type: 'cross-and-labels',
-			discrete: true,
+			discrete: false,
 			magnetTarget: 'none',
 			lineDash: [4, 6],
 			xAxisLabelFormat: [
@@ -980,9 +979,6 @@ export interface ChartComponents {
 	paneResizer: ChartConfigComponentsPaneResizer;
 }
 
-export const candleTimestampAnchor = ['open', 'close'] as const;
-export type CandleTimestampAnchor = (typeof candleTimestampAnchor)[number];
-
 export interface ChartConfigComponentsChart {
 	/**
 	 * The type of chart. Candle, bar, area and others.
@@ -1030,11 +1026,6 @@ export interface ChartConfigComponentsChart {
 	};
 	// optional because backward compability
 	sortCandles?: (candles: Candle[]) => Candle[];
-	/**
-	 * Defines whether `Candle.timestamp` represents candle open (start) or close (end) time.
-	 * @default 'open'
-	 */
-	candleTimestampAnchor?: CandleTimestampAnchor;
 }
 
 export interface ChartConfigComponentsEvents {
@@ -1218,7 +1209,6 @@ export interface ChartConfigComponentsHighLow {
 	 */
 	font: string;
 	prefix: { high: string; low: string };
-	lineDash: Array<number>;
 }
 export interface ChartConfigComponentsCrossTool {
 	/**
@@ -1495,7 +1485,6 @@ export interface YAxisLabelColorConfig {
 	boxColor: string;
 	textColor?: string;
 	descriptionText?: string;
-	descriptionTextColor?: string;
 }
 
 export interface YAxisLastPriceLabelColorConfig {

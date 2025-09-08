@@ -23,10 +23,7 @@ export class VolumesModel extends ChartBaseElement {
 		calculateHighLow: () => ({ high: this.volumeMax.getValue(), low: 0 }),
 		isHighLowActive: () => true,
 	};
-	constructor(
-		private chartComponent: ChartComponent,
-		private scale: ScaleModel,
-	) {
+	constructor(private chartComponent: ChartComponent, private scale: ScaleModel) {
 		super();
 	}
 
@@ -61,11 +58,8 @@ export class VolumesModel extends ChartBaseElement {
 	 * @returns {void}
 	 */
 	updateVolumeMax() {
-		// Use the same parameters as in drawer to ensure volumeMax is calculated from the same candles that will be drawn
-		const candles = this.chartComponent.chartModel.mainCandleSeries.getSeriesInViewport(
-			this.scale.xStart - 1,
-			this.scale.xEnd + 1,
+		this.volumeMax.next(
+			firstOf(volumeMaxMinFn(this.chartComponent.chartModel.mainCandleSeries.getSeriesInViewport().flat())) ?? 0,
 		);
-		this.volumeMax.next(firstOf(volumeMaxMinFn(candles.flat())) ?? 0);
 	}
 }

@@ -12,10 +12,7 @@ import { PaneComponent } from './pane.component';
 export class PaneHitTestController implements HitTestSubscriber<DataSeriesModel> {
 	// used in hit test for creating series
 	private dataSeriesIdCounter: number = HIT_TEST_ID_RANGE.DATA_SERIES[0];
-	constructor(
-		private readonly panes: Record<string, PaneComponent>,
-		private canvasModel: CanvasModel,
-	) {}
+	constructor(private readonly panes: Record<string, PaneComponent>, private canvasModel: CanvasModel) {}
 	public getNewDataSeriesHitTestId = (): number => {
 		return this.dataSeriesIdCounter++;
 	};

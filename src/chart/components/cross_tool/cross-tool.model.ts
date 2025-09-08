@@ -12,7 +12,6 @@ import { ChartBaseElement } from '../../model/chart-base-element';
 import { CanvasBoundsContainer, CanvasElement, CHART_UUID } from '../../canvas/canvas-bounds-container';
 import { isMobile } from '../../utils/device/browser.utils';
 import { BaselineModel } from '../../model/baseline.model';
-import { ChartModel } from '../chart/chart.model';
 
 export type CrossToolType = 'cross-and-labels' | 'only-labels' | 'none' | string;
 
@@ -40,7 +39,6 @@ export class CrossToolModel extends ChartBaseElement {
 		private hoverProducer: HoverProducerComponent,
 		private canvasBoundsContainer: CanvasBoundsContainer,
 		private baselineModel: BaselineModel,
-		private chartModel: ChartModel,
 	) {
 		super();
 	}
@@ -53,14 +51,6 @@ export class CrossToolModel extends ChartBaseElement {
 	 */
 	public setType(type: CrossToolType) {
 		this.config.type = type;
-	}
-
-	private shouldKeepXForMobileTouchCrosshair(): boolean {
-		return (
-			isMobile() &&
-			this.hoverProducer.longTouchActivatedSubject.getValue() &&
-			this.crossEventProducer.crossSubject.getValue() !== null
-		);
 	}
 
 	/**
@@ -118,8 +108,7 @@ export class CrossToolModel extends ChartBaseElement {
 	/**
 	 * Updates the current hover position with the provided hover object.
 	 * @param {Object} hover - The hover object containing the x and y coordinates and time formatted.
-	 * @param {MagnetTarget} magnetTarget
-	 * @param {boolean} discrete
+	 * @param magnetTarget {MagnetTarget}
 	 * @param {number} hover.x - The x coordinate of the hover.
 	 * @param {number} hover.y - The y coordinate of the hover.
 	 * @param {string} hover.timeFormatted - The formatted time of the hover.
@@ -131,15 +120,11 @@ export class CrossToolModel extends ChartBaseElement {
 	 * @param {number} hover.candleHover.closestOHLCY - The y coordinate of the closest OHLC price of the candle.
 	 * @returns {void}
 	 */
-	public updateCrossTool(hover: Hover, magnetTarget = this.config.magnetTarget, discrete = this.config.discrete) {
-		const x =
-			discrete && !this.shouldKeepXForMobileTouchCrosshair()
-				? this.chartModel.toX(this.chartModel.candleFromX(hover.x, true).idx ?? 0)
-				: hover.x;
+	public updateCrossTool(hover: Hover, magnetTarget = this.config.magnetTarget) {
 		if (this.currentHover === null) {
-			this.currentHover = { x, y: 0, time: hover.timeFormatted, paneId: hover.paneId };
+			this.currentHover = { x: hover.x, y: 0, time: hover.timeFormatted, paneId: hover.paneId };
 		} else {
-			this.currentHover.x = x;
+			this.currentHover.x = hover.x;
 			this.currentHover.time = hover.timeFormatted;
 		}
 		if (hover.candleHover && hover.paneId === CHART_UUID) {
@@ -182,14 +167,6 @@ export class CrossToolModel extends ChartBaseElement {
 		// if crosstool is already set (long touch end event happened) the moving of chart will move crosstool according to it's initial (fixed position)
 		if (!isSet) {
 			this.updateCrossTool(hover);
-			return;
-		}
-
-		const anchoredHover = this.crossEventProducer.crossToolHover;
-		if (anchoredHover && hover.x === anchoredHover.x && hover.y === anchoredHover.y) {
-			const refreshedHover = { ...hover, x: anchoredHover.x, y: anchoredHover.y };
-			this.crossEventProducer.crossToolHover = refreshedHover;
-			this.updateCrossTool(refreshedHover);
 			return;
 		}
 

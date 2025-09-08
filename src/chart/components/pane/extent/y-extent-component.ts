@@ -30,11 +30,6 @@ import { YAxisComponent } from '../../y_axis/y-axis.component';
 import { PaneHitTestController } from '../pane-hit-test.controller';
 import { PaneComponent, YExtentFormatters } from '../pane.component';
 
-export type ValueFormatterOptions = Partial<{
-	dataSeries: DataSeriesModel;
-	formatWithSeparators: boolean;
-}>;
-
 export interface YExtentCreationOptions {
 	scale: ScaleModel;
 	order: number;
@@ -74,10 +69,7 @@ export class YExtentComponent extends ChartBaseElement {
 		super();
 		this.addChildEntity(scale);
 		this.setValueFormatters(createYExtentFormatters(this, config));
-		this.yAxis = createYAxisComponent(
-			(value: number) => this.yAxisNumericLabelsFormatter(value),
-			() => this.mainDataSeries,
-		);
+		this.yAxis = createYAxisComponent(this.valueFormatter.bind(this), () => this.mainDataSeries);
 		this.addChildEntity(this.yAxis);
 	}
 
@@ -157,26 +149,21 @@ export class YExtentComponent extends ChartBaseElement {
 		this.paneComponent.seriesRemovedSubject.next(series);
 	}
 
-	public valueFormatter = (value: Unit, options?: ValueFormatterOptions): string => {
-		const { dataSeries, formatWithSeparators = false } = options ?? {};
+	public valueFormatter = (value: Unit, dataSeries?: DataSeriesModel): string => {
 		if (!this.formatters[this.yAxis.getAxisType()]) {
-			return this.formatters.regular(value, formatWithSeparators);
+			return this.formatters.regular(value);
 		}
 		const { regular, percent, logarithmic } = this.formatters;
 		switch (this.yAxis.getAxisType()) {
 			case 'regular':
-				return this.formatters.regular(value, formatWithSeparators);
+				return this.formatters.regular(value);
 			case 'percent':
 				return percent ? percent(value, dataSeries) : regular(value);
 			case 'logarithmic':
 				return logarithmic ? logarithmic(value) : regular(value);
 			default:
-				return this.regularFormatter(value, formatWithSeparators);
+				return this.regularFormatter(value);
 		}
-	};
-
-	private yAxisNumericLabelsFormatter = (value: number): string => {
-		return this.valueFormatter(value, { formatWithSeparators: true });
 	};
 
 	get regularFormatter() {
@@ -204,23 +191,9 @@ export class YExtentComponent extends ChartBaseElement {
 export const createDefaultYExtentHighLowProvider = (extent: YExtentComponent): HighLowProvider => ({
 	isHighLowActive: () => true,
 	calculateHighLow: state => {
-		const allDataSeries = Array.from(extent.dataSeries);
-		const activeDataSeries = allDataSeries.filter(ds => ds.highLowProvider.isHighLowActive());
-
-		const seriesToUse = activeDataSeries.length > 0 ? activeDataSeries : allDataSeries;
-
-		if (seriesToUse.length === 0) {
-			return { low: 0, high: 100 };
-		}
-
-		const highLows = seriesToUse
-			.map(ds => ds.highLowProvider.calculateHighLow(state))
-			.filter(hl => hl.high >= hl.low);
-
-		if (highLows.length === 0) {
-			return { low: 0, high: 100 };
-		}
-
+		const highLows = Array.from(extent.dataSeries)
+			.filter(ds => ds.highLowProvider.isHighLowActive())
+			.map(ds => ds.highLowProvider.calculateHighLow(state));
 		return mergeHighLow(highLows);
 	},
 });

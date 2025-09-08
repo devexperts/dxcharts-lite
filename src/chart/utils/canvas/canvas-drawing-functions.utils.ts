@@ -141,15 +141,9 @@ export function drawLine(
 	x1: number,
 	y1: number,
 	thickness: number = 1,
-	lineDash: Array<number> = [],
-	lineCap?: CanvasLineCap,
 ) {
 	ctx.save();
-	ctx.setLineDash(lineDash);
 	ctx.lineWidth = thickness;
-	if (lineCap !== undefined) {
-		ctx.lineCap = lineCap;
-	}
 	ctx.beginPath();
 	ctx.moveTo(x0, y0);
 	ctx.lineTo(x1, y1);
