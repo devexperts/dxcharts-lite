@@ -1,9 +1,14 @@
 /*
- * Copyright (C) 2019 - 2026 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { Candle, copyCandle } from '../../model/candle.model';
+/*
+ * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
+ * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+ * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
+import { Candle } from '../../model/candle.model';
 import { finite } from '../../utils/math.utils';
 import { PartialCandle } from './chart.component';
 
@@ -37,7 +42,6 @@ export const prepareCandle = (candle: PartialCandle): Candle | undefined => {
 			expansion: candle.expansion,
 			idx: candle.idx,
 			impVolatility: candle.impVolatility,
-			openInterest: candle.openInterest,
 			vwap: preparedVwap,
 			typicalPrice: candle.typicalPrice,
 		};
@@ -45,77 +49,6 @@ export const prepareCandle = (candle: PartialCandle): Candle | undefined => {
 		console.warn(e);
 		return;
 	}
-};
-
-/**
- * True when secondary candles are already dense 1:1 with main (same length + matching timestamps).
- * Renko compare alignment produces this shape; chart-core can skip reindex/gap-fill.
- */
-export const isDenseAlignedSecondarySeries = (
-	mainSeries: readonly Candle[],
-	secondarySeries: readonly Candle[],
-): boolean => {
-	if (mainSeries.length === 0 || mainSeries.length !== secondarySeries.length) {
-		return false;
-	}
-	for (let i = 0; i < mainSeries.length; i++) {
-		if (secondarySeries[i].timestamp !== mainSeries[i].timestamp) {
-			return false;
-		}
-	}
-	return true;
-};
-
-/**
- * Assigns sequential idx on a dense secondary series already aligned to main.
- */
-export const assignDenseSecondarySeriesIndexes = (secondarySeries: Candle[]): Candle[] => {
-	for (let i = 0; i < secondarySeries.length; i++) {
-		secondarySeries[i].idx = i;
-	}
-	return secondarySeries;
-};
-
-const findFirstNotEmptyCandle = (
-	candles: Array<Candle | undefined>,
-	startIdx: number,
-	iterateStep: number,
-): Candle | undefined => {
-	if (startIdx >= candles.length) {
-		return candles[candles.length - 1];
-	}
-	for (let i = startIdx; i < candles.length && i >= 0; i += iterateStep) {
-		const candle = candles[i];
-		if (candle) {
-			return candle;
-		}
-	}
-};
-
-/**
- * Fills gaps in a sparse secondary series (indexed by main idx) with fake flat candles.
- * Uses the main-series loop index — not id lookup — so holes land on the correct idx.
- */
-export const adjustSecondarySeriesToMain = (
-	mainSeries: Array<Candle>,
-	secondarySeries: Array<Candle | undefined>,
-): Array<Candle> => {
-	const result: Array<Candle> = [];
-	mainSeries.forEach((_mainCandle, idx) => {
-		const compareCandle = secondarySeries[idx];
-		if (!compareCandle) {
-			let candle = findFirstNotEmptyCandle(secondarySeries, idx, -1);
-			if (!candle) {
-				candle = findFirstNotEmptyCandle(secondarySeries, idx, 1);
-			}
-			if (candle) {
-				result.push(copyCandle(candle, idx, true));
-			}
-		} else {
-			result.push(compareCandle);
-		}
-	});
-	return result;
 };
 
 /**

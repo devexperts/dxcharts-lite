@@ -224,8 +224,8 @@ export class FancyYAxisLabelsModel extends ChartBaseElement {
 			...labels,
 			labels: labels.labels.map((label, idx) => ({
 				...label,
-				// Keep connector Y at the price level when the Y-axis price label box was shifted to avoid overlap
-				lineY: label.lineY ?? label.y,
+				// save original y
+				lineY: label.y,
 				y: points[idx],
 			})),
 		};

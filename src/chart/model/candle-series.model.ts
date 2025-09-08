@@ -39,35 +39,6 @@ export class CandleSeriesModel extends DataSeriesModel<Candle, VisualCandle> {
 
 	lastVisualCandleChangedSubject: Subject<void> = new Subject<void>();
 
-	customCandleColors: Record<number, string> = {};
-
-	setCustomCandleColor(index: number, color: string): void {
-		if (!color || color.trim().length === 0) {
-			return;
-		}
-
-		if (this.customCandleColors[index] === color) {
-			return;
-		}
-
-		this.customCandleColors[index] = color;
-		this.eventBus.fireDraw();
-	}
-
-	clearCustomCandleColors(indices: number[]) {
-		if (indices.length === 0) {
-			return;
-		}
-
-		for (const idx of indices) {
-			if (idx in this.customCandleColors) {
-				delete this.customCandleColors[idx];
-			}
-		}
-
-		this.eventBus.fireDraw();
-	}
-
 	get dataPoints(): Candle[] {
 		return super.dataPoints;
 	}
@@ -346,10 +317,6 @@ export function isLinked(chartType: BarType) {
 			return false;
 	}
 }
-
-export const isCandleSeriesModel = (model: DataSeriesModel | null): model is CandleSeriesModel => {
-	return model instanceof CandleSeriesModel;
-};
 
 export type CandleSeriesColors = FullChartColors;
 

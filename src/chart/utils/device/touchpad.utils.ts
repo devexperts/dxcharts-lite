@@ -5,7 +5,7 @@
  */
 import { PriceAxisType } from '../../components/labels_generator/numeric-axis-labels.generator';
 
-export const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 //@ts-ignore
 const isChrome = !!window.chrome;
 //@ts-ignore

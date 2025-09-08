@@ -20,14 +20,13 @@ import { DragNDropYComponent } from '../dran-n-drop_helper/drag-n-drop-y.compone
 import { DragInfo } from '../dran-n-drop_helper/drag-n-drop.component';
 import { ChartPanComponent } from '../pan/chart-pan.component';
 import { HitTestCanvasModel } from '../../model/hit-test-canvas.model';
-import { ONE_FRAME_MS } from '../../utils/numeric-constants.utils';
 
 export interface ChartWheelEvent {
 	readonly originalEvent: WheelEvent;
 	readonly candleIdx: number;
 }
 
-export interface ChartPanningOptions {
+interface ChartPanningOptions {
 	horizontal: boolean;
 	vertical: boolean;
 }
@@ -50,34 +49,29 @@ export interface ChartPanningOptions {
  * @param {ChartPanComponent} chartPanComponent - An instance of the ChartPanComponent class.
  */
 export class ChartAreaPanHandler extends ChartBaseElement {
-	protected currentPoint: Point = { x: 0, y: 0 };
+	private currentPoint: Point = { x: 0, y: 0 };
 	// number of candles delta changed during X dragging: 1, 5 or -3 for ex.
 	public xDraggedCandlesDelta: number = 0;
 	public lastXStart: number = 0;
-	public wheelThrottleTime: number = ONE_FRAME_MS;
-	public chartPanningOptions: ChartPanningOptions = {
-		horizontal: true,
-		vertical: true,
-	};
-
-	public dragNDropXComponent: DragNDropXComponent;
+	public wheelThrottleTime: number = 15; // in ms
+	public chartPanningOptions: ChartPanningOptions = { horizontal: true, vertical: true };
 
 	constructor(
-		protected bus: EventBus,
-		protected config: FullChartConfig,
-		protected scale: ScaleModel,
-		protected canvasInputListener: CanvasInputListenerComponent,
-		protected canvasBoundsContainer: CanvasBoundsContainer,
-		protected canvasAnimation: CanvasAnimation,
-		protected chartPanComponent: ChartPanComponent,
-		protected hitTestCanvasModel: HitTestCanvasModel,
+		private bus: EventBus,
+		private config: FullChartConfig,
+		private scale: ScaleModel,
+		private canvasInputListener: CanvasInputListenerComponent,
+		private canvasBoundsContainer: CanvasBoundsContainer,
+		private canvasAnimation: CanvasAnimation,
+		private chartPanComponent: ChartPanComponent,
+		private hitTestCanvasModel: HitTestCanvasModel,
 	) {
 		super();
 
 		const allPanesHitTest = this.canvasBoundsContainer.getBoundsHitTest(CanvasElement.ALL_PANES);
 
 		//#region drag-n-drop logic
-		this.dragNDropXComponent = new DragNDropXComponent(
+		const dragNDropXComponent = new DragNDropXComponent(
 			allPanesHitTest,
 			{
 				onDragStart: this.onXDragStart,
@@ -89,18 +83,10 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 			{
 				dragPredicate: () => this.chartPanningOptions.horizontal,
 			},
-			this.config.components.yAxis.type === 'percent',
 		);
 
-		this.addChildEntity(this.dragNDropXComponent);
+		this.addChildEntity(dragNDropXComponent);
 		//#endregion
-	}
-
-	/**
-	 * Throttles chart-area horizontal drag to one animation frame when needed (percent Y-axis).
-	 */
-	public setChartAreaXDragThrottled(shouldThrottle: boolean): void {
-		this.dragNDropXComponent.setShouldThrottle(shouldThrottle);
 	}
 
 	/**
@@ -114,7 +100,7 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 	 * @param {number} zoomSensitivity - zoom sensitivity
 	 * @returns {void}
 	 */
-	protected zoomXHandler = (e: WheelEvent, zoomSensitivity: number) => {
+	private zoomXHandler = (e: WheelEvent, zoomSensitivity: number) => {
 		const zoomIn = e.deltaY < 0;
 
 		if (this.config.scale.zoomToCursor) {
@@ -147,10 +133,7 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 				.observeWheel(allPanesHitTest)
 				.pipe(
 					filter(() => this.chartPanningOptions.horizontal && this.chartPanningOptions.vertical),
-					throttleTime(this.wheelThrottleTime, animationFrameScheduler, {
-						trailing: true,
-						leading: true,
-					}),
+					throttleTime(this.wheelThrottleTime, animationFrameScheduler, { trailing: true, leading: true }),
 				)
 				.subscribe(e => {
 					const device = deviceDetector();
@@ -195,7 +178,7 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 		);
 	}
 
-	protected calculateDynamicSesitivity(e: WheelEvent, maxSensitivity: number) {
+	private calculateDynamicSesitivity(e: WheelEvent, maxSensitivity: number) {
 		// max delta distance that touchpad can provide
 		const MAX_POSSIBLE_DELTA = 100;
 		// get max delta
@@ -260,7 +243,7 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 		return dragNDropYComponent;
 	}
 
-	protected onXDragStart = () => {
+	private onXDragStart = () => {
 		this.canvasAnimation.forceStopAnimation(VIEWPORT_ANIMATION_ID);
 		this.xDraggedCandlesDelta = 0;
 		this.lastXStart = this.scale.xStart;
@@ -268,7 +251,7 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 		this.hitTestCanvasModel.hitTestDrawersPredicateSubject.next(false);
 	};
 
-	protected onXDragTick = (dragInfo: DragInfo) => {
+	private onXDragTick = (dragInfo: DragInfo) => {
 		const { delta: absoluteXDelta } = dragInfo;
 		this.currentPoint.x = absoluteXDelta;
 		const unitsDelta = pixelsToUnits(absoluteXDelta, this.scale.zoomX);
@@ -276,7 +259,7 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 		this.bus.fireDraw();
 	};
 
-	protected onXDragEnd = () => {
+	private onXDragEnd = () => {
 		// Continue redrawing hit test
 		this.hitTestCanvasModel.hitTestDrawersPredicateSubject.next(true);
 	};

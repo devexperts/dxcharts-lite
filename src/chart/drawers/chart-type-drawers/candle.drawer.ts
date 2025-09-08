@@ -3,7 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { CandleSeriesModel, isCandleSeriesModel } from '../../model/candle-series.model';
+import { CandleSeriesModel } from '../../model/candle-series.model';
 import { CandleTheme, ChartConfigComponentsChart } from '../../chart.config';
 import VisualCandle from '../../model/visual-candle';
 import { avoidAntialiasing } from '../../utils/canvas/canvas-drawing-functions.utils';
@@ -44,7 +44,7 @@ export class CandleDrawer implements SeriesDrawer {
 		model: DataSeriesModel,
 		hitTestDrawerConfig: HTSeriesDrawerConfig,
 	) {
-		if (isCandleSeriesModel(model)) {
+		if (model instanceof CandleSeriesModel) {
 			// @ts-ignore
 			const visualCandles: VisualCandle[] = flat(points);
 			// TODO FIXME draw called 3-4 times on single candle update even if multichart is off
@@ -91,10 +91,8 @@ export class CandleDrawer implements SeriesDrawer {
 		const bodyEnd = bodyStart === _bodyEnd ? bodyStart + 1 : _bodyEnd;
 		const lineEnd = lineStart === _lineEnd ? lineStart + 1 : _lineEnd;
 
-		const customCandleColor = candleSeries.customCandleColors[visualCandle.candle.idx ?? 0];
-		const candleColor = customCandleColor || currentCandleTheme[`${direction}Color`];
-		const wickColor =
-			customCandleColor || direction === 'none' ? candleColor : currentCandleTheme[`${direction}WickColor`];
+		const candleColor = currentCandleTheme[`${direction}Color`];
+		const wickColor = direction === 'none' ? candleColor : currentCandleTheme[`${direction}WickColor`];
 		ctx.fillStyle = candleColor;
 
 		// wick style, borders are drawn after the wicks, so style for borders will be changed in drawBorder method
@@ -141,7 +139,6 @@ export class CandleDrawer implements SeriesDrawer {
 				hitTestDrawerConfig,
 				currentCandleTheme,
 				visualCandle,
-				customCandleColor,
 				baseX + this.halfLineWidthCU,
 				bodyStart + this.halfLineWidthCU,
 				width - this.lineWidthCU,
@@ -174,7 +171,6 @@ export class CandleDrawer implements SeriesDrawer {
 					hitTestDrawerConfig,
 					currentCandleTheme,
 					visualCandle,
-					customCandleColor,
 					paddingBaseX + this.halfLineWidthCU,
 					bodyStart + this.halfLineWidthCU,
 					paddingWidth - this.lineWidthCU,
@@ -210,7 +206,6 @@ export class CandleDrawer implements SeriesDrawer {
 		hitTestDrawerConfig: HTSeriesDrawerConfig,
 		candleTheme: CandleTheme,
 		visualCandle: VisualCandle,
-		customCandleColor: string | undefined,
 		x: number,
 		y: number,
 		w: number,
@@ -218,8 +213,6 @@ export class CandleDrawer implements SeriesDrawer {
 	) {
 		if (hitTestDrawerConfig.color) {
 			ctx.strokeStyle = hitTestDrawerConfig.color;
-		} else if (customCandleColor) {
-			ctx.strokeStyle = customCandleColor;
 		} else {
 			const direction = visualCandle.name;
 			ctx.strokeStyle =

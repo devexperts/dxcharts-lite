@@ -99,22 +99,16 @@ export class VolumesDrawer implements DynamicModelDrawer<VolumesModel> {
 		if (volumeMax === 0) {
 			return;
 		}
-		const viewportModel = this.getViewportModel();
-		if (!viewportModel.isViewportValid()) {
-			return;
-		}
 		const candles = flat(
 			this.chartModel.mainCandleSeries
 				// TODO volumes drawer should be a part of data series drawer
 				.getSeriesInViewport(this.chartModel.scale.xStart - 1, this.chartModel.scale.xEnd + 1),
 		);
+		const viewportModel = this.getViewportModel();
 		candles.forEach((vCandle, idx) => {
 			if (vCandle.candle.volume) {
 				const bounds = viewportModel.getBounds();
 				const fullVHeight = bounds.height;
-				if (fullVHeight <= 0) {
-					return;
-				}
 				const nextX =
 					candles[idx + 1] !== undefined
 						? floorToDPR(viewportModel.toX(candles[idx + 1].startUnit))
@@ -127,16 +121,8 @@ export class VolumesDrawer implements DynamicModelDrawer<VolumesModel> {
 					const height = ceilToDPR(viewportModel.toY(0)) - y;
 					this.drawVolume(canvasModel, vCandle, x, y, width, height);
 				} else {
-					const volumeHeightDivisor = fullVHeight / OVERLAY_VOLUME_TOTAL_HEIGHT_DIVISOR;
-					if (volumeHeightDivisor <= 0) {
-						return;
-					}
-					const zoomY = volumeMax / volumeHeightDivisor;
-					if (!isFinite(zoomY) || zoomY <= 0) {
-						return;
-					}
-					const calculatedHeight = Math.max(ceilToDPR(unitToPixels(vCandle.candle.volume, zoomY)), 2);
-					const height = Math.min(calculatedHeight, fullVHeight);
+					const zoomY = volumeMax / (fullVHeight / OVERLAY_VOLUME_TOTAL_HEIGHT_DIVISOR);
+					const height = Math.max(ceilToDPR(unitToPixels(vCandle.candle.volume, zoomY)), 2);
 					const y = floorToDPR(bounds.y + fullVHeight - height);
 					this.drawVolume(canvasModel, vCandle, x, y, width, height);
 				}

@@ -41,8 +41,8 @@ git clone <repository-url>
 
 ```shell
 cd <repository-directory>
-pnpm install
-pnpm build
+yarn install
+yarn build
 ```
 
 3. Run the Tests:
