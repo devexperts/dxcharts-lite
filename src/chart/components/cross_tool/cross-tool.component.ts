@@ -13,6 +13,7 @@ import { HoverProducerComponent } from '../../inputhandlers/hover-producer.compo
 import { BaselineModel } from '../../model/baseline.model';
 import { CanvasModel } from '../../model/canvas.model';
 import { ChartBaseElement } from '../../model/chart-base-element';
+import { ChartModel } from '../chart/chart.model';
 import { PaneManager } from '../pane/pane-manager.component';
 import { CrossToolDrawer, CrossToolTypeDrawer } from './cross-tool.drawer';
 import { CrossToolModel, CrossToolType } from './cross-tool.model';
@@ -36,6 +37,7 @@ export class CrossToolComponent extends ChartBaseElement {
 		private crossEventProducer: CrossEventProducerComponent,
 		private hoverProducer: HoverProducerComponent,
 		private baselineModel: BaselineModel,
+		private chartModel: ChartModel,
 	) {
 		super();
 		this.model = new CrossToolModel(
@@ -45,6 +47,7 @@ export class CrossToolComponent extends ChartBaseElement {
 			this.hoverProducer,
 			this.canvasBoundsContainer,
 			this.baselineModel,
+			this.chartModel,
 		);
 		this.addChildEntity(this.model);
 		const clearCanvasDrawer = new ClearCanvasDrawer(this.crossToolCanvasModel);
