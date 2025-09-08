@@ -10,6 +10,7 @@ import { ChartBaseElement } from '../model/chart-base-element';
 import { distinctUntilChanged, filter, map, tap } from 'rxjs/operators';
 import { EVENT_RESIZED } from '../events/events';
 import { HitBoundsTest } from '../canvas/canvas-bounds-container';
+// import { touchpadDetector } from '../utils/device/touchpad.utils';
 import { Bounds } from '../model/bounds.model';
 import { deviceDetector } from '../utils/device/device-detector.utils';
 
@@ -83,117 +84,11 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 		width: 0,
 		height: 0,
 	};
-
-	// Cached bounding client rect to avoid frequent reflow in Safari
-	private cachedElementRect: DOMRect | null = null;
-	private rectCacheValid = false;
-
 	constructor(private eventBus: EventBus, private element: HTMLElement) {
 		super();
 	}
 
 	private documentDragListeners: Array<() => void> = [];
-
-	/**
-	 * Gets cached element bounding rect or calculates new one if cache is invalid.
-	 * Caching prevents expensive getBoundingClientRect() calls during frequent operations.
-	 */
-	private getElementRect(): DOMRect {
-		if (this.rectCacheValid && this.cachedElementRect) {
-			return this.cachedElementRect;
-		}
-
-		try {
-			if (!this.element || !this.element.isConnected) {
-				return this.createFallbackRect();
-			}
-
-			const rect = this.element.getBoundingClientRect();
-			this.cachedElementRect = rect;
-			this.rectCacheValid = true;
-
-			return rect;
-		} catch (error) {
-			return this.createFallbackRect();
-		}
-	}
-
-	/**
-	 * Creates fallback DOMRect for error cases or when element is unavailable
-	 */
-	private createFallbackRect(): DOMRect {
-		// DOMRect might not be available in older browsers
-		if (typeof DOMRect !== 'undefined') {
-			return new DOMRect(0, 0, 0, 0);
-		}
-		// Fallback for older browsers - create object with same interface
-		const rect: DOMRect = {
-			x: 0,
-			y: 0,
-			width: 0,
-			height: 0,
-			top: 0,
-			right: 0,
-			bottom: 0,
-			left: 0,
-			toJSON: () => ({}),
-		};
-		return rect;
-	}
-
-	/**
-	 * Invalidates the cached bounding client rect, forcing recalculation on next access
-	 */
-	private invalidateRectCache(): void {
-		this.rectCacheValid = false;
-	}
-
-	/**
-	 * Forces immediate initialization of the rect cache and canvas bounds
-	 */
-	public initializeRectCache(): void {
-		this.invalidateRectCache();
-		const bcr = this.getElementRect();
-		this.canvasBounds.x = bcr.left;
-		this.canvasBounds.y = bcr.top;
-		this.canvasBounds.width = bcr.width;
-		this.canvasBounds.height = bcr.height;
-	}
-
-	/**
-	 * Safely cleans up document drag listeners to prevent memory leaks
-	 */
-	private cleanupDocumentDragListeners(): void {
-		if (!this.documentDragListeners || !Array.isArray(this.documentDragListeners)) {
-			this.documentDragListeners = [];
-			return;
-		}
-
-		this.documentDragListeners.forEach(unsub => {
-			try {
-				unsub();
-			} catch (error) {
-				// Ignore errors during cleanup to prevent crashes
-				console.warn('Error cleaning up drag listener:', error);
-			}
-		});
-		this.documentDragListeners = [];
-	}
-
-	/**
-	 * Override doDeactivate to ensure proper cleanup of cached data
-	 */
-	protected doDeactivate(): void {
-		// Clean up rect cache to prevent stale data
-		this.invalidateRectCache();
-		this.cachedElementRect = null;
-
-		// Clean up drag listeners safely
-		this.cleanupDocumentDragListeners();
-
-		// Call parent cleanup
-		super.doDeactivate();
-	}
 
 	private dragProcessListener = () => {
 		this.xDragSubject.next(this.currentPoint.x - this.dragStartPoint.x);
@@ -209,8 +104,7 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 			this.updateCurrentPoints(e);
 			this.dragging = true;
 			this.dragStartEvent = e;
-			// Clean up any existing drag listeners before adding new ones
-			this.cleanupDocumentDragListeners();
+			this.documentDragListeners.forEach(unsub => unsub());
 			this.dragStartPoint = CanvasInputListenerComponent.copyPoint(this.currentPoint);
 			this.xDragStartSubject.next(this.dragStartPoint);
 			this.yDragStartSubject.next(this.dragStartPoint);
@@ -274,7 +168,7 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 
 	private dragEndListener = () => {
 		this.dragging = false;
-		this.cleanupDocumentDragListeners();
+		this.documentDragListeners.forEach(unsub => unsub());
 		this.xDragEndSubject.next();
 		this.yDragEndSubject.next();
 	};
@@ -448,7 +342,6 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 			subscribeListener(
 				this.element,
 				(e: WheelEvent) => {
-					this.updateCurrentPoints(e);
 					this.wheelSubject.next(e);
 					e.preventDefault(); // to disable the scroll over the document, if for example chart is used as widget
 				},
@@ -485,9 +378,7 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 
 		this.addRxSubscription(
 			this.eventBus.observe(EVENT_RESIZED).subscribe(() => {
-				// Force invalidate cache on resize to ensure fresh getBoundingClientRect data
-				this.invalidateRectCache();
-				const bcr = this.getElementRect();
+				const bcr = this.element.getBoundingClientRect();
 				this.canvasBounds.x = bcr.left;
 				this.canvasBounds.y = bcr.top;
 				this.canvasBounds.width = bcr.width;
@@ -551,14 +442,15 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 
 	/**
 	 * Updates the current mouse point based on the provided CustomMouseEvent.
-	 * Uses cached element rect to avoid frequent reflow in Safari.
 	 * @param {CustomMouseEvent} e - The CustomMouseEvent object containing the mouse/touch coordinates.
 	 * @returns {void}
 	 * @private
 	 */
 	private updateCurrentMousePoint(e: CustomMouseEvent) {
-		// Use cached rect to prevent frequent reflow/repaint in Safari
-		const rect = this.getElementRect();
+		// this is a bad solution because BCR causes reflow
+		// it's ok while document is not changed, styles and layout
+		// but it's faster to cache BCR and recalculate when it's needed
+		const rect = this.element.getBoundingClientRect();
 		if ('clientX' in e) {
 			this.currentPoint.x = e.clientX - rect.left;
 		} else if (e.touches !== undefined) {
