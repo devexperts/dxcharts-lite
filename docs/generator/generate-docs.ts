@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import * as ts from 'typescript';
-import { globSync } from 'glob';
+import * as glob from 'glob';
 import { toTsCode, removeSpaces, createTableRow } from './md-font-utils';
 
 export interface DedokMethodParam {
@@ -55,7 +55,7 @@ const COMPILER_OPTIONS: ts.CompilerOptions = {
  */
 export function generateDedok(listOfFiles: string[]): DedokEntry[] {
 	console.log('Generating dedok...');
-	const fileList: string[] = listOfFiles.flatMap(pattern => globSync(pattern, {}));
+	const fileList: string[] = listOfFiles.flatMap(pattern => glob.sync(pattern, {}));
 	const program = ts.createProgram(fileList, COMPILER_OPTIONS);
 	const checker = program.getTypeChecker();
 	const output: DedokEntry[] = [];
@@ -324,7 +324,7 @@ export function generateMethodsTable(item: DedokEntry) {
 							(acc, param: DedokMethodParam) =>
 								acc + `${toTsCode(param.name + ': ' + param.type)} ${removeSpaces(param.comment)}`,
 							'',
-						)
+					  )
 					: '';
 
 				return (
@@ -336,7 +336,7 @@ export function generateMethodsTable(item: DedokEntry) {
 						removeSpaces(method.comment),
 					])
 				);
-			}, '')
+		  }, '')
 		: '';
 
 	return title + comment + tableHead + tableDivider + tableContent;
@@ -385,11 +385,11 @@ export function generateConfigTable(configItem: DedokEntry, dedokData: DedokEntr
 								removeSpaces(row.description),
 								row.hasNesting
 									? // create link for nested table
-										`[${toTsCode(row.type)}](#${row.type.toLowerCase()})`
+									  `[${toTsCode(row.type)}](#${row.type.toLowerCase()})`
 									: toTsCode(row.type),
 							]),
 						'',
-					)
+				  )
 				: '';
 
 		generatedTables.push(`${type}${comment}${tableHead}${tableDivider}${tableContent}`);

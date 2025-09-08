@@ -3,8 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { Observable, Subject, merge } from 'rxjs';
-import { startWith, switchMap } from 'rxjs/operators';
+import { Subject } from 'rxjs';
 import { CanvasAnimation } from '../../animation/canvas-animation';
 import { CHART_UUID, CanvasBoundsContainer, CanvasElement } from '../../canvas/canvas-bounds-container';
 import { CursorHandler } from '../../canvas/cursor.handler';
@@ -34,7 +33,6 @@ import { DataSeriesModel } from '../../model/data-series.model';
 import { HitTestCanvasModel } from '../../model/hit-test-canvas.model';
 import { firstOf, flatMap, lastOf } from '../../utils/array.utils';
 import { ChartResizeHandler } from '../../inputhandlers/chart-resize.handler';
-import { YAxisHoverState } from '../y_axis/y-axis.component';
 
 export type MoveDataSeriesToPaneDirection = 'above' | 'below';
 
@@ -140,44 +138,6 @@ export class PaneManager extends ChartBaseElement {
 
 	get yExtents(): YExtentComponent[] {
 		return flatMap(Object.values(this.panes), c => c.yExtentComponents);
-	}
-
-	/**
-	 * Sets the selected data series by its ID. If the ID is null, it clears the selected data series.
-	 * @param {string | null} targetId - The ID or parent ID of the data series to select, or null to clear the selection.
-	 * @returns {void}
-	 */
-	public setSelectedDataSeries(targetId: string | null): void {
-		const dataSeries = targetId
-			? this.hitTestController.allDataSeries.find(
-					series => series.id === targetId || series.parentId === targetId,
-				)
-			: null;
-		this.hitTestController.selectDataSeries(dataSeries ?? null);
-	}
-
-	/**
-	 * Observes selected data series ID changes.
-	 * @returns {Observable<string | null>} Observable that emits selected data series ID or null.
-	 */
-	public observeSelectedDataSeriesChanged(): Observable<string | null> {
-		return this.hitTestController.observeSelectedDataSeriesChanged();
-	}
-
-	/**
-	 * Emits the hover state of every y-axis of every pane.
-	 * @returns {Observable<YAxisHoverState>} Observable that emits the hover state of every y-axis of every pane.
-	 */
-	public observeYAxisHover(): Observable<YAxisHoverState> {
-		const panesChanged = merge(this.paneAddedSubject, this.paneRemovedSubject).pipe(startWith(null));
-		const extentsChanged = panesChanged.pipe(
-			switchMap(() =>
-				merge(...Object.values(this.panes).map(pane => pane.yExtentComponentsChangedSubject)).pipe(
-					startWith(null),
-				),
-			),
-		);
-		return extentsChanged.pipe(switchMap(() => merge(...this.yExtents.map(extent => extent.yAxis.hoverSubject))));
 	}
 
 	/**

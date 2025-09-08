@@ -3,8 +3,8 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { BehaviorSubject, Subject } from 'rxjs';
-import { CanvasBoundsContainer, CanvasElement, HitBoundsTest } from '../../canvas/canvas-bounds-container';
+import { Subject } from 'rxjs';
+import { CanvasBoundsContainer, CanvasElement } from '../../canvas/canvas-bounds-container';
 import { CursorHandler } from '../../canvas/cursor.handler';
 import { YAxisWidthContributor } from '../../canvas/y-axis-bounds.container';
 import {
@@ -49,12 +49,6 @@ import { ChartResizeHandler } from '../../inputhandlers/chart-resize.handler';
 
 export type LabelColorResolver = (priceMovement: PriceMovement, colors: FullChartColors) => string;
 
-export interface YAxisHoverState {
-	isHover: boolean;
-	paneUUID: string;
-	extentIdx: number;
-}
-
 /**
  * Y axis component. Contains all Y axis related logic.
  */
@@ -66,11 +60,6 @@ export class YAxisComponent extends ChartBaseElement {
 	public axisAlignSetSubject: Subject<YAxisAlign> = new Subject<YAxisAlign>();
 	public axisAlignMovedSubject: Subject<YAxisAlign> = new Subject<YAxisAlign>();
 	public readonly state: YAxisConfig;
-	public isHighlighted: boolean = false;
-	public readonly hoverSubject: BehaviorSubject<YAxisHoverState>;
-
-	// resolves the bounds on every call, so it stays correct after the extent is re-indexed or resized
-	private readonly hitTest: HitBoundsTest = (x, y) => CanvasBoundsContainer.hitTestOf(this.getBounds())(x, y);
 
 	constructor(
 		private eventBus: EventBus,
@@ -96,7 +85,6 @@ export class YAxisComponent extends ChartBaseElement {
 			overrideExisting: false,
 			addIfMissing: true,
 		});
-		this.hoverSubject = new BehaviorSubject<YAxisHoverState>({ isHover: false, paneUUID, extentIdx });
 
 		//#region init yAxisScaleHandler
 		this.yAxisScaleHandler = new YAxisScaleHandler(
@@ -129,15 +117,9 @@ export class YAxisComponent extends ChartBaseElement {
 		this.registerDefaultLabelColorResolvers();
 	}
 
-	public setHighlighted(isHighlighted: boolean) {
-		this.isHighlighted = isHighlighted;
-		this.canvasModel.fireDraw();
-	}
-
 	public setExtentIdx(extentIdx: number) {
 		this.extentIdx = extentIdx;
 		this.model.extentIdx = extentIdx;
-		this.hoverSubject.next({ ...this.hoverSubject.getValue(), extentIdx });
 		this.yAxisScaleHandler.deactivate();
 		this.removeChildEntity(this.yAxisScaleHandler);
 		this.yAxisScaleHandler = new YAxisScaleHandler(
@@ -178,20 +160,6 @@ export class YAxisComponent extends ChartBaseElement {
 				() => this.state.type === 'percent' && this.scale.haltAnimation(),
 			),
 		);
-		this.addRxSubscription(
-			this.canvasInputListeners.observeMouseEnter(this.hitTest, true).subscribe(isHover =>
-				this.hoverSubject.next({
-					isHover,
-					paneUUID: this.paneUUID,
-					extentIdx: this.extentIdx,
-				}),
-			),
-		);
-	}
-
-	protected doDeactivate() {
-		super.doDeactivate();
-		this.hoverSubject.next({ isHover: false, paneUUID: this.paneUUID, extentIdx: this.extentIdx });
 	}
 
 	public updateCursor() {

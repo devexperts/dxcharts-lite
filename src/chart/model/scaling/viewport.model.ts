@@ -103,9 +103,6 @@ export interface ViewportModelState {
 	inverseY: boolean;
 }
 
-export type XScale = Pick<ViewportModelState, 'xStart' | 'xEnd'>;
-export type YScale = Pick<ViewportModelState, 'yStart' | 'yEnd'>;
-
 /**
  * Abstract viewport model.
  * Viewport has 4 coordinates: xStart, xEnd, yStart and yEnd - all stored in {@link Unit}.

@@ -3,8 +3,6 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { animationFrameScheduler } from 'rxjs';
-import { distinctUntilChanged, map, throttleTime } from 'rxjs/operators';
 import { YExtentComponent } from '../components/pane/extent/y-extent-component';
 import { DataSeriesYAxisLabelsProvider } from '../components/y_axis/price_labels/data-series-y-axis-labels.provider';
 import { LabelsGroups } from '../components/y_axis/price_labels/y-axis-labels.model';
@@ -24,16 +22,12 @@ import {
 import { HighLowWithIndex, ScaleModel } from './scale.model';
 import { HighLowProvider } from './scaling/auto-scale.model';
 import { Index, Pixel, Unit, Viewable } from './scaling/viewport.model';
-import { ONE_FRAME_MS } from '../utils/numeric-constants.utils';
 
 /**
  * Properties are named in order to match VisualCandle interface
  */
 export class VisualSeriesPoint {
-	constructor(
-		public centerUnit: Unit,
-		public close: Unit,
-	) {}
+	constructor(public centerUnit: Unit, public close: Unit) {}
 	/**
 	 * returns y coordinate in pixels
 	 */
@@ -75,12 +69,7 @@ export class DataSeriesModel<
 > extends ChartBaseElement {
 	public name: string = '';
 
-	// selected by external source e.g. click on the series
-	public selected = false;
-	// pointer is over the series itself, resolved by the hit test
-	public hovered = false;
-	// highlighted from external source e.g. hover on different chart component
-	public externallyHighlighted = false;
+	public highlighted = false;
 	public yAxisLabelProvider: DataSeriesYAxisLabelsProvider;
 	public readonly config: C;
 	public scale: ScaleModel;
@@ -94,14 +83,6 @@ export class DataSeriesModel<
 
 	// provides high-low regarding axis type
 	public highLowProvider: HighLowProvider;
-
-	/**
-	 * Series is painted in its highlighted state while either the series itself or highlighted externally.
-	 * Selected series takes precedence over external highlighting and series hover.
-	 */
-	get highlighted(): boolean {
-		return this.selected || this.externallyHighlighted || this.hovered;
-	}
 
 	get dataPoints2D(): D[][] {
 		return this._dataPoints;
@@ -169,19 +150,7 @@ export class DataSeriesModel<
 	}
 
 	protected doActivate(): void {
-		this.addRxSubscription(
-			this.scale.xChanged
-				.pipe(
-					throttleTime(ONE_FRAME_MS, animationFrameScheduler, { trailing: true, leading: true }),
-					map(() => this.calculateDataViewportIndexes(this.scale.xStart, this.scale.xEnd)),
-					distinctUntilChanged(
-						(prev, curr) => prev.dataIdxStart === curr.dataIdxStart && prev.dataIdxEnd === curr.dataIdxEnd,
-					),
-				)
-				.subscribe(() => {
-					this.recalculateDataViewportIndexes(this.scale.xStart, this.scale.xEnd);
-				}),
-		);
+		this.addRxSubscription(this.scale.xChanged.subscribe(() => this.recalculateDataViewportIndexes()));
 		this.addRxSubscription(
 			this.scale.scaleInversedSubject.subscribe(() => {
 				this.recalculateVisualPoints();
@@ -373,11 +342,8 @@ export class DataSeriesModel<
 	 */
 	public getLastVisualSeriesPoint = (): V | undefined => {
 		const points = this.visualPoints;
-		if (points.length === 0) {
-			return undefined;
-		}
-
-		return points[this.dataIdxEnd];
+		const endIdx = binarySearch(points, this.scale.xEnd, i => i.centerUnit).index;
+		return points[endIdx];
 	};
 
 	/**
@@ -412,7 +378,7 @@ export const calculateDataSeriesHighLow = (visualCandles: VisualSeriesPoint[]): 
 };
 
 const createDataSeriesModelHighLowProvider = (dataSeries: DataSeriesModel): HighLowProvider => ({
-	isHighLowActive: () => dataSeries.config.highLowActive && dataSeries.config.visible,
+	isHighLowActive: () => dataSeries.config.highLowActive,
 	calculateHighLow: state => {
 		const highLow = calculateDataSeriesHighLow(dataSeries.getSeriesInViewport(state?.xStart, state?.xEnd).flat());
 		return {

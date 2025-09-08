@@ -12,10 +12,7 @@ import { ValidatedChartElements } from '../../canvas/chart-elements';
  * Allows to copy, download and share snapshot
  */
 export class SnapshotComponent extends ChartBaseElement {
-	constructor(
-		private elements: ValidatedChartElements,
-		private canvasModel: CanvasModel,
-	) {
+	constructor(private elements: ValidatedChartElements, private canvasModel: CanvasModel) {
 		super();
 	}
 

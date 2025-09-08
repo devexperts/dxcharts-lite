@@ -5,17 +5,14 @@
  */
 import { CanvasBoundsContainer, CanvasElement } from '../../canvas/canvas-bounds-container';
 import { BaselineModel } from '../../model/baseline.model';
-import { CandleSeriesModel, isCandleSeriesModel } from '../../model/candle-series.model';
+import { CandleSeriesModel } from '../../model/candle-series.model';
 import { DataSeriesModel, VisualSeriesPoint } from '../../model/data-series.model';
 import { Pixel } from '../../model/scaling/viewport.model';
 import { flat } from '../../utils/array.utils';
 import { HTSeriesDrawerConfig, SeriesDrawer } from '../data-series.drawer';
 
 export class BaselineDrawer implements SeriesDrawer {
-	constructor(
-		private baseLineModel: BaselineModel,
-		private canvasBoundContainer: CanvasBoundsContainer,
-	) {}
+	constructor(private baseLineModel: BaselineModel, private canvasBoundContainer: CanvasBoundsContainer) {}
 
 	public draw(
 		ctx: CanvasRenderingContext2D,
@@ -23,7 +20,7 @@ export class BaselineDrawer implements SeriesDrawer {
 		model: DataSeriesModel,
 		hitTestDrawerConfig?: HTSeriesDrawerConfig,
 	) {
-		if (hitTestDrawerConfig !== undefined && isCandleSeriesModel(model)) {
+		if (hitTestDrawerConfig !== undefined && model instanceof CandleSeriesModel) {
 			const visualCandles = flat(points);
 			// calculate baseline
 			const baselineYPercents = this.baseLineModel.baselineYPercents;
