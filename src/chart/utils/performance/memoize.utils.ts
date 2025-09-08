@@ -14,6 +14,7 @@ export const MEMOIZE_CLEAR_FUNCTION = Symbol('MEMOIZE_CLEAR_FUNCTION') as symbol
  * Memoizes function for passed arguments
  * @doc-tags utility
  */
+// eslint-disable-next-line @typescript-eslint/ban-types
 export function memoize<F extends Function>(this: any, fn: F): F {
 	const storage: Record<string, unknown> = {};
 	const result = function (this: any) {

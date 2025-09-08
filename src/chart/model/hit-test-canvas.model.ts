@@ -13,7 +13,7 @@ import EventBus from '../events/event-bus';
 import { CanvasInputListenerComponent, Point } from '../inputlisteners/canvas-input-listener.component';
 import { animationFrameId } from '../utils/performance/request-animation-frame-throttle.utils';
 
-export const bigPrimeNumber = 317;
+const bigPrimeNumber = 317;
 
 export type HitTestEvents = 'mousedown' | 'hover' | 'touchstart' | 'dblclick' | 'contextmenu' | 'zoom' | 'mouseup';
 
@@ -34,20 +34,20 @@ export const HIT_TEST_ID_RANGE: Record<HitTestType, [number, number]> = {
  * @doc-tags chart-core,hit-test
  */
 export class HitTestCanvasModel extends CanvasModel {
-	protected hitTestSubscribers: HitTestSubscriber[] = [];
-	protected eventsSubscriptions: Subscription[] = [];
-	protected hoverSubject: Subject<HitTestEvent> = new Subject();
-	protected touchStartSubject: Subject<HitTestEvent> = new Subject();
-	protected dblClickSubject: Subject<HitTestEvent> = new Subject();
-	protected rightClickSubject: Subject<HitTestEvent> = new Subject();
+	private hitTestSubscribers: HitTestSubscriber[] = [];
+	private eventsSubscriptions: Subscription[] = [];
+	private hoverSubject: Subject<HitTestEvent> = new Subject();
+	private touchStartSubject: Subject<HitTestEvent> = new Subject();
+	private dblClickSubject: Subject<HitTestEvent> = new Subject();
+	private rightClickSubject: Subject<HitTestEvent> = new Subject();
 	// This predicate is used to detect whenever hit test should or shouldn't redraw hit test canvas image objects
 	public hitTestDrawersPredicateSubject: BehaviorSubject<boolean> = new BehaviorSubject(true);
 
 	constructor(
 		eventBus: EventBus,
 		canvas: HTMLCanvasElement,
-		protected canvasInputListener: CanvasInputListenerComponent,
-		protected canvasBoundsContainer: CanvasBoundsContainer,
+		private canvasInputListener: CanvasInputListenerComponent,
+		private canvasBoundsContainer: CanvasBoundsContainer,
 		drawingManager: DrawingManager,
 		chartConfig: FullChartConfig,
 		canvasModels: CanvasModel[],
@@ -196,8 +196,8 @@ export class HitTestCanvasModel extends CanvasModel {
 		return this.rightClickSubject.asObservable();
 	}
 
-	protected curImgData: Uint8ClampedArray = new Uint8ClampedArray(4);
-	protected prevAnimationFrameId = -1;
+	private curImgData: Uint8ClampedArray = new Uint8ClampedArray(4);
+	private prevAnimationFrameId = -1;
 	/**
 	 * Retrieves the pixel data at the specified coordinates.
 	 *
@@ -206,7 +206,7 @@ export class HitTestCanvasModel extends CanvasModel {
 	 * @param {number} y - The y-coordinate of the pixel.
 	 * @returns {Uint8ClampedArray} - The pixel data at the specified coordinates.
 	 */
-	protected getPixel(x: number, y: number): Uint8ClampedArray {
+	private getPixel(x: number, y: number): Uint8ClampedArray {
 		const dpr = window.devicePixelRatio;
 		// it's heavy operation, so use cached value if possible
 		if (this.prevAnimationFrameId !== animationFrameId) {
@@ -254,7 +254,7 @@ export class HitTestCanvasModel extends CanvasModel {
 	 * @param {HitTestEvents} event - The type of event that occurred.
 	 * @returns {void}
 	 */
-	protected eventHandler(point: Point, event: HitTestEvents): void {
+	private eventHandler(point: Point, event: HitTestEvents): void {
 		const data = this.getPixel(point.x, point.y);
 		const id = this.colorToId(data[0] * 65536 + data[1] * 256 + data[2]);
 		const idNumber = Number(id);
@@ -321,7 +321,7 @@ export interface HitTestEvent<T = unknown> {
 	readonly model: T;
 }
 
-export const sortSubscribers = (
+const sortSubscribers = (
 	subs: HitTestSubscriber[],
 	id: number,
 ): [HitTestSubscriber | undefined, HitTestSubscriber[]] => {

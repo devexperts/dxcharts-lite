@@ -3,7 +3,6 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { Candle } from '../model/candle.model';
 import { DataSeriesPoint } from '../model/data-series.model';
 import { binarySearch, BinarySearchResult, firstOf, lastOf } from './array.utils';
 import { floor } from './math.utils';
@@ -63,21 +62,4 @@ export const searchCandleIndex = (
 	} else {
 		return binarySearch(candles, timestamp, candle => getDaysOnlyTimestamp(candle.timestamp));
 	}
-};
-
-/**
- * checks if the first or the last candle or both have implied volatility data provided
- * @param candles
- * @returns {boolean}
- */
-export const hasImpVolatilityDataProvided = (candles: Array<Candle>): boolean => {
-	const firstCandle = candles[0];
-	const lastCandle = candles[candles.length - 1];
-	return (
-		candles.length > 0 &&
-		[firstCandle, lastCandle].some(
-			c =>
-				c !== undefined && c.impVolatility !== null && c.impVolatility !== undefined && !isNaN(c.impVolatility),
-		)
-	);
 };
