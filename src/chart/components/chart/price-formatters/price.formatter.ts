@@ -6,9 +6,7 @@
 import { YAxisConfig } from '../../../chart.config';
 import { DataSeriesModel } from '../../../model/data-series.model';
 import { Unit, unitToPercent } from '../../../model/scaling/viewport.model';
-import { replaceMinusSign } from '../../../utils/math.utils';
 import { PriceIncrementsUtils } from '../../../utils/price-increments.utils';
-import { MINUS_SIGN } from '../../../utils/symbol-constants';
 import { YExtentComponent } from '../../pane/extent/y-extent-component';
 import { YExtentFormatters } from '../../pane/pane.component';
 import { treasuryPriceFormatter } from './treasury-price.formatter';
@@ -41,9 +39,6 @@ export const createRegularPriceFormatter =
 export const createPercentFormatter =
 	(extent: YExtentComponent) =>
 	(value: Unit, dataSeries?: DataSeriesModel): string => {
-		if (value === 0) {
-			return '0.00 %';
-		}
 		const [mainDataSeries] = extent.dataSeries;
 		let valueUnit = value;
 		const series = dataSeries ?? mainDataSeries;
@@ -51,8 +46,8 @@ export const createPercentFormatter =
 			valueUnit = unitToPercent(value, series.getBaseline());
 		}
 		// always apply default precision for percent
-		const formatted = replaceMinusSign(valueUnit.toFixed(PriceIncrementsUtils.DEFAULT_PRECISION)) + ' %';
-		return formatted === `${MINUS_SIGN}0.00 %` ? '0.00 %' : formatted;
+		const formatted = valueUnit.toFixed(PriceIncrementsUtils.DEFAULT_PRECISION).replace('-', '−') + ' %';
+		return formatted === '−0.00 %' ? '0.00 %' : formatted;
 	};
 
 export const createYExtentFormatters = (extent: YExtentComponent, config: YAxisConfig): YExtentFormatters => ({

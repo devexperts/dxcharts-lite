@@ -48,7 +48,7 @@ export class VolumesComponent extends ChartBaseElement {
 			config,
 			this.volumesModel,
 			chartComponent.chartModel,
-			() => (this.config.components.volumes.showSeparately ? (this.separateVolumes.pane?.scale ?? scale) : scale),
+			() => (this.config.components.volumes.showSeparately ? this.separateVolumes.pane?.scale ?? scale : scale),
 			this.volumesColorByChartTypeMap,
 			() => true,
 		);
