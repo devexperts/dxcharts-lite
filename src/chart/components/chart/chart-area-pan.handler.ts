@@ -26,7 +26,7 @@ export interface ChartWheelEvent {
 	readonly candleIdx: number;
 }
 
-export interface ChartPanningOptions {
+interface ChartPanningOptions {
 	horizontal: boolean;
 	vertical: boolean;
 }
@@ -49,25 +49,22 @@ export interface ChartPanningOptions {
  * @param {ChartPanComponent} chartPanComponent - An instance of the ChartPanComponent class.
  */
 export class ChartAreaPanHandler extends ChartBaseElement {
-	protected currentPoint: Point = { x: 0, y: 0 };
+	private currentPoint: Point = { x: 0, y: 0 };
 	// number of candles delta changed during X dragging: 1, 5 or -3 for ex.
 	public xDraggedCandlesDelta: number = 0;
 	public lastXStart: number = 0;
 	public wheelThrottleTime: number = 15; // in ms
-	public chartPanningOptions: ChartPanningOptions = {
-		horizontal: true,
-		vertical: true,
-	};
+	public chartPanningOptions: ChartPanningOptions = { horizontal: true, vertical: true };
 
 	constructor(
-		protected bus: EventBus,
-		protected config: FullChartConfig,
-		protected scale: ScaleModel,
-		protected canvasInputListener: CanvasInputListenerComponent,
-		protected canvasBoundsContainer: CanvasBoundsContainer,
-		protected canvasAnimation: CanvasAnimation,
-		protected chartPanComponent: ChartPanComponent,
-		protected hitTestCanvasModel: HitTestCanvasModel,
+		private bus: EventBus,
+		private config: FullChartConfig,
+		private scale: ScaleModel,
+		private canvasInputListener: CanvasInputListenerComponent,
+		private canvasBoundsContainer: CanvasBoundsContainer,
+		private canvasAnimation: CanvasAnimation,
+		private chartPanComponent: ChartPanComponent,
+		private hitTestCanvasModel: HitTestCanvasModel,
 	) {
 		super();
 
@@ -103,7 +100,7 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 	 * @param {number} zoomSensitivity - zoom sensitivity
 	 * @returns {void}
 	 */
-	protected zoomXHandler = (e: WheelEvent, zoomSensitivity: number) => {
+	private zoomXHandler = (e: WheelEvent, zoomSensitivity: number) => {
 		const zoomIn = e.deltaY < 0;
 
 		if (this.config.scale.zoomToCursor) {
@@ -136,10 +133,7 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 				.observeWheel(allPanesHitTest)
 				.pipe(
 					filter(() => this.chartPanningOptions.horizontal && this.chartPanningOptions.vertical),
-					throttleTime(this.wheelThrottleTime, animationFrameScheduler, {
-						trailing: true,
-						leading: true,
-					}),
+					throttleTime(this.wheelThrottleTime, animationFrameScheduler, { trailing: true, leading: true }),
 				)
 				.subscribe(e => {
 					const device = deviceDetector();
@@ -184,7 +178,7 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 		);
 	}
 
-	protected calculateDynamicSesitivity(e: WheelEvent, maxSensitivity: number) {
+	private calculateDynamicSesitivity(e: WheelEvent, maxSensitivity: number) {
 		// max delta distance that touchpad can provide
 		const MAX_POSSIBLE_DELTA = 100;
 		// get max delta
@@ -249,7 +243,7 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 		return dragNDropYComponent;
 	}
 
-	protected onXDragStart = () => {
+	private onXDragStart = () => {
 		this.canvasAnimation.forceStopAnimation(VIEWPORT_ANIMATION_ID);
 		this.xDraggedCandlesDelta = 0;
 		this.lastXStart = this.scale.xStart;
@@ -257,7 +251,7 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 		this.hitTestCanvasModel.hitTestDrawersPredicateSubject.next(false);
 	};
 
-	protected onXDragTick = (dragInfo: DragInfo) => {
+	private onXDragTick = (dragInfo: DragInfo) => {
 		const { delta: absoluteXDelta } = dragInfo;
 		this.currentPoint.x = absoluteXDelta;
 		const unitsDelta = pixelsToUnits(absoluteXDelta, this.scale.zoomX);
@@ -265,7 +259,7 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 		this.bus.fireDraw();
 	};
 
-	protected onXDragEnd = () => {
+	private onXDragEnd = () => {
 		// Continue redrawing hit test
 		this.hitTestCanvasModel.hitTestDrawersPredicateSubject.next(true);
 	};

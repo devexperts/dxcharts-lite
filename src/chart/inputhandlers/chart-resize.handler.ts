@@ -21,7 +21,6 @@ export class ChartResizeHandler {
 	public previousBCR: PickedDOMRect | undefined = undefined;
 	private animFrameId = `resize_${uuid()}`;
 	public canvasResized = new Subject<PickedDOMRect>();
-	private recentlyResized = false; // Flag to track if resize happened recently
 	constructor(
 		private frameElement: HTMLElement,
 		private resizerElement: HTMLElement,
@@ -70,19 +69,11 @@ export class ChartResizeHandler {
 		}
 		if (this.previousBCR === undefined || this.isBCRDimensionsDiffer(this.previousBCR, newBCR)) {
 			this.previousBCR = newBCR;
-			this.recentlyResized = true; // Set flag when actual resize happens
 			this.canvasModels.forEach(model => this.previousBCR && model.updateDPR(this.previousBCR));
 			this.canvasResized.next(newBCR);
 			this.bus.fire(EVENT_RESIZED, newBCR);
 			this.bus.fire(EVENT_DRAW);
 		}
-	}
-
-	/**
-	 * Resets the resize flag after it has been processed
-	 */
-	public clearResizedFlag(): void {
-		this.recentlyResized = false;
 	}
 
 	/**
@@ -119,6 +110,6 @@ export class ChartResizeHandler {
 	 * @returns {boolean} - Returns true if the canvas has been resized, false otherwise.
 	 */
 	wasResized(): boolean {
-		return this.recentlyResized;
+		return this.previousBCR !== undefined;
 	}
 }
