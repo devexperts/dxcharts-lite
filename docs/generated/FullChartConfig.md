@@ -4,15 +4,14 @@ Includes all components' configurations, global configs like dateFormatter, and 
 
 |Property|Description|Type|
 |---|---|---|
-|`scale`|Controls how chart series are positioned horizontally and vertically. Other configurations like: inverse, lockRatio etc.|[`ChartScale`](#chartscale)|
-|`components`|Group of component configurations. Chart component is a single visual object on chart. Examples: chart itself, events, x-axis, highlights, cross tool.|[`ChartComponents`](#chartcomponents)|
+|`scale`|Controls how chart series are positioned horizontally and vertically. Other configurations like: inverse, lockRatio etc.|[`ChartScale`](#chartscale)|
+|`components`|Group of component configurations. Chart component is a single visual object on chart. Examples: chart itself, events, x-axis, highlights, cross tool.|[`ChartComponents`](#chartcomponents)|
 |`colors`|All colors in chart-core are configured here.|[`FullChartColors`](#fullchartcolors)|
 |`dateFormatter`|Date and time formatting configuration.|[`DateFormatter`](#dateformatter)|
-|`timezone`|Timezone to use on chart X axis labels and any other timestamps. Examples: Africa/Accra, Europe/Moscow, Asia/Tehran.|`string`|
+|`timezone`|Timezone to use on chart X axis labels and any other timestamps. Examples: Africa/Accra, Europe/Moscow, Asia/Tehran.|`string`|
 |`fixedSize`|If set - chart canvas will have fixed size always.|`{ width: number; height: number; }`|
 |`rtl`|Right to left mode. Used in drawings (like text drawing) calculation.|`boolean`|
-|`drawingOrder`|Initial visual order of chart drawers. Reorder to put volumes on top of candles for example.|`("MAIN_BACKGROUND" | "MAIN_CLEAR" | "HIT_TEST_CLEAR" | "YAXIS_CLEAR" | "SERIES_CLEAR" | "OVER_SERIES_CLEAR" | "HIT_TEST_DRAWINGS" | "GRID" | "X_AXIS" | "Y_AXIS" | "HIGH_LOW" | ... 11 more ... | "CROSS_TOOL")[]`|
-|`intlFormatter`||[`IntlFormatter`](#intlformatter)|
+|`drawingOrder`|Initial visual order of chart drawers. Reorder to put volumes on top of candles for example.|`("MAIN_BACKGROUND" | "MAIN_CLEAR" | "HIT_TEST_CLEAR" | "YAXIS_CLEAR" | "SERIES_CLEAR" | "OVER_SERIES_CLEAR" | "HIT_TEST_DRAWINGS" | "GRID" | "UNDERLAY_VOLUMES_AREA" | "X_AXIS" | ... 13 more ... | "CROSS_TOOL")[]`|
 |`useUTCTimeOverride`||`boolean`|
 |`animation`||[`AnimationConfig`](#animationconfig)|
 |`devexpertsPromoLink`||`boolean`|
@@ -31,10 +30,9 @@ Other configurations like: inverse, lockRatio etc.
 |`inverse`|Inverses the Y scale vertically.|`boolean`|
 |`autoScaleOnCandles`|Do auto scale (even if it's not enabled in config) after instrument change.|`boolean`|
 |`autoScaleDisableOnDrag`|When dragging chart under specific angle - will automatically disable auto-scale.|[`AutoScaleDisableOnDrag`](#autoscaledisableondrag)|
-|`zoomSensitivity`||`{ wheel: number; }`|
+|`zoomSensitivity`|0..1 ratio of full viewport; 0.5 = middle, 0.75 = 3/4 of viewport|`number`|
 |`defaultViewportItems`|Defines how much items (candles) will be in viewport when chart applies basic scale|`number`|
 |`keepZoomXOnYAxisChange`|Adjust x viewport when y-axis width is changed, so x zoom remains the same|`boolean`|
-|`disableAnimations`|Disable all scale process animations|`boolean`|
 
 ### `AutoScaleDisableOnDrag`
 When dragging chart under specific angle - will automatically disable auto-scale.
@@ -89,9 +87,6 @@ Examples: chart itself, events, x-axis, highlights, cross tool.
 |`selectedWidth`||`number`|
 |`minCandlesOffset`||`number`|
 |`histogram`||[`ChartConfigComponentsHistogram`](#chartconfigcomponentshistogram)|
-|`maxYAxisScalesAmount`|The maximum amount of Y axis scales on a single chart|`number`|
-|`applyBackgroundToAxes`|Background color will be also applied to the chart axes|`{ x: boolean; y: boolean; }`|
-|`sortCandles`||`(candles: Candle[]) => Candle[]`|
 
 ### `ChartConfigComponentsHistogram`
 
@@ -123,7 +118,7 @@ Examples: chart itself, events, x-axis, highlights, cross tool.
 |`align`|Align Y axis left or right.|`YAxisAlign`|
 |`labels`|Configures the labels on Y axis.|[`YAxisLabels`](#yaxislabels)|
 |`typeConfig`|Override appearance of different label types. Useful to change all labels of the same type.|`YAxisTypeConfig`|
-|`labelHeight`|The height of the single label in pixels. Used during calculation step between labels.
+|`labelHeight`|The height of the single label in pixels. Used during calculation step between labels.
 You can make it smaller to fit more labels on Y axis. Or less to fit less labels.|`number`|
 |`zeroPercentLine`|Always show zero line for percent scale.|`boolean`|
 |`customScale`|Allow to scale chart vertically by dragging Y axis with mouse.|`boolean`|
@@ -133,7 +128,6 @@ You can make it smaller to fit more labels on Y axis. Or less to fit less labels
 |`labelBoxMargin`||`{ top: number; bottom: number; end: number; start: number; }`|
 |`fontSize`||`number`|
 |`fontFamily`||`string`|
-|`treasuryFormat`|Treasury format for price values (1/32 tick format for bonds)|[`YAxisConfigTreasuryFormat`](#yaxisconfigtreasuryformat)|
 
 ### `YAxisLabels`
 Configures the labels on Y axis.
@@ -141,14 +135,7 @@ Configures the labels on Y axis.
 |Property|Description|Type|
 |---|---|---|
 |`descriptions`||`boolean`|
-|`settings`|Settings contains required labels ('lastPrice', 'countDownToBarClose') and optional labels ('bidAsk', 'highLow', 'prevDayClose', 'prePostMarket').|`Record<string, YAxisLabelConfig>`|
-
-### `YAxisConfigTreasuryFormat`
-Treasury format for price values (1/32 tick format for bonds)
-
-|Property|Description|Type|
-|---|---|---|
-|`enabled`||`boolean`|
+|`settings`|Settings contains required labels ('lastPrice', 'countDownToBarClose') and optional labels ('bidAsk', 'highLow', 'prevDayClose', 'prePostMarket').|`Record<string, YAxisLabelConfig>`|
 
 ### `GridComponentConfig`
 
@@ -214,10 +201,9 @@ Treasury format for price values (1/32 tick format for bonds)
 |`height`|Height of events area in pixels|`number`|
 |`cursor`|Configure events cursor type.|`string`|
 |`xAxisLabelFormat`|Configure x axis labels|`DateTimeFormatConfig[]`|
-|`icons`|Configure icons, the format is string which contains svg tag, for example: '<svg width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+|`icons`|Configure icons, the format is string which contains svg tag, for example: '<svg width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
 		<path d="M1.06066 6.5L6.5 1.06066L11.9393 6.5L6.5 11.9393L1.06066 6.5Z" stroke="#D92C40" stroke-width="1.5"/>
 	</svg>'|[`ChartConfigComponentsEventsIcons`](#chartconfigcomponentseventsicons)|
-|`line`|Configure the event type vertical line appearance|[`ChartConfigComponentsEventsLine`](#chartconfigcomponentseventsline)|
 
 ### `ChartConfigComponentsEventsIcons`
 Configure icons, the format is string which contains svg tag, for example:
@@ -230,7 +216,7 @@ Configure icons, the format is string which contains svg tag, for example:
 |`earnings`||[`CustomIcon`](#customicon)|
 |`dividends`||[`CustomIcon`](#customicon)|
 |`splits`||[`CustomIcon`](#customicon)|
-|`conference-calls`||[`CustomIcon`](#customicon)|
+|`conferenceCalls`||[`CustomIcon`](#customicon)|
 
 ### `CustomIcon`
 
@@ -263,16 +249,6 @@ Configure icons, the format is string which contains svg tag, for example:
 |---|---|---|
 |`normal`||`string`|
 |`hover`||`string`|
-
-### `ChartConfigComponentsEventsLine`
-Configure the event type vertical line appearance
-
-|Property|Description|Type|
-|---|---|---|
-|`earnings`||`{ width: number; dash: number[]; }`|
-|`dividends`||`{ width: number; dash: number[]; }`|
-|`splits`||`{ width: number; dash: number[]; }`|
-|`conference-calls`||`{ width: number; dash: number[]; }`|
 
 ### `ChartConfigComponentsHighLow`
 
@@ -281,7 +257,6 @@ Configure the event type vertical line appearance
 |---|---|---|
 |`visible`||`boolean`|
 |`font`|Font config of high/low labels.|`string`|
-|`prefix`||`{ high: string; low: string; }`|
 
 ### `ChartConfigComponentsCrossTool`
 
@@ -357,10 +332,10 @@ All colors in chart-core are configured here.
 |`secondaryChartTheme`||`SecondaryChartTheme[]`|
 |`waterMarkTheme`||`{ firstRowColor: string; secondRowColor: string; thirdRowColor: string; }`|
 |`highLowTheme`||`{ highColor: string; lowColor: string; }`|
-|`yAxis`||`{ backgroundColor: string; zeroPercentLine: string; labelTextColor: string; labelInvertedTextColor: string; labelBoxColor: string; rectLabelTextColor: string; rectLabelInvertedTextColor: string; }`|
+|`yAxis`||`{ backgroundColor: string; backgroundHoverColor: string; zeroPercentLine: string; labelTextColor: string; labelInvertedTextColor: string; labelBoxColor: string; rectLabelTextColor: string; rectLabelInvertedTextColor: string; }`|
 |`xAxis`||`{ backgroundColor: string; labelTextColor: string; }`|
 |`crossTool`||`{ lineColor: string; labelBoxColor: string; labelTextColor: string; }`|
-|`events`||[`ChartConfigComponentsEventsColors`](#chartconfigcomponentseventscolors)|
+|`events`||`{ earnings: EventColors; dividends: EventColors; splits: EventColors; 'conference-calls': EventColors; }`|
 |`navigationMap`||`{ buttonColor: string; knotColor: string; sliderColor: string; backgroundColor: string; buttonArrowColor: string; knotLineColor: string; knotBorderColor: string; timeLabelsTextColor: string; mapFillColor: string; mapGradientTopColor?: string; mapGradientBottomColor?: string; mapColor: string; }`|
 |`instrumentInfo`||`{ textColor: string; }`|
 |`paneResizer`||`{ lineColor: string; bgColor: string; bgHoverColor: string; }`|
@@ -474,56 +449,6 @@ All colors in chart-core are configured here.
 |`downBarColor`||`string`|
 |`upBarColor`||`string`|
 |`noneBarColor`||`string`|
-
-### `ChartConfigComponentsEventsColors`
-
-
-|Property|Description|Type|
-|---|---|---|
-|`earnings`||[`EventColors`](#eventcolors)|
-|`dividends`||[`EventColors`](#eventcolors)|
-|`splits`||[`EventColors`](#eventcolors)|
-|`conference-calls`||[`EventColors`](#eventcolors)|
-
-### `EventColors`
-
-
-|Property|Description|Type|
-|---|---|---|
-|`line`||`string`|
-|`normal`||`string`|
-|`hover`||`string`|
-|`color`||`string`|
-
-### `EventColors`
-
-
-|Property|Description|Type|
-|---|---|---|
-|`line`||`string`|
-|`normal`||`string`|
-|`hover`||`string`|
-|`color`||`string`|
-
-### `EventColors`
-
-
-|Property|Description|Type|
-|---|---|---|
-|`line`||`string`|
-|`normal`||`string`|
-|`hover`||`string`|
-|`color`||`string`|
-
-### `EventColors`
-
-
-|Property|Description|Type|
-|---|---|---|
-|`line`||`string`|
-|`normal`||`string`|
-|`hover`||`string`|
-|`color`||`string`|
 
 ### `YAxisLabelsColors`
 
@@ -643,14 +568,6 @@ Date and time formatting configuration.
 |`applyPattern`||`(pattern: string) => string`|
 |`createFormatterFunction`||`(pattern: string) => DateTimeFormatter`|
 |`utcTimeOverride`||`{ pattern?: string; test?: (pattern: string) => void; }`|
-
-### `IntlFormatter`
-
-
-|Property|Description|Type|
-|---|---|---|
-|`decimalSeparator`||`string`|
-|`thousandsSeparator`||`string`|
 
 ### `AnimationConfig`
 
