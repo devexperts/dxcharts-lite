@@ -8,6 +8,9 @@ module.exports = {
 	overrides: [
 		{
 			files: ['**/__tests__/**/*', '**/*.{spec,test}.*'],
+			env: {
+				'jest/globals': true,
+			},
 			rules: {
 				// https://github.com/jest-community/eslint-plugin-jest
 				'jest/no-conditional-expect': 'error',
