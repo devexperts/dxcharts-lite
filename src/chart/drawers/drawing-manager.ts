@@ -14,7 +14,6 @@ import { uuid } from '../utils/uuid.utils';
 
 export const HIT_TEST_PREFIX = 'HIT_TEST_';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const drawerTypes = [
 	'MAIN_BACKGROUND',
 	'MAIN_CLEAR',
@@ -55,6 +54,7 @@ export class DrawingManager {
 	private animFrameId = `draw_${uuid()}`;
 
 	constructor(eventBus: EventBus, private chartResizeHandler: ChartResizeHandler) {
+		// eventBus.on(EVENT_DRAW_LAST_CANDLE, () => animationFrameThrottled(this.animFrameId + 'last', () => this.drawLastBar()));
 		this.drawHitTestCanvas = () => {
 			this.drawingOrder.forEach(drawer => {
 				if (drawer.indexOf(HIT_TEST_PREFIX) !== -1) {
