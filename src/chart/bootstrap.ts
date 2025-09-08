@@ -59,8 +59,6 @@ import { clearerSafe } from './utils/function.utils';
 import { merge } from './utils/merge.utils';
 import { DeepPartial } from './utils/object.utils';
 import { HitTestComponent } from './components/hit-test/hit-test.component';
-import { isSafari } from './utils/device/touchpad.utils';
-import { SafariCanvasAnimation } from './utils/performance/safari/components/animations/safari-canvas-animation';
 
 export type FitType = 'studies' | 'orders' | 'positions';
 
@@ -251,7 +249,7 @@ export default class ChartBootstrap {
 		this.chartComponents.push(this.canvasInputListener);
 		//#endregion
 
-		const hitTestCanvasModelParams = [
+		const hitTestCanvasModel = new HitTestCanvasModel(
 			eventBus,
 			elements.hitTestCanvas,
 			canvasInputListener,
@@ -260,15 +258,14 @@ export default class ChartBootstrap {
 			config,
 			this.canvasModels,
 			elements.chartResizer,
-		] as const;
-		const hitTestCanvasModel = new HitTestCanvasModel(...hitTestCanvasModelParams);
+		);
 		this.hitTestCanvasModel = hitTestCanvasModel;
 		const hitTestClearCanvas = new ClearCanvasDrawer(hitTestCanvasModel);
 		drawingManager.addDrawer(hitTestClearCanvas, 'HIT_TEST_CLEAR');
 		//#endregion
 
-		// canvas animation container, safari has separate animation logic due to browser specifics
-		const canvasAnimation = isSafari ? new SafariCanvasAnimation(eventBus) : new CanvasAnimation(eventBus);
+		// canvas animation container
+		const canvasAnimation = new CanvasAnimation(eventBus);
 		this.canvasAnimation = canvasAnimation;
 
 		const chartPaneId = CanvasElement.PANE_UUID(CHART_UUID);
@@ -507,7 +504,6 @@ export default class ChartBootstrap {
 			undefined,
 			undefined,
 			() => config.components.grid.visible,
-			this.mainPane.mainExtent.idx,
 		);
 		this.chartComponents.push(verticalGridComponent);
 		this.hoverProducer = new HoverProducerComponent(
@@ -533,7 +529,6 @@ export default class ChartBootstrap {
 			this.crossEventProducer,
 			this.hoverProducer,
 			this.chartComponent.baselineModel,
-			this.chartModel,
 		);
 
 		this.chartComponents.push(this.crossToolComponent);

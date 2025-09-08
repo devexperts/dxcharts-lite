@@ -14,9 +14,8 @@ import { uuid } from '../utils/uuid.utils';
 import { ColorAlphaAnimation, ColorAlphaAnimationConfig } from './types/color-alpha-animation';
 import { ColorTransitionAnimation, ColorTransitionAnimationConfig } from './types/color-transition-animation';
 import { ViewportMovementAnimation, ViewportMovementAnimationConfig } from './types/viewport-movement-animation';
-import { isSafari } from '../utils/device/touchpad.utils';
 
-export const DEFAULT_ANIMATION_TIME_MS = isSafari ? 150 : 400;
+const DEFAULT_ANIMATION_TIME_MS = 400;
 
 export const VIEWPORT_ANIMATION_ID = 'VIEWPORT_ANIMATION';
 

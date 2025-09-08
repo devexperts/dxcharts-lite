@@ -4,14 +4,13 @@
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const weekWeekday = 'week-weekday' as const;
 const timeFormatsConfirugable = ['second', 'minute', 'hour', 'day', 'month', 'year'] as const;
 const timeFormatsNoNConfirugable = ['lessThanSecond'] as const;
 
 type TimeFormatWeekWeekdayType = typeof weekWeekday;
-type TimeFormatConfirugableType = (typeof timeFormatsConfirugable)[number];
-type TimeFormatNonConfirugableType = (typeof timeFormatsNoNConfirugable)[number];
+type TimeFormatConfirugableType = typeof timeFormatsConfirugable[number];
+type TimeFormatNonConfirugableType = typeof timeFormatsNoNConfirugable[number];
 
 export type TimeFormat = TimeFormatConfirugableType | TimeFormatNonConfirugableType | TimeFormatWeekWeekdayType;
 

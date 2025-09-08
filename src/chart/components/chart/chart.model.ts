@@ -326,16 +326,6 @@ export class ChartModel extends ChartBaseElement {
 	}
 
 	/**
-	 * Applies the basic scale only on x-axis.
-	 * @param forceNoAnimations - A boolean value for disabling scale animations. Defaults to false.
-	 * @param withZoom - A boolean value for enabling zoom. Defaults to false.
-	 */
-	doBasicXScale() {
-		this.scale.setXScaleWithoutYScale(this.mainCandleSeries.visualPoints);
-		this.bus.fireDraw();
-	}
-
-	/**
 	 * Changes the time frame scale to the previous one and redraws the chart.
 	 * @param {boolean | null} zoomIn - If true, zooms in the chart, if false, zooms out the chart, if null, does not zoom.
 	 * @returns {void}
@@ -400,17 +390,14 @@ export class ChartModel extends ChartBaseElement {
 		// do visual recalculations
 		this.candleSeries.forEach(series => {
 			series.recalculateVisualPoints();
+			series.recalculateDataViewportIndexes();
 		});
 
-		// calculate offset width for prepanded candles
+		// caclulate offset width for prepanded candles
 		const prependedCandlesWidth = this.chartBaseModel.mainVisualPoints
 			.slice(0, updateResult.prepended.length)
 			.reduce((acc, cur) => acc + cur.width, 0);
 		this.scale.moveXStart(this.scale.xStart + prependedCandlesWidth);
-
-		this.candleSeries.forEach(series => {
-			series.recalculateDataViewportIndexes();
-		});
 		this.candlesPrependSubject.next({
 			prependedCandlesWidth,
 			prependedCandles: updateResult.prepended,
@@ -923,20 +910,6 @@ export class ChartModel extends ChartBaseElement {
 	}
 
 	/**
-	 * Checks if the last candle is within the viewport.
-	 * @returns {boolean} - True if the last candle is within the viewport, false otherwise.
-	 */
-	isLastCandleInViewport(): boolean {
-		const lastCandle = this.getLastCandle();
-
-		if (lastCandle && lastCandle.idx) {
-			return this.isCandleInViewport(lastCandle.idx);
-		}
-
-		return false;
-	}
-
-	/**
 	 * Updates candles in series. Default is main series.
 	 * Any number of candles may be provided - they would be matched by their index and updated.
 	 * @param candles - any list of new (updated) candles
@@ -1031,7 +1004,8 @@ export class ChartModel extends ChartBaseElement {
 	 * @param from - if not specified set to first candle timestamp
 	 * @param to - if not specified set to last candle timestamp + right offset
 	 */
-	public getCandlesWithFake(candles: Candle[] = this.getCandles(), from: number = 0, to?: number): Candle[] {
+	public getCandlesWithFake(from: number = 0, to?: number): Candle[] {
+		let candles = this.getCandles().slice();
 		const candlesCount = this.getCandlesCount();
 		const _to = to ?? candlesCount + this.FAKE_CANDLES_DEFAULT;
 		candles = candles.slice(Math.max(0, from), Math.min(candlesCount, _to));
