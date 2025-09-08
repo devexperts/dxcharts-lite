@@ -4,12 +4,10 @@
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 import { Subject } from 'rxjs';
-import { throttleTime } from 'rxjs/operators';
-import { animationFrameScheduler, Subscription } from 'rxjs';
 import { ChartConfigComponentsOffsets, ChartScale, FullChartConfig } from '../chart.config';
-
-import { cloneUnsafe } from '../utils/object.utils';
 import { CanvasAnimation } from '../animation/canvas-animation';
+import { startViewportModelAnimation } from '../animation/viewport-model-animation';
+import { cloneUnsafe } from '../utils/object.utils';
 import { AutoScaleViewportSubModel } from './scaling/auto-scale.model';
 import { changeXToKeepRatio, changeYToKeepRatio } from './scaling/lock-ratio.model';
 import { moveXStart, moveYStart } from './scaling/move-chart.functions';
@@ -24,15 +22,6 @@ import {
 } from './scaling/viewport.model';
 import { zoomXToEndViewportCalculator, zoomXToPercentViewportCalculator } from './scaling/x-zooming.functions';
 import { BoundsProvider } from './bounds.model';
-import VisualCandle from './visual-candle';
-import { VIEWPORT_ANIMATION_ID } from '../animation/canvas-animation';
-import { startViewportModelAnimation, startViewportModelAnimationSafari } from '../animation/viewport-model-animation';
-
-import { ONE_FRAME_MS } from '../utils/numeric-constants.utils';
-import { isSafari } from '../utils/device/touchpad.utils';
-
-const autoScaleZoomSubject = new Subject<void>();
-const autoScalePanSubject = new Subject<void>();
 
 export interface HighLowWithIndex {
 	high: Price;
@@ -86,8 +75,6 @@ export class ScaleModel extends ViewportModel {
 	public history: ScaleHistoryItem[] = [];
 	public offsets: ChartConfigComponentsOffsets;
 	private xConstraints: Constraints[] = [];
-	private autoScaleZoomSubscription: Subscription | null = null;
-	private autoScalePanSubscription: Subscription | null = null;
 
 	constructor(
 		public config: FullChartConfig,
@@ -98,8 +85,6 @@ export class ScaleModel extends ViewportModel {
 		this.state = cloneUnsafe(config.scale);
 		this.autoScaleModel = new AutoScaleViewportSubModel(this);
 		this.offsets = this.config.components.offsets;
-
-		this.initAutoScaleThrottling();
 	}
 
 	protected doActivate(): void {
@@ -116,16 +101,6 @@ export class ScaleModel extends ViewportModel {
 	}
 
 	protected doDeactivate(): void {
-		// Clean up auto-scale throttling subscriptions to prevent memory leaks
-		if (this.autoScaleZoomSubscription) {
-			this.autoScaleZoomSubscription.unsubscribe();
-			this.autoScaleZoomSubscription = null;
-		}
-		if (this.autoScalePanSubscription) {
-			this.autoScalePanSubscription.unsubscribe();
-			this.autoScalePanSubscription = null;
-		}
-
 		super.doDeactivate();
 		this.scaleInversedSubject.complete();
 		this.beforeStartAnimationSubject.complete();
@@ -199,15 +174,8 @@ export class ScaleModel extends ViewportModel {
 	}
 
 	public haltAnimation() {
-		// Stop current animation if it exists
 		if (this.currentAnimation?.animationInProgress) {
 			this.currentAnimation.finishAnimation();
-
-			// Clear the current animation reference
-			this.currentAnimation = undefined;
-			// CRITICAL: Force stop all viewport animations in the animation system to prevent accumulation
-			this.canvasAnimation.forceStopAnimation(VIEWPORT_ANIMATION_ID);
-
 			this.doAutoScale();
 		}
 	}
@@ -224,7 +192,6 @@ export class ScaleModel extends ViewportModel {
 		if (this.state.lockPriceToBarRatio) {
 			changeYToKeepRatio(initialStateCopy, constrainedState);
 		}
-
 		if (this.state.auto) {
 			this.autoScaleModel.doAutoYScale(constrainedState);
 		}
@@ -282,46 +249,16 @@ export class ScaleModel extends ViewportModel {
 		if (this.state.lockPriceToBarRatio) {
 			changeYToKeepRatio(initialState, constrainedState);
 		}
-
 		if (this.state.auto) {
 			this.autoScaleModel.doAutoYScale(constrainedState);
 		}
-
 		if (forceNoAnimation || this.config.scale.disableAnimations) {
 			this.haltAnimation();
 			this.apply(constrainedState);
 		} else {
 			this.currentAnimation?.tick();
-			// Big profit in performance for safari
-			isSafari
-				? startViewportModelAnimationSafari(
-						this.canvasAnimation,
-						this,
-						constrainedState,
-						this.state.auto ? this.autoScaleModel : undefined,
-				  )
-				: startViewportModelAnimation(this.canvasAnimation, this, constrainedState);
+			startViewportModelAnimation(this.canvasAnimation, this, constrainedState);
 		}
-	}
-
-	public setXScaleWithoutYScale(visualCandleSource: VisualCandle[]) {
-		const initialStateCopy = this.export();
-		const vCandles = visualCandleSource.slice(
-			Math.max(visualCandleSource.length - this.state.defaultViewportItems, 0),
-		  );
-		const endCandle = vCandles[vCandles.length - 1];
-		const xEnd = endCandle.startUnit + endCandle.width + this.offsets.right;
-		const xStart = xEnd - (this.getBounds().width * this.zoomX);
-
-		const state = { ...initialStateCopy, xStart, xEnd };
-		const constrainedState = this.scalePostProcessor(initialStateCopy, state);
-
-		if (this.state.auto) {
-			this.autoScaleModel.doAutoYScale(constrainedState);
-		}
-		
-		this.currentAnimation?.tick();
-		startViewportModelAnimation(this.canvasAnimation, this, constrainedState);
 	}
 
 	public setYScale(yStart: Unit, yEnd: Unit, fire = false) {
@@ -330,7 +267,7 @@ export class ScaleModel extends ViewportModel {
 			return;
 		}
 
-		if (this.state.lockPriceToBarRatio && this.initialViewportValidSubject.getValue()) {
+		if (this.state.lockPriceToBarRatio) {
 			this.setLockedYScale(yStart, yEnd, fire, initialState);
 			return;
 		}
@@ -370,24 +307,15 @@ export class ScaleModel extends ViewportModel {
 	public moveXStart(xStart: Unit): void {
 		const state = this.export();
 		const initialStateCopy = { ...state };
+		// always stop the animations
 		this.haltAnimation();
 		moveXStart(state, xStart);
 		// there we need only candles constraint
 		const constrainedState = this.scalePostProcessor(initialStateCopy, state);
-
-		if (isSafari) {
-			startViewportModelAnimationSafari(
-				this.canvasAnimation,
-				this,
-				constrainedState,
-				this.state.auto ? this.autoScaleModel : undefined,
-			);
-		} else {
-			if (this.state.auto) {
-				this.autoScaleModel.doAutoYScale(constrainedState);
-			}
-			this.apply(constrainedState);
+		if (this.state.auto) {
+			this.autoScaleModel.doAutoYScale(constrainedState);
 		}
+		this.apply(constrainedState);
 	}
 
 	private scalePostProcessor = (initialState: ViewportModelState, state: ViewportModelState) => {
@@ -514,28 +442,6 @@ export class ScaleModel extends ViewportModel {
 		}
 
 		this.state.lockPriceToBarRatio = value;
-	}
-
-	private initAutoScaleThrottling() {
-		// Throttle zoom auto-scale to ONE_FRAME_MS
-		this.autoScaleZoomSubscription = autoScaleZoomSubject
-			.pipe(throttleTime(ONE_FRAME_MS, animationFrameScheduler, { trailing: true, leading: false }))
-			.subscribe(() => {
-				const state = this.export();
-				const initialStateCopy = { ...state };
-				const constrainedState = this.scalePostProcessor(initialStateCopy, state);
-				this.autoScaleModel.doAutoYScale(constrainedState);
-			});
-
-		// Throttle pan auto-scale to 250ms
-		this.autoScalePanSubscription = autoScalePanSubject
-			.pipe(throttleTime(ONE_FRAME_MS, animationFrameScheduler, { trailing: true, leading: false }))
-			.subscribe(() => {
-				const state = this.export();
-				const initialStateCopy = { ...state };
-				const constrainedState = this.scalePostProcessor(initialStateCopy, state);
-				this.autoScaleModel.doAutoYScale(constrainedState);
-			});
 	}
 }
 
