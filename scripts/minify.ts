@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import { globSync } from 'glob';
+import * as glob from 'glob';
 import * as path from 'path';
 import * as esbuild from 'esbuild';
 
@@ -22,7 +22,7 @@ async function minifyFile(file: string): Promise<void> {
 }
 
 function minify(): void {
-	const jsFiles = globSync(path.resolve(`dist/**/*.js`));
+	const jsFiles = glob.sync(path.resolve(`dist/**/*.js`));
 
 	console.log('Library minification started...');
 

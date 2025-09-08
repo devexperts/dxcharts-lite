@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as isGlob from 'is-glob';
-import { globSync } from 'glob';
+import * as glob from 'glob';
 import * as path from 'path';
 
 export const toAbsoluteFilepath = (basePart: string, relativePart: string) => {
@@ -27,7 +27,7 @@ export const getFilePaths = (src: string[]) => {
 	return src
 		.map(filepath => {
 			if (isGlob(filepath)) {
-				return globSync(path.resolve(filepath));
+				return glob.sync(path.resolve(filepath));
 			}
 			return path.resolve(filepath);
 		})
