@@ -4,11 +4,10 @@
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 import { Subject } from 'rxjs';
-import { distinctUntilChanged, map, startWith } from 'rxjs/operators';
+import { distinctUntilChanged } from 'rxjs/operators';
 import { CanvasAnimation } from '../../animation/canvas-animation';
 import {
 	areBoundsChanged,
-	CHART_UUID,
 	CanvasBoundsContainer,
 	CanvasElement,
 	HitBoundsTest,
@@ -120,19 +119,6 @@ export class PaneComponent extends ChartBaseElement {
 					this.dynamicObjectsCanvasModel.fireDraw();
 				}),
 		);
-		if (this.uuid === CHART_UUID) {
-			this.addRxSubscription(
-				this.yAxis.axisTypeSetSubject
-					.pipe(
-						startWith(this.yAxis.getAxisType()),
-						distinctUntilChanged(),
-						map((axisType: PriceAxisType) => axisType === 'percent'),
-					)
-					.subscribe(shouldThrottle => {
-						this.chartPanComponent.chartAreaPanHandler.setChartAreaXDragThrottled(shouldThrottle);
-					}),
-			);
-		}
 	}
 
 	public toY(price: Price): Pixel {
@@ -157,7 +143,6 @@ export class PaneComponent extends ChartBaseElement {
 		yAxisBaselineGetter: () => Unit,
 	) {
 		const chartPaneId = CanvasElement.PANE_UUID(uuid);
-		const mainExtentIdx = this.mainExtent?.idx ?? 0;
 		const gridComponent = new GridComponent(
 			this.mainCanvasModel,
 			scale,
@@ -172,7 +157,6 @@ export class PaneComponent extends ChartBaseElement {
 			extentIdx,
 			yAxisBaselineGetter,
 			() => this.config.components.grid.visible,
-			mainExtentIdx,
 		);
 		return gridComponent;
 	}
