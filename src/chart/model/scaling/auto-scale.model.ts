@@ -37,10 +37,7 @@ export class AutoScaleViewportSubModel {
 	// post processors can apply some changes to high low before applying it
 	highLowPostProcessor: Record<string, HighLowPostProcessor> = {};
 
-	constructor(
-		private delegate: ViewportModel,
-		highLowProviders?: Record<string, HighLowProvider>,
-	) {
+	constructor(private delegate: ViewportModel, highLowProviders?: Record<string, HighLowProvider>) {
 		this.highLowProviders = highLowProviders ?? {};
 	}
 

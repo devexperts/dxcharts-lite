@@ -29,10 +29,7 @@ export interface XAxisLabelsProvider {
 export class XAxisLabelsModel extends ChartBaseElement {
 	public labels: XAxisLabel[] = [];
 
-	constructor(
-		public eventBus: EventBus,
-		readonly labelProviders: XAxisLabelsProvider[],
-	) {
+	constructor(public eventBus: EventBus, readonly labelProviders: XAxisLabelsProvider[]) {
 		super();
 		this.initModel();
 		/**

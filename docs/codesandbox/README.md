@@ -6,10 +6,10 @@ Generates codesandbox URLs based on the docs folder.
 
 Each documentation folder with an example in it should contain at least these files:
 
-- `index.html (required)` - the main entry point for an example. Generator will parse it's content, read the imports and include them in the sandbox's files;
-- `example.md (optional)` - `md` file, that contains human readable text, that explains some concept of `dxcharts-lite`;
+-   `index.html (required)` - the main entry point for an example. Generator will parse it's content, read the imports and include them in the sandbox's files;
+-   `example.md (optional)` - `md` file, that contains human readable text, that explains some concept of `dxcharts-lite`;
     > `.md` file could be used to auto insert generated codesandbox URL.
-- `...rest files` - rest files will be ignored (if they're not imported via index.html).
+-   `...rest files` - rest files will be ignored (if they're not imported via index.html).
 
 Generator looks for example folders in `docs`, parses each of them, and generates a codesandbox URL as an output.
 

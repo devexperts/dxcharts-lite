@@ -4,17 +4,16 @@
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 import { Subject } from 'rxjs';
-import { distinctUntilChanged, map, startWith } from 'rxjs/operators';
+import { distinctUntilChanged } from 'rxjs/operators';
 import { CanvasAnimation } from '../../animation/canvas-animation';
 import {
 	areBoundsChanged,
-	CHART_UUID,
 	CanvasBoundsContainer,
 	CanvasElement,
 	HitBoundsTest,
 } from '../../canvas/canvas-bounds-container';
 import { CursorHandler } from '../../canvas/cursor.handler';
-import { FullChartConfig, IntlFormatter, YAxisAlign, YAxisConfig } from '../../chart.config';
+import { FullChartConfig, YAxisAlign, YAxisConfig } from '../../chart.config';
 import { DrawingManager } from '../../drawers/drawing-manager';
 import EventBus from '../../events/event-bus';
 import { CanvasInputListenerComponent } from '../../inputlisteners/canvas-input-listener.component';
@@ -36,7 +35,6 @@ import { ChartPanComponent } from '../pan/chart-pan.component';
 import { YAxisComponent } from '../y_axis/y-axis.component';
 import {
 	createDefaultYExtentHighLowProvider,
-	ValueFormatterOptions,
 	YExtentComponent,
 	YExtentCreationOptions,
 } from './extent/y-extent-component';
@@ -44,8 +42,6 @@ import { PaneHitTestController } from './pane-hit-test.controller';
 import { HitTestCanvasModel } from '../../model/hit-test-canvas.model';
 import { ChartResizeHandler } from '../../inputhandlers/chart-resize.handler';
 import { merge } from '../../utils/merge.utils';
-import { VOLUMES_UUID } from '../volumes/volumes.model';
-import { FormatterOptions } from '../chart/price-formatters/price.formatter';
 
 export class PaneComponent extends ChartBaseElement {
 	/**
@@ -62,10 +58,6 @@ export class PaneComponent extends ChartBaseElement {
 
 	get yAxis() {
 		return this.mainExtent.yAxis;
-	}
-
-	get intlFormatter(): IntlFormatter {
-		return this.config.intlFormatter;
 	}
 
 	get dataSeries() {
@@ -127,19 +119,6 @@ export class PaneComponent extends ChartBaseElement {
 					this.dynamicObjectsCanvasModel.fireDraw();
 				}),
 		);
-		if (this.uuid === CHART_UUID) {
-			this.addRxSubscription(
-				this.yAxis.axisTypeSetSubject
-					.pipe(
-						startWith(this.yAxis.getAxisType()),
-						distinctUntilChanged(),
-						map((axisType: PriceAxisType) => axisType === 'percent'),
-					)
-					.subscribe(shouldThrottle => {
-						this.chartPanComponent.chartAreaPanHandler.setChartAreaXDragThrottled(shouldThrottle);
-					}),
-			);
-		}
 	}
 
 	public toY(price: Price): Pixel {
@@ -164,7 +143,6 @@ export class PaneComponent extends ChartBaseElement {
 		yAxisBaselineGetter: () => Unit,
 	) {
 		const chartPaneId = CanvasElement.PANE_UUID(uuid);
-		const mainExtentIdx = this.mainExtent?.idx ?? 0;
 		const gridComponent = new GridComponent(
 			this.mainCanvasModel,
 			scale,
@@ -179,7 +157,6 @@ export class PaneComponent extends ChartBaseElement {
 			extentIdx,
 			yAxisBaselineGetter,
 			() => this.config.components.grid.visible,
-			mainExtentIdx,
 		);
 		return gridComponent;
 	}
@@ -294,20 +271,10 @@ export class PaneComponent extends ChartBaseElement {
 		return yExtentComponent;
 	}
 
-	private shouldKeepVolumeHostExtent(extent: YExtentComponent): boolean {
-		return (
-			this.uuid === VOLUMES_UUID && extent === this.mainExtent && this.config.components.volumes.showSeparately
-		);
-	}
-
 	public removeExtentComponents(extentComponents: YExtentComponent[]) {
-		const removableExtents = extentComponents.filter(extent => !this.shouldKeepVolumeHostExtent(extent));
-		if (removableExtents.length === 0) {
-			return;
-		}
-		removableExtents.forEach(extentComponent => extentComponent.disable());
+		extentComponents.forEach(extentComponent => extentComponent.disable());
 		this.yExtentComponents = this.yExtentComponents.filter(
-			current => !removableExtents.map(excluded => excluded.idx).includes(current.idx),
+			current => !extentComponents.map(excluded => excluded.idx).includes(current.idx),
 		);
 		// re-index extents
 		this.yExtentComponents.forEach((c, idx) => {
@@ -488,8 +455,8 @@ export class PaneComponent extends ChartBaseElement {
 		return this.uuid !== lastVisiblePane && this.visible;
 	}
 
-	public valueFormatter = (value: Unit, options?: ValueFormatterOptions) => {
-		return this.mainExtent.valueFormatter(value, options);
+	public valueFormatter = (value: Unit, dataSeries?: DataSeriesModel) => {
+		return this.mainExtent.valueFormatter(value, dataSeries);
 	};
 
 	get regularFormatter() {
@@ -515,7 +482,7 @@ export class PaneComponent extends ChartBaseElement {
 }
 
 export interface YExtentFormatters {
-	regular: (value: number, options?: FormatterOptions) => string;
+	regular: (value: number, precision?: number) => string;
 	percent?: (value: number, dataSeries?: DataSeriesModel) => string;
 	logarithmic?: (value: number) => string;
 }

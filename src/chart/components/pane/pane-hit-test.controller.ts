@@ -3,24 +3,16 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { isCandleSeriesModel } from '../../model/candle-series.model';
 import { CanvasModel } from '../../model/canvas.model';
 import { DataSeriesModel, DataSeriesPoint, VisualSeriesPoint } from '../../model/data-series.model';
 import { HIT_TEST_ID_RANGE, HitTestSubscriber } from '../../model/hit-test-canvas.model';
 import { flatMap } from '../../utils/array.utils';
 import { PaneComponent } from './pane.component';
-import { BehaviorSubject, Observable } from 'rxjs';
 
 export class PaneHitTestController implements HitTestSubscriber<DataSeriesModel> {
 	// used in hit test for creating series
 	private dataSeriesIdCounter: number = HIT_TEST_ID_RANGE.DATA_SERIES[0];
-	private selectedDataSeries: DataSeriesModel | null = null;
-	private selectedDataSeriesIdSubject = new BehaviorSubject<string | null>(null);
-
-	constructor(
-		private readonly panes: Record<string, PaneComponent>,
-		private canvasModel: CanvasModel,
-	) {}
+	constructor(private readonly panes: Record<string, PaneComponent>, private canvasModel: CanvasModel) {}
 	public getNewDataSeriesHitTestId = (): number => {
 		return this.dataSeriesIdCounter++;
 	};
@@ -51,33 +43,16 @@ export class PaneHitTestController implements HitTestSubscriber<DataSeriesModel>
 	}
 
 	/**
-	 * Sets the selected data series.
-	 * @param {DataSeriesModel | null} model - The model of the data series to highlight
+	 * Changes the hovered property of all data series to true if their id matches the id of the provided model.
+	 * @param {DataSeriesModel | null} model - The model to compare the id with.
 	 * @returns {void}
 	 */
-	public selectDataSeries(model: DataSeriesModel | null): void {
-		this.selectedDataSeries = model;
-		this.selectedDataSeriesIdSubject.next(model ? `${model.parentId ?? model.id}` : null);
-		if (!isCandleSeriesModel(model)) {
-			this.allDataSeries.forEach(d => (d.selected = d.htId === this.selectedDataSeries?.htId));
-		}
-	}
-
-	/**
-	 * Observes selected data series ID changes.
-	 * @returns {Observable<string | null>} Observable that emits selected data series ID or null.
-	 */
-	public observeSelectedDataSeriesChanged(): Observable<string | null> {
-		return this.selectedDataSeriesIdSubject.asObservable();
-	}
-
 	onHover(model: DataSeriesModel | null): void {
-		this.allDataSeries.forEach(d => (d.hovered = d.htId === model?.htId));
+		this.allDataSeries.forEach(d => (d.highlighted = d.htId === model?.htId));
 		this.canvasModel.fireDraw();
 	}
 
 	onMouseDown(model: DataSeriesModel<DataSeriesPoint, VisualSeriesPoint>): void {
-		this.selectDataSeries(model);
 		model && this.handleYExtentDragStart(model);
 	}
 

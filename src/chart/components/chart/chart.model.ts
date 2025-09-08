@@ -11,17 +11,11 @@ import {
 	CanvasElement,
 	areBoundsChanged,
 } from '../../canvas/canvas-bounds-container';
-import {
-	BarType,
-	CandleTimestampAnchor,
-	ChartConfigComponentsOffsets,
-	FullChartConfig,
-	getDefaultConfig,
-} from '../../chart.config';
+import { BarType, ChartConfigComponentsOffsets, FullChartConfig, getDefaultConfig } from '../../chart.config';
 import EventBus from '../../events/event-bus';
 import { ChartResizeHandler, PickedDOMRect } from '../../inputhandlers/chart-resize.handler';
 import { CandleSeriesColors, CandleSeriesModel, PartialCandleSeriesColors } from '../../model/candle-series.model';
-import { Candle } from '../../model/candle.model';
+import { Candle, copyCandle } from '../../model/candle.model';
 import { CanvasModel, MIN_SUPPORTED_CANVAS_SIZE } from '../../model/canvas.model';
 import { ChartBaseElement } from '../../model/chart-base-element';
 import { DataSeriesType } from '../../model/data-series.config';
@@ -39,15 +33,7 @@ import { PaneComponent } from '../pane/pane.component';
 import { LabelGroup } from '../y_axis/price_labels/y-axis-labels.model';
 import { createBasicScaleViewportTransformer, createTimeFrameViewportTransformer } from './basic-scale';
 import { calculateCandleWidth } from './candle-width-calculator.functions';
-import {
-	adjustSecondarySeriesToMain,
-	assignDenseSecondarySeriesIndexes,
-	deleteCandlesIndex,
-	isCandle,
-	isDenseAlignedSecondarySeries,
-	prepareCandle,
-	reindexCandles,
-} from './candle.functions';
+import { deleteCandlesIndex, isCandle, prepareCandle, reindexCandles } from './candle.functions';
 import { ChartBaseModel } from './chart-base.model';
 import { CandleSeries, ChartInstrument, PartialCandle } from './chart.component';
 import { fakeCandle } from './fake-candles';
@@ -104,7 +90,6 @@ export class ChartModel extends ChartBaseElement {
 	) {
 		super();
 		this.chartTypeChanged.next(this.config.components.chart.type);
-		this.chartBaseModel.candleTimestampAnchor = this.getCandleTimestampAnchor();
 		this.secondaryChartColors = new SecondaryChartColorsPool(this.config);
 		const candleSeries = new MainCandleSeriesModel(
 			this.chartBaseModel,
@@ -256,13 +241,10 @@ export class ChartModel extends ChartBaseElement {
 		recalculateAndUpdate = true,
 	): CandleSeriesModel | undefined {
 		const preparedCandles = this.prepareCandles(candles);
-		const mainDataPoints = this.mainCandleSeries.dataPoints;
-		const secondaryCandles = isDenseAlignedSecondarySeries(mainDataPoints, preparedCandles)
-			? assignDenseSecondarySeriesIndexes(preparedCandles)
-			: this.secondarySeriesAdjustments(
-					mainDataPoints,
-					this.reindexCandlesBasedOnSeries(mainDataPoints, preparedCandles),
-				);
+		// set correct indexes based on main candles timestamp
+		const reindexCandles = this.reindexCandlesBasedOnSeries(this.mainCandleSeries.dataPoints, preparedCandles);
+		// ensure there are no gaps in new candles
+		const secondaryCandles = this.secondarySeriesAdjustments(this.mainCandleSeries.dataPoints, reindexCandles);
 		// create a new secondary series model if it doesn't already exist
 		const isSymbolExist = this.secondaryCandleSeries.some(
 			candleSeries => candleSeries.instrument.symbol === instrument.symbol,
@@ -290,10 +272,8 @@ export class ChartModel extends ChartBaseElement {
 	 * @param secondarySeries
 	 */
 	setAllSeries(mainSeries: CandleSeries, secondarySeries: CandleSeries[] = []): void {
-		const previousSymbol = this.mainCandleSeries.instrument?.symbol;
 		this.mainCandleSeries.instrument = mainSeries.instrument ?? this.mainCandleSeries.instrument;
-		// Live setData (e.g. Renko) passes the same instrument every tick; only notify real symbol changes.
-		if (mainSeries.instrument && mainSeries.instrument.symbol !== previousSymbol) {
+		if (mainSeries.instrument) {
 			this.mainInstrumentChangedSubject.next(mainSeries.instrument);
 		}
 		this.rememberCurrentTimeframe();
@@ -346,16 +326,6 @@ export class ChartModel extends ChartBaseElement {
 	}
 
 	/**
-	 * Applies the basic scale only on x-axis.
-	 * @param forceNoAnimations - A boolean value for disabling scale animations. Defaults to false.
-	 * @param withZoom - A boolean value for enabling zoom. Defaults to false.
-	 */
-	doBasicXScale() {
-		this.scale.setXScaleWithoutYScale(this.mainCandleSeries.visualPoints);
-		this.bus.fireDraw();
-	}
-
-	/**
 	 * Changes the time frame scale to the previous one and redraws the chart.
 	 * @param {boolean | null} zoomIn - If true, zooms in the chart, if false, zooms out the chart, if null, does not zoom.
 	 * @returns {void}
@@ -402,11 +372,7 @@ export class ChartModel extends ChartBaseElement {
 		}
 
 		const preparedCandles = this.prepareCandles(mainSeries.candles);
-		const updateResult = updateCandles(
-			this.mainCandleSeries.dataPoints,
-			preparedCandles,
-			this.getCandleTimestampAnchor(),
-		);
+		const updateResult = updateCandles(this.mainCandleSeries.dataPoints, preparedCandles);
 		const updatedCandles = updateResult.candles;
 		reindexCandles(updatedCandles);
 		this.mainCandleSeries.dataPoints = updatedCandles;
@@ -417,7 +383,6 @@ export class ChartModel extends ChartBaseElement {
 			const updatedCandles = updateCandles(
 				this.findSecondarySeriesBySymbol(series.instrument?.symbol ?? '')?.dataPoints ?? [],
 				preparedCandles,
-				this.getCandleTimestampAnchor(),
 			).candles;
 			return this.setSecondaryCandleSeries(updatedCandles, series.instrument, false);
 		});
@@ -425,17 +390,14 @@ export class ChartModel extends ChartBaseElement {
 		// do visual recalculations
 		this.candleSeries.forEach(series => {
 			series.recalculateVisualPoints();
+			series.recalculateDataViewportIndexes();
 		});
 
-		// calculate offset width for prepanded candles
+		// caclulate offset width for prepanded candles
 		const prependedCandlesWidth = this.chartBaseModel.mainVisualPoints
 			.slice(0, updateResult.prepended.length)
 			.reduce((acc, cur) => acc + cur.width, 0);
 		this.scale.moveXStart(this.scale.xStart + prependedCandlesWidth);
-
-		this.candleSeries.forEach(series => {
-			series.recalculateDataViewportIndexes();
-		});
 		this.candlesPrependSubject.next({
 			prependedCandlesWidth,
 			prependedCandles: updateResult.prepended,
@@ -519,11 +481,29 @@ export class ChartModel extends ChartBaseElement {
 	 * @param mainSeries - main series
 	 * @param secondarySeries - secondarySeries to adjust
 	 */
-	private secondarySeriesAdjustments(
-		mainSeries: Array<Candle>,
-		secondarySeries: Array<Candle | undefined>,
-	): Array<Candle> {
-		return adjustSecondarySeriesToMain(mainSeries, secondarySeries);
+	private secondarySeriesAdjustments(mainSeries: Array<Candle>, secondarySeries: Array<Candle>): Array<Candle> {
+		const result: Array<Candle> = [];
+		mainSeries.forEach(mainCandle => {
+			const candleIdx = this.candleIdxFromId(mainCandle.id);
+			const idx = candleIdx > 0 ? candleIdx : 0;
+			const compareCandle = secondarySeries[idx];
+			if (!compareCandle) {
+				// take first candle to left or right
+				// check left direction first
+				let candle = findFirstNotEmptyCandle(secondarySeries, idx, -1);
+				if (!candle) {
+					candle = findFirstNotEmptyCandle(secondarySeries, idx, 1);
+				}
+				if (candle) {
+					// copy the candle and simplify it's OHLC
+					const fakeCandle = copyCandle(candle, idx, true);
+					result.push(fakeCandle);
+				}
+			} else {
+				result.push(compareCandle);
+			}
+		});
+		return result;
 	}
 
 	/**
@@ -907,12 +887,7 @@ export class ChartModel extends ChartBaseElement {
 		return series.reduce((candles: Array<Candle>, candle: Candle) => {
 			const timestamp = candle.timestamp;
 			// find index of candle in baseSeries
-			const result = searchCandleIndex(
-				timestamp,
-				this.candleSearchOptions(false),
-				baseSeries,
-				this.chartBaseModel.period,
-			);
+			const result = searchCandleIndex(timestamp, { extrapolate: false }, baseSeries, this.chartBaseModel.period);
 			if (result.index >= 0 && result.index < baseSeries.length) {
 				candle.idx = result.index;
 				candles[result.index] = candle;
@@ -925,18 +900,6 @@ export class ChartModel extends ChartBaseElement {
 		return this.chartBaseModel.period;
 	}
 
-	public getCandleTimestampAnchor() {
-		return this.config.components.chart.candleTimestampAnchor ?? 'open';
-	}
-
-	private candleSearchOptions(extrapolate: boolean, isDaysPeriod?: boolean) {
-		return {
-			extrapolate,
-			isDaysPeriod,
-			candleTimestampAnchor: this.getCandleTimestampAnchor(),
-		};
-	}
-
 	/**
 	 * Checks if a given candle is within the viewport.
 	 * @param {number} idx - The index of the candle to check.
@@ -944,20 +907,6 @@ export class ChartModel extends ChartBaseElement {
 	 */
 	isCandleInViewport(idx: number): boolean {
 		return this.getFirstIdx() <= idx && idx <= this.getLastIdx();
-	}
-
-	/**
-	 * Checks if the last candle is within the viewport.
-	 * @returns {boolean} - True if the last candle is within the viewport, false otherwise.
-	 */
-	isLastCandleInViewport(): boolean {
-		const lastCandle = this.getLastCandle();
-
-		if (lastCandle && lastCandle.idx) {
-			return this.isCandleInViewport(lastCandle.idx);
-		}
-
-		return false;
 	}
 
 	/**
@@ -991,12 +940,7 @@ export class ChartModel extends ChartBaseElement {
 					return;
 				}
 				// detect index of updating candle
-				const result = searchCandleIndex(
-					candle.timestamp,
-					this.candleSearchOptions(true),
-					curCandles,
-					this.getPeriod(),
-				);
+				const result = searchCandleIndex(candle.timestamp, { extrapolate: true }, curCandles, this.getPeriod());
 				const idx = Math.min(result.index, curCandles.length);
 				isNewCandle = isNewCandle || idx === curCandles.length;
 				// update the candle and index
@@ -1060,7 +1004,8 @@ export class ChartModel extends ChartBaseElement {
 	 * @param from - if not specified set to first candle timestamp
 	 * @param to - if not specified set to last candle timestamp + right offset
 	 */
-	public getCandlesWithFake(candles: Candle[] = this.getCandles(), from: number = 0, to?: number): Candle[] {
+	public getCandlesWithFake(from: number = 0, to?: number): Candle[] {
+		let candles = this.getCandles().slice();
 		const candlesCount = this.getCandlesCount();
 		const _to = to ?? candlesCount + this.FAKE_CANDLES_DEFAULT;
 		candles = candles.slice(Math.max(0, from), Math.min(candlesCount, _to));
@@ -1111,7 +1056,7 @@ export class ChartModel extends ChartBaseElement {
 		const prepend: Candle[] = [];
 
 		prependUpdate.forEach(c => {
-			const result = searchCandleIndex(c.timestamp, this.candleSearchOptions(false), target);
+			const result = searchCandleIndex(c.timestamp, { extrapolate: false }, target);
 			const idx = result.index;
 			if (idx < 0) {
 				prepend.push(c);
@@ -1250,6 +1195,18 @@ export interface UpdateCandlesResult {
 	candles: Candle[];
 }
 
+const findFirstNotEmptyCandle = (candles: Array<Candle>, startIdx: number, iterateStep: number): Candle | undefined => {
+	if (startIdx >= candles.length) {
+		return candles[candles.length - 1];
+	}
+	for (let i = startIdx; i < candles.length && i >= 0; i += iterateStep) {
+		const candle = candles[i];
+		if (candle) {
+			return candle;
+		}
+	}
+};
+
 export type TimeFrameRange = [number, number];
 
 /**
@@ -1260,17 +1217,13 @@ export type TimeFrameRange = [number, number];
  * @param target {Candle[]} - sorted candles
  * @param update {Candle[]} - sorted candles
  */
-const updateCandles = (
-	target: Candle[],
-	update: Candle[],
-	candleTimestampAnchor: CandleTimestampAnchor = 'open',
-): UpdateCandlesResult => {
+const updateCandles = (target: Candle[], update: Candle[]): UpdateCandlesResult => {
 	const targetCopy = target.slice();
 	const prepend: Candle[] = [];
 	const append: Candle[] = [];
 
 	update.forEach(c => {
-		const result = searchCandleIndex(c.timestamp, { extrapolate: true, candleTimestampAnchor }, target);
+		const result = searchCandleIndex(c.timestamp, { extrapolate: true }, target);
 		const idx = result.index;
 		if (idx < 0) {
 			prepend.push(c);

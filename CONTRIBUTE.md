@@ -24,10 +24,10 @@ If you find a bug, notice a mistake in the documentation, or have a suggestion, 
 
 When submitting an issue, please include:
 
-- **A detailed overview of the issue**
-- **Related issues**: Has a similar issue been reported before?
-- **Steps to reproduce**: How can we reproduce the problem? (for bugs)
-- **Suggested fix**: If you can't fix it yourself, perhaps you can point to where the problem might be (e.g., line of code or commit)
+-   **A detailed overview of the issue**
+-   **Related issues**: Has a similar issue been reported before?
+-   **Steps to reproduce**: How can we reproduce the problem? (for bugs)
+-   **Suggested fix**: If you can't fix it yourself, perhaps you can point to where the problem might be (e.g., line of code or commit)
 
 ## Documentation fixes
 

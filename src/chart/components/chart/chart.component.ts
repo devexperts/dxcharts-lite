@@ -56,7 +56,6 @@ import { ChartResizeHandler } from '../../inputhandlers/chart-resize.handler';
 import { PartialExcept } from '../../utils/types.utils';
 import { debounce } from '../../utils/performance/debounce.utils';
 import { LinearTrendDrawer } from '../../drawers/data-series-drawers/linear-trend.drawer';
-import { TrendPointsDrawer } from '../../drawers/data-series-drawers/trend-points.drawer';
 
 /**
  * Represents a financial instrument to be displayed on a chart
@@ -268,7 +267,6 @@ export class ChartComponent extends ChartBaseElement {
 		this.registerDataSeriesTypeDrawer('HISTOGRAM', new HistogramDrawer());
 		this.registerDataSeriesTypeDrawer('TREND_HISTOGRAM', new TrendHistogramDrawer());
 		this.registerDataSeriesTypeDrawer('POINTS', new PointsDrawer());
-		this.registerDataSeriesTypeDrawer('TREND_POINTS', new TrendPointsDrawer());
 		this.registerDataSeriesTypeDrawer(
 			'COLOR_CANDLE',
 			new CandleSeriesWrapper(new ColorCandleDrawer(this.chartModel), this.config, mainChartBoundsProvider),
@@ -291,23 +289,6 @@ export class ChartComponent extends ChartBaseElement {
 		});
 		this.chartModel.mainCandleSeries.recalculateVisualPoints();
 		this.chartModel.chartTypeChanged.next(type);
-	}
-
-	/**
-	 * Sets the selected data series by its ID. If the ID is null, it clears the selected data series.
-	 * @param {string | null} targetId - The ID or parent ID of the data series to select, or null to clear the selection.
-	 * @returns {void}
-	 */
-	public setSelectedSeries(targetId: string | null): void {
-		this.paneManager.setSelectedDataSeries(targetId);
-	}
-
-	/**
-	 * Observes selected data series ID changes.
-	 * @returns {Observable<string | null>} Observable that emits selected data series ID or null.
-	 */
-	public observeSelectedSeriesChanged(): Observable<string | null> {
-		return this.paneManager.observeSelectedDataSeriesChanged();
 	}
 
 	/**

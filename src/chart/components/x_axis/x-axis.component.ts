@@ -4,7 +4,7 @@
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 import { merge, animationFrameScheduler } from 'rxjs';
-import { distinctUntilChanged, map, throttleTime, filter, startWith } from 'rxjs/operators';
+import { distinctUntilChanged, map, throttleTime, filter } from 'rxjs/operators';
 import { CanvasBoundsContainer, CanvasElement } from '../../canvas/canvas-bounds-container';
 import { CursorHandler } from '../../canvas/cursor.handler';
 import { ChartBaseElement } from '../../model/chart-base-element';
@@ -29,8 +29,6 @@ import { lastOf } from '../../utils/array.utils';
 import { notEmpty } from '../../utils/function.utils';
 import { availableBarTypes } from '../../chart.config';
 import { HitTestCanvasModel } from '../../model/hit-test-canvas.model';
-import { PriceAxisType } from '../labels_generator/numeric-axis-labels.generator';
-import { YAxisComponent } from '../y_axis/y-axis.component';
 /**
  * X-axis component, contains all x-axis calculation and rendering logic.
  */
@@ -55,7 +53,6 @@ export class XAxisComponent extends ChartBaseElement {
 		chartPanComponent: ChartPanComponent,
 		cursorHandler: CursorHandler,
 		hitTestCanvasModel: HitTestCanvasModel,
-		private yAxis: YAxisComponent,
 	) {
 		super();
 		const xAxisLabelsGenerator = new XAxisTimeLabelsGenerator(
@@ -163,18 +160,6 @@ export class XAxisComponent extends ChartBaseElement {
 					filter(notEmpty),
 				)
 				.subscribe(x => this.xAxisLabelsGenerator?.updateLastLabel?.(x)),
-		);
-
-		this.addRxSubscription(
-			this.yAxis.axisTypeSetSubject
-				.pipe(
-					startWith(this.yAxis.getAxisType()),
-					distinctUntilChanged(),
-					map((axisType: PriceAxisType) => axisType === 'percent'),
-				)
-				.subscribe(shouldThrottle => {
-					this.xAxisScaleHandler.setChartAreaXDragThrottled(shouldThrottle);
-				}),
 		);
 	}
 
