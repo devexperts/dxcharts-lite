@@ -12,6 +12,7 @@ import { BarTypes, YAxisLabelAppearanceType, YAxisLabelMode } from '../chart.con
 
 export type DataSeriesType =
 	| 'POINTS'
+	| 'TREND_POINTS'
 	| 'LINEAR'
 	| 'HISTOGRAM'
 	| 'TREND_HISTOGRAM'
@@ -25,6 +26,7 @@ export type DataSeriesType =
 	| 'RECTANGULAR'
 	| 'EMA_CLOUD_LINE'
 	| 'LINEAR_TREND'
+	| 'SQUEEZE_POINTS'
 	| keyof BarTypes
 	| string;
 
