@@ -504,6 +504,7 @@ export default class ChartBootstrap {
 			undefined,
 			undefined,
 			() => config.components.grid.visible,
+			this.mainPane.mainExtent.idx,
 		);
 		this.chartComponents.push(verticalGridComponent);
 		this.hoverProducer = new HoverProducerComponent(
