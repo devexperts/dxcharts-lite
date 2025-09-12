@@ -143,6 +143,7 @@ export class PaneComponent extends ChartBaseElement {
 		yAxisBaselineGetter: () => Unit,
 	) {
 		const chartPaneId = CanvasElement.PANE_UUID(uuid);
+		const mainExtentIdx = this.mainExtent?.idx ?? 0;
 		const gridComponent = new GridComponent(
 			this.mainCanvasModel,
 			scale,
@@ -157,6 +158,7 @@ export class PaneComponent extends ChartBaseElement {
 			extentIdx,
 			yAxisBaselineGetter,
 			() => this.config.components.grid.visible,
+			mainExtentIdx,
 		);
 		return gridComponent;
 	}
