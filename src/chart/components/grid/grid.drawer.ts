@@ -35,6 +35,7 @@ export class GridDrawer implements Drawer {
 		private drawPredicate: () => boolean = () => true,
 		private extentIdx?: number,
 		private getBaseline?: () => Unit,
+		private mainExtentIdx?: number,
 	) {}
 
 	/**
@@ -105,7 +106,7 @@ export class GridDrawer implements Drawer {
 	 */
 	drawHorizontal(ctx: CanvasRenderingContext2D) {
 		const yAxisLabels = this.yLabelsProvider();
-		if (yAxisLabels.length && this.config.components.grid.horizontal) {
+		if (yAxisLabels.length > 0 && this.config.components.grid.horizontal && this.extentIdx === this.mainExtentIdx) {
 			ctx.lineWidth = this.config.components.grid.width;
 			ctx.strokeStyle = this.config.colors.chartAreaTheme.gridColor;
 			ctx.setLineDash(this.config.components.grid.dash || []);
