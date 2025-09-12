@@ -29,6 +29,7 @@ export class GridComponent extends ChartBaseElement {
 		extentIdx?: number,
 		getBaseline?: () => Unit,
 		drawPredicate?: () => boolean,
+		mainExtentIdx?: number,
 	) {
 		super();
 		this.drawer = new GridDrawer(
@@ -43,6 +44,7 @@ export class GridComponent extends ChartBaseElement {
 			drawPredicate,
 			extentIdx,
 			getBaseline,
+			mainExtentIdx,
 		);
 	}
 
