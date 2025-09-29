@@ -22,6 +22,7 @@ import {
 } from './scaling/viewport.model';
 import { zoomXToEndViewportCalculator, zoomXToPercentViewportCalculator } from './scaling/x-zooming.functions';
 import { BoundsProvider } from './bounds.model';
+import VisualCandle from './visual-candle';
 
 export interface HighLowWithIndex {
 	high: Price;
@@ -259,6 +260,26 @@ export class ScaleModel extends ViewportModel {
 			this.currentAnimation?.tick();
 			startViewportModelAnimation(this.canvasAnimation, this, constrainedState);
 		}
+	}
+
+	public setXScaleWithoutYScale(visualCandleSource: VisualCandle[]) {
+		const initialStateCopy = this.export();
+		const vCandles = visualCandleSource.slice(
+			Math.max(visualCandleSource.length - this.state.defaultViewportItems, 0),
+		  );
+		const endCandle = vCandles[vCandles.length - 1];
+		const xEnd = endCandle.startUnit + endCandle.width + this.offsets.right;
+		const xStart = xEnd - (this.getBounds().width * this.zoomX);
+
+		const state = { ...initialStateCopy, xStart, xEnd };
+		const constrainedState = this.scalePostProcessor(initialStateCopy, state);
+
+		if (this.state.auto) {
+			this.autoScaleModel.doAutoYScale(constrainedState);
+		}
+		
+		this.currentAnimation?.tick();
+		startViewportModelAnimation(this.canvasAnimation, this, constrainedState);
 	}
 
 	public setYScale(yStart: Unit, yEnd: Unit, fire = false) {
