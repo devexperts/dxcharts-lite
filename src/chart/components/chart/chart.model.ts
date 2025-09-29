@@ -326,6 +326,16 @@ export class ChartModel extends ChartBaseElement {
 	}
 
 	/**
+	 * Applies the basic scale only on x-axis.
+	 * @param forceNoAnimations - A boolean value for disabling scale animations. Defaults to false.
+ 	 * @param withZoom - A boolean value for enabling zoom. Defaults to false.
+	 */
+	doBasicXScale() {
+		this.scale.setXScaleWithoutYScale(this.mainCandleSeries.visualPoints);
+		this.bus.fireDraw();
+	}
+
+	/**
 	 * Changes the time frame scale to the previous one and redraws the chart.
 	 * @param {boolean | null} zoomIn - If true, zooms in the chart, if false, zooms out the chart, if null, does not zoom.
 	 * @returns {void}
@@ -907,6 +917,20 @@ export class ChartModel extends ChartBaseElement {
 	 */
 	isCandleInViewport(idx: number): boolean {
 		return this.getFirstIdx() <= idx && idx <= this.getLastIdx();
+	}
+
+	/**
+	 * Checks if the last candle is within the viewport.
+	 * @returns {boolean} - True if the last candle is within the viewport, false otherwise.
+	 */
+	isLastCandleInViewport(): boolean {
+		const lastCandle = this.getLastCandle();
+
+		if (lastCandle && lastCandle.idx) {
+			return this.isCandleInViewport(lastCandle.idx)
+		}
+
+		return false;
 	}
 
 	/**
