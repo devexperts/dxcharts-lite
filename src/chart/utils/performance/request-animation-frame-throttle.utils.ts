@@ -36,6 +36,10 @@ export const cancelThrottledAnimationFrame = (name: string) => {
 	actions.delete(name);
 };
 
+export const cancelThrottledAnimationFramePrior = (name: string) => {
+	priorActions.delete(name);
+};
+
 /**
  * Prior actions will be called before regular actions
  * An example of regular action - draw event
