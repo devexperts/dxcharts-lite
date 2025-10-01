@@ -3,47 +3,34 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import EventBus from '../events/event-bus';
 import { BehaviorSubject } from 'rxjs';
-import { ViewportModel } from '../model/scaling/viewport.model';
+import EventBus from '../../../../../events/event-bus';
+import { ViewportModel } from '../../../../../model/scaling/viewport.model';
+import { cancelThrottledAnimationFramePrior } from '../../../../../utils/performance/request-animation-frame-throttle.utils';
 import {
-	animationFrameThrottledPrior,
-	cancelThrottledAnimationFrame,
-} from '../utils/performance/request-animation-frame-throttle.utils';
-import { uuid } from '../utils/uuid.utils';
-import { ColorAlphaAnimation, ColorAlphaAnimationConfig } from './types/color-alpha-animation';
-import { ColorTransitionAnimation, ColorTransitionAnimationConfig } from './types/color-transition-animation';
-import { ViewportMovementAnimation, ViewportMovementAnimationConfig } from './types/viewport-movement-animation';
-import { isSafari } from '../utils/device/touchpad.utils';
+	ViewportMovementAnimation,
+	ViewportMovementAnimationConfig,
+} from '../../../../../animation/types/viewport-movement-animation';
+import {
+	AnimationConfig,
+	CanvasAnimation,
+	DEFAULT_ANIMATION_TIME_MS,
+	VIEWPORT_ANIMATION_ID,
+} from '../../../../../animation/canvas-animation';
+import { ColorAlphaAnimation, ColorAlphaAnimationConfig } from '../../../../../animation/types/color-alpha-animation';
+import {
+	ColorTransitionAnimation,
+	ColorTransitionAnimationConfig,
+} from '../../../../../animation/types/color-transition-animation';
 
-export const DEFAULT_ANIMATION_TIME_MS = isSafari ? 150 : 400;
-
-export const VIEWPORT_ANIMATION_ID = 'VIEWPORT_ANIMATION';
-
-export interface AnimationConfig {
-	duration: number;
-	timeLeft?: number;
-}
-
-/**
- * Singleton animation container for all chart animations.
- * Does the following things:
- *  - registers animations and updates their state
- *  - fires only 1 DRAW event for all animations at once
- *
- * Add specific animation here as well with typed API.
- * Like "color" animation which auto-updates color alpha channel.
- *
- * @doc-tags chart-core,animation
- */
-export class CanvasAnimation {
-	eventBus;
+export class SafariCanvasAnimation extends CanvasAnimation {
 	animations: Record<string, any> = {};
-	animationInProgressSubject = new BehaviorSubject(false);
-	animFrameId = `canvas_animation_${uuid()}`;
+	animFrameId = 'animation';
+	animationInProgressSubject: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+	private microtaskQueued = false; // Flag to prevent accumulation of queueMicrotask calls
 
 	constructor(eventBus: EventBus) {
-		this.eventBus = eventBus;
+		super(eventBus);
 	}
 
 	/**
@@ -149,14 +136,13 @@ export class CanvasAnimation {
 		if (animation) {
 			animation.animationInProgress = false;
 			animation.animationStartTime = 0;
+			// CRITICAL: Completely remove the animation to prevent it from being processed in tick()
+			delete this.animations[id];
 		}
-	}
-
-	/**
-	 * This method ensures that the animation interval is started. If the animation interval ID is not set, it sets it to a new interval ID using `window.setInterval()` with a callback function of `this.tick()` and a delay of 20 milliseconds.
-	 */
-	processAnimation() {
-		animationFrameThrottledPrior(this.animFrameId, () => this.tick());
+		// Stop the animation loop if no animations are running
+		if (Object.keys(this.animations).length === 0) {
+			this.stopInterval();
+		}
 	}
 
 	/**
@@ -173,16 +159,23 @@ export class CanvasAnimation {
 		}
 		this.animationInProgressSubject.next(!allCompleted);
 		if (!allCompleted) {
-			queueMicrotask(() => {
-				this.processAnimation();
-				this.eventBus.fireDraw();
-			});
+			// CRITICAL: Prevent accumulation of queueMicrotask calls during rapid animation updates
+			if (!this.microtaskQueued) {
+				this.microtaskQueued = true;
+				queueMicrotask(() => {
+					this.microtaskQueued = false; // Reset flag when microtask executes
+					this.processAnimation();
+					this.eventBus.fireDraw();
+				});
+			}
 		} else {
 			this.stopInterval();
 		}
 	}
 
 	stopInterval() {
-		cancelThrottledAnimationFrame(this.animFrameId);
+		cancelThrottledAnimationFramePrior(this.animFrameId);
+		// Reset microtask flag to ensure clean state
+		this.microtaskQueued = false;
 	}
 }
