@@ -14,6 +14,8 @@ import { ChartAreaPanHandler } from '../chart/chart-area-pan.handler';
 import { BaseType, ChartBaseModel } from '../chart/chart-base.model';
 import { HitTestCanvasModel } from '../../model/hit-test-canvas.model';
 import { MainCanvasTouchHandler } from '../../inputhandlers/main-canvas-touch.handler';
+import { isSafari } from '../../utils/device/touchpad.utils';
+import { SafariChartAreaPanHandler } from '../../utils/performance/safari/components/chart-area-pan.handler/safari-chart-area-pan.handler';
 
 export class ChartPanComponent extends ChartBaseElement {
 	public chartAreaPanHandler: ChartAreaPanHandler;
@@ -30,7 +32,8 @@ export class ChartPanComponent extends ChartBaseElement {
 		private hitTestCanvasModel: HitTestCanvasModel,
 	) {
 		super();
-		this.chartAreaPanHandler = new ChartAreaPanHandler(
+
+		const chartAreaPanHandlerParams = [
 			this.eventBus,
 			this.config,
 			this.mainScale,
@@ -39,7 +42,13 @@ export class ChartPanComponent extends ChartBaseElement {
 			this.canvasAnimation,
 			this,
 			this.hitTestCanvasModel,
-		);
+		] as const;
+
+		// Different performance logic for Safari because of browser specifics
+		const chartAreaPanHandler = isSafari
+			? new SafariChartAreaPanHandler(...chartAreaPanHandlerParams)
+			: new ChartAreaPanHandler(...chartAreaPanHandlerParams);
+		this.chartAreaPanHandler = chartAreaPanHandler;
 		this.addChildEntity(this.chartAreaPanHandler);
 
 		this.mainCanvasTouchHandler = new MainCanvasTouchHandler(
