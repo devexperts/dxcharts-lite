@@ -330,7 +330,7 @@ export class ScaleModel extends ViewportModel {
 			return;
 		}
 
-		if (this.state.lockPriceToBarRatio) {
+		if (this.state.lockPriceToBarRatio && this.initialViewportValidSubject.getValue()) {
 			this.setLockedYScale(yStart, yEnd, fire, initialState);
 			return;
 		}
