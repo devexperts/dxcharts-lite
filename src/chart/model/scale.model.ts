@@ -375,19 +375,10 @@ export class ScaleModel extends ViewportModel {
 		// there we need only candles constraint
 		const constrainedState = this.scalePostProcessor(initialStateCopy, state);
 
-		if (isSafari) {
-			startViewportModelAnimationSafari(
-				this.canvasAnimation,
-				this,
-				constrainedState,
-				this.state.auto ? this.autoScaleModel : undefined,
-			);
-		} else {
-			if (this.state.auto) {
-				this.autoScaleModel.doAutoYScale(constrainedState);
-			}
-			this.apply(constrainedState);
+		if (this.state.auto) {
+			this.autoScaleModel.doAutoYScale(constrainedState);
 		}
+		this.apply(constrainedState);
 	}
 
 	private scalePostProcessor = (initialState: ViewportModelState, state: ViewportModelState) => {
