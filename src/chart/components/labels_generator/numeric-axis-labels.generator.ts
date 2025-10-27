@@ -7,7 +7,7 @@ import { Observable, Subject } from 'rxjs';
 import { Percent, Pixel, Unit, logValueToUnit, percentToUnit, calcLogValue } from '../../model/scaling/viewport.model';
 import { AnimationFrameCache } from '../../utils/performance/animation-frame-cache.utils';
 import { identity } from '../../utils/function.utils';
-import { MathUtils } from '../../utils/math.utils';
+import { replaceMinusSign, MathUtils } from '../../utils/math.utils';
 import { PriceIncrementsUtils } from '../../utils/price-increments.utils';
 import { TREASURY_32ND } from '../chart/price-formatters/treasury-price.formatter';
 import { YAxisConfig, YAxisConfigTreasuryFormat } from '../../chart.config';
@@ -68,7 +68,7 @@ export class NumericAxisLabelsGenerator implements LabelsGenerator {
 		while (value < max) {
 			// Adjust value to increment
 			const adjustedValue = MathUtils.roundToNearest(value, singleLabelHeightValue);
-			const labelText = this.valueFormatter(adjustedValue);
+			const labelText = replaceMinusSign(this.valueFormatter(adjustedValue));
 			newLabels.push({
 				value: adjustedValue,
 				text: labelText,
@@ -87,7 +87,7 @@ export class NumericAxisLabelsGenerator implements LabelsGenerator {
 			// Adjust value to increment
 			const adjustedValue = MathUtils.roundToNearest(value, singleLabelHeightValue);
 			const valueUnit = percentToUnit(adjustedValue, baseLine);
-			const labelText = this.valueFormatter(valueUnit);
+			const labelText = replaceMinusSign(this.valueFormatter(valueUnit));
 			newLabels.push({
 				value: adjustedValue,
 				text: labelText,
