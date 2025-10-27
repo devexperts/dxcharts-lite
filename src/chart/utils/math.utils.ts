@@ -4,6 +4,7 @@
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 import { StringTMap } from './object.utils';
+import { MINUS_SIGN, TRUE_MINUS_SIGN } from './symbol-constants';
 
 const MAX_DECIMAL_DIGITS = 14;
 // Array of powers of 10. Used in roundDecimal to walk through mantissa.
@@ -173,4 +174,8 @@ export function countDecimalPlaces(number: number): number {
 	} else {
 		return 0; // No decimal places
 	}
+}
+
+export const replaceMinusSign = (stringValue: string) => {
+	return stringValue.replace(TRUE_MINUS_SIGN, MINUS_SIGN);
 }
