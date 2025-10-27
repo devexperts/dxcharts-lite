@@ -16,7 +16,7 @@ import { redrawBackgroundArea } from '../../../drawers/chart-background.drawer';
 import { Bounds } from '../../../model/bounds.model';
 import { avoidAntialiasing, drawLine } from '../../../utils/canvas/canvas-drawing-functions.utils';
 import { calculateSymbolHeight, calculateTextWidth } from '../../../utils/canvas/canvas-font-measure-tool.utils';
-import { floor } from '../../../utils/math.utils';
+import { floor, replaceMinusSign } from '../../../utils/math.utils';
 import { drawBadgeLabel, drawPlainLabel, drawRectLabel, checkLabelInBoundaries } from '../y-axis-labels.drawer';
 import { VisualYAxisLabel, YAxisVisualLabelType } from './y-axis-labels.model';
 
@@ -97,7 +97,7 @@ export function drawLabel(
 	const lineY = visualLabel.lineY ?? visualLabel.y;
 	const _drawLine = () =>
 		showLine && avoidAntialiasing(ctx, () => drawLine(ctx, lineXStart, lineY, lineXEnd, lineY, 1));
-	const _drawLabel = () => drawLabel(ctx, bounds, text, centralY, visualLabel, config, colors.yAxis, false);
+	const _drawLabel = () => drawLabel(ctx, bounds,  replaceMinusSign(text), centralY, visualLabel, config, colors.yAxis, false);
 
 	const drawLineLabel = () => {
 		_drawLine();
