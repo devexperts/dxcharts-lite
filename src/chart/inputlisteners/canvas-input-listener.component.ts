@@ -5,13 +5,14 @@
  */
 import { MouseButton, leftMouseButtonListener, subscribeListener } from '../utils/dom.utils';
 import EventBus from '../events/event-bus';
-import { merge, Observable, Subject } from 'rxjs';
+import { asyncScheduler, fromEvent, merge, Observable, Subject } from 'rxjs';
 import { ChartBaseElement } from '../model/chart-base-element';
-import { distinctUntilChanged, filter, map, tap } from 'rxjs/operators';
+import { distinctUntilChanged, filter, map, tap, throttleTime } from 'rxjs/operators';
 import { EVENT_RESIZED } from '../events/events';
 import { HitBoundsTest } from '../canvas/canvas-bounds-container';
 import { Bounds } from '../model/bounds.model';
 import { deviceDetector } from '../utils/device/device-detector.utils';
+import { ONE_FRAME_MS } from '../utils/numeric-constants.utils';
 
 type CustomMouseEvent = MouseEvent | TouchEvent;
 
@@ -493,6 +494,11 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 				this.canvasBounds.width = bcr.width;
 				this.canvasBounds.height = bcr.height;
 			}),
+		);
+		this.addRxSubscription(
+			fromEvent(document, 'scroll', { capture: true, passive: true })
+				.pipe(throttleTime(ONE_FRAME_MS, asyncScheduler, { trailing: true }))
+				.subscribe(() => this.invalidateRectCache()),
 		);
 
 		const mouseLeaveListener = () => {
