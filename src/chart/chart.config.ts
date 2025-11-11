@@ -244,7 +244,7 @@ export const getDefaultConfig = (): FullChartConfig => ({
 			logoWidth: 20,
 			logoHeight: 20,
 		},
-		highLow: { visible: false, font: '12px sans-serif', prefix: { high: 'H: ', low: 'L: ' } },
+		highLow: { visible: false, font: '12px sans-serif', prefix: { high: 'H: ', low: 'L: ' }, lineDash: [2, 4] },
 		highlights: {
 			visible: false,
 			fontFamily: 'Open Sans',
@@ -1209,6 +1209,7 @@ export interface ChartConfigComponentsHighLow {
 	 */
 	font: string;
 	prefix: { high: string; low: string };
+	lineDash: Array<number>;
 }
 export interface ChartConfigComponentsCrossTool {
 	/**
@@ -1485,6 +1486,7 @@ export interface YAxisLabelColorConfig {
 	boxColor: string;
 	textColor?: string;
 	descriptionText?: string;
+	descriptionTextColor?: string;
 }
 
 export interface YAxisLastPriceLabelColorConfig {
