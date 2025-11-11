@@ -31,6 +31,7 @@ export interface YAxisLabelDrawConfig {
 	paddingEnd?: number;
 	paddingStart?: number;
 	rounded?: boolean;
+	lineDash?: Array<number>;
 }
 
 export const DEFAULT_PRICE_LABEL_PADDING = 4;
