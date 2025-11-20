@@ -66,7 +66,7 @@ export class XAxisComponent extends ChartBaseElement {
 		);
 		this.xAxisLabelsGenerator = xAxisLabelsGenerator;
 
-		this.xAxisLabelsModel = new XAxisLabelsModel(eventBus, []);
+		this.xAxisLabelsModel = new XAxisLabelsModel(eventBus);
 		const xAxisCompositeDrawer = new CompositeDrawer();
 		drawingManager.addDrawer(xAxisCompositeDrawer, 'X_AXIS');
 
@@ -177,8 +177,12 @@ export class XAxisComponent extends ChartBaseElement {
 	 * You can add a custom labels provider for additional labels on XAxis (like for drawings)
 	 * @param provider
 	 */
-	public registerXAxisLabelsProvider(provider: XAxisLabelsProvider) {
-		this.xAxisLabelsModel.labelProviders.push(provider);
+	public registerXAxisLabelsProvider(provider: XAxisLabelsProvider, id?: string) {
+		return this.xAxisLabelsModel.registerLabelProvider(provider, id);
+	}
+
+	public unregisterXAxisLabelsProvider(id: string) {
+		this.xAxisLabelsModel.unregisterLabelProvider(id);
 	}
 
 	/**
