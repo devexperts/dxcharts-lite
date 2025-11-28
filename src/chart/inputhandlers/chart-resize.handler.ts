@@ -107,7 +107,7 @@ export class ChartResizeHandler {
 		if (this.resizerElement) {
 			try {
 				this.elementResizeDetector.unobserve(this.resizerElement);
-			} catch (e) {
+			} catch {
 				console.warn('ChartResizeHandler.ts, unsubscribeAnimationUpdate failed');
 			}
 		}

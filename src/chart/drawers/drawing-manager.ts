@@ -14,6 +14,7 @@ import { uuid } from '../utils/uuid.utils';
 
 export const HIT_TEST_PREFIX = 'HIT_TEST_';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const drawerTypes = [
 	'MAIN_BACKGROUND',
 	'MAIN_CLEAR',
