@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import * as ts from 'typescript';
-import * as glob from 'glob';
+import { globSync } from 'glob';
 import { toTsCode, removeSpaces, createTableRow } from './md-font-utils';
 
 export interface DedokMethodParam {
@@ -55,7 +55,7 @@ const COMPILER_OPTIONS: ts.CompilerOptions = {
  */
 export function generateDedok(listOfFiles: string[]): DedokEntry[] {
 	console.log('Generating dedok...');
-	const fileList: string[] = listOfFiles.flatMap(pattern => glob.sync(pattern, {}));
+	const fileList: string[] = listOfFiles.flatMap(pattern => globSync(pattern, {}));
 	const program = ts.createProgram(fileList, COMPILER_OPTIONS);
 	const checker = program.getTypeChecker();
 	const output: DedokEntry[] = [];
