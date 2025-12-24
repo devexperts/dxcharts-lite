@@ -27,6 +27,7 @@ export type DataSeriesType =
 	| 'EMA_CLOUD_LINE'
 	| 'LINEAR_TREND'
 	| 'SQUEEZE_POINTS'
+	| 'SUPERTREND'
 	| keyof BarTypes
 	| string;
 
