@@ -328,7 +328,7 @@ export class ChartModel extends ChartBaseElement {
 	/**
 	 * Applies the basic scale only on x-axis.
 	 * @param forceNoAnimations - A boolean value for disabling scale animations. Defaults to false.
- 	 * @param withZoom - A boolean value for enabling zoom. Defaults to false.
+	 * @param withZoom - A boolean value for enabling zoom. Defaults to false.
 	 */
 	doBasicXScale() {
 		this.scale.setXScaleWithoutYScale(this.mainCandleSeries.visualPoints);
@@ -400,14 +400,17 @@ export class ChartModel extends ChartBaseElement {
 		// do visual recalculations
 		this.candleSeries.forEach(series => {
 			series.recalculateVisualPoints();
-			series.recalculateDataViewportIndexes();
 		});
 
-		// caclulate offset width for prepanded candles
+		// calculate offset width for prepanded candles
 		const prependedCandlesWidth = this.chartBaseModel.mainVisualPoints
 			.slice(0, updateResult.prepended.length)
 			.reduce((acc, cur) => acc + cur.width, 0);
 		this.scale.moveXStart(this.scale.xStart + prependedCandlesWidth);
+
+		this.candleSeries.forEach(series => {
+			series.recalculateDataViewportIndexes();
+		});
 		this.candlesPrependSubject.next({
 			prependedCandlesWidth,
 			prependedCandles: updateResult.prepended,
@@ -927,7 +930,7 @@ export class ChartModel extends ChartBaseElement {
 		const lastCandle = this.getLastCandle();
 
 		if (lastCandle && lastCandle.idx) {
-			return this.isCandleInViewport(lastCandle.idx)
+			return this.isCandleInViewport(lastCandle.idx);
 		}
 
 		return false;
@@ -1028,8 +1031,7 @@ export class ChartModel extends ChartBaseElement {
 	 * @param from - if not specified set to first candle timestamp
 	 * @param to - if not specified set to last candle timestamp + right offset
 	 */
-	public getCandlesWithFake(from: number = 0, to?: number): Candle[] {
-		let candles = this.getCandles().slice();
+	public getCandlesWithFake(candles: Candle[] = this.getCandles(), from: number = 0, to?: number): Candle[] {
 		const candlesCount = this.getCandlesCount();
 		const _to = to ?? candlesCount + this.FAKE_CANDLES_DEFAULT;
 		candles = candles.slice(Math.max(0, from), Math.min(candlesCount, _to));
