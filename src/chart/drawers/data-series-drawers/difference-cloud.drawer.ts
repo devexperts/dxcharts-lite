@@ -1,10 +1,5 @@
 /*
- * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
- * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
- * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
- */
-/*
- * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2026 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -15,6 +10,14 @@ import { buildLinePath } from './data-series-drawers.utils';
 import { Point } from '../../inputlisteners/canvas-input-listener.component';
 import { firstOf, lastOf } from '../../utils/array.utils';
 import { toRGBA } from '../../utils/color.utils';
+
+export interface DifferenceCloudDrawPredicates {
+	showLine?: boolean;
+	showCloud?: boolean;
+	backgroundColor?: string;
+}
+
+const DEFAULT_LINE_COLOR = `#383838`;
 
 /**
  * Point used to draw difference type indicator (clouds) (e.g. Ichimoku indicator)
@@ -32,7 +35,12 @@ export class DifferenceCloudDrawer implements SeriesDrawer {
 		model: DataSeriesModel,
 		hitTestDrawerConfig: HTSeriesDrawerConfig,
 	): void {
-		if (model.config.visible) {
+		const drawPredicates = model.config.additionalVisibilityPredicatesMap;
+		const shouldDrawLine = drawPredicates?.showLine !== undefined ? drawPredicates.showLine : model.config.visible;
+		const shouldDrawCloud =
+			drawPredicates?.showCloud !== undefined ? drawPredicates.showCloud : model.config.visible;
+
+		if (shouldDrawLine) {
 			// draw main line
 			allPoints.forEach((points, idx) => {
 				const config = model.getPaintConfig(idx);
@@ -42,12 +50,20 @@ export class DifferenceCloudDrawer implements SeriesDrawer {
 
 				this.drawLine(ctx, points, model.view);
 			});
+		}
+		if (shouldDrawCloud) {
 			// draw difference cloud
 			model.linkedDataSeriesModels.forEach((linkedSeries, linkedSeriesIdx) => {
+				const linkedDrawPredicates = linkedSeries.config.additionalVisibilityPredicatesMap;
+				const linkedShouldDrawCloud =
+					linkedDrawPredicates?.showCloud !== undefined
+						? linkedDrawPredicates.showCloud
+						: linkedSeries.config.visible;
+
 				if (
 					isDifferenceTool(linkedSeries.config.type) &&
 					isDifferenceTool(model.config.type) &&
-					linkedSeries.config.visible
+					linkedShouldDrawCloud
 				) {
 					const differencePoints: DifferencePoint[] = [];
 
@@ -84,6 +100,7 @@ export class DifferenceCloudDrawer implements SeriesDrawer {
 							mainSeries,
 							linkedSeries,
 							hitTestDrawerConfig,
+							drawPredicates,
 						);
 					});
 				}
@@ -105,6 +122,7 @@ export class DifferenceCloudDrawer implements SeriesDrawer {
 		curSeries: DataSeriesModel,
 		nextSeries: DataSeriesModel,
 		hitTestDrawerConfig: HTSeriesDrawerConfig,
+		drawPredicates?: DifferenceCloudDrawPredicates,
 	) {
 		const [linePoints, nextLinePoints]: [VisualSeriesPoint[], VisualSeriesPoint[]] = [[], []];
 		diffPoints.forEach(points => {
@@ -114,8 +132,13 @@ export class DifferenceCloudDrawer implements SeriesDrawer {
 		});
 		const curSeriesPoints = this.mapDataSeriesDiffPointsIntoPoints(linePoints, curSeries.view);
 		const nextSeriesPoints = this.mapDataSeriesDiffPointsIntoPoints(nextLinePoints, nextSeries.view);
-		this.fillCloud(ctx, nextLineColor, curSeriesPoints, nextSeriesPoints, hitTestDrawerConfig);
-		this.fillCloud(ctx, lineColor, nextSeriesPoints, curSeriesPoints, hitTestDrawerConfig);
+
+		const bgColor = drawPredicates?.backgroundColor;
+		const fillColor1: string = bgColor !== undefined ? bgColor : nextLineColor;
+		const fillColor2: string = bgColor !== undefined ? bgColor : lineColor;
+
+		this.fillCloud(ctx, fillColor1, curSeriesPoints, nextSeriesPoints, hitTestDrawerConfig, drawPredicates);
+		this.fillCloud(ctx, fillColor2, nextSeriesPoints, curSeriesPoints, hitTestDrawerConfig, drawPredicates);
 	}
 
 	protected fillCloud(
@@ -124,6 +147,7 @@ export class DifferenceCloudDrawer implements SeriesDrawer {
 		linePoints: Point[],
 		nextLinePoints: Point[],
 		hitTestDrawerConfig: HTSeriesDrawerConfig,
+		drawPredicates?: DifferenceCloudDrawPredicates,
 	) {
 		ctx.save();
 		// clip above lowerLine
@@ -153,7 +177,18 @@ export class DifferenceCloudDrawer implements SeriesDrawer {
 				ctx.lineTo(p.x, p.y);
 			});
 		ctx.closePath();
-		ctx.fillStyle = hitTestDrawerConfig.color ? hitTestDrawerConfig.color : toRGBA(color ? color : '#383838', 0.3);
+
+		const hasBgColor = drawPredicates?.backgroundColor !== undefined;
+
+		if (hitTestDrawerConfig.color) {
+			ctx.fillStyle = hitTestDrawerConfig.color;
+			// If the background color exists, use the color as-is
+		} else if (hasBgColor) {
+			ctx.fillStyle = color ?? DEFAULT_LINE_COLOR;
+		} else {
+			ctx.fillStyle = toRGBA(color ?? DEFAULT_LINE_COLOR, 0.3);
+		}
+
 		ctx.fill();
 		ctx.restore();
 	}
