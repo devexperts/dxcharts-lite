@@ -18,4 +18,4 @@ jobs:
             - run: yarn install --frozen-lockfile
             - run: npm publish --access public
               env:
-                  NODE_AUTH_TOKEN: ${{secrets.NPMJS_DEVEXPERTS_BOT_PUBLISH_TOKEN}}
+                  NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
