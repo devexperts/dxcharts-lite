@@ -1,10 +1,5 @@
 /*
- * Copyright (C) 2019 - 2025 Devexperts Solutions IE Limited
- * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
- * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
- */
-/*
- * Copyright (C) 2019 - 2024 Devexperts Solutions IE Limited
+ * Copyright (C) 2019 - 2026 Devexperts Solutions IE Limited
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
@@ -31,6 +26,7 @@ export interface Candle {
 	readonly expansion?: boolean;
 	idx?: number;
 	readonly impVolatility?: number;
+	readonly openInterest?: number;
 	/**
 	 * @deprecated might be removed in next major version
 	 */
@@ -83,7 +79,7 @@ export function hollowDirection(open: number, close: number): PriceMovement {
  * @returns {Candle} A new Candle object with the same properties as the base object, with the option to modify the prices.
  */
 export function copyCandle(base: Candle, idx: number, pricesAsClose: boolean = false): Candle {
-	const { id, expansion, impVolatility, vwap, typicalPrice, volume, timestamp } = base;
+	const { id, expansion, impVolatility, openInterest, vwap, typicalPrice, volume, timestamp } = base;
 	let hi = base.hi;
 	let lo = base.lo;
 	let open = base.open;
@@ -108,6 +104,7 @@ export function copyCandle(base: Candle, idx: number, pricesAsClose: boolean = f
 		expansion,
 		idx: _idx,
 		impVolatility,
+		openInterest,
 		vwap,
 		typicalPrice,
 	};
