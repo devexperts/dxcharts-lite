@@ -65,8 +65,6 @@ export class DifferenceCloudDrawer implements SeriesDrawer {
 					isDifferenceTool(model.config.type) &&
 					linkedShouldDrawCloud
 				) {
-					const differencePoints: DifferencePoint[] = [];
-
 					const mainSeries = model;
 
 					const allPointsMain = mainSeries.getSeriesInViewport(
@@ -80,6 +78,7 @@ export class DifferenceCloudDrawer implements SeriesDrawer {
 					);
 
 					allPointsMain.forEach((points, idx) => {
+						const differencePoints: DifferencePoint[] = [];
 						const to = Math.min(points.length, allPointsLinked[idx]?.length ?? 0);
 						for (let k = 0; k < to; k++) {
 							const diffPoints: [VisualSeriesPoint, VisualSeriesPoint] = [
