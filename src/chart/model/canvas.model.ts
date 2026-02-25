@@ -25,6 +25,7 @@ export class CanvasModel {
 	public height: number = 0;
 	public prevHeight: number = 0;
 	public prevWidth: number = 0;
+	private lastDPR: number = 0;
 	private readonly _canvasId: string;
 	type: CanvasBarType = CANDLE_TYPE;
 	constructor(
@@ -53,6 +54,10 @@ export class CanvasModel {
 	updateDPR(bcr: PickedDOMRect | ClientRect) {
 		const { width, height } = bcr;
 		const dpi = window.devicePixelRatio;
+		if (width === this.width && height === this.height && dpi === this.lastDPR) {
+			return;
+		}
+		this.lastDPR = dpi;
 		this.canvas.style.height = height + 'px';
 		this.canvas.style.width = width + 'px';
 		this.canvas.width = width * dpi;
