@@ -20,7 +20,7 @@ const ignorePatterns = ['codesandbox', 'generated', 'generator'];
 program
 	.name('generate_sandbox')
 	.description('Generates a sandboxes for the docs')
-	.argument('[dir]', 'docs folder', 'Folder where docs are contained is required!')
+	.argument('[dir]', 'docs folder', 'Folder where docs are contained is required!!')
 	.action(function (dir: string) {
 		console.log('👷 Started generation...');
 
