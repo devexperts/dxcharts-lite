@@ -399,7 +399,7 @@ export const calculateDataSeriesHighLow = (visualCandles: VisualSeriesPoint[]): 
 };
 
 const createDataSeriesModelHighLowProvider = (dataSeries: DataSeriesModel): HighLowProvider => ({
-	isHighLowActive: () => dataSeries.config.highLowActive,
+	isHighLowActive: () => dataSeries.config.highLowActive && dataSeries.config.visible,
 	calculateHighLow: state => {
 		const highLow = calculateDataSeriesHighLow(dataSeries.getSeriesInViewport(state?.xStart, state?.xEnd).flat());
 		return {
