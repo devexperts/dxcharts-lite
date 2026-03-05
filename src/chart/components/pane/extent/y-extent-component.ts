@@ -191,9 +191,23 @@ export class YExtentComponent extends ChartBaseElement {
 export const createDefaultYExtentHighLowProvider = (extent: YExtentComponent): HighLowProvider => ({
 	isHighLowActive: () => true,
 	calculateHighLow: state => {
-		const highLows = Array.from(extent.dataSeries)
-			.filter(ds => ds.highLowProvider.isHighLowActive())
-			.map(ds => ds.highLowProvider.calculateHighLow(state));
+		const allDataSeries = Array.from(extent.dataSeries);
+		const activeDataSeries = allDataSeries.filter(ds => ds.highLowProvider.isHighLowActive());
+
+		const seriesToUse = activeDataSeries.length > 0 ? activeDataSeries : allDataSeries;
+
+		if (seriesToUse.length === 0) {
+			return { low: 0, high: 100 };
+		}
+
+		const highLows = seriesToUse
+			.map(ds => ds.highLowProvider.calculateHighLow(state))
+			.filter(hl => hl.high >= hl.low);
+
+		if (highLows.length === 0) {
+			return { low: 0, high: 100 };
+		}
+
 		return mergeHighLow(highLows);
 	},
 });
