@@ -17,5 +17,5 @@ jobs:
             - uses: actions/setup-node@v3
               with:
                   node-version: '18.x'
-            - run: pnpm install --frozen-lockfile
+            - run: pnpm install
             - run: pnpm build:shadow_merge
