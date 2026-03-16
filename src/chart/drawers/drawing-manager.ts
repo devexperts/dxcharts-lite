@@ -40,7 +40,7 @@ const drawerTypes = [
 	'PL_ZERO_LINE_BACKGROUND',
 	'CROSS_TOOL',
 ] as const;
-export type DrawerType = typeof drawerTypes[number];
+export type DrawerType = (typeof drawerTypes)[number];
 
 /**
  * Manages the drawing process.
@@ -54,7 +54,10 @@ export class DrawingManager {
 	private canvasIdsList: Array<string> | undefined = [];
 	private animFrameId = `draw_${uuid()}`;
 
-	constructor(eventBus: EventBus, private chartResizeHandler: ChartResizeHandler) {
+	constructor(
+		eventBus: EventBus,
+		private chartResizeHandler: ChartResizeHandler,
+	) {
 		this.drawHitTestCanvas = () => {
 			this.drawingOrder.forEach(drawer => {
 				if (drawer.indexOf(HIT_TEST_PREFIX) !== -1) {

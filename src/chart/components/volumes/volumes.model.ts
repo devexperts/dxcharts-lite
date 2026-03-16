@@ -23,7 +23,10 @@ export class VolumesModel extends ChartBaseElement {
 		calculateHighLow: () => ({ high: this.volumeMax.getValue(), low: 0 }),
 		isHighLowActive: () => true,
 	};
-	constructor(private chartComponent: ChartComponent, private scale: ScaleModel) {
+	constructor(
+		private chartComponent: ChartComponent,
+		private scale: ScaleModel,
+	) {
 		super();
 	}
 

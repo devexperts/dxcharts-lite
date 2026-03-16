@@ -647,7 +647,7 @@ export class CanvasBoundsContainer {
 		const nMap = this.getBounds(CanvasElement.N_MAP);
 		const { height, width } = this.config.components.navigationMap.knots;
 		const knotHeightFromConfig = height ?? 0;
-		const knotWidthFromConfig = isMobile() ? width * KNOTS_W_MOBILE_MULTIPLIER : width ?? 0;
+		const knotWidthFromConfig = isMobile() ? width * KNOTS_W_MOBILE_MULTIPLIER : (width ?? 0);
 		const knotY = !knotHeightFromConfig ? nMap.y : nMap.y + (nMap.height - knotHeightFromConfig) / 2;
 		// time labels
 		const timeLabelsVisible = this.config.components.navigationMap?.timeLabels?.visible;

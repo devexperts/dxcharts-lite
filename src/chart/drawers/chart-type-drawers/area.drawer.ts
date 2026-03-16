@@ -72,9 +72,9 @@ export class AreaDrawer implements SeriesDrawer {
 						ctx.fillStyle =
 							model.colors.areaTheme.startColor && model.colors.areaTheme.stopColor
 								? ((fillColor = ctx.createLinearGradient(0, 0, 0, paneBounds.height)),
-								  fillColor.addColorStop(0, model.colors.areaTheme.startColor),
-								  fillColor.addColorStop(1, model.colors.areaTheme.stopColor),
-								  fillColor)
+									fillColor.addColorStop(0, model.colors.areaTheme.startColor),
+									fillColor.addColorStop(1, model.colors.areaTheme.stopColor),
+									fillColor)
 								: '';
 					}
 					if (!isHitTestDrawer) {
