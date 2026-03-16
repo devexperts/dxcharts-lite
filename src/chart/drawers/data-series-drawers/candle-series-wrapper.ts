@@ -25,7 +25,11 @@ export const candleTypesList: BarType[] = [
  * A decorator for drawers, that draw something depending on visual candles
  */
 export class CandleSeriesWrapper implements SeriesDrawer {
-	constructor(private drawer: SeriesDrawer, private config: FullChartConfig, private chartBounds: BoundsProvider) {}
+	constructor(
+		private drawer: SeriesDrawer,
+		private config: FullChartConfig,
+		private chartBounds: BoundsProvider,
+	) {}
 
 	draw(
 		ctx: CanvasRenderingContext2D,
