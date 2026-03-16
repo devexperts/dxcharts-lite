@@ -12,7 +12,10 @@ export interface DynamicModelDrawer<T> {
 }
 
 export class DynamicObjectsDrawer implements Drawer {
-	constructor(private dynamicObjectsModel: DynamicObjectsModel, private canvasModel: CanvasModel) {}
+	constructor(
+		private dynamicObjectsModel: DynamicObjectsModel,
+		private canvasModel: CanvasModel,
+	) {}
 
 	draw() {
 		const objects = this.dynamicObjectsModel.objects;

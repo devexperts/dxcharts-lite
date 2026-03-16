@@ -324,7 +324,7 @@ export function generateMethodsTable(item: DedokEntry) {
 							(acc, param: DedokMethodParam) =>
 								acc + `${toTsCode(param.name + ': ' + param.type)} ${removeSpaces(param.comment)}`,
 							'',
-					  )
+						)
 					: '';
 
 				return (
@@ -336,7 +336,7 @@ export function generateMethodsTable(item: DedokEntry) {
 						removeSpaces(method.comment),
 					])
 				);
-		  }, '')
+			}, '')
 		: '';
 
 	return title + comment + tableHead + tableDivider + tableContent;
@@ -385,11 +385,11 @@ export function generateConfigTable(configItem: DedokEntry, dedokData: DedokEntr
 								removeSpaces(row.description),
 								row.hasNesting
 									? // create link for nested table
-									  `[${toTsCode(row.type)}](#${row.type.toLowerCase()})`
+										`[${toTsCode(row.type)}](#${row.type.toLowerCase()})`
 									: toTsCode(row.type),
 							]),
 						'',
-				  )
+					)
 				: '';
 
 		generatedTables.push(`${type}${comment}${tableHead}${tableDivider}${tableContent}`);

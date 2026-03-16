@@ -178,4 +178,4 @@ export function countDecimalPlaces(number: number): number {
 
 export const replaceMinusSign = (stringValue: string) => {
 	return stringValue.replace(TRUE_MINUS_SIGN, MINUS_SIGN);
-}
+};

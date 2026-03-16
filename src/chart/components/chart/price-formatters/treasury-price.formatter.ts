@@ -37,7 +37,7 @@ export const isTreasuryPriceFormat = (value: string) => Boolean(getTreasuryPrice
 
 /**
  * Parses treasury price format back to decimal number
- * 
+ *
  * Examples:
  * 132'00 => 132.0
  * 132'02 => 132.0625
@@ -48,10 +48,10 @@ export const parseTreasuryPrice = (value: string): number => {
 	if (match) {
 		const integerPart = parseInt(match[1], 10);
 		const thirtySeconds = parseInt(match[2], 10);
-		
+
 		// Convert 32nds to decimal
-		const decimalPart = (thirtySeconds * TREASURY_32ND);
-		
+		const decimalPart = thirtySeconds * TREASURY_32ND;
+
 		return integerPart + decimalPart;
 	}
 
