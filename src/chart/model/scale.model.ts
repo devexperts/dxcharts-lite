@@ -299,7 +299,7 @@ export class ScaleModel extends ViewportModel {
 						this,
 						constrainedState,
 						this.state.auto ? this.autoScaleModel : undefined,
-				  )
+					)
 				: startViewportModelAnimation(this.canvasAnimation, this, constrainedState);
 		}
 	}
@@ -308,10 +308,10 @@ export class ScaleModel extends ViewportModel {
 		const initialStateCopy = this.export();
 		const vCandles = visualCandleSource.slice(
 			Math.max(visualCandleSource.length - this.state.defaultViewportItems, 0),
-		  );
+		);
 		const endCandle = vCandles[vCandles.length - 1];
 		const xEnd = endCandle.startUnit + endCandle.width + this.offsets.right;
-		const xStart = xEnd - (this.getBounds().width * this.zoomX);
+		const xStart = xEnd - this.getBounds().width * this.zoomX;
 
 		const state = { ...initialStateCopy, xStart, xEnd };
 		const constrainedState = this.scalePostProcessor(initialStateCopy, state);
@@ -319,7 +319,7 @@ export class ScaleModel extends ViewportModel {
 		if (this.state.auto) {
 			this.autoScaleModel.doAutoYScale(constrainedState);
 		}
-		
+
 		this.currentAnimation?.tick();
 		startViewportModelAnimation(this.canvasAnimation, this, constrainedState);
 	}

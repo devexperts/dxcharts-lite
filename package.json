@@ -17,7 +17,7 @@
     "build:lib:production": "pnpm build:lib && pnpm add_disclaimer",
     "build:standalone:production": "webpack --config webpack.build.config.js --env MODE=production && pnpm add_disclaimer",
     "//<----utility builds---->": "build will run on dxcity CI when trying to merge PR builds",
-    "build:shadow_merge": "pnpm test && pnpm build",
+    "build:shadow_merge": "pnpm test && pnpm format:check && pnpm build",
     "prepublishOnly": "pnpm test && pnpm build:production",
     "//<----tests---->": "scripts to run tests",
     "test": "pnpm test:lint && jest",
@@ -34,7 +34,8 @@
     "clean": "pnpm clean_dist && rimraf ./node_modules",
     "clean_dist": "rimraf ./dist",
     "prepack": "pinst --disable",
-    "postpack": "pinst --enable"
+    "postpack": "pinst --enable",
+    "format:check": "prettier --check . --ignore-path ../.prettierignore --config ../.prettierrc"
   },
   "lint-staged": {
     "src/**/*.{js,ts}": [

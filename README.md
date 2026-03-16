@@ -39,15 +39,15 @@
 
 Get started with DXCharts Lite by installing the library and configuring it to your needs.
 
--   🚀 [Quick start](#quick-start)
-    -   📦 [Installation](#installation)
-    -   🛠️ [Create Chart](#create-chart)
-    -   📈 [Set data](#set-data)
-    -   📄 [HTML markup](#html-markup)
--   ⚙️ [Configuration](#configuration)
--   🔌 [API](#api)
--   📒 [Examples](#examples)
--   🧮 [Demo](#demo)
+- 🚀 [Quick start](#quick-start)
+    - 📦 [Installation](#installation)
+    - 🛠️ [Create Chart](#create-chart)
+    - 📈 [Set data](#set-data)
+    - 📄 [HTML markup](#html-markup)
+- ⚙️ [Configuration](#configuration)
+- 🔌 [API](#api)
+- 📒 [Examples](#examples)
+- 🧮 [Demo](#demo)
 
 ## Quick-start
 
@@ -84,8 +84,8 @@ The `createChart` method creates a new chart instance using `ChartBootstrap` cla
 
 It accepts two parameters:
 
--   `element`: The HTML element where the chart will be rendered.
--   `config` (optional): An instance of [ChartConfig](/chart/chart-config/overview).
+- `element`: The HTML element where the chart will be rendered.
+- `config` (optional): An instance of [ChartConfig](/chart/chart-config/overview).
 
 > Note: Set `width: 100%` and `height: 100%` for the parent container.
 > By default, the chart auto-resizes to the parent, but you can change this by setting `fixedSize` in the config.
@@ -149,7 +149,7 @@ You can configure the chart using a `ChartConfig` object (optional).
 `ChartConfig` sets the initial properties for the chart instance.
 Below is a table of available options (see documentation for details).
 
--   [`FullChartConfig`](docs/generated/FullChartConfig.md)
+- [`FullChartConfig`](docs/generated/FullChartConfig.md)
 
 ## API
 
@@ -157,18 +157,18 @@ Each chart component has an API that allows you to change many parameters on the
 
 Main components include:
 
--   [`ChartComponent`](docs/generated/ChartComponent.md): Set data, subscribe to data changes
--   [`XAxisComponent`](docs/generated/XAxisComponent.md): Configure x-axis labels
--   [`YAxisComponent`](docs/generated/YAxisComponent.md): Configure y-axis labels and type
--   [`CrossToolComponent`](docs/generated/CrossToolComponent.md): Crosshair type, OHLC magnet
--   [`EventsComponent`](docs/generated/EventsComponent.md): Set events data
--   [`VolumesComponent`](docs/generated/VolumesComponent.md): Set volume data
--   [`WaterMarkComponent`](docs/generated/WaterMarkComponent.md): Create and manage a watermark
--   [`NavigationMapComponent`](docs/generated/NavigationMapComponent.md): Create a navigation map
--   [`SnapshotComponent`](docs/generated/SnapshotComponent.md): Create a snapshot
--   [`HighlightsComponent`](docs/generated/HighlightsComponent.md): Draw highlights on canvas objects such as labels
--   [`PaneManager`](docs/generated/PaneManager.md): Create and manage panes
--   [`PaneComponent`](docs/generated/PaneComponent.md): Create and manage pane data series
+- [`ChartComponent`](docs/generated/ChartComponent.md): Set data, subscribe to data changes
+- [`XAxisComponent`](docs/generated/XAxisComponent.md): Configure x-axis labels
+- [`YAxisComponent`](docs/generated/YAxisComponent.md): Configure y-axis labels and type
+- [`CrossToolComponent`](docs/generated/CrossToolComponent.md): Crosshair type, OHLC magnet
+- [`EventsComponent`](docs/generated/EventsComponent.md): Set events data
+- [`VolumesComponent`](docs/generated/VolumesComponent.md): Set volume data
+- [`WaterMarkComponent`](docs/generated/WaterMarkComponent.md): Create and manage a watermark
+- [`NavigationMapComponent`](docs/generated/NavigationMapComponent.md): Create a navigation map
+- [`SnapshotComponent`](docs/generated/SnapshotComponent.md): Create a snapshot
+- [`HighlightsComponent`](docs/generated/HighlightsComponent.md): Draw highlights on canvas objects such as labels
+- [`PaneManager`](docs/generated/PaneManager.md): Create and manage panes
+- [`PaneComponent`](docs/generated/PaneComponent.md): Create and manage pane data series
 
 ## Examples
 
