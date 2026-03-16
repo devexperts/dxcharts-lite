@@ -26,18 +26,18 @@ export interface StringTMap<T> {
 export type DeepPartial<T> = T extends (...args: unknown[]) => unknown
 	? T
 	: T extends Record<string, any>
-	? T extends unknown[]
-		? DeepPartial<T[number]>[]
-		: { [P in keyof T]?: DeepPartial<T[P]> }
-	: T;
+		? T extends unknown[]
+			? DeepPartial<T[number]>[]
+			: { [P in keyof T]?: DeepPartial<T[P]> }
+		: T;
 
 export type DeepRequired<T> = T extends (...args: unknown[]) => unknown
 	? T
 	: T extends Record<string, any>
-	? T extends unknown[]
-		? DeepRequired<T[number]>[]
-		: { [P in keyof T]-?: DeepRequired<T[P]> }
-	: T;
+		? T extends unknown[]
+			? DeepRequired<T[number]>[]
+			: { [P in keyof T]-?: DeepRequired<T[P]> }
+		: T;
 
 export const cloneUnsafe = <T>(value: T): T => JSON.parse(JSON.stringify(value));
 

@@ -12,7 +12,10 @@ import { flat } from '../../utils/array.utils';
 import { HTSeriesDrawerConfig, SeriesDrawer } from '../data-series.drawer';
 
 export class BaselineDrawer implements SeriesDrawer {
-	constructor(private baseLineModel: BaselineModel, private canvasBoundContainer: CanvasBoundsContainer) {}
+	constructor(
+		private baseLineModel: BaselineModel,
+		private canvasBoundContainer: CanvasBoundsContainer,
+	) {}
 
 	public draw(
 		ctx: CanvasRenderingContext2D,

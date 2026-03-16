@@ -13,7 +13,7 @@ export type HighlightTextPlacement = 'left-left' | 'left-right' | 'right-left' |
 
 export const HIGHLIGHTS_TYPES = ['AFTER_MARKET', 'PRE_MARKET', 'NO_TRADING', 'REGULAR'] as const;
 
-export type HighlightType = typeof HIGHLIGHTS_TYPES[number];
+export type HighlightType = (typeof HIGHLIGHTS_TYPES)[number];
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 

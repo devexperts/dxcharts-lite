@@ -5,6 +5,7 @@ This folder contains scripts, that are used to generate documentation from code.
 Think of it as **JSDoc** but for _TypeScript_
 
 ## How it works
+
 Dedok parses TypeScripts **AST** and generated JSON object which represents TS nodes
 
 This script takes a list of TypeScript files, parses them, and generates data of interfaces found in them. The data is then used to create tables in markdown (.md) files. The tables include the name, type, and description of each interface. This makes it easy to visualize and understand the interfaces defined in the TypeScript files.
@@ -68,7 +69,7 @@ Example:
 
 After you have got TS nodes, you can use them to make tables, hierarchical tree or other visual template approach.
 
-|Method|Parameters|Returns|Description|
-|---|---|---|---|
-|`someMethod`||`void`|This method is used to return nothing :grinning:|
-|`someAnotherMethod`|`callback: (a: number) => void` |`Promise<boolean>`|This method is used to return Promise|
+| Method              | Parameters                      | Returns            | Description                                      |
+| ------------------- | ------------------------------- | ------------------ | ------------------------------------------------ |
+| `someMethod`        |                                 | `void`             | This method is used to return nothing :grinning: |
+| `someAnotherMethod` | `callback: (a: number) => void` | `Promise<boolean>` | This method is used to return Promise            |

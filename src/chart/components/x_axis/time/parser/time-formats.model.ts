@@ -10,8 +10,8 @@ const timeFormatsConfirugable = ['second', 'minute', 'hour', 'day', 'month', 'ye
 const timeFormatsNoNConfirugable = ['lessThanSecond'] as const;
 
 type TimeFormatWeekWeekdayType = typeof weekWeekday;
-type TimeFormatConfirugableType = typeof timeFormatsConfirugable[number];
-type TimeFormatNonConfirugableType = typeof timeFormatsNoNConfirugable[number];
+type TimeFormatConfirugableType = (typeof timeFormatsConfirugable)[number];
+type TimeFormatNonConfirugableType = (typeof timeFormatsNoNConfirugable)[number];
 
 export type TimeFormat = TimeFormatConfirugableType | TimeFormatNonConfirugableType | TimeFormatWeekWeekdayType;
 

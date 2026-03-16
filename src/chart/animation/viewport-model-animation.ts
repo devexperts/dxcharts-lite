@@ -8,7 +8,7 @@ import { ViewportModel, ViewportModelState } from '../model/scaling/viewport.mod
 import { AutoScaleViewportSubModel } from '../model/scaling/auto-scale.model';
 
 const VIEWPORT_ANIMATION_DURATION_MS = DEFAULT_ANIMATION_TIME_MS;
-const STUCK_ANIMATION_THRESHOLD = 0.90; // Force finish animations stuck at 90%+
+const STUCK_ANIMATION_THRESHOLD = 0.9; // Force finish animations stuck at 90%+
 
 /**
  * Starts the animation for chart viewport movement for safari.
