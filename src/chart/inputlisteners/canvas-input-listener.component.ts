@@ -89,7 +89,10 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 	private cachedElementRect: DOMRect | null = null;
 	private rectCacheValid = false;
 
-	constructor(private eventBus: EventBus, private element: HTMLElement) {
+	constructor(
+		private eventBus: EventBus,
+		private element: HTMLElement,
+	) {
 		super();
 	}
 
@@ -109,14 +112,14 @@ export class CanvasInputListenerComponent extends ChartBaseElement {
 				return this.createFallbackRect();
 			}
 
-		const rect = this.element.getBoundingClientRect();
-		this.cachedElementRect = rect;
-		this.rectCacheValid = true;
+			const rect = this.element.getBoundingClientRect();
+			this.cachedElementRect = rect;
+			this.rectCacheValid = true;
 
-		return rect;
-	} catch {
-		return this.createFallbackRect();
-	}
+			return rect;
+		} catch {
+			return this.createFallbackRect();
+		}
 	}
 
 	/**
