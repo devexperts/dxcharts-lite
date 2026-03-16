@@ -88,7 +88,7 @@ const toLabel = (point: PositionAndWeight, index: number, labelHeight: number): 
 				bottom: point.y + labelHeight / 2,
 				labelWeight: point.weight,
 				actualIndex: index,
-		  }
+			}
 		: null;
 
 const sortLabels = (a: FormattedYCoordinate, b: FormattedYCoordinate) => {

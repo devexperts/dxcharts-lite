@@ -24,7 +24,10 @@ class PercentScaleAnimationHandler {
 	private targetBaseline?: number;
 	private prevAnimationId = '';
 
-	constructor(private scale: ScaleModel, private dataSeries: DataSeriesModel) {}
+	constructor(
+		private scale: ScaleModel,
+		private dataSeries: DataSeriesModel,
+	) {}
 
 	/**
 	 * This logic calculates correct baseline helping avoid shaking during zoom animation

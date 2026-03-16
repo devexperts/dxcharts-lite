@@ -44,7 +44,10 @@ export const transformToTwoDimension = (
  * (may support multiple layers in future)
  */
 export class DataSeriesDrawer implements DynamicModelDrawer<DataSeriesModel> {
-	constructor(private paneManager: PaneManager, private readonly seriesDrawers: Record<string, SeriesDrawer>) {}
+	constructor(
+		private paneManager: PaneManager,
+		private readonly seriesDrawers: Record<string, SeriesDrawer>,
+	) {}
 
 	draw(canvasModel: CanvasModel, model: DataSeriesModel, paneUUID?: string) {
 		const ctx = canvasModel.ctx;
