@@ -9,7 +9,7 @@ export const MouseButton = {
 	right: 2,
 };
 
-export type MouseButtonType = typeof MouseButton[keyof typeof MouseButton];
+export type MouseButtonType = (typeof MouseButton)[keyof typeof MouseButton];
 
 /**
  * @param {Element} element
