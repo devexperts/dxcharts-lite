@@ -189,13 +189,15 @@ export class ScaleModel extends ViewportModel {
 	 * @param zoomSensitivity - The sensitivity of the zoom. Default value is taken from the configuration object.
 	 */
 	public zoomXToEnd(zoomIn: boolean, zoomSensitivity: number) {
-		if (this.config.scale.disableAnimations) {
+		const disableAnimations =
+			this.config.scale.disableAnimations || this.config.components.yAxis.type === 'percent';
+		if (disableAnimations) {
 			this.haltAnimation();
 		}
 		this.beforeStartAnimationSubject.next();
 		const state = this.export();
 		zoomXToEndViewportCalculator(this, state, zoomSensitivity, zoomIn);
-		this.zoomXTo(state, zoomIn, this.config.scale.disableAnimations);
+		this.zoomXTo(state, zoomIn, disableAnimations);
 	}
 
 	public haltAnimation() {
