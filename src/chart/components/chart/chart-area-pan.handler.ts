@@ -20,6 +20,7 @@ import { DragNDropYComponent } from '../dran-n-drop_helper/drag-n-drop-y.compone
 import { DragInfo } from '../dran-n-drop_helper/drag-n-drop.component';
 import { ChartPanComponent } from '../pan/chart-pan.component';
 import { HitTestCanvasModel } from '../../model/hit-test-canvas.model';
+import { ONE_FRAME_MS } from '../../utils/numeric-constants.utils';
 
 export interface ChartWheelEvent {
 	readonly originalEvent: WheelEvent;
@@ -53,7 +54,7 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 	// number of candles delta changed during X dragging: 1, 5 or -3 for ex.
 	public xDraggedCandlesDelta: number = 0;
 	public lastXStart: number = 0;
-	public wheelThrottleTime: number = 15; // in ms
+	public wheelThrottleTime: number = ONE_FRAME_MS;
 	public chartPanningOptions: ChartPanningOptions = {
 		horizontal: true,
 		vertical: true,
