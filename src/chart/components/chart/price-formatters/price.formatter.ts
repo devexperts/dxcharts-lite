@@ -41,6 +41,9 @@ export const createRegularPriceFormatter =
 export const createPercentFormatter =
 	(extent: YExtentComponent) =>
 	(value: Unit, dataSeries?: DataSeriesModel): string => {
+		if (value === 0) {
+			return '0.00 %';
+		}
 		const [mainDataSeries] = extent.dataSeries;
 		let valueUnit = value;
 		const series = dataSeries ?? mainDataSeries;
