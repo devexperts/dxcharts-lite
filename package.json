@@ -35,7 +35,7 @@
     "clean_dist": "rimraf ./dist",
     "prepack": "pinst --disable",
     "postpack": "pinst --enable",
-    "format:check": "prettier --check . --ignore-path ../.prettierignore --config ../.prettierrc"
+    "format:check": "prettier --check . --ignore-path .prettierignore --config .prettierrc"
   },
   "lint-staged": {
     "src/**/*.{js,ts}": [
