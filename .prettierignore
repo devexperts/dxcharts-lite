@@ -1,0 +1,9 @@
+en.json
+de.json
+fr.json
+tr.json
+
+node_modules
+dist
+coverage
+docs/how-to/
