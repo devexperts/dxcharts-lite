@@ -62,6 +62,10 @@ export class HoverProducerComponent extends ChartBaseElement {
 		return this.hoverSubject.getValue();
 	}
 	public longTouchActivatedSubject: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+	/**
+	 * When true, mobile long-touch (e.g. 200ms) does not activate crosshair / disable pan.
+	 */
+	private longTouchCrosshairSuppressed = false;
 	private hoverProducerParts: HoverProducerParts;
 
 	xFormatter: DateTimeFormatter = () => '';
@@ -158,6 +162,9 @@ export class HoverProducerComponent extends ChartBaseElement {
 		const hitTest = this.canvasBoundsContainer.getBoundsHitTest(CanvasElement.ALL_PANES);
 		this.addRxSubscription(
 			this.canvasInputListener.observeLongTouchStart(hitTest).subscribe(event => {
+				if (this.longTouchCrosshairSuppressed) {
+					return;
+				}
 				this.crossEventProducer.crossToolHover = null;
 				this.crossEventProducer.crossToolTouchInfo.isCommonTap = false;
 				// don't lock chart and show crosshair if chart is being moved, crosstool is not enabled or we do pinch event
@@ -368,6 +375,10 @@ export class HoverProducerComponent extends ChartBaseElement {
 		if (lastCross) {
 			this.createAndFireHover(lastCross);
 		}
+	}
+
+	public setLongTouchCrosshairSuppressed(value: boolean): void {
+		this.longTouchCrosshairSuppressed = value;
 	}
 
 	/**
