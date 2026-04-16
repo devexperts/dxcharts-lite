@@ -60,6 +60,8 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 		vertical: true,
 	};
 
+	public dragNDropXComponent: DragNDropXComponent;
+
 	constructor(
 		protected bus: EventBus,
 		protected config: FullChartConfig,
@@ -75,7 +77,7 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 		const allPanesHitTest = this.canvasBoundsContainer.getBoundsHitTest(CanvasElement.ALL_PANES);
 
 		//#region drag-n-drop logic
-		const dragNDropXComponent = new DragNDropXComponent(
+		this.dragNDropXComponent = new DragNDropXComponent(
 			allPanesHitTest,
 			{
 				onDragStart: this.onXDragStart,
@@ -87,10 +89,18 @@ export class ChartAreaPanHandler extends ChartBaseElement {
 			{
 				dragPredicate: () => this.chartPanningOptions.horizontal,
 			},
+			this.config.components.yAxis.type === 'percent',
 		);
 
-		this.addChildEntity(dragNDropXComponent);
+		this.addChildEntity(this.dragNDropXComponent);
 		//#endregion
+	}
+
+	/**
+	 * Throttles chart-area horizontal drag to one animation frame when needed (percent Y-axis).
+	 */
+	public setChartAreaXDragThrottled(shouldThrottle: boolean): void {
+		this.dragNDropXComponent.setShouldThrottle(shouldThrottle);
 	}
 
 	/**
