@@ -403,6 +403,7 @@ export default class ChartBootstrap {
 			chartPanComponent,
 			this.cursorHandler,
 			this.hitTestCanvasModel,
+			this.mainPane.yAxis,
 		);
 		this.chartComponents.push(this.xAxisComponent);
 		this.userInputListenerComponents.push(this.xAxisComponent.xAxisScaleHandler);
