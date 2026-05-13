@@ -97,7 +97,9 @@ export function drawLabel(
 	const lineY = visualLabel.lineY ?? visualLabel.y;
 	const _drawLine = () =>
 		showLine &&
-		avoidAntialiasing(ctx, () => drawLine(ctx, lineXStart, lineY, lineXEnd, lineY, 1, visualLabel.lineDash));
+		avoidAntialiasing(ctx, () =>
+			drawLine(ctx, lineXStart, lineY, lineXEnd, lineY, 1, visualLabel.lineDash ?? [], visualLabel.lineCap),
+		);
 	const _drawLabel = () =>
 		drawLabel(ctx, bounds, replaceMinusSign(text), centralY, visualLabel, config, colors.yAxis, false);
 
