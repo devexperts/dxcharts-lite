@@ -3,7 +3,13 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { YAxisConfig, FullChartColors, getFontFromConfig } from '../../chart.config';
+import {
+	YAxisConfig,
+	FullChartColors,
+	getFontFromConfig,
+	YAxisLabelAppearanceType,
+	YAxisLabelMode,
+} from '../../chart.config';
 import { Bounds } from '../../model/bounds.model';
 import { drawPriceLabel, drawRoundedRect } from '../../utils/canvas/canvas-drawing-functions.utils';
 import { calculateSymbolHeight, calculateTextWidth } from '../../utils/canvas/canvas-font-measure-tool.utils';
@@ -32,6 +38,12 @@ export interface YAxisLabelDrawConfig {
 	paddingStart?: number;
 	rounded?: boolean;
 	lineDash?: Array<number>;
+	/** When set (e.g. `round` with short dash gaps), strokes render as dotted segments. */
+	lineCap?: CanvasLineCap;
+	/** Overrides chart-wide `components.yAxis.labels.settings.drawings.mode` for this label (e.g. drawings). */
+	yAxisLabelMode?: YAxisLabelMode;
+	/** Overrides chart-wide `components.yAxis.labels.settings.drawings.type` for this label (e.g. drawings). */
+	yAxisLabelType?: YAxisLabelAppearanceType;
 }
 
 export const DEFAULT_PRICE_LABEL_PADDING = 4;
