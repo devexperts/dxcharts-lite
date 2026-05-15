@@ -55,6 +55,14 @@ export class CrossToolModel extends ChartBaseElement {
 		this.config.type = type;
 	}
 
+	private shouldKeepXForMobileTouchCrosshair(): boolean {
+		return (
+			isMobile() &&
+			this.hoverProducer.longTouchActivatedSubject.getValue() &&
+			this.crossEventProducer.crossSubject.getValue() !== null
+		);
+	}
+
 	/**
 	 * Method to activate the cross tool.
 	 * It subscribes to the hoverProducer's hover event and updates the crosstool.
@@ -124,7 +132,10 @@ export class CrossToolModel extends ChartBaseElement {
 	 * @returns {void}
 	 */
 	public updateCrossTool(hover: Hover, magnetTarget = this.config.magnetTarget, discrete = this.config.discrete) {
-		const x = discrete ? this.chartModel.toX(this.chartModel.candleFromX(hover.x, true).idx ?? 0) : hover.x;
+		const x =
+			discrete && !this.shouldKeepXForMobileTouchCrosshair()
+				? this.chartModel.toX(this.chartModel.candleFromX(hover.x, true).idx ?? 0)
+				: hover.x;
 		if (this.currentHover === null) {
 			this.currentHover = { x, y: 0, time: hover.timeFormatted, paneId: hover.paneId };
 		} else {
