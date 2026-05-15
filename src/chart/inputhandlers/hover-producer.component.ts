@@ -207,26 +207,37 @@ export class HoverProducerComponent extends ChartBaseElement {
 					this.crossEventProducer.crossToolTouchInfo.isCommonTap &&
 					!checkChartIsMoving(x, temp.x, y, temp.y)
 				) {
-					this.paneManager.chartPanComponent.setChartPanningOptions(true, true);
-					this.longTouchActivatedSubject.next(false);
-					this.crossEventProducer.fireCrossClose();
-					this.crossEventProducer.crossToolHover = null;
-					this.crossEventProducer.crossToolTouchInfo.isSet = false;
+					this.resetCrossTool();
 					return;
 				}
 
 				if (!this.crossEventProducer.crossToolTouchInfo.isSet) {
 					this.crossEventProducer.crossToolTouchInfo.isSet = true;
-					// previous fixed goes to temporary to prevent crosstool jumps outside the candle on candle update tick
+
+					const crossToolHover = this.crossEventProducer.crossToolHover;
+					const anchorX = crossToolHover?.x ?? x;
+					const anchorY = crossToolHover?.y ?? y;
 					this.crossEventProducer.crossToolTouchInfo.temp = {
-						x: this.crossEventProducer.crossToolTouchInfo.fixed.x,
-						y: this.crossEventProducer.crossToolTouchInfo.fixed.y,
+						x: anchorX,
+						y: anchorY,
 					};
 					this.crossEventProducer.crossToolTouchInfo.fixed = {
-						x,
-						y,
+						x: anchorX,
+						y: anchorY,
 					};
-					this.crossEventProducer.crossToolTouchInfo.isSet = true;
+					const paneId =
+						crossToolHover?.paneId ?? this.paneManager.getPaneIfHit({ x: anchorX, y: anchorY })?.uuid ?? '';
+					const hover = crossToolHover ?? this.hover;
+					if (!hover) {
+						return;
+					}
+					this.crossEventProducer.crossToolHover = {
+						...hover,
+						x: anchorX,
+						y: anchorY,
+						paneId,
+					};
+					this.crossEventProducer.crossSubject.next([anchorX, anchorY, paneId]);
 				} else {
 					const pane = this.crossEventProducer.crossToolHover?.paneId ?? 'CHART';
 					const paneBounds = this.canvasBoundsContainer.getBounds(CanvasElement.PANE_UUID(pane));
@@ -240,6 +251,18 @@ export class HoverProducerComponent extends ChartBaseElement {
 					const newX = fixed.x < 0 ? 0 : fixed.x > paneBounds.width ? paneBounds.width : (fixed.x += xDiff);
 					const newY = fixed.y < paneYStart ? paneYStart : fixed.y > paneYEnd ? paneYEnd : (fixed.y += yDiff);
 					this.crossEventProducer.crossToolTouchInfo.fixed = { x: newX, y: newY };
+					this.crossEventProducer.crossToolTouchInfo.temp = { x: newX, y: newY };
+					const hover = this.crossEventProducer.crossToolHover ?? this.hover;
+					if (!hover) {
+						return;
+					}
+					this.crossEventProducer.crossToolHover = {
+						...hover,
+						x: newX,
+						y: newY,
+						paneId: pane,
+					};
+					this.crossEventProducer.crossSubject.next([newX, newY, pane]);
 				}
 			}),
 		);
@@ -319,10 +342,17 @@ export class HoverProducerComponent extends ChartBaseElement {
 	updateHover(candle: VisualCandle) {
 		const updatedHover = this.createHoverFromCandle(candle);
 		if (this.hover && updatedHover) {
+			const shouldKeepSetTouchCrosshair =
+				isMobile() &&
+				this.longTouchActivatedSubject.getValue() &&
+				this.crossEventProducer.crossSubject.getValue() !== null;
+			const crossToolHover = this.crossEventProducer.crossToolHover;
+			const hoverX = shouldKeepSetTouchCrosshair ? (crossToolHover?.x ?? this.hover.x) : this.hover.x;
+			const hoverY = shouldKeepSetTouchCrosshair ? (crossToolHover?.y ?? this.hover.y) : this.hover.y;
 			const hover: Hover = {
 				...updatedHover,
-				x: this.hover.x,
-				y: this.hover.y,
+				x: hoverX,
+				y: hoverY,
 			};
 			this.fireHover(hover);
 		}
@@ -379,6 +409,23 @@ export class HoverProducerComponent extends ChartBaseElement {
 
 	public setLongTouchCrosshairSuppressed(value: boolean): void {
 		this.longTouchCrosshairSuppressed = value;
+	}
+
+	/**
+	 * Resets the current crosshair/touch state back to the default mobile idle state.
+	 */
+	public resetCrossTool(clearMobile: boolean = false): void {
+		this.paneManager.chartPanComponent.setChartPanningOptions(true, true);
+		this.longTouchActivatedSubject.next(false);
+		this.crossEventProducer.fireCrossClose();
+		this.crossEventProducer.crossToolHover = null;
+		this.crossEventProducer.crossToolTouchInfo.isSet = false;
+
+		if (clearMobile) {
+			this.crossEventProducer.crossToolTouchInfo.isCommonTap = false;
+			this.crossEventProducer.crossToolTouchInfo.fixed = { x: 0, y: 0 };
+			this.crossEventProducer.crossToolTouchInfo.temp = { x: 0, y: 0 };
+		}
 	}
 
 	/**
