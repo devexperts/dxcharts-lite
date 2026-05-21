@@ -18,6 +18,8 @@ import {
 	Unit,
 	ViewportModel,
 	ViewportModelState,
+	XScale,
+	YScale,
 	Zoom,
 	calculateZoom,
 	compareStates,
@@ -41,12 +43,7 @@ export interface HighLowWithIndex {
 	lowIdx: number;
 }
 
-export interface ScaleHistoryItem {
-	xStart: Unit;
-	xEnd: Unit;
-	yStart: Unit;
-	yEnd: Unit;
-}
+export interface ScaleHistoryItem extends XScale, YScale {}
 
 export const getDefaultHighLowWithIndex = (): HighLowWithIndex => ({
 	high: Number.NEGATIVE_INFINITY,
