@@ -21,6 +21,7 @@ export interface YAxisLabelDrawProps {
 	bounds: Bounds;
 	text: string;
 	centralY: number;
+	lineY?: number;
 	config: YAxisLabelDrawConfig;
 	subGroupId?: number;
 }
