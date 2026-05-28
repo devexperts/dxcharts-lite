@@ -336,8 +336,8 @@ export class HoverProducerComponent extends ChartBaseElement {
 	}
 
 	/**
-	 * Update current hover using a VisualCandle and fires it.
-	 * @param {VisualCandle} candle - The VisualCandle object to create the hover from.
+	 * Refreshes hover data (candles, studies, etc.) for the current pointer position.
+	 * Used when the last candle updates while the legend must stay aligned to crosshair X — not to the last candle center.
 	 */
 	updateHover(candle: VisualCandle) {
 		const updatedHover = this.createHoverFromCandle(candle);
