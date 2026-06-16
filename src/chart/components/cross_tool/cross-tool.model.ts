@@ -185,6 +185,14 @@ export class CrossToolModel extends ChartBaseElement {
 			return;
 		}
 
+		const anchoredHover = this.crossEventProducer.crossToolHover;
+		if (anchoredHover && hover.x === anchoredHover.x && hover.y === anchoredHover.y) {
+			const refreshedHover = { ...hover, x: anchoredHover.x, y: anchoredHover.y };
+			this.crossEventProducer.crossToolHover = refreshedHover;
+			this.updateCrossTool(refreshedHover);
+			return;
+		}
+
 		// additional crosstool move logic
 		const paneBounds = this.canvasBoundsContainer.getBounds(CanvasElement.PANE_UUID(hover.paneId));
 		const offset = 5;
