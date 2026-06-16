@@ -66,6 +66,7 @@ export class HoverProducerComponent extends ChartBaseElement {
 	 * When true, mobile long-touch (e.g. 200ms) does not activate crosshair / disable pan.
 	 */
 	private longTouchCrosshairSuppressed = false;
+	private hoverOverLastCandle = false;
 	private hoverProducerParts: HoverProducerParts;
 
 	xFormatter: DateTimeFormatter = () => '';
@@ -115,18 +116,16 @@ export class HoverProducerComponent extends ChartBaseElement {
 		);
 		this.addRxSubscription(
 			this.chartModel.candlesUpdatedSubject.subscribe(() => {
-				// update hover if its timestamp is equal or greater than last candle's one
 				const lastCandle = this.chartModel.getLastVisualCandle();
-				if (this.hover !== null && lastCandle !== undefined) {
-					if (lastCandle.candle.timestamp <= this.hover.timestamp) {
-						this.updateHover(lastCandle);
-					}
+				if (this.hover !== null && lastCandle !== undefined && this.hoverOverLastCandle) {
+					this.updateHover(lastCandle);
 				}
 			}),
 		);
 		this.addRxSubscription(
 			this.crossEventProducer.crossSubject.subscribe((cross: CrossEvent | null) => {
 				if (cross === null) {
+					this.hoverOverLastCandle = false;
 					this.hoverSubject.next(null);
 				} else {
 					this.createAndFireHover(cross);
@@ -340,15 +339,29 @@ export class HoverProducerComponent extends ChartBaseElement {
 	 * Used when the last candle updates while the legend must stay aligned to crosshair X — not to the last candle center.
 	 */
 	updateHover(candle: VisualCandle) {
+		if (!this.hover) {
+			return;
+		}
+		const shouldKeepSetTouchCrosshair =
+			isMobile() &&
+			this.longTouchActivatedSubject.getValue() &&
+			this.crossEventProducer.crossSubject.getValue() !== null;
+		const crossToolHover = this.crossEventProducer.crossToolHover;
+		const hoverX = shouldKeepSetTouchCrosshair ? (crossToolHover?.x ?? this.hover.x) : this.hover.x;
+		const hoverY = shouldKeepSetTouchCrosshair ? (crossToolHover?.y ?? this.hover.y) : this.hover.y;
+		const hoveredCandle = this.chartModel.candleFromX(hoverX, true);
+		const lastIdx = candle.candle.idx;
+		const hoveredIdx = hoveredCandle.idx;
+		if (
+			lastIdx !== undefined &&
+			hoveredIdx !== undefined &&
+			hoveredIdx < lastIdx &&
+			hoverX < candle.xStart(this.scale)
+		) {
+			return;
+		}
 		const updatedHover = this.createHoverFromCandle(candle);
-		if (this.hover && updatedHover) {
-			const shouldKeepSetTouchCrosshair =
-				isMobile() &&
-				this.longTouchActivatedSubject.getValue() &&
-				this.crossEventProducer.crossSubject.getValue() !== null;
-			const crossToolHover = this.crossEventProducer.crossToolHover;
-			const hoverX = shouldKeepSetTouchCrosshair ? (crossToolHover?.x ?? this.hover.x) : this.hover.x;
-			const hoverY = shouldKeepSetTouchCrosshair ? (crossToolHover?.y ?? this.hover.y) : this.hover.y;
+		if (updatedHover) {
 			const hover: Hover = {
 				...updatedHover,
 				x: hoverX,
@@ -356,6 +369,26 @@ export class HoverProducerComponent extends ChartBaseElement {
 			};
 			this.fireHover(hover);
 		}
+	}
+
+	private updateHoverLastCandle(hover: Hover): void {
+		const lastCandle = this.chartModel.getLastVisualCandle();
+		if (!lastCandle) {
+			this.hoverOverLastCandle = false;
+			return;
+		}
+		const hoveredCandle = this.chartModel.candleFromX(hover.x, true);
+		const lastIdx = lastCandle.candle.idx;
+		const hoveredIdx = hoveredCandle.idx;
+		const isHistoricalCandleHover =
+			lastIdx !== undefined &&
+			hoveredIdx !== undefined &&
+			hoveredIdx < lastIdx &&
+			hover.x < lastCandle.xStart(this.scale);
+		this.hoverOverLastCandle =
+			!isHistoricalCandleHover &&
+			(lastCandle.candle.timestamp <= hover.timestamp ||
+				(lastIdx !== undefined && hoveredIdx !== undefined && hoveredIdx === lastIdx));
 	}
 
 	/**
@@ -390,8 +423,10 @@ export class HoverProducerComponent extends ChartBaseElement {
 					: hover.candleHover?.visualCandle.candle;
 				candle && this.chartModel.mainCandleSeries.setActiveCandle(candle);
 			}
+			this.updateHoverLastCandle(hover);
 			this.hoverSubject.next(hover);
 		} else {
+			this.hoverOverLastCandle = false;
 			this.crossEventProducer.fireCrossClose();
 		}
 	}
