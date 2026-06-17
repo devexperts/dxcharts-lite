@@ -8,6 +8,7 @@ import { Candle } from '../../model/candle.model';
 import { DataSeriesPoint, VisualSeriesPoint } from '../../model/data-series.model';
 import { Index, Timestamp } from '../../model/scaling/viewport.model';
 import VisualCandle from '../../model/visual-candle';
+import { CandleTimestampAnchor } from '../../chart.config';
 import { autoDetectPeriod } from '../../utils/auto-period-detector.utils';
 import { searchCandleIndex } from '../../utils/candles.utils';
 import { fakeVisualCandle, fakeVisualPoint } from './fake-visual-candle';
@@ -43,6 +44,8 @@ export class ChartBaseModel<T extends BaseType = 'point'> {
 	 */
 	public period = 1;
 
+	public candleTimestampAnchor: CandleTimestampAnchor = 'open';
+
 	constructor(public type: T) {}
 
 	/**
@@ -58,7 +61,12 @@ export class ChartBaseModel<T extends BaseType = 'point'> {
 		} = { extrapolate: true },
 		selectedDataPoints: DataPoint<T>[] = this.mainDataPoints,
 	): VisualPoint<T> {
-		const result = searchCandleIndex(timestamp, options, selectedDataPoints, this.period);
+		const result = searchCandleIndex(
+			timestamp,
+			{ ...options, candleTimestampAnchor: this.candleTimestampAnchor },
+			selectedDataPoints,
+			this.period,
+		);
 		return this.dataFromIdx(result.index);
 	}
 
