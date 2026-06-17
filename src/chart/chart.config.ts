@@ -121,6 +121,7 @@ export const getDefaultConfig = (): FullChartConfig => ({
 				y: true,
 			},
 			sortCandles: defaultSortCandles,
+			candleTimestampAnchor: 'open',
 		},
 		yAxis: {
 			type: 'regular',
@@ -979,6 +980,9 @@ export interface ChartComponents {
 	paneResizer: ChartConfigComponentsPaneResizer;
 }
 
+export const candleTimestampAnchor = ['open', 'close'] as const;
+export type CandleTimestampAnchor = (typeof candleTimestampAnchor)[number];
+
 export interface ChartConfigComponentsChart {
 	/**
 	 * The type of chart. Candle, bar, area and others.
@@ -1026,6 +1030,11 @@ export interface ChartConfigComponentsChart {
 	};
 	// optional because backward compability
 	sortCandles?: (candles: Candle[]) => Candle[];
+	/**
+	 * Defines whether `Candle.timestamp` represents candle open (start) or close (end) time.
+	 * @default 'open'
+	 */
+	candleTimestampAnchor?: CandleTimestampAnchor;
 }
 
 export interface ChartConfigComponentsEvents {
