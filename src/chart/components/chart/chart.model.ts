@@ -11,7 +11,13 @@ import {
 	CanvasElement,
 	areBoundsChanged,
 } from '../../canvas/canvas-bounds-container';
-import { BarType, ChartConfigComponentsOffsets, FullChartConfig, getDefaultConfig } from '../../chart.config';
+import {
+	BarType,
+	CandleTimestampAnchor,
+	ChartConfigComponentsOffsets,
+	FullChartConfig,
+	getDefaultConfig,
+} from '../../chart.config';
 import EventBus from '../../events/event-bus';
 import { ChartResizeHandler, PickedDOMRect } from '../../inputhandlers/chart-resize.handler';
 import { CandleSeriesColors, CandleSeriesModel, PartialCandleSeriesColors } from '../../model/candle-series.model';
@@ -90,6 +96,7 @@ export class ChartModel extends ChartBaseElement {
 	) {
 		super();
 		this.chartTypeChanged.next(this.config.components.chart.type);
+		this.chartBaseModel.candleTimestampAnchor = this.getCandleTimestampAnchor();
 		this.secondaryChartColors = new SecondaryChartColorsPool(this.config);
 		const candleSeries = new MainCandleSeriesModel(
 			this.chartBaseModel,
@@ -382,7 +389,11 @@ export class ChartModel extends ChartBaseElement {
 		}
 
 		const preparedCandles = this.prepareCandles(mainSeries.candles);
-		const updateResult = updateCandles(this.mainCandleSeries.dataPoints, preparedCandles);
+		const updateResult = updateCandles(
+			this.mainCandleSeries.dataPoints,
+			preparedCandles,
+			this.getCandleTimestampAnchor(),
+		);
 		const updatedCandles = updateResult.candles;
 		reindexCandles(updatedCandles);
 		this.mainCandleSeries.dataPoints = updatedCandles;
@@ -393,6 +404,7 @@ export class ChartModel extends ChartBaseElement {
 			const updatedCandles = updateCandles(
 				this.findSecondarySeriesBySymbol(series.instrument?.symbol ?? '')?.dataPoints ?? [],
 				preparedCandles,
+				this.getCandleTimestampAnchor(),
 			).candles;
 			return this.setSecondaryCandleSeries(updatedCandles, series.instrument, false);
 		});
@@ -900,7 +912,12 @@ export class ChartModel extends ChartBaseElement {
 		return series.reduce((candles: Array<Candle>, candle: Candle) => {
 			const timestamp = candle.timestamp;
 			// find index of candle in baseSeries
-			const result = searchCandleIndex(timestamp, { extrapolate: false }, baseSeries, this.chartBaseModel.period);
+			const result = searchCandleIndex(
+				timestamp,
+				this.candleSearchOptions(false),
+				baseSeries,
+				this.chartBaseModel.period,
+			);
 			if (result.index >= 0 && result.index < baseSeries.length) {
 				candle.idx = result.index;
 				candles[result.index] = candle;
@@ -911,6 +928,18 @@ export class ChartModel extends ChartBaseElement {
 
 	public getPeriod(): number {
 		return this.chartBaseModel.period;
+	}
+
+	public getCandleTimestampAnchor() {
+		return this.config.components.chart.candleTimestampAnchor ?? 'open';
+	}
+
+	private candleSearchOptions(extrapolate: boolean, isDaysPeriod?: boolean) {
+		return {
+			extrapolate,
+			isDaysPeriod,
+			candleTimestampAnchor: this.getCandleTimestampAnchor(),
+		};
 	}
 
 	/**
@@ -967,7 +996,12 @@ export class ChartModel extends ChartBaseElement {
 					return;
 				}
 				// detect index of updating candle
-				const result = searchCandleIndex(candle.timestamp, { extrapolate: true }, curCandles, this.getPeriod());
+				const result = searchCandleIndex(
+					candle.timestamp,
+					this.candleSearchOptions(true),
+					curCandles,
+					this.getPeriod(),
+				);
 				const idx = Math.min(result.index, curCandles.length);
 				isNewCandle = isNewCandle || idx === curCandles.length;
 				// update the candle and index
@@ -1082,7 +1116,7 @@ export class ChartModel extends ChartBaseElement {
 		const prepend: Candle[] = [];
 
 		prependUpdate.forEach(c => {
-			const result = searchCandleIndex(c.timestamp, { extrapolate: false }, target);
+			const result = searchCandleIndex(c.timestamp, this.candleSearchOptions(false), target);
 			const idx = result.index;
 			if (idx < 0) {
 				prepend.push(c);
@@ -1243,13 +1277,17 @@ export type TimeFrameRange = [number, number];
  * @param target {Candle[]} - sorted candles
  * @param update {Candle[]} - sorted candles
  */
-const updateCandles = (target: Candle[], update: Candle[]): UpdateCandlesResult => {
+const updateCandles = (
+	target: Candle[],
+	update: Candle[],
+	candleTimestampAnchor: CandleTimestampAnchor = 'open',
+): UpdateCandlesResult => {
 	const targetCopy = target.slice();
 	const prepend: Candle[] = [];
 	const append: Candle[] = [];
 
 	update.forEach(c => {
-		const result = searchCandleIndex(c.timestamp, { extrapolate: true }, target);
+		const result = searchCandleIndex(c.timestamp, { extrapolate: true, candleTimestampAnchor }, target);
 		const idx = result.index;
 		if (idx < 0) {
 			prepend.push(c);
