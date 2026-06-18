@@ -77,6 +77,16 @@ export class VolumesComponent extends ChartBaseElement {
 	 * @param {boolean} separate - A boolean value indicating whether the volumes should be shown separately or not.
 	 * @returns {void}
 	 */
+	/** Restores separate volumes pane and dynamic object after study pane cleanup. */
+	public ensureSeparateVolumesHost(): void {
+		if (!this.config.components.volumes.showSeparately) {
+			return;
+		}
+		this.separateVolumes.activateSeparateVolumes();
+		this.syncVolumesDynamicObject();
+		this.canvasModel.fireDraw();
+	}
+
 	public setShowVolumesSeparatly(separate: boolean) {
 		if (this.config.components.volumes.showSeparately !== separate) {
 			this.config.components.volumes.showSeparately = separate;
