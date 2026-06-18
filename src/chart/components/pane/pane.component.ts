@@ -43,6 +43,7 @@ import { PaneHitTestController } from './pane-hit-test.controller';
 import { HitTestCanvasModel } from '../../model/hit-test-canvas.model';
 import { ChartResizeHandler } from '../../inputhandlers/chart-resize.handler';
 import { merge } from '../../utils/merge.utils';
+import { VOLUMES_UUID } from '../volumes/volumes.model';
 
 export class PaneComponent extends ChartBaseElement {
 	/**
@@ -287,10 +288,20 @@ export class PaneComponent extends ChartBaseElement {
 		return yExtentComponent;
 	}
 
+	private shouldKeepVolumeHostExtent(extent: YExtentComponent): boolean {
+		return (
+			this.uuid === VOLUMES_UUID && extent === this.mainExtent && this.config.components.volumes.showSeparately
+		);
+	}
+
 	public removeExtentComponents(extentComponents: YExtentComponent[]) {
-		extentComponents.forEach(extentComponent => extentComponent.disable());
+		const removableExtents = extentComponents.filter(extent => !this.shouldKeepVolumeHostExtent(extent));
+		if (removableExtents.length === 0) {
+			return;
+		}
+		removableExtents.forEach(extentComponent => extentComponent.disable());
 		this.yExtentComponents = this.yExtentComponents.filter(
-			current => !extentComponents.map(excluded => excluded.idx).includes(current.idx),
+			current => !removableExtents.map(excluded => excluded.idx).includes(current.idx),
 		);
 		// re-index extents
 		this.yExtentComponents.forEach((c, idx) => {
