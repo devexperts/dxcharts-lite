@@ -18,8 +18,6 @@ import { Drawer } from '../../drawers/drawing-manager';
 import { ChartModel } from '../chart/chart.model';
 import { unitToPixels } from '../../model/scaling/viewport.model';
 import { clipToBounds } from '../../utils/canvas/canvas-drawing-functions.utils';
-import { getCandleStart, searchCandleIndex } from '../../utils/candles.utils';
-import VisualCandle from '../../model/visual-candle';
 import { DataSeriesPoint } from '../../model/data-series.model';
 
 const LABEL_PADDINGS = [20, 10];
@@ -76,27 +74,29 @@ export class HighlightsDrawer implements Drawer {
 						ctx.fillStyle = fillStyle;
 						ctx.strokeStyle = strokeStyle;
 						items.forEach(item => {
-							const period = this.chartModel.chartBaseModel.period;
 							const anchor = this.chartModel.getCandleTimestampAnchor();
 							const candles = this.chartModel.getCandles();
-							const fromXCandle = this.resolveHighlightFromCandle(item.from, candles, period, anchor);
-							const fromXCandleWidth = unitToPixels(fromXCandle.width, this.chartModel.scale.zoomX);
-							const fromX = fromXCandle.xStart(this.chartModel.scale);
-							const toXCandle = this.resolveHighlightToCandle(item.to, candles, period, anchor);
-							const toXCandleWidth = unitToPixels(toXCandle.width, this.chartModel.scale.zoomX);
-							const toX = toXCandle.xStart(this.chartModel.scale) + toXCandleWidth;
-							// draw highlight' borders
+							const inRange = this.findCandleIndicesInHighlight(candles, item.from, item.to);
+							const highlightFromX = this.getHighlightBoundaryX(item.from, anchor);
+							const highlightToX = this.getHighlightBoundaryX(item.to, anchor);
+							let fillFromX = highlightFromX;
+							let fillToX = highlightToX;
 							if (item.border) {
-								this.drawBorders(
-									item.border,
-									ctx,
-									fromX + fromXCandleWidth,
-									toX - toXCandleWidth,
-									chartBounds,
+								this.drawBorders(item.border, ctx, highlightFromX, highlightToX, chartBounds);
+							}
+							if (inRange) {
+								const fromXCandle = this.chartModel.candleFromIdx(inRange.startIdx);
+								const toXCandle = this.chartModel.candleFromIdx(inRange.endIdx);
+								fillFromX = fromXCandle.xStart(this.chartModel.scale);
+								const toXCandleWidth = unitToPixels(toXCandle.width, this.chartModel.scale.zoomX);
+								fillToX = toXCandle.xStart(this.chartModel.scale) + toXCandleWidth;
+								ctx.fillRect(
+									fillFromX,
+									chartBounds.y,
+									fillToX - fillFromX,
+									chartBounds.y + chartBounds.height,
 								);
 							}
-							// draw highlight' background
-							ctx.fillRect(fromX, chartBounds.y, toX - fromX, chartBounds.y + chartBounds.height);
 							// draw highlight' label
 							if (item.label) {
 								const label = item.label.text ?? '';
@@ -107,7 +107,7 @@ export class HighlightsDrawer implements Drawer {
 								const [labelX, labelY] = this.resolveHighlightLabelPosition(
 									item.label.placement ?? 'left-left',
 									chartBounds,
-									[fromX, toX],
+									[fillFromX, fillToX],
 									labelWidth,
 								);
 								ctx.fillText(label, labelX, labelY);
@@ -123,49 +123,39 @@ export class HighlightsDrawer implements Drawer {
 		}
 	}
 
-	private findHighlightStartIndex(
+	private getHighlightBoundaryX(highlightTimestamp: number, anchor: CandleTimestampAnchor): number {
+		const candle = this.chartModel.candleFromTimestamp(highlightTimestamp, { extrapolate: true });
+		const width = unitToPixels(candle.width, this.chartModel.scale.zoomX);
+		const xStart = candle.xStart(this.chartModel.scale);
+		if (anchor === 'close') {
+			return xStart + width;
+		}
+		if (candle.candle.timestamp < highlightTimestamp) {
+			return xStart + width;
+		}
+		return xStart;
+	}
+
+	private findCandleIndicesInHighlight(
 		candles: DataSeriesPoint[],
-		sessionFrom: number,
-		periodMs: number,
-		anchor: CandleTimestampAnchor,
-	): number {
-		if (anchor === 'open') {
-			const result = searchCandleIndex(
-				sessionFrom,
-				{ extrapolate: false, candleTimestampAnchor: 'open' },
-				candles,
-				periodMs,
-			);
-			return result.index;
+		highlightFrom: number,
+		highlightTo: number,
+	): { startIdx: number; endIdx: number } | null {
+		let startIdx = -1;
+		let endIdx = -1;
+		for (let i = 0; i < candles.length; i++) {
+			if (this.isCandleTimestampInHighlight(candles[i].timestamp, highlightFrom, highlightTo)) {
+				if (startIdx === -1) {
+					startIdx = i;
+				}
+				endIdx = i;
+			}
 		}
-		return candles.findIndex((_, index) => getCandleStart(candles, index, periodMs, 'close') === sessionFrom);
+		return startIdx === -1 ? null : { startIdx, endIdx };
 	}
 
-	private resolveHighlightFromCandle(
-		sessionFrom: number,
-		candles: ReturnType<ChartModel['getCandles']>,
-		period: number,
-		anchor: ReturnType<ChartModel['getCandleTimestampAnchor']>,
-	): VisualCandle {
-		const startIdx = this.findHighlightStartIndex(candles, sessionFrom, period, anchor);
-		if (startIdx >= 0) {
-			return this.chartModel.candleFromIdx(startIdx);
-		}
-		return this.chartModel.candleFromTimestamp(sessionFrom);
-	}
-
-	private resolveHighlightToCandle(
-		sessionTo: number,
-		candles: ReturnType<ChartModel['getCandles']>,
-		period: number,
-		anchor: ReturnType<ChartModel['getCandleTimestampAnchor']>,
-	): VisualCandle {
-		const lookupTimestamp = this.getHighlightEndLookupTimestamp(sessionTo, period, anchor);
-		return this.chartModel.candleFromTimestamp(lookupTimestamp);
-	}
-
-	private getHighlightEndLookupTimestamp(sessionTo: number, periodMs: number, anchor: CandleTimestampAnchor): number {
-		return anchor === 'close' ? sessionTo - 1 : sessionTo - periodMs;
+	private isCandleTimestampInHighlight(candleTimestamp: number, highlightFrom: number, highlightTo: number): boolean {
+		return highlightFrom <= candleTimestamp && candleTimestamp < highlightTo;
 	}
 
 	/**
