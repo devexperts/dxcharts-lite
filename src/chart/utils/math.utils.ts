@@ -57,6 +57,15 @@ export class MathUtils {
 		return Math.round(x);
 	}
 
+	static readonly THOUSANDS_SEPARATOR_REGEX = /\d(?=(\d{3})+$)/g;
+
+	public static formatIntegerWithSeparator(integerValue: number, thousandsSeparator: string): string {
+		if (Math.abs(integerValue) < 1000) {
+			return integerValue.toString();
+		}
+		return integerValue.toString().replace(MathUtils.THOUSANDS_SEPARATOR_REGEX, `$&${thousandsSeparator}`);
+	}
+
 	public static makeDecimal(value: number, precision: number, decimal?: string, thousandsSeparator?: string): string {
 		if (!isFinite(value)) {
 			return '';
@@ -76,7 +85,7 @@ export class MathUtils {
 			const fractionPart = splittedValue[1];
 
 			if (Math.abs(value) >= 1000) {
-				integerPart = integerPart.replace(RegExp('\\d(?=(\\d{3})+$)', 'g'), `$&${thousandsSeparator}`);
+				integerPart = integerPart.replace(MathUtils.THOUSANDS_SEPARATOR_REGEX, `$&${thousandsSeparator}`);
 			}
 
 			if (fractionPart) {
