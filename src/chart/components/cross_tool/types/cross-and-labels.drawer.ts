@@ -142,7 +142,7 @@ export class CrossAndLabelsDrawerType implements CrossToolTypeDrawer {
 			}
 			for (const extent of pane.yExtentComponents) {
 				const price = extent.regularValueFromY(y);
-				const label = extent.valueFormatter(price);
+				const label = extent.valueFormatter(price, { formatWithSeparators: true });
 				const bounds = this.canvasBoundsContainer.getBounds(
 					CanvasElement.PANE_UUID_Y_AXIS(pane.uuid, extent.idx),
 				);
