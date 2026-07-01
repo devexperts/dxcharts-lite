@@ -30,6 +30,11 @@ import { YAxisComponent } from '../../y_axis/y-axis.component';
 import { PaneHitTestController } from '../pane-hit-test.controller';
 import { PaneComponent, YExtentFormatters } from '../pane.component';
 
+export type ValueFormatterOptions = Partial<{
+	dataSeries: DataSeriesModel;
+	formatWithSeparators: boolean;
+}>;
+
 export interface YExtentCreationOptions {
 	scale: ScaleModel;
 	order: number;
@@ -69,7 +74,10 @@ export class YExtentComponent extends ChartBaseElement {
 		super();
 		this.addChildEntity(scale);
 		this.setValueFormatters(createYExtentFormatters(this, config));
-		this.yAxis = createYAxisComponent(this.valueFormatter.bind(this), () => this.mainDataSeries);
+		this.yAxis = createYAxisComponent(
+			(value: number) => this.yAxisNumericLabelsFormatter(value),
+			() => this.mainDataSeries,
+		);
 		this.addChildEntity(this.yAxis);
 	}
 
@@ -149,21 +157,26 @@ export class YExtentComponent extends ChartBaseElement {
 		this.paneComponent.seriesRemovedSubject.next(series);
 	}
 
-	public valueFormatter = (value: Unit, dataSeries?: DataSeriesModel): string => {
+	public valueFormatter = (value: Unit, options?: ValueFormatterOptions): string => {
+		const { dataSeries, formatWithSeparators = false } = options ?? {};
 		if (!this.formatters[this.yAxis.getAxisType()]) {
-			return this.formatters.regular(value);
+			return this.formatters.regular(value, formatWithSeparators);
 		}
 		const { regular, percent, logarithmic } = this.formatters;
 		switch (this.yAxis.getAxisType()) {
 			case 'regular':
-				return this.formatters.regular(value);
+				return this.formatters.regular(value, formatWithSeparators);
 			case 'percent':
 				return percent ? percent(value, dataSeries) : regular(value);
 			case 'logarithmic':
 				return logarithmic ? logarithmic(value) : regular(value);
 			default:
-				return this.regularFormatter(value);
+				return this.regularFormatter(value, formatWithSeparators);
 		}
+	};
+
+	private yAxisNumericLabelsFormatter = (value: number): string => {
+		return this.valueFormatter(value, { formatWithSeparators: true });
 	};
 
 	get regularFormatter() {
