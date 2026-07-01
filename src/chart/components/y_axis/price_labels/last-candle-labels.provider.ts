@@ -92,7 +92,10 @@ export class LastCandleLabelsProvider implements YAxisLabelsProvider {
 				return {
 					y,
 					labelWeight: 0,
-					labelText: this.chartModel.pane.valueFormatter(lastCandle.close, series),
+					labelText: this.chartModel.pane.valueFormatter(lastCandle.close, {
+						formatWithSeparators: true,
+						dataSeries: series,
+					}),
 					mode,
 					labelType: appearanceType,
 					description: series.instrument.symbol,
