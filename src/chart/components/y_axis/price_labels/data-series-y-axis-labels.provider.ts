@@ -50,7 +50,7 @@ export class DataSeriesYAxisLabelsProvider implements YAxisLabelsProvider {
 			return [];
 		}
 
-		const label = this.series.valueFormatter(lastPoint.close);
+		const label = this.series.extentComponent.valueFormatter(lastPoint.close, { formatWithSeparators: true });
 		const drawConfig = this.getLabelDrawConfig();
 
 		return [

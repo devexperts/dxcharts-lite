@@ -4,6 +4,8 @@
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+import { MathUtils } from '../../../utils/math.utils';
+
 /**
  * Formats price values for US Treasury contracts in 32nds format
  *
@@ -16,8 +18,13 @@
 
 export const TREASURY_32ND = 1 / 32; // 0.03125
 
-export const treasuryPriceFormatter = (value: number): string => {
+export const treasuryPriceFormatter = (value: number, thousandsSeparator?: string): string => {
 	const integerValue = Math.floor(value);
+	// Format the integer part with the thousands separator if provided
+	const formattedInteger =
+		thousandsSeparator !== undefined
+			? MathUtils.formatIntegerWithSeparator(integerValue, thousandsSeparator)
+			: integerValue.toString();
 
 	// Get the decimal part and convert to 64ths
 	const decimalPart = value - integerValue;
@@ -29,7 +36,7 @@ export const treasuryPriceFormatter = (value: number): string => {
 	// Format the 32nds part to always show 2 digits (00-31)
 	const thirtySecondsFormatted = thirtySeconds.toString().padStart(2, '0');
 
-	return `${integerValue}'${thirtySecondsFormatted}`;
+	return `${formattedInteger}'${thirtySecondsFormatted}`;
 };
 
 const getTreasuryPriceMatch = (value: string): RegExpMatchArray | null => value.match(/^\-?0*(\d+)'(\d{2})$/);
