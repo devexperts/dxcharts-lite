@@ -14,7 +14,7 @@ import {
 	HitBoundsTest,
 } from '../../canvas/canvas-bounds-container';
 import { CursorHandler } from '../../canvas/cursor.handler';
-import { FullChartConfig, YAxisAlign, YAxisConfig } from '../../chart.config';
+import { FullChartConfig, IntlFormatter, YAxisAlign, YAxisConfig } from '../../chart.config';
 import { DrawingManager } from '../../drawers/drawing-manager';
 import EventBus from '../../events/event-bus';
 import { CanvasInputListenerComponent } from '../../inputlisteners/canvas-input-listener.component';
@@ -36,6 +36,7 @@ import { ChartPanComponent } from '../pan/chart-pan.component';
 import { YAxisComponent } from '../y_axis/y-axis.component';
 import {
 	createDefaultYExtentHighLowProvider,
+	ValueFormatterOptions,
 	YExtentComponent,
 	YExtentCreationOptions,
 } from './extent/y-extent-component';
@@ -60,6 +61,10 @@ export class PaneComponent extends ChartBaseElement {
 
 	get yAxis() {
 		return this.mainExtent.yAxis;
+	}
+
+	get intlFormatter(): IntlFormatter {
+		return this.config.intlFormatter;
 	}
 
 	get dataSeries() {
@@ -482,8 +487,8 @@ export class PaneComponent extends ChartBaseElement {
 		return this.uuid !== lastVisiblePane && this.visible;
 	}
 
-	public valueFormatter = (value: Unit, dataSeries?: DataSeriesModel) => {
-		return this.mainExtent.valueFormatter(value, dataSeries);
+	public valueFormatter = (value: Unit, options?: ValueFormatterOptions) => {
+		return this.mainExtent.valueFormatter(value, options);
 	};
 
 	get regularFormatter() {
@@ -509,7 +514,7 @@ export class PaneComponent extends ChartBaseElement {
 }
 
 export interface YExtentFormatters {
-	regular: (value: number, precision?: number) => string;
+	regular: (value: number, formatWithIntlSeparators?: boolean) => string;
 	percent?: (value: number, dataSeries?: DataSeriesModel) => string;
 	logarithmic?: (value: number) => string;
 }

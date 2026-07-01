@@ -6,7 +6,7 @@
 import { YAxisConfig } from '../../../chart.config';
 import { DataSeriesModel } from '../../../model/data-series.model';
 import { Unit, unitToPercent } from '../../../model/scaling/viewport.model';
-import { replaceMinusSign } from '../../../utils/math.utils';
+import { MathUtils, replaceMinusSign } from '../../../utils/math.utils';
 import { PriceIncrementsUtils } from '../../../utils/price-increments.utils';
 import { MINUS_SIGN } from '../../../utils/symbol-constants';
 import { YExtentComponent } from '../../pane/extent/y-extent-component';
@@ -15,7 +15,7 @@ import { treasuryPriceFormatter } from './treasury-price.formatter';
 
 export const createRegularPriceFormatter =
 	(extent: YExtentComponent, config: YAxisConfig) =>
-	(value: unknown): string => {
+	(value: unknown, shouldAddSeparators: boolean = false): string => {
 		let checkedValue: number;
 		if (typeof value === 'number') {
 			checkedValue = value;
@@ -24,15 +24,31 @@ export const createRegularPriceFormatter =
 		} else {
 			return '—';
 		}
+		const separators = extent.paneComponent.intlFormatter;
+
+		const formatWithIntlSeparators = (precision: number): string => {
+			return MathUtils.makeDecimal(
+				checkedValue,
+				precision,
+				separators.decimalSeparator,
+				separators.thousandsSeparator,
+			);
+		};
 
 		const treasuryFormatConfig = config.treasuryFormat;
 		if (treasuryFormatConfig && treasuryFormatConfig.enabled) {
-			return treasuryPriceFormatter(checkedValue);
+			return treasuryPriceFormatter(
+				checkedValue,
+				shouldAddSeparators ? separators.thousandsSeparator : undefined,
+			);
 		}
 
 		const [mainDataSeries] = extent.dataSeries;
 		if (mainDataSeries !== undefined) {
 			const precision = PriceIncrementsUtils.getPricePrecision(checkedValue, mainDataSeries.pricePrecisions);
+			if (shouldAddSeparators && Math.abs(checkedValue) >= 1000) {
+				return formatWithIntlSeparators(precision);
+			}
 			return checkedValue.toFixed(precision);
 		}
 		return `${checkedValue}`;
