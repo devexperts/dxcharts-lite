@@ -480,6 +480,7 @@ export class ScaleModel extends ViewportModel {
 	 */
 	public autoScale(auto: boolean = true): void {
 		// TODO rework, make this a separate feature toggle, describe in docs; this should be a business-logic level
+		const prevAuto = this.state.auto;
 		if (this.config.components.yAxis.type === 'percent') {
 			this.state.auto = true;
 		} else {
@@ -488,6 +489,8 @@ export class ScaleModel extends ViewportModel {
 		if (auto) {
 			this.clearHistory();
 			this.doAutoScale();
+		} else if (prevAuto !== this.state.auto) {
+			this.fireChanged();
 		}
 	}
 
