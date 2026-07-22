@@ -91,8 +91,10 @@ export class CandleDrawer implements SeriesDrawer {
 		const bodyEnd = bodyStart === _bodyEnd ? bodyStart + 1 : _bodyEnd;
 		const lineEnd = lineStart === _lineEnd ? lineStart + 1 : _lineEnd;
 
-		const candleColor = currentCandleTheme[`${direction}Color`];
-		const wickColor = direction === 'none' ? candleColor : currentCandleTheme[`${direction}WickColor`];
+		const customCandleColor = candleSeries.customCandleColors[visualCandle.candle.idx ?? 0];
+		const candleColor = customCandleColor || currentCandleTheme[`${direction}Color`];
+		const wickColor =
+			customCandleColor || direction === 'none' ? candleColor : currentCandleTheme[`${direction}WickColor`];
 		ctx.fillStyle = candleColor;
 
 		// wick style, borders are drawn after the wicks, so style for borders will be changed in drawBorder method
@@ -139,6 +141,7 @@ export class CandleDrawer implements SeriesDrawer {
 				hitTestDrawerConfig,
 				currentCandleTheme,
 				visualCandle,
+				customCandleColor,
 				baseX + this.halfLineWidthCU,
 				bodyStart + this.halfLineWidthCU,
 				width - this.lineWidthCU,
@@ -171,6 +174,7 @@ export class CandleDrawer implements SeriesDrawer {
 					hitTestDrawerConfig,
 					currentCandleTheme,
 					visualCandle,
+					customCandleColor,
 					paddingBaseX + this.halfLineWidthCU,
 					bodyStart + this.halfLineWidthCU,
 					paddingWidth - this.lineWidthCU,
@@ -206,6 +210,7 @@ export class CandleDrawer implements SeriesDrawer {
 		hitTestDrawerConfig: HTSeriesDrawerConfig,
 		candleTheme: CandleTheme,
 		visualCandle: VisualCandle,
+		customCandleColor: string | undefined,
 		x: number,
 		y: number,
 		w: number,
@@ -213,6 +218,8 @@ export class CandleDrawer implements SeriesDrawer {
 	) {
 		if (hitTestDrawerConfig.color) {
 			ctx.strokeStyle = hitTestDrawerConfig.color;
+		} else if (customCandleColor) {
+			ctx.strokeStyle = customCandleColor;
 		} else {
 			const direction = visualCandle.name;
 			ctx.strokeStyle =
