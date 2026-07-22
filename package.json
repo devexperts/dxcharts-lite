@@ -51,7 +51,6 @@
     "@types/jest": "30.0.0",
     "@types/mocha": "10.0.10",
     "@types/node": "24.12.2",
-    "@types/resize-observer-browser": "0.1.11",
     "@typescript-eslint/eslint-plugin": "8.61.1",
     "@typescript-eslint/parser": "8.58.1",
     "chai": "6.2.2",
