@@ -162,7 +162,7 @@ export const slice2DArray = <T>(arr: Array<T[]>, startIdx: number, endIdx: numbe
 export const at = <T>(idx: number, arr: T[]) => (idx >= 0 ? arr[idx] : arr[arr.length + idx]);
 
 // Array.flat() polyfill (support for chrome 66)
-export const flat = <T>(arr: T[][]) => {
+export const flat = <T>(arr: T[][]): T[] => {
 	// @ts-ignore
 	if (Array.prototype.flat) {
 		return arr.flat();
