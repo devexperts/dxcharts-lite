@@ -347,6 +347,10 @@ export function isLinked(chartType: BarType) {
 	}
 }
 
+export const isCandleSeriesModel = (model: DataSeriesModel): model is CandleSeriesModel => {
+	return model instanceof CandleSeriesModel;
+};
+
 export type CandleSeriesColors = FullChartColors;
 
 export type PartialCandleSeriesColors = DeepPartial<CandleSeriesColors>;
