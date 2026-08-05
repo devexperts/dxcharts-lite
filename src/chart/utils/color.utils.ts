@@ -4,6 +4,7 @@
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 const HEX_COLOR_REGEXP = /^(#)([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i;
+const HEX_COLOR_THREE_DIGITS_REGEXP = /^(#)([0-9a-f])([0-9a-f])([0-9a-f])$/i;
 export const HEX_COLOR_WITH_ALPHA_REGEXP = /^#(?:[0-9a-f]{4}|[0-9a-f]{8})$/i;
 const RGB_COLOR_REGEXP = /^\s*(rgba?)\s*[(]\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*(?:,\s*[\d.]+\s*)?[)]\s*$/i;
 // Alpha must allow integer 0; previously only 0.x / 1 matched.
@@ -11,6 +12,8 @@ export const RGBA_COLOR_REGEXP =
 	/^rgba[(](?:\s*0*(?:\d\d?(?:\.\d+)?(?:\s*%)?|\.\d+\s*%|100(?:\.0*)?\s*%|(?:1\d\d|2[0-4]\d|25[0-5])(?:\.\d+)?)\s*,){3}\s*(?:0(?:\.\d+)?|\.\d+|1(?:\.0*)?)\s*[)]$/;
 
 export const isHex = (color: string) => HEX_COLOR_REGEXP.exec(color);
+export const isHexThreeDigits = (color: string) => HEX_COLOR_THREE_DIGITS_REGEXP.exec(color);
+export const isHexWithAlpha = (color: string) => HEX_COLOR_WITH_ALPHA_REGEXP.exec(color);
 export const isRgb = (color: string) => RGB_COLOR_REGEXP.exec(color);
 export const isRgba = (color: string) => RGBA_COLOR_REGEXP.exec(color);
 
@@ -42,4 +45,13 @@ export function toRGBA(color: string, alpha: number): string {
 		rgbaCache[color + alpha] = result;
 	}
 	return result;
+}
+
+export function fromHexThreeDigitsToHex(color: string) {
+	const fullHexDigits = color
+		.substring(1)
+		.split('')
+		.map(char => `${char}${char}`)
+		.join('');
+	return `#${fullHexDigits}`;
 }
