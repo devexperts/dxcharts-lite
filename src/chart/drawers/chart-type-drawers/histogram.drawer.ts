@@ -4,7 +4,7 @@
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 import { ChartConfigComponentsHistogram } from '../../chart.config';
-import { CandleSeriesModel } from '../../model/candle-series.model';
+import { isCandleSeriesModel } from '../../model/candle-series.model';
 import { DataSeriesModel, VisualSeriesPoint } from '../../model/data-series.model';
 import VisualCandle from '../../model/visual-candle';
 import { floorToDPR } from '../../utils/device/device-pixel-ratio.utils';
@@ -19,7 +19,7 @@ export class HistogramDrawer implements SeriesDrawer {
 		model: DataSeriesModel,
 		hitTestDrawerConfig: HTSeriesDrawerConfig,
 	) {
-		if (model instanceof CandleSeriesModel) {
+		if (isCandleSeriesModel(model)) {
 			// @ts-ignore
 			const visualCandles: VisualCandle[] = points.flat();
 			const bounds = model.scale.getBounds();
@@ -29,11 +29,15 @@ export class HistogramDrawer implements SeriesDrawer {
 				const direction = visualCandle.name;
 				const capHeight = this.config.barCapSize;
 				const histogramColors = model.colors.histogram;
+				const customHistogramColor = model.customCandleColors[visualCandle.candle.idx ?? 0];
+
 				if (histogramColors === undefined) {
 					return;
 				}
 				if (hitTestDrawerConfig.color) {
 					ctx.fillStyle = hitTestDrawerConfig.color;
+				} else if (customHistogramColor) {
+					ctx.fillStyle = customHistogramColor;
 				} else {
 					ctx.fillStyle = histogramColors[`${direction}Bright`];
 				}
@@ -49,8 +53,10 @@ export class HistogramDrawer implements SeriesDrawer {
 				if (hitTestDrawerConfig.color) {
 					ctx.fillStyle = hitTestDrawerConfig.color;
 				} else {
-					gradient.addColorStop(0, histogramColors[`${direction}Cap`]);
-					gradient.addColorStop(1, histogramColors[`${direction}Bottom`]);
+					const histogramCapColor = customHistogramColor || histogramColors[`${direction}Cap`];
+					const histogramBottomColor = customHistogramColor || histogramColors[`${direction}Bottom`];
+					gradient.addColorStop(0, histogramCapColor);
+					gradient.addColorStop(1, histogramBottomColor);
 					ctx.fillStyle = gradient;
 				}
 				if (width === 0) {

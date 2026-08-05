@@ -3,7 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-import { CandleSeriesModel } from '../../model/candle-series.model';
+import { CandleSeriesModel, isCandleSeriesModel } from '../../model/candle-series.model';
 import { CandleTheme, ChartConfigComponentsChart } from '../../chart.config';
 import VisualCandle from '../../model/visual-candle';
 import { avoidAntialiasing } from '../../utils/canvas/canvas-drawing-functions.utils';
@@ -44,7 +44,7 @@ export class CandleDrawer implements SeriesDrawer {
 		model: DataSeriesModel,
 		hitTestDrawerConfig: HTSeriesDrawerConfig,
 	) {
-		if (model instanceof CandleSeriesModel) {
+		if (isCandleSeriesModel(model)) {
 			// @ts-ignore
 			const visualCandles: VisualCandle[] = flat(points);
 			// TODO FIXME draw called 3-4 times on single candle update even if multichart is off
