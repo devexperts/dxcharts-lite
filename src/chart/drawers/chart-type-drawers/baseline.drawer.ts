@@ -5,7 +5,7 @@
  */
 import { CanvasBoundsContainer, CanvasElement } from '../../canvas/canvas-bounds-container';
 import { BaselineModel } from '../../model/baseline.model';
-import { CandleSeriesModel } from '../../model/candle-series.model';
+import { CandleSeriesModel, isCandleSeriesModel } from '../../model/candle-series.model';
 import { DataSeriesModel, VisualSeriesPoint } from '../../model/data-series.model';
 import { Pixel } from '../../model/scaling/viewport.model';
 import { flat } from '../../utils/array.utils';
@@ -23,7 +23,7 @@ export class BaselineDrawer implements SeriesDrawer {
 		model: DataSeriesModel,
 		hitTestDrawerConfig?: HTSeriesDrawerConfig,
 	) {
-		if (hitTestDrawerConfig !== undefined && model instanceof CandleSeriesModel) {
+		if (hitTestDrawerConfig !== undefined && isCandleSeriesModel(model)) {
 			const visualCandles = flat(points);
 			// calculate baseline
 			const baselineYPercents = this.baseLineModel.baselineYPercents;

@@ -26,7 +26,8 @@ export class BarDrawer implements SeriesDrawer {
 		} else {
 			const barTheme = candleSeries.colors.barTheme;
 			if (barTheme) {
-				ctx.strokeStyle = barTheme[`${visualCandle.name}Color`];
+				const customBarColor = candleSeries.customCandleColors[visualCandle.candle.idx ?? 0];
+				ctx.strokeStyle = customBarColor || barTheme[`${visualCandle.name}Color`];
 			}
 		}
 	}

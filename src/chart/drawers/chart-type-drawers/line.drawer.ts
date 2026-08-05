@@ -35,7 +35,8 @@ export class LineDrawer implements SeriesDrawer {
 				const vc = visualCandles[i];
 				const direction = vc.name;
 				if (!hitTestDrawerConfig.color) {
-					ctx.strokeStyle = lineTheme[`${direction}Color`];
+					const customLineColor = candleSeries.customCandleColors[vc.candle.idx ?? 0];
+					ctx.strokeStyle = customLineColor || lineTheme[`${direction}Color`];
 				}
 				const prevX = candleSeries.view.toX(prev.centerUnit);
 				const prevY = candleSeries.view.toY(prev.close);
