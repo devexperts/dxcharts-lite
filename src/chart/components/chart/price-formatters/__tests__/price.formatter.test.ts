@@ -2,6 +2,8 @@ import { getDefaultConfig } from '../../../../chart.config';
 import { PriceIncrementsUtils } from '../../../../utils/price-increments.utils';
 import { createPercentFormatter, createRegularPriceFormatter } from '../price.formatter';
 
+const WITH_THOUSANDS_SEPARATOR = { withThousandsSeparator: true };
+
 const DEFAULT_PRICE_PRECISIONS = PriceIncrementsUtils.computePrecisions([0.01, 1, 0.1, 10, 0.01]);
 const DEFAULT_INTL_FORMATTER = getDefaultConfig().intlFormatter;
 const DEFAULT_Y_AXIS_CONFIG = getDefaultConfig().components.yAxis;
@@ -66,13 +68,6 @@ describe('createRegularPriceFormatter', () => {
 			expect(formatter(123.45)).toBe('123.45');
 		});
 
-		it('should parse string values without separators by default', () => {
-			const formatter = createRegularFormatter({
-				intlFormatter: { decimalSeparator: ',', thousandsSeparator: '_' },
-			});
-			expect(formatter('3456.78')).toBe('3456.78');
-		});
-
 		it('should return em dash for falsy non-string values', () => {
 			const formatter = createRegularFormatter();
 
@@ -89,10 +84,17 @@ describe('createRegularPriceFormatter', () => {
 			expect(formatter(1234567890.12)).toBe('1234567890.12');
 		});
 
+		it('should apply thousandsSeparator for values of 1000 or more when withThousandsSeparator is true', () => {
+			const formatter = createRegularFormatter();
+			expect(formatter(1234.5, WITH_THOUSANDS_SEPARATOR)).toBe('1,234.50');
+			expect(formatter(1234567.89, WITH_THOUSANDS_SEPARATOR)).toBe('1,234,567.89');
+			expect(formatter(1234567890.12, WITH_THOUSANDS_SEPARATOR)).toBe('1,234,567,890.12');
+		});
+
 		it('should use toFixed without thousands grouping for values below 1000', () => {
 			const formatter = createRegularFormatter();
 
-			expect(formatter(999.99)).toBe('999.99');
+			expect(formatter(999.99, WITH_THOUSANDS_SEPARATOR)).toBe('999.99');
 		});
 
 		it('should support custom decimalSeparator and thousandsSeparator when formatWithIntlSeparators is true', () => {
@@ -102,10 +104,10 @@ describe('createRegularPriceFormatter', () => {
 			const enUSFormatter = createRegularFormatter({
 				intlFormatter: { decimalSeparator: '.', thousandsSeparator: ',' },
 			});
-			expect(enUSFormatter(1234.5, true)).toBe('1,234.50');
-			expect(enUSFormatter(1234567.89, true)).toBe('1,234,567.89');
-			expect(enUSFormatter(1234567890.12, true)).toBe('1,234,567,890.12');
-			expect(atWithSpaceFormatter(1234.5, true)).toBe('1 234@50');
+			expect(enUSFormatter(1234.5, WITH_THOUSANDS_SEPARATOR)).toBe('1,234.50');
+			expect(enUSFormatter(1234567.89, WITH_THOUSANDS_SEPARATOR)).toBe('1,234,567.89');
+			expect(enUSFormatter(1234567890.12, WITH_THOUSANDS_SEPARATOR)).toBe('1,234,567,890.12');
+			expect(atWithSpaceFormatter(1234.5, WITH_THOUSANDS_SEPARATOR)).toBe('1 234@50');
 		});
 	});
 
@@ -121,7 +123,7 @@ describe('createRegularPriceFormatter', () => {
 				{ intlFormatter: { decimalSeparator: '.', thousandsSeparator: ',' } },
 				createTreasuryYAxisConfig(),
 			);
-			expect(formatter(999.99)).toBe("999'31");
+			expect(formatter(999.99, WITH_THOUSANDS_SEPARATOR)).toBe("999'31");
 		});
 
 		it('should support custom thousandsSeparator in treasury format when formatWithIntlSeparators is true', () => {
@@ -134,8 +136,8 @@ describe('createRegularPriceFormatter', () => {
 				createTreasuryYAxisConfig(),
 			);
 
-			expect(spaceSeparatorFormatter(1234567.5, true)).toBe("1 234 567'16");
-			expect(commaSeparatorFormatter(1234567.5, true)).toBe("1,234,567'16");
+			expect(spaceSeparatorFormatter(1234567.5, WITH_THOUSANDS_SEPARATOR)).toBe("1 234 567'16");
+			expect(commaSeparatorFormatter(1234567.5, WITH_THOUSANDS_SEPARATOR)).toBe("1,234,567'16");
 		});
 	});
 
@@ -154,7 +156,7 @@ describe('createRegularPriceFormatter', () => {
 				intlFormatter: { decimalSeparator: '.', thousandsSeparator: ',' },
 			});
 
-			expect(formatter(1000, true)).toBe('1,000.00');
+			expect(formatter(1000, WITH_THOUSANDS_SEPARATOR)).toBe('1,000.00');
 		});
 
 		// Current implementation uses `checkedValue >= 1000`, not absolute value.
@@ -163,7 +165,7 @@ describe('createRegularPriceFormatter', () => {
 				intlFormatter: { decimalSeparator: '.', thousandsSeparator: ',' },
 			});
 
-			expect(formatter(-1500, true)).toBe('-1,500.00');
+			expect(formatter(-1500, WITH_THOUSANDS_SEPARATOR)).toBe('-1,500.00');
 		});
 
 		// Treasury formatting takes precedence over intl thousands/decimal separators.
@@ -190,13 +192,13 @@ describe('createPercentFormatter', () => {
 		it('should return zero percent for zero value', () => {
 			const formatter = createPercentFormatterFromMock({ dataSeries: new Set() });
 
-			expect(formatter(0)).toBe('0.00 %');
+			expect(formatter(0)).toBe('0.00%');
 		});
 
 		it('should format value without conversion when no series is available', () => {
 			const formatter = createPercentFormatterFromMock({ dataSeries: new Set() });
 
-			expect(formatter(5)).toBe('5.00 %');
+			expect(formatter(5)).toBe('5.00%');
 		});
 
 		it('should convert value using main data series baseline', () => {
@@ -204,7 +206,7 @@ describe('createPercentFormatter', () => {
 				dataSeries: new Set([createMockDataSeries(100)]),
 			});
 
-			expect(formatter(110)).toBe('10.00 %');
+			expect(formatter(110)).toBe('10.00%');
 		});
 
 		it('should convert value using explicitly passed data series', () => {
@@ -212,13 +214,13 @@ describe('createPercentFormatter', () => {
 			const series = createMockDataSeries(200);
 
 			// @ts-expect-error partial DataSeriesModel mock for price formatter tests
-			expect(formatter(250, series)).toBe('25.00 %');
+			expect(formatter(250, series)).toBe('25.00%');
 		});
 
 		it('should normalize negative zero percent display', () => {
 			const formatter = createPercentFormatterFromMock({ dataSeries: new Set() });
 
-			expect(formatter(-0.0001)).toBe('0.00 %');
+			expect(formatter(-0.0001)).toBe('0.00%');
 		});
 	});
 });

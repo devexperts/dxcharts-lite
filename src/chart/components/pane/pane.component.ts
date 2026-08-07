@@ -45,6 +45,7 @@ import { HitTestCanvasModel } from '../../model/hit-test-canvas.model';
 import { ChartResizeHandler } from '../../inputhandlers/chart-resize.handler';
 import { merge } from '../../utils/merge.utils';
 import { VOLUMES_UUID } from '../volumes/volumes.model';
+import { FormatterOptions } from '../chart/price-formatters/price.formatter';
 
 export class PaneComponent extends ChartBaseElement {
 	/**
@@ -514,7 +515,7 @@ export class PaneComponent extends ChartBaseElement {
 }
 
 export interface YExtentFormatters {
-	regular: (value: number, formatWithIntlSeparators?: boolean) => string;
+	regular: (value: number, options?: FormatterOptions) => string;
 	percent?: (value: number, dataSeries?: DataSeriesModel) => string;
 	logarithmic?: (value: number) => string;
 }
