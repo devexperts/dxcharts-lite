@@ -13,9 +13,20 @@ import { YExtentComponent } from '../../pane/extent/y-extent-component';
 import { YExtentFormatters } from '../../pane/pane.component';
 import { treasuryPriceFormatter } from './treasury-price.formatter';
 
+export interface FormatterOptions {
+	withDecimalSeparator?: boolean;
+	withThousandsSeparator?: boolean;
+}
+
+export const DEFAULT_FORMATTER_OPTIONS: FormatterOptions = {
+	withDecimalSeparator: true,
+	withThousandsSeparator: false,
+};
+
 export const createRegularPriceFormatter =
 	(extent: YExtentComponent, config: YAxisConfig) =>
-	(value: unknown, shouldAddSeparators: boolean = false): string => {
+	(value: unknown, options?: FormatterOptions): string => {
+		const { withDecimalSeparator, withThousandsSeparator } = { ...DEFAULT_FORMATTER_OPTIONS, ...options };
 		let checkedValue: number;
 		if (typeof value === 'number') {
 			checkedValue = value;
@@ -30,8 +41,8 @@ export const createRegularPriceFormatter =
 			return MathUtils.makeDecimal(
 				checkedValue,
 				precision,
-				separators.decimalSeparator,
-				separators.thousandsSeparator,
+				withDecimalSeparator ? separators.decimalSeparator : undefined,
+				withThousandsSeparator ? separators.thousandsSeparator : undefined,
 			);
 		};
 
@@ -39,14 +50,14 @@ export const createRegularPriceFormatter =
 		if (treasuryFormatConfig && treasuryFormatConfig.enabled) {
 			return treasuryPriceFormatter(
 				checkedValue,
-				shouldAddSeparators ? separators.thousandsSeparator : undefined,
+				withThousandsSeparator ? separators.thousandsSeparator : undefined,
 			);
 		}
 
 		const [mainDataSeries] = extent.dataSeries;
 		if (mainDataSeries !== undefined) {
 			const precision = PriceIncrementsUtils.getPricePrecision(checkedValue, mainDataSeries.pricePrecisions);
-			if (shouldAddSeparators && Math.abs(checkedValue) >= 1000) {
+			if (Math.abs(checkedValue) >= 1000) {
 				return formatWithIntlSeparators(precision);
 			}
 			return checkedValue.toFixed(precision);
@@ -58,7 +69,7 @@ export const createPercentFormatter =
 	(extent: YExtentComponent) =>
 	(value: Unit, dataSeries?: DataSeriesModel): string => {
 		if (value === 0) {
-			return '0.00 %';
+			return '0.00%';
 		}
 		const [mainDataSeries] = extent.dataSeries;
 		let valueUnit = value;
@@ -67,8 +78,8 @@ export const createPercentFormatter =
 			valueUnit = unitToPercent(value, series.getBaseline());
 		}
 		// always apply default precision for percent
-		const formatted = replaceMinusSign(valueUnit.toFixed(PriceIncrementsUtils.DEFAULT_PRECISION)) + ' %';
-		return formatted === `${MINUS_SIGN}0.00 %` ? '0.00 %' : formatted;
+		const formatted = replaceMinusSign(valueUnit.toFixed(PriceIncrementsUtils.DEFAULT_PRECISION)) + '%';
+		return formatted === `${MINUS_SIGN}0.00%` ? '0.00%' : formatted;
 	};
 
 export const createYExtentFormatters = (extent: YExtentComponent, config: YAxisConfig): YExtentFormatters => ({

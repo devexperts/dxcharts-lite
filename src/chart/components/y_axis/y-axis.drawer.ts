@@ -50,17 +50,21 @@ export class YAxisDrawer implements Drawer {
 
 				const bounds: Bounds = yAxisComponent.getBounds();
 				const ctx = this.canvasModel.ctx;
+				const isYAxisHighlighted = yAxisComponent.isHighlighted;
 
 				// draw axis background rect if the background color is not used
 				if (!this.fullConfig.components.chart.applyBackgroundToAxes.y) {
-					ctx.fillStyle = this.getBackgroundColor();
-					ctx.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
+					this.drawBackground(ctx, bounds, this.getBackgroundColor());
+				}
+
+				if (isYAxisHighlighted) {
+					this.drawBackground(ctx, bounds, this.fullConfig.colors.yAxis.highlight.backgroundColor);
 				}
 
 				const font = getFontFromConfig(yAxisComponent.state);
 				const fontHeight = calculateSymbolHeight(font, ctx);
 
-				const textColor = this.getLabelTextColor();
+				const textColor = this.getLabelTextColor(isYAxisHighlighted);
 				ctx.save();
 				clipToBounds(ctx, bounds);
 				this.drawLabels(ctx, labels, bounds, fontHeight, font, textColor, yAxisComponent);
@@ -135,8 +139,21 @@ export class YAxisDrawer implements Drawer {
 	 * @protected
 	 * @returns {string} The color of the label text.
 	 */
-	protected getLabelTextColor(): string {
-		return this.fullConfig.colors.yAxis.labelTextColor;
+	protected getLabelTextColor(isHighlighted: boolean): string {
+		const yAxisColors = this.fullConfig.colors.yAxis;
+		const colors = isHighlighted ? yAxisColors.highlight : yAxisColors;
+		return colors.labelTextColor;
+	}
+
+	/**
+	 * Draws the background of the Y-axis.
+	 * @param {CanvasRenderingContext2D} ctx - The 2D rendering context of the canvas.
+	 * @param {Bounds} bounds - The bounds of the Y-axis.
+	 * @param {string} backgroundColor - The color of the background.
+	 */
+	private drawBackground(ctx: CanvasRenderingContext2D, bounds: Bounds, backgroundColor: string) {
+		ctx.fillStyle = backgroundColor;
+		ctx.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
 	}
 }
 
@@ -151,7 +168,7 @@ const drawSimpleLabel = (
 	yAxisAlign: YAxisAlign,
 ) => {
 	const xTextBounds =
-		yAxisAlign === 'right'
+		yAxisAlign === 'left'
 			? bounds.x + bounds.width - calculateTextWidth(text, ctx, font) - padding
 			: bounds.x + padding;
 	ctx.fillText(text, xTextBounds, centralY + fontHeight / 2 - 1); // -1 for font height adjustment
