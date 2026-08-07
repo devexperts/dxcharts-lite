@@ -75,7 +75,10 @@ export class DataSeriesModel<
 > extends ChartBaseElement {
 	public name: string = '';
 
-	public highlighted = false;
+	// pointer is over the series itself, resolved by the hit test
+	public hovered = false;
+	// highlighted from external source e.g. hover on different chart component
+	public externallyHighlighted = false;
 	public yAxisLabelProvider: DataSeriesYAxisLabelsProvider;
 	public readonly config: C;
 	public scale: ScaleModel;
@@ -89,6 +92,18 @@ export class DataSeriesModel<
 
 	// provides high-low regarding axis type
 	public highLowProvider: HighLowProvider;
+
+	/**
+	 * Series is painted in its highlighted state while either the series itself or highlighted externally.
+	 * Writing to it only affects the series hover state, the externally highlighted state is owned by `externallyHighlighted`.
+	 */
+	get highlighted(): boolean {
+		return this.hovered || this.externallyHighlighted;
+	}
+
+	set highlighted(hovered: boolean) {
+		this.hovered = hovered;
+	}
 
 	get dataPoints2D(): D[][] {
 		return this._dataPoints;

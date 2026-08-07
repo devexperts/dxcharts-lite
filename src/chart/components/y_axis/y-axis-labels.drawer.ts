@@ -117,7 +117,7 @@ export function drawBadgeLabel(
 	ctx.fillStyle = textColor;
 	ctx.font = textFont;
 	const textX =
-		align === 'right'
+		align === 'left'
 			? bounds.x + bounds.width - calculateTextWidth(text, ctx, textFont) - xTextOffset
 			: bounds.x + xTextOffset;
 	ctx.fillText(text, textX, centralY + halfFontHeight - 1); // -1 for font height adjustment
