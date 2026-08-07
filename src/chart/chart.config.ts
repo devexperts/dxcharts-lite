@@ -72,7 +72,7 @@ export const getDefaultConfig = (): FullChartConfig => ({
 	rtl: false,
 	intlFormatter: {
 		decimalSeparator: '.',
-		thousandsSeparator: '',
+		thousandsSeparator: ',',
 	},
 	scale: {
 		keepZoomXOnYAxisChange: true,
@@ -138,8 +138,8 @@ export const getDefaultConfig = (): FullChartConfig => ({
 			labelBoxMargin: {
 				top: 4,
 				bottom: 4,
-				end: 8,
-				start: 10,
+				end: 12,
+				start: 12,
 			},
 			typeConfig: {
 				badge: {
@@ -539,6 +539,10 @@ export const getDefaultConfig = (): FullChartConfig => ({
 			rectLabelTextColor: 'rgba(255,255,255,1)',
 			rectLabelInvertedTextColor: 'rgba(20,20,19,1)',
 			zeroPercentLine: 'rgba(55,55,54,1)',
+			highlight: {
+				backgroundColor: 'rgba(255,255,255,0.1)',
+				labelTextColor: 'rgba(255,255,255,1)',
+			},
 		},
 		labels: {
 			lastPrice: {
@@ -765,6 +769,20 @@ export interface DateFormats {
 	day: DateFormat;
 }
 
+export interface YAxisMainColors {
+	backgroundColor: string;
+	labelTextColor: string;
+}
+
+export interface YAxisColors extends YAxisMainColors {
+	zeroPercentLine: string;
+	labelInvertedTextColor: string;
+	labelBoxColor: string;
+	rectLabelTextColor: string;
+	rectLabelInvertedTextColor: string;
+	highlight: YAxisMainColors;
+}
+
 export interface FullChartColors {
 	candleTheme: CandleTheme;
 	activeCandleTheme: CandleTheme;
@@ -787,15 +805,7 @@ export interface FullChartColors {
 		highColor: string;
 		lowColor: string;
 	};
-	yAxis: {
-		backgroundColor: string;
-		zeroPercentLine: string;
-		labelTextColor: string;
-		labelInvertedTextColor: string;
-		labelBoxColor: string;
-		rectLabelTextColor: string;
-		rectLabelInvertedTextColor: string;
-	};
+	yAxis: YAxisColors;
 	xAxis: {
 		backgroundColor: string;
 		labelTextColor: string;
