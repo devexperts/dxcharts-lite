@@ -294,6 +294,23 @@ export class ChartComponent extends ChartBaseElement {
 	}
 
 	/**
+	 * Sets the selected data series by its ID. If the ID is null, it clears the selected data series.
+	 * @param {string | null} targetId - The ID or parent ID of the data series to select, or null to clear the selection.
+	 * @returns {void}
+	 */
+	public setSelectedSeries(targetId: string | null): void {
+		this.paneManager.setSelectedDataSeries(targetId);
+	}
+
+	/**
+	 * Observes selected data series ID changes.
+	 * @returns {Observable<string | null>} Observable that emits selected data series ID or null.
+	 */
+	public observeSelectedSeriesChanged(): Observable<string | null> {
+		return this.paneManager.observeSelectedDataSeriesChanged();
+	}
+
+	/**
 	 * Resets chart scale to default according to config.components.chart.defaultZoomCandleWidth.
 	 */
 	public resetChartScale() {
