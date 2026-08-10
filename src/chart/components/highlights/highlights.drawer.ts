@@ -18,7 +18,7 @@ import { Drawer } from '../../drawers/drawing-manager';
 import { ChartModel } from '../chart/chart.model';
 import { unitToPixels } from '../../model/scaling/viewport.model';
 import { clipToBounds } from '../../utils/canvas/canvas-drawing-functions.utils';
-import { DataSeriesPoint } from '../../model/data-series.model';
+import { findCandleIndicesInHighlight } from './highlights.utils';
 
 const LABEL_PADDINGS = [20, 10];
 
@@ -75,8 +75,9 @@ export class HighlightsDrawer implements Drawer {
 						ctx.strokeStyle = strokeStyle;
 						items.forEach(item => {
 							const anchor = this.chartModel.getCandleTimestampAnchor();
+							const periodMs = this.chartModel.chartBaseModel.period;
 							const candles = this.chartModel.getCandles();
-							const inRange = this.findCandleIndicesInHighlight(candles, item.from, item.to);
+							const inRange = findCandleIndicesInHighlight(candles, item.from, item.to, periodMs, anchor);
 							const highlightFromX = this.getHighlightBoundaryX(item.from, anchor);
 							const highlightToX = this.getHighlightBoundaryX(item.to, anchor);
 							let fillFromX = highlightFromX;
@@ -134,28 +135,6 @@ export class HighlightsDrawer implements Drawer {
 			return xStart + width;
 		}
 		return xStart;
-	}
-
-	private findCandleIndicesInHighlight(
-		candles: DataSeriesPoint[],
-		highlightFrom: number,
-		highlightTo: number,
-	): { startIdx: number; endIdx: number } | null {
-		let startIdx = -1;
-		let endIdx = -1;
-		for (let i = 0; i < candles.length; i++) {
-			if (this.isCandleTimestampInHighlight(candles[i].timestamp, highlightFrom, highlightTo)) {
-				if (startIdx === -1) {
-					startIdx = i;
-				}
-				endIdx = i;
-			}
-		}
-		return startIdx === -1 ? null : { startIdx, endIdx };
-	}
-
-	private isCandleTimestampInHighlight(candleTimestamp: number, highlightFrom: number, highlightTo: number): boolean {
-		return highlightFrom <= candleTimestamp && candleTimestamp < highlightTo;
 	}
 
 	/**
