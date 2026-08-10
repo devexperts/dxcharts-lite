@@ -75,6 +75,8 @@ export class DataSeriesModel<
 > extends ChartBaseElement {
 	public name: string = '';
 
+	// selected by external source e.g. click on the series
+	public selected = false;
 	// pointer is over the series itself, resolved by the hit test
 	public hovered = false;
 	// highlighted from external source e.g. hover on different chart component
@@ -95,14 +97,10 @@ export class DataSeriesModel<
 
 	/**
 	 * Series is painted in its highlighted state while either the series itself or highlighted externally.
-	 * Writing to it only affects the series hover state, the externally highlighted state is owned by `externallyHighlighted`.
+	 * Selected series takes precedence over external highlighting and series hover.
 	 */
 	get highlighted(): boolean {
-		return this.hovered || this.externallyHighlighted;
-	}
-
-	set highlighted(hovered: boolean) {
-		this.hovered = hovered;
+		return this.selected || this.externallyHighlighted || this.hovered;
 	}
 
 	get dataPoints2D(): D[][] {
