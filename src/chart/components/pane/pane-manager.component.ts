@@ -143,7 +143,30 @@ export class PaneManager extends ChartBaseElement {
 	}
 
 	/**
+	 * Sets the selected data series by its ID. If the ID is null, it clears the selected data series.
+	 * @param {string | null} targetId - The ID or parent ID of the data series to select, or null to clear the selection.
+	 * @returns {void}
+	 */
+	public setSelectedDataSeries(targetId: string | null): void {
+		const dataSeries = targetId
+			? this.hitTestController.allDataSeries.find(
+					series => series.id === targetId || series.parentId === targetId,
+				)
+			: null;
+		this.hitTestController.selectDataSeries(dataSeries ?? null);
+	}
+
+	/**
+	 * Observes selected data series ID changes.
+	 * @returns {Observable<string | null>} Observable that emits selected data series ID or null.
+	 */
+	public observeSelectedDataSeriesChanged(): Observable<string | null> {
+		return this.hitTestController.observeSelectedDataSeriesChanged();
+	}
+
+	/**
 	 * Emits the hover state of every y-axis of every pane.
+	 * @returns {Observable<YAxisHoverState>} Observable that emits the hover state of every y-axis of every pane.
 	 */
 	public observeYAxisHover(): Observable<YAxisHoverState> {
 		const panesChanged = merge(this.paneAddedSubject, this.paneRemovedSubject).pipe(startWith(null));
