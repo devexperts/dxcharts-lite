@@ -347,7 +347,7 @@ export function isLinked(chartType: BarType) {
 	}
 }
 
-export const isCandleSeriesModel = (model: DataSeriesModel): model is CandleSeriesModel => {
+export const isCandleSeriesModel = (model: DataSeriesModel | null): model is CandleSeriesModel => {
 	return model instanceof CandleSeriesModel;
 };
 
