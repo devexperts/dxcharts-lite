@@ -110,6 +110,11 @@ export class HoverProducerComponent extends ChartBaseElement {
 					switchMap(() => this.scale.initialViewportValidSubject.pipe(filter(Boolean))),
 				)
 				.subscribe(() => {
+					// Keep crosstool under cursor on setData (e.g. Renko history prepend); otherwise snap legend to last candle
+					if (!isMobile() && this.crossEventProducer.crossSubject.getValue() !== null) {
+						this.fireLastCross();
+						return;
+					}
 					const lastCandle = this.chartModel.getLastVisualCandle();
 					lastCandle && this.createAndFireHoverFromCandle(lastCandle);
 				}),
