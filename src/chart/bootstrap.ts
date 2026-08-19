@@ -57,7 +57,7 @@ import { ScaleModel } from './model/scale.model';
 import { TimeZoneModel } from './model/time-zone.model';
 import { clearerSafe } from './utils/function.utils';
 import { merge } from './utils/merge.utils';
-import { DeepPartial } from './utils/object.utils';
+import { cloneUnsafe, DeepPartial } from './utils/object.utils';
 import { HitTestComponent } from './components/hit-test/hit-test.component';
 import { isSafari } from './utils/device/touchpad.utils';
 import { SafariCanvasAnimation } from './utils/performance/safari/components/animations/safari-canvas-animation';
@@ -787,7 +787,7 @@ export default class ChartBootstrap {
 	 * @returns {void}
 	 */
 	setColors(colors: DeepPartial<ChartColors>) {
-		merge(this.config.colors, colors, {
+		merge(this.config.colors, cloneUnsafe(colors), {
 			addIfMissing: true,
 			overrideExisting: true,
 		});
