@@ -21,7 +21,7 @@ import {
 import EventBus from '../../events/event-bus';
 import { ChartResizeHandler, PickedDOMRect } from '../../inputhandlers/chart-resize.handler';
 import { CandleSeriesColors, CandleSeriesModel, PartialCandleSeriesColors } from '../../model/candle-series.model';
-import { Candle, copyCandle } from '../../model/candle.model';
+import { Candle } from '../../model/candle.model';
 import { CanvasModel, MIN_SUPPORTED_CANVAS_SIZE } from '../../model/canvas.model';
 import { ChartBaseElement } from '../../model/chart-base-element';
 import { DataSeriesType } from '../../model/data-series.config';
@@ -39,7 +39,15 @@ import { PaneComponent } from '../pane/pane.component';
 import { LabelGroup } from '../y_axis/price_labels/y-axis-labels.model';
 import { createBasicScaleViewportTransformer, createTimeFrameViewportTransformer } from './basic-scale';
 import { calculateCandleWidth } from './candle-width-calculator.functions';
-import { deleteCandlesIndex, isCandle, prepareCandle, reindexCandles } from './candle.functions';
+import {
+	adjustSecondarySeriesToMain,
+	assignDenseSecondarySeriesIndexes,
+	deleteCandlesIndex,
+	isCandle,
+	isDenseAlignedSecondarySeries,
+	prepareCandle,
+	reindexCandles,
+} from './candle.functions';
 import { ChartBaseModel } from './chart-base.model';
 import { CandleSeries, ChartInstrument, PartialCandle } from './chart.component';
 import { fakeCandle } from './fake-candles';
@@ -248,10 +256,13 @@ export class ChartModel extends ChartBaseElement {
 		recalculateAndUpdate = true,
 	): CandleSeriesModel | undefined {
 		const preparedCandles = this.prepareCandles(candles);
-		// set correct indexes based on main candles timestamp
-		const reindexCandles = this.reindexCandlesBasedOnSeries(this.mainCandleSeries.dataPoints, preparedCandles);
-		// ensure there are no gaps in new candles
-		const secondaryCandles = this.secondarySeriesAdjustments(this.mainCandleSeries.dataPoints, reindexCandles);
+		const mainDataPoints = this.mainCandleSeries.dataPoints;
+		const secondaryCandles = isDenseAlignedSecondarySeries(mainDataPoints, preparedCandles)
+			? assignDenseSecondarySeriesIndexes(preparedCandles)
+			: this.secondarySeriesAdjustments(
+					mainDataPoints,
+					this.reindexCandlesBasedOnSeries(mainDataPoints, preparedCandles),
+				);
 		// create a new secondary series model if it doesn't already exist
 		const isSymbolExist = this.secondaryCandleSeries.some(
 			candleSeries => candleSeries.instrument.symbol === instrument.symbol,
@@ -279,8 +290,10 @@ export class ChartModel extends ChartBaseElement {
 	 * @param secondarySeries
 	 */
 	setAllSeries(mainSeries: CandleSeries, secondarySeries: CandleSeries[] = []): void {
+		const previousSymbol = this.mainCandleSeries.instrument?.symbol;
 		this.mainCandleSeries.instrument = mainSeries.instrument ?? this.mainCandleSeries.instrument;
-		if (mainSeries.instrument) {
+		// Live setData (e.g. Renko) passes the same instrument every tick; only notify real symbol changes.
+		if (mainSeries.instrument && mainSeries.instrument.symbol !== previousSymbol) {
 			this.mainInstrumentChangedSubject.next(mainSeries.instrument);
 		}
 		this.rememberCurrentTimeframe();
@@ -506,29 +519,11 @@ export class ChartModel extends ChartBaseElement {
 	 * @param mainSeries - main series
 	 * @param secondarySeries - secondarySeries to adjust
 	 */
-	private secondarySeriesAdjustments(mainSeries: Array<Candle>, secondarySeries: Array<Candle>): Array<Candle> {
-		const result: Array<Candle> = [];
-		mainSeries.forEach(mainCandle => {
-			const candleIdx = this.candleIdxFromId(mainCandle.id);
-			const idx = candleIdx > 0 ? candleIdx : 0;
-			const compareCandle = secondarySeries[idx];
-			if (!compareCandle) {
-				// take first candle to left or right
-				// check left direction first
-				let candle = findFirstNotEmptyCandle(secondarySeries, idx, -1);
-				if (!candle) {
-					candle = findFirstNotEmptyCandle(secondarySeries, idx, 1);
-				}
-				if (candle) {
-					// copy the candle and simplify it's OHLC
-					const fakeCandle = copyCandle(candle, idx, true);
-					result.push(fakeCandle);
-				}
-			} else {
-				result.push(compareCandle);
-			}
-		});
-		return result;
+	private secondarySeriesAdjustments(
+		mainSeries: Array<Candle>,
+		secondarySeries: Array<Candle | undefined>,
+	): Array<Candle> {
+		return adjustSecondarySeriesToMain(mainSeries, secondarySeries);
 	}
 
 	/**
@@ -1254,18 +1249,6 @@ export interface UpdateCandlesResult {
 	appended?: Candle[];
 	candles: Candle[];
 }
-
-const findFirstNotEmptyCandle = (candles: Array<Candle>, startIdx: number, iterateStep: number): Candle | undefined => {
-	if (startIdx >= candles.length) {
-		return candles[candles.length - 1];
-	}
-	for (let i = startIdx; i < candles.length && i >= 0; i += iterateStep) {
-		const candle = candles[i];
-		if (candle) {
-			return candle;
-		}
-	}
-};
 
 export type TimeFrameRange = [number, number];
 
