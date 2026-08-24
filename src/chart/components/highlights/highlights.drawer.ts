@@ -66,7 +66,7 @@ export class HighlightsDrawer implements Drawer {
 					if (items) {
 						const itemColors = this.config.colors.highlights[highlightType];
 						const strokeStyle = itemColors?.border ?? '#ffffff';
-						const fillStyle = itemColors?.background ?? '#ffffff';
+						const fillStyle = itemColors?.background ?? 'transparent';
 						ctx.save();
 						// start line path to draw highlights' borders
 						// it is done once for all highlights because it is more perfomant
@@ -91,13 +91,8 @@ export class HighlightsDrawer implements Drawer {
 								fillFromX = fromXCandle.xStart(this.chartModel.scale);
 								const toXCandleWidth = unitToPixels(toXCandle.width, this.chartModel.scale.zoomX);
 								fillToX = toXCandle.xStart(this.chartModel.scale) + toXCandleWidth;
-								ctx.fillRect(
-									fillFromX,
-									chartBounds.y,
-									fillToX - fillFromX,
-									chartBounds.y + chartBounds.height,
-								);
 							}
+							ctx.fillRect(fillFromX, chartBounds.y, fillToX - fillFromX, chartBounds.height);
 							// draw highlight' label
 							if (item.label) {
 								const label = item.label.text ?? '';
