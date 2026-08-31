@@ -18,7 +18,7 @@ import { Drawer } from '../../drawers/drawing-manager';
 import { ChartModel } from '../chart/chart.model';
 import { unitToPixels } from '../../model/scaling/viewport.model';
 import { clipToBounds } from '../../utils/canvas/canvas-drawing-functions.utils';
-import { findCandleIndicesInHighlight } from './highlights.utils';
+import { findCandleIndicesInHighlight, resolveHighlightBoundaryEdge } from './highlights.utils';
 
 const LABEL_PADDINGS = [20, 10];
 
@@ -80,18 +80,17 @@ export class HighlightsDrawer implements Drawer {
 							const inRange = findCandleIndicesInHighlight(candles, item.from, item.to, periodMs, anchor);
 							const highlightFromX = this.getHighlightBoundaryX(item.from, anchor);
 							const highlightToX = this.getHighlightBoundaryX(item.to, anchor);
-							let fillFromX = highlightFromX;
-							let fillToX = highlightToX;
 							if (item.border) {
 								this.drawBorders(item.border, ctx, highlightFromX, highlightToX, chartBounds);
 							}
-							if (inRange) {
-								const fromXCandle = this.chartModel.candleFromIdx(inRange.startIdx);
-								const toXCandle = this.chartModel.candleFromIdx(inRange.endIdx);
-								fillFromX = fromXCandle.xStart(this.chartModel.scale);
-								const toXCandleWidth = unitToPixels(toXCandle.width, this.chartModel.scale.zoomX);
-								fillToX = toXCandle.xStart(this.chartModel.scale) + toXCandleWidth;
+							if (!inRange) {
+								return;
 							}
+							const fromXCandle = this.chartModel.candleFromIdx(inRange.startIdx);
+							const toXCandle = this.chartModel.candleFromIdx(inRange.endIdx);
+							const fillFromX = fromXCandle.xStart(this.chartModel.scale);
+							const toXCandleWidth = unitToPixels(toXCandle.width, this.chartModel.scale.zoomX);
+							const fillToX = toXCandle.xStart(this.chartModel.scale) + toXCandleWidth;
 							ctx.fillRect(fillFromX, chartBounds.y, fillToX - fillFromX, chartBounds.height);
 							// draw highlight' label
 							if (item.label) {
@@ -123,13 +122,8 @@ export class HighlightsDrawer implements Drawer {
 		const candle = this.chartModel.candleFromTimestamp(highlightTimestamp, { extrapolate: true });
 		const width = unitToPixels(candle.width, this.chartModel.scale.zoomX);
 		const xStart = candle.xStart(this.chartModel.scale);
-		if (anchor === 'close') {
-			return xStart + width;
-		}
-		if (candle.candle.timestamp < highlightTimestamp) {
-			return xStart + width;
-		}
-		return xStart;
+		const edge = resolveHighlightBoundaryEdge(highlightTimestamp, candle.candle.timestamp, anchor);
+		return edge === 'end' ? xStart + width : xStart;
 	}
 
 	/**
