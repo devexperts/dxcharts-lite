@@ -7,6 +7,26 @@ import { CandleTimestampAnchor } from '../../chart.config';
 import { DataSeriesPoint } from '../../model/data-series.model';
 import { getCandleStart } from '../../utils/candles.utils';
 
+export type HighlightBoundaryEdge = 'start' | 'end';
+
+/**
+ * Which visual edge of the candle found by timestamp search a highlight boundary should snap to.
+ * Close-anchor: exact close → right edge; timestamp before that close (e.g. overnight gap) → left edge.
+ */
+export const resolveHighlightBoundaryEdge = (
+	highlightTimestamp: number,
+	candleTimestamp: number,
+	anchor: CandleTimestampAnchor,
+): HighlightBoundaryEdge => {
+	if (anchor === 'close') {
+		return candleTimestamp <= highlightTimestamp ? 'end' : 'start';
+	}
+	if (candleTimestamp < highlightTimestamp) {
+		return 'end';
+	}
+	return 'start';
+};
+
 /**
  * Whether candle open-time belongs to highlight interval [highlightFrom, highlightTo).
  */

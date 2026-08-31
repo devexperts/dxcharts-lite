@@ -167,7 +167,12 @@ export const getCandleStart = (
 	anchor: CandleTimestampAnchor,
 ): number => {
 	if (anchor === 'close') {
-		return candles[index - 1]?.timestamp ?? candles[index].timestamp - periodMs;
+		const prev = candles[index - 1]?.timestamp;
+		const impliedStart = candles[index].timestamp - periodMs;
+		if (prev === undefined || candles[index].timestamp - prev > periodMs) {
+			return impliedStart;
+		}
+		return prev;
 	}
 	return candles[index].timestamp;
 };
