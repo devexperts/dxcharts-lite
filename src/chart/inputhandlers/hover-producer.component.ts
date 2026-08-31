@@ -342,6 +342,7 @@ export class HoverProducerComponent extends ChartBaseElement {
 	/**
 	 * Refreshes hover data (candles, studies, etc.) for the current pointer position.
 	 * Used when the last candle updates while the legend must stay aligned to crosshair X — not to the last candle center.
+	 * Rebuilds from pointer x/y/paneId so future timestamps and study panes stay correct.
 	 */
 	updateHover(candle: VisualCandle) {
 		if (!this.hover) {
@@ -354,6 +355,7 @@ export class HoverProducerComponent extends ChartBaseElement {
 		const crossToolHover = this.crossEventProducer.crossToolHover;
 		const hoverX = shouldKeepSetTouchCrosshair ? (crossToolHover?.x ?? this.hover.x) : this.hover.x;
 		const hoverY = shouldKeepSetTouchCrosshair ? (crossToolHover?.y ?? this.hover.y) : this.hover.y;
+		const paneId = shouldKeepSetTouchCrosshair ? (crossToolHover?.paneId ?? this.hover.paneId) : this.hover.paneId;
 		const hoveredCandle = this.chartModel.candleFromX(hoverX, true);
 		const lastIdx = candle.candle.idx;
 		const hoveredIdx = hoveredCandle.idx;
@@ -365,14 +367,9 @@ export class HoverProducerComponent extends ChartBaseElement {
 		) {
 			return;
 		}
-		const updatedHover = this.createHoverFromCandle(candle);
+		const updatedHover = this.createHover(hoverX, hoverY, paneId);
 		if (updatedHover) {
-			const hover: Hover = {
-				...updatedHover,
-				x: hoverX,
-				y: hoverY,
-			};
-			this.fireHover(hover);
+			this.fireHover(updatedHover);
 		}
 	}
 
@@ -385,15 +382,8 @@ export class HoverProducerComponent extends ChartBaseElement {
 		const hoveredCandle = this.chartModel.candleFromX(hover.x, true);
 		const lastIdx = lastCandle.candle.idx;
 		const hoveredIdx = hoveredCandle.idx;
-		const isHistoricalCandleHover =
-			lastIdx !== undefined &&
-			hoveredIdx !== undefined &&
-			hoveredIdx < lastIdx &&
-			hover.x < lastCandle.xStart(this.scale);
-		this.hoverOverLastCandle =
-			!isHistoricalCandleHover &&
-			(lastCandle.candle.timestamp <= hover.timestamp ||
-				(lastIdx !== undefined && hoveredIdx !== undefined && hoveredIdx === lastIdx));
+		// Only the forming last bar — not empty future slots past the last candle.
+		this.hoverOverLastCandle = lastIdx !== undefined && hoveredIdx !== undefined && hoveredIdx === lastIdx;
 	}
 
 	/**
