@@ -1254,38 +1254,55 @@ export type TimeFrameRange = [number, number];
 
 /**
  * Updates target array using update array.
- * If there is a candle with the same timestamp as in target array then it will be replaced
- * If the candle timestamp from update is somewhere between target candles then it will be ignored
- * If the update candle timestamp is beyond target, then it will be prepended/appended to target
+ * Matching timestamps are replaced (last-wins from update).
+ * Timestamps outside the target range are prepended/appended.
+ * Timestamps strictly between existing target candles are inserted (not dropped).
  * @param target {Candle[]} - sorted candles
  * @param update {Candle[]} - sorted candles
+ * @param candleTimestampAnchor whether `Candle.timestamp` is open or close
  */
 const updateCandles = (
 	target: Candle[],
 	update: Candle[],
 	candleTimestampAnchor: CandleTimestampAnchor = 'open',
 ): UpdateCandlesResult => {
-	const targetCopy = target.slice();
-	const prepend: Candle[] = [];
-	const append: Candle[] = [];
+	if (target.length === 0) {
+		return {
+			prepended: [],
+			appended: [],
+			candles: update.slice(),
+		};
+	}
 
-	update.forEach(c => {
-		const result = searchCandleIndex(c.timestamp, { extrapolate: true, candleTimestampAnchor }, target);
+	const firstTs = target[0].timestamp;
+	const lastTs = target[target.length - 1].timestamp;
+	const prependedByTs = new Map<number, Candle>();
+	const appendedByTs = new Map<number, Candle>();
+
+	for (const candle of update) {
+		const result = searchCandleIndex(candle.timestamp, { extrapolate: true, candleTimestampAnchor }, target);
 		const idx = result.index;
-		if (idx < 0) {
-			prepend.push(c);
-		} else if (idx >= target.length) {
-			append.push(c);
-		} else if (target[idx].timestamp === c.timestamp) {
-			targetCopy[idx] = c;
-		} else {
-			console.warn(`Couldn't update candle with timestamp ${c.timestamp}`);
+		if (idx < 0 || candle.timestamp < firstTs) {
+			prependedByTs.set(candle.timestamp, candle);
+		} else if (idx >= target.length || candle.timestamp > lastTs) {
+			appendedByTs.set(candle.timestamp, candle);
 		}
-	});
+	}
 
 	return {
-		prepended: prepend,
-		appended: append,
-		candles: [...prepend, ...targetCopy, ...append],
+		prepended: Array.from(prependedByTs.values()),
+		appended: Array.from(appendedByTs.values()),
+		candles: mergeCandlesTSLast(target, update),
 	};
+};
+
+const mergeCandlesTSLast = (target: Candle[], update: Candle[]): Candle[] => {
+	const byTimestamp = new Map<number, Candle>();
+	for (const candle of target) {
+		byTimestamp.set(candle.timestamp, candle);
+	}
+	for (const candle of update) {
+		byTimestamp.set(candle.timestamp, candle);
+	}
+	return Array.from(byTimestamp.values()).sort((a, b) => a.timestamp - b.timestamp);
 };
