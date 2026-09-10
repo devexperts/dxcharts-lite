@@ -20,11 +20,9 @@ Object.defineProperty(window, 'matchMedia', {
 
 Object.defineProperty(window, 'ResizeObserver', {
 	writable: true,
-	value: jest.fn().mockImplementation(
-		(): ResizeObserver => ({
-			observe: jest.fn(),
-			unobserve: jest.fn(),
-			disconnect: jest.fn(),
-		}),
-	),
+	value: jest.fn().mockImplementation((): ResizeObserver => ({
+		observe: jest.fn(),
+		unobserve: jest.fn(),
+		disconnect: jest.fn(),
+	})),
 });
