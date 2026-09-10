@@ -3,25 +3,25 @@
 The main configuration file for chart-core.
 Includes all components' configurations, global configs like dateFormatter, and colors.
 
-| Property                                                        | Description                                                                                  | Type                                  |
+| Property | Description | Type |
 | --------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------- | ------------ | ---------------- | ------------- | -------------- | ------------------- | ------------------- | ------ | -------- | -------- | ---------- | --------------- | ---------------- |
-| `scale`                                                         | Controls how chart series are positioned horizontally and vertically.                        |
-| Other configurations like: inverse, lockRatio etc.              | [`ChartScale`](#chartscale)                                                                  |
-| `components`                                                    | Group of component configurations. Chart component is a single visual object on chart.       |
-| Examples: chart itself, events, x-axis, highlights, cross tool. | [`ChartComponents`](#chartcomponents)                                                        |
-| `colors`                                                        | All colors in chart-core are configured here.                                                | [`FullChartColors`](#fullchartcolors) |
-| `dateFormatter`                                                 | Date and time formatting configuration.                                                      | [`DateFormatter`](#dateformatter)     |
-| `timezone`                                                      | Timezone to use on chart X axis labels and any other timestamps.                             |
-| Examples: Africa/Accra, Europe/Moscow, Asia/Tehran.             | `string`                                                                                     |
-| `fixedSize`                                                     | If set - chart canvas will have fixed size always.                                           | `{ width: number; height: number; }`  |
-| `rtl`                                                           | Right to left mode. Used in drawings (like text drawing) calculation.                        | `boolean`                             |
-| `drawingOrder`                                                  | Initial visual order of chart drawers. Reorder to put volumes on top of candles for example. | `("MAIN_BACKGROUND"                   | "MAIN_CLEAR" | "HIT_TEST_CLEAR" | "YAXIS_CLEAR" | "SERIES_CLEAR" | "OVER_SERIES_CLEAR" | "HIT_TEST_DRAWINGS" | "GRID" | "X_AXIS" | "Y_AXIS" | "HIGH_LOW" | ... 11 more ... | "CROSS_TOOL")[]` |
-| `intlFormatter`                                                 |                                                                                              | [`IntlFormatter`](#intlformatter)     |
-| `useUTCTimeOverride`                                            |                                                                                              | `boolean`                             |
-| `animation`                                                     |                                                                                              | [`AnimationConfig`](#animationconfig) |
-| `devexpertsPromoLink`                                           |                                                                                              | `boolean`                             |
-| `shortDays`                                                     |                                                                                              | `string[]`                            |
-| `shortMonths`                                                   |                                                                                              | `string[]`                            |
+| `scale` | Controls how chart series are positioned horizontally and vertically. |
+| Other configurations like: inverse, lockRatio etc. | [`ChartScale`](#chartscale) |
+| `components` | Group of component configurations. Chart component is a single visual object on chart. |
+| Examples: chart itself, events, x-axis, highlights, cross tool. | [`ChartComponents`](#chartcomponents) |
+| `colors` | All colors in chart-core are configured here. | [`FullChartColors`](#fullchartcolors) |
+| `dateFormatter` | Date and time formatting configuration. | [`DateFormatter`](#dateformatter) |
+| `timezone` | Timezone to use on chart X axis labels and any other timestamps. |
+| Examples: Africa/Accra, Europe/Moscow, Asia/Tehran. | `string` |
+| `fixedSize` | If set - chart canvas will have fixed size always. | `{ width: number; height: number; }` |
+| `rtl` | Right to left mode. Used in drawings (like text drawing) calculation. | `boolean` |
+| `drawingOrder` | Initial visual order of chart drawers. Reorder to put volumes on top of candles for example. | `("MAIN_BACKGROUND"                   | "MAIN_CLEAR" | "HIT_TEST_CLEAR" | "YAXIS_CLEAR" | "SERIES_CLEAR" | "OVER_SERIES_CLEAR" | "HIT_TEST_DRAWINGS" | "GRID" | "X_AXIS" | "Y_AXIS" | "HIGH_LOW" | ... 11 more ... | "CROSS_TOOL")[]` |
+| `intlFormatter` | | [`IntlFormatter`](#intlformatter) |
+| `useUTCTimeOverride` | | `boolean` |
+| `animation` | | [`AnimationConfig`](#animationconfig) |
+| `devexpertsPromoLink` | | `boolean` |
+| `shortDays` | | `string[]` |
+| `shortMonths` | | `string[]` |
 
 ### `ChartScale`
 
@@ -341,30 +341,30 @@ Horizontal resizer between panes
 
 All colors in chart-core are configured here.
 
-| Property              | Description | Type                                                                                                                                                                                                                                                                                                      |
+| Property | Description | Type |
 | --------------------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | ------------ | ----------------------------- |
-| `candleTheme`         |             | [`CandleTheme`](#candletheme)                                                                                                                                                                                                                                                                             |
-| `activeCandleTheme`   |             | [`CandleTheme`](#candletheme)                                                                                                                                                                                                                                                                             |
-| `barTheme`            |             | [`LineStyleTheme`](#linestyletheme)                                                                                                                                                                                                                                                                       |
-| `lineTheme`           |             | [`LineStyleTheme`](#linestyletheme)                                                                                                                                                                                                                                                                       |
-| `areaTheme`           |             | [`AreaStyleTheme`](#areastyletheme)                                                                                                                                                                                                                                                                       |
-| `chartAreaTheme`      |             | [`ChartAreaTheme`](#chartareatheme)                                                                                                                                                                                                                                                                       |
-| `scatterPlot`         |             | [`ScatterPlotStyle`](#scatterplotstyle)                                                                                                                                                                                                                                                                   |
-| `baseLineTheme`       |             | [`BaselineStyleTheme`](#baselinestyletheme)                                                                                                                                                                                                                                                               |
-| `histogram`           |             | [`HistogramColors`](#histogramcolors)                                                                                                                                                                                                                                                                     |
-| `highlights`          |             | `Record<"AFTER_MARKET"                                                                                                                                                                                                                                                                                    | "PRE_MARKET" | "NO_TRADING" | "REGULAR", HighlightsColors>` |
-| `volume`              |             | [`VolumeColors`](#volumecolors)                                                                                                                                                                                                                                                                           |
-| `secondaryChartTheme` |             | `SecondaryChartTheme[]`                                                                                                                                                                                                                                                                                   |
-| `waterMarkTheme`      |             | `{ firstRowColor: string; secondRowColor: string; thirdRowColor: string; }`                                                                                                                                                                                                                               |
-| `highLowTheme`        |             | `{ highColor: string; lowColor: string; }`                                                                                                                                                                                                                                                                |
-| `yAxis`               |             | `{ backgroundColor: string; zeroPercentLine: string; labelTextColor: string; labelInvertedTextColor: string; labelBoxColor: string; rectLabelTextColor: string; rectLabelInvertedTextColor: string; }`                                                                                                    |
-| `xAxis`               |             | `{ backgroundColor: string; labelTextColor: string; }`                                                                                                                                                                                                                                                    |
-| `crossTool`           |             | `{ lineColor: string; labelBoxColor: string; labelTextColor: string; }`                                                                                                                                                                                                                                   |
-| `events`              |             | [`ChartConfigComponentsEventsColors`](#chartconfigcomponentseventscolors)                                                                                                                                                                                                                                 |
-| `navigationMap`       |             | `{ buttonColor: string; knotColor: string; sliderColor: string; backgroundColor: string; buttonArrowColor: string; knotLineColor: string; knotBorderColor: string; timeLabelsTextColor: string; mapFillColor: string; mapGradientTopColor?: string; mapGradientBottomColor?: string; mapColor: string; }` |
-| `instrumentInfo`      |             | `{ textColor: string; }`                                                                                                                                                                                                                                                                                  |
-| `paneResizer`         |             | `{ lineColor: string; bgColor: string; bgHoverColor: string; }`                                                                                                                                                                                                                                           |
-| `labels`              |             | [`YAxisLabelsColors`](#yaxislabelscolors)                                                                                                                                                                                                                                                                 |
+| `candleTheme` | | [`CandleTheme`](#candletheme) |
+| `activeCandleTheme` | | [`CandleTheme`](#candletheme) |
+| `barTheme` | | [`LineStyleTheme`](#linestyletheme) |
+| `lineTheme` | | [`LineStyleTheme`](#linestyletheme) |
+| `areaTheme` | | [`AreaStyleTheme`](#areastyletheme) |
+| `chartAreaTheme` | | [`ChartAreaTheme`](#chartareatheme) |
+| `scatterPlot` | | [`ScatterPlotStyle`](#scatterplotstyle) |
+| `baseLineTheme` | | [`BaselineStyleTheme`](#baselinestyletheme) |
+| `histogram` | | [`HistogramColors`](#histogramcolors) |
+| `highlights` | | `Record<"AFTER_MARKET"                                                                                                                                                                                                                                                                                    | "PRE_MARKET" | "NO_TRADING" | "REGULAR", HighlightsColors>` |
+| `volume` | | [`VolumeColors`](#volumecolors) |
+| `secondaryChartTheme` | | `SecondaryChartTheme[]` |
+| `waterMarkTheme` | | `{ firstRowColor: string; secondRowColor: string; thirdRowColor: string; }` |
+| `highLowTheme` | | `{ highColor: string; lowColor: string; }` |
+| `yAxis` | | `{ backgroundColor: string; zeroPercentLine: string; labelTextColor: string; labelInvertedTextColor: string; labelBoxColor: string; rectLabelTextColor: string; rectLabelInvertedTextColor: string; }` |
+| `xAxis` | | `{ backgroundColor: string; labelTextColor: string; }` |
+| `crossTool` | | `{ lineColor: string; labelBoxColor: string; labelTextColor: string; }` |
+| `events` | | [`ChartConfigComponentsEventsColors`](#chartconfigcomponentseventscolors) |
+| `navigationMap` | | `{ buttonColor: string; knotColor: string; sliderColor: string; backgroundColor: string; buttonArrowColor: string; knotLineColor: string; knotBorderColor: string; timeLabelsTextColor: string; mapFillColor: string; mapGradientTopColor?: string; mapGradientBottomColor?: string; mapColor: string; }` |
+| `instrumentInfo` | | `{ textColor: string; }` |
+| `paneResizer` | | `{ lineColor: string; bgColor: string; bgHoverColor: string; }` |
+| `labels` | | [`YAxisLabelsColors`](#yaxislabelscolors) |
 
 ### `CandleTheme`
 
@@ -416,13 +416,13 @@ All colors in chart-core are configured here.
 
 ### `ChartAreaTheme`
 
-| Property                        | Description | Type       |
+| Property | Description | Type |
 | ------------------------------- | ----------- | ---------- | ----------- |
-| `backgroundMode`                |             | `"regular" | "gradient"` |
-| `backgroundColor`               |             | `string`   |
-| `backgroundGradientTopColor`    |             | `string`   |
-| `backgroundGradientBottomColor` |             | `string`   |
-| `gridColor`                     |             | `string`   |
+| `backgroundMode` | | `"regular" | "gradient"` |
+| `backgroundColor` | | `string` |
+| `backgroundGradientTopColor` | | `string` |
+| `backgroundGradientBottomColor` | | `string` |
+| `gridColor` | | `string` |
 
 ### `ScatterPlotStyle`
 

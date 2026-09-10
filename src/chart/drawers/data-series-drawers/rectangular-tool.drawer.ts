@@ -17,7 +17,6 @@ export class RectangularToolDrawer implements SeriesDrawer {
 
 	draw(): void {}
 
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	// draw(ctx: CanvasRenderingContext2D, allPoints: VisualSeriesPoint[][], model: DataSeriesModel): void {
 	// 	const line: StudyLine = studySeries.line(lineNumber);
 	// 	const next: StudyLine = studySeries.line(lineNumber + 1);

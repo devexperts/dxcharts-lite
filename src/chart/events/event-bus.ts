@@ -10,7 +10,6 @@ import { EVENT_DRAW, EVENT_RESIZED } from './events';
 export interface EventBusFireAsync {
 	(type: typeof EVENT_RESIZED, event?: ClientRect | DOMRect): number | void;
 	(type: string, event?: string): number | void;
-	(type: string, event?: string): number | void;
 }
 
 export interface EventBusFire {
