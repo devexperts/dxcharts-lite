@@ -61,6 +61,7 @@ export class PaneHitTestController implements HitTestSubscriber<DataSeriesModel>
 		if (!isCandleSeriesModel(model)) {
 			this.allDataSeries.forEach(d => (d.selected = d.htId === this.selectedDataSeries?.htId));
 		}
+		this.canvasModel.fireDraw();
 	}
 
 	/**
@@ -76,9 +77,25 @@ export class PaneHitTestController implements HitTestSubscriber<DataSeriesModel>
 		this.canvasModel.fireDraw();
 	}
 
-	onMouseDown(model: DataSeriesModel<DataSeriesPoint, VisualSeriesPoint>): void {
+	onMouseDown(model: DataSeriesModel<DataSeriesPoint, VisualSeriesPoint> | null): void {
+		if (!model) {
+			this.selectDataSeries(null);
+			return;
+		}
+
+		const clickedId = `${model.parentId ?? model.id}`;
+		const selectedId = this.selectedDataSeries
+			? `${this.selectedDataSeries.parentId ?? this.selectedDataSeries.id}`
+			: null;
+
+		// Pressing the same study again deselects (legend + chart share this selection id).
+		if (selectedId === clickedId) {
+			this.selectDataSeries(null);
+			return;
+		}
+
 		this.selectDataSeries(model);
-		model && this.handleYExtentDragStart(model);
+		this.handleYExtentDragStart(model);
 	}
 
 	onMouseUp(): void {
