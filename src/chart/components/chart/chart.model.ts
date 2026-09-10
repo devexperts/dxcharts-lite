@@ -32,7 +32,7 @@ import { Index, Pixel, Price, Timestamp, Unit, pixelsToUnits } from '../../model
 import VisualCandle from '../../model/visual-candle';
 import { binarySearch, lastOf } from '../../utils/array.utils';
 import { searchCandleIndex } from '../../utils/candles.utils';
-import { floor, round } from '../../utils/math.utils';
+import { floor } from '../../utils/math.utils';
 import { merge as mergeObj } from '../../utils/merge.utils';
 import { PaneManager } from '../pane/pane-manager.component';
 import { PaneComponent } from '../pane/pane.component';
@@ -657,7 +657,9 @@ export class ChartModel extends ChartBaseElement {
 			visualCandleSource[result.index] !== undefined &&
 			(unit < 0 || (lastVisualCandle && unit > lastVisualCandle.startUnit + lastVisualCandle.width))
 		) {
-			result.index += round(
+			// Math.round: `round` truncates towards zero, which shifts every index left of the
+			// first candle by one
+			result.index += Math.round(
 				(unit - visualCandleSource[result.index].centerUnit) / this.mainCandleSeries.meanCandleWidth,
 			);
 		}

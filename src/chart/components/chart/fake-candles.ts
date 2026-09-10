@@ -6,8 +6,8 @@
 import { Candle, generateCandleId } from '../../model/candle.model';
 import { DataSeriesPoint } from '../../model/data-series.model';
 import { Index, Timestamp } from '../../model/scaling/viewport.model';
-import { firstOf, lastOf } from '../../utils/array.utils';
-import { round } from '../../utils/math.utils';
+import { lastOf } from '../../utils/array.utils';
+import { extrapolateTimestampBeforeFirst } from '../../utils/candles.utils';
 
 export const DEFAULT_PERIOD = 60; // 1 minute
 
@@ -46,7 +46,9 @@ export const fakeDataPoint = (
  * @returns {Timestamp} The timestamp of the candle at the given index or 0 if the array is empty or the index is out of bounds.
  */
 function getTimestampOfIndex(candles: DataSeriesPoint[], index: Index, period: number = DEFAULT_PERIOD): Timestamp {
-	const _index = round(index);
+	// Math.round: the chart-wide `round` helper truncates towards zero, which shifts every
+	// out-of-range-to-the-left index by one candle
+	const _index = Math.round(index);
 	if (candles.length === 0) {
 		return 0;
 	}
@@ -54,9 +56,10 @@ function getTimestampOfIndex(candles: DataSeriesPoint[], index: Index, period: n
 	if (_index >= candles.length && lastCandle) {
 		return fakeTimestamp(lastCandle, candles.length - 1, _index, period);
 	}
-	const firstCandle = firstOf(candles);
-	if (_index < 0 && firstCandle) {
-		return fakeTimestamp(firstCandle, 0, _index, period);
+	if (_index < 0) {
+		// history before the loaded range is as gapped as the loaded range itself; searchCandleIndex
+		// maps timestamps back through the same grid so both directions stay in sync
+		return extrapolateTimestampBeforeFirst(candles, _index, period);
 	}
 	return candles[_index]?.timestamp ?? 0;
 }
