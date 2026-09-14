@@ -44,6 +44,8 @@ export class ChartBaseModel<T extends BaseType = 'point'> {
 	 */
 	public period = 1;
 
+	public timeBasedPeriod = true;
+
 	public candleTimestampAnchor: CandleTimestampAnchor = 'open';
 
 	constructor(public type: T) {}
