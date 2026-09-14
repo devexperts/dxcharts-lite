@@ -281,7 +281,11 @@ export class HoverProducerComponent extends ChartBaseElement {
 	 */
 	private recalculateCrossToolXFormatter() {
 		const xAxisLabelFormat = this.config.components.crossTool.xAxisLabelFormat;
-		this.xFormatter = recalculateXFormatter(xAxisLabelFormat, this.chartModel.getPeriod(), this.formatterFactory);
+		this.xFormatter = recalculateXFormatter(
+			xAxisLabelFormat,
+			this.chartModel.getCandlePeriodWithFake(),
+			this.formatterFactory,
+		);
 	}
 
 	/**

@@ -129,17 +129,36 @@ export class XAxisTimeLabelsGenerator implements XAxisLabelsGenerator {
 		}
 	}
 
+	private shouldAppendFakeFutureLabels(): boolean {
+		return this.chartModel.isTimeBasedPeriod() || this.config.components.xAxis.showNonTimeBasedFutureLabels;
+	}
+
+	private createFakeFutureCandles(visualCandles: VisualCandle[]): VisualCandle[] {
+		const period = this.chartModel.getCandlePeriodWithFake();
+		return Array.from({ length: 750 }).map((_, idx) =>
+			fakeVisualCandle(
+				this.chartModel.mainCandleSeries.dataPoints,
+				this.chartModel.mainCandleSeries.visualPoints,
+				this.chartModel.mainCandleSeries.meanCandleWidth,
+				visualCandles.length + idx,
+				period,
+			),
+		);
+	}
+
 	private getVisualCandleAtIndex(
 		idx: number,
 		dataPoints: Candle[],
 		visualPoints: VisualCandle[],
 		meanCandleWidth: number,
 		period: number,
-	): VisualCandle {
+	): VisualCandle | null {
 		if (idx >= 0 && idx < visualPoints.length) {
 			return visualPoints[idx];
 		}
-		// generate fake candle for out-of-range index
+		if (!this.shouldAppendFakeFutureLabels()) {
+			return null;
+		}
 		return fakeVisualCandle(dataPoints, visualPoints, meanCandleWidth, idx, period);
 	}
 
@@ -148,18 +167,10 @@ export class XAxisTimeLabelsGenerator implements XAxisLabelsGenerator {
 		if (visualCandles.length === 0) {
 			return [];
 		}
-		const fakeCandlesForSides = Array.from({ length: 750 });
-		const appendFakeCandle = fakeCandlesForSides.map((_, idx) =>
-			fakeVisualCandle(
-				this.chartModel.mainCandleSeries.dataPoints,
-				this.chartModel.mainCandleSeries.visualPoints,
-				this.chartModel.mainCandleSeries.meanCandleWidth,
-				visualCandles.length + idx,
-				this.chartModel.getPeriod(),
-			),
-		);
-
-		return [...prependedCandles, ...visualCandles, ...appendFakeCandle];
+		if (!this.shouldAppendFakeFutureLabels()) {
+			return [...prependedCandles, ...visualCandles];
+		}
+		return [...prependedCandles, ...visualCandles, ...this.createFakeFutureCandles(visualCandles)];
 	}
 
 	private getViewportCandlesWithFake(): VisualCandle[] {
@@ -168,7 +179,7 @@ export class XAxisTimeLabelsGenerator implements XAxisLabelsGenerator {
 			return [];
 		}
 		const meanCandleWidth = this.chartModel.mainCandleSeries.meanCandleWidth;
-		const period = this.chartModel.getPeriod();
+		const period = this.chartModel.getCandlePeriodWithFake();
 		const dataPoints = this.chartModel.mainCandleSeries.dataPoints;
 
 		// calculate visible pixel range for the chart area
@@ -201,7 +212,10 @@ export class XAxisTimeLabelsGenerator implements XAxisLabelsGenerator {
 
 		const allCandles: VisualCandle[] = [];
 		for (let idx = firstIdx; idx <= lastIdx; idx++) {
-			allCandles.push(this.getVisualCandleAtIndex(idx, dataPoints, visualCandles, meanCandleWidth, period));
+			const candle = this.getVisualCandleAtIndex(idx, dataPoints, visualCandles, meanCandleWidth, period);
+			if (candle) {
+				allCandles.push(candle);
+			}
 		}
 
 		return [...allCandles];
@@ -273,6 +287,65 @@ export class XAxisTimeLabelsGenerator implements XAxisLabelsGenerator {
 		return undefined;
 	}
 
+	private getFirstFakeFutureLabel(lastIdx: number): XAxisLabelWeighted | undefined {
+		let firstFake: XAxisLabelWeighted | undefined;
+		for (const labels of Object.values(this.labelsGroupedByWeight)) {
+			for (const label of labels) {
+				if (label.idx > lastIdx && (firstFake === undefined || label.idx < firstFake.idx)) {
+					firstFake = label;
+				}
+			}
+		}
+		return firstFake;
+	}
+
+	// range + tick only
+	private rebuildFakeFutureLabels(lastReal: VisualCandle): void {
+		const lastIdx = lastReal.candle.idx ?? this.chartModel.mainCandleSeries.visualPoints.length - 1;
+		this.labelsGroupedByWeight = typedEntries_UNSAFE(this.labelsGroupedByWeight).reduce<
+			Record<number, XAxisLabelWeighted[]>
+		>((acc, [weight, labels]) => {
+			const kept = labels.filter(label => label.idx <= lastIdx);
+			if (kept.length > 0) {
+				acc[weight] = kept;
+			}
+			return acc;
+		}, {});
+
+		const visualCandles = this.chartModel.mainCandleSeries.visualPoints;
+		if (visualCandles.length === 0 || !this.shouldAppendFakeFutureLabels()) {
+			return;
+		}
+		const fakeCandles = this.createFakeFutureCandles(visualCandles);
+		const weightedPoints = mapCandlesToWeightedPoints(
+			[lastReal, ...fakeCandles],
+			this.weightToTimeFormatMatcherArray,
+			this.timeZoneModel.tzOffset(this.config.timezone),
+		);
+		const fakeLabels = this.mapWeightedPointsToLabels(weightedPoints.slice(1), fakeCandles);
+		const fakeByWeight = groupLabelsByWeight(fakeLabels);
+		typedEntries_UNSAFE(fakeByWeight).forEach(([weight, labels]) => {
+			const existing = this.labelsGroupedByWeight[weight];
+			this.labelsGroupedByWeight[weight] = existing ? existing.concat(labels) : labels;
+		});
+	}
+
+	private rebuildFakeFutureLabelsIfStale(last: VisualCandle): void {
+		if (this.chartModel.isTimeBasedPeriod() || !this.shouldAppendFakeFutureLabels()) {
+			return;
+		}
+		const lastIdx = last.candle.idx ?? this.chartModel.mainCandleSeries.visualPoints.length - 1;
+		const firstFake = this.getFirstFakeFutureLabel(lastIdx);
+		if (firstFake !== undefined) {
+			const expectedTime =
+				last.candle.timestamp + (firstFake.idx - lastIdx) * this.chartModel.getCandlePeriodWithFake();
+			if (firstFake.time === expectedTime) {
+				return;
+			}
+		}
+		this.rebuildFakeFutureLabels(last);
+	}
+
 	/**
 	 * Updates label of new appeared candle
 	 * @param {VisualCandle} candle - new updated candle
@@ -319,6 +392,7 @@ export class XAxisTimeLabelsGenerator implements XAxisLabelsGenerator {
 				return acc;
 			}, {});
 
+			this.rebuildFakeFutureLabelsIfStale(candle);
 			this.weightedCache = undefined;
 			this.levelsCache = {};
 			this.recalculateCachedLabels();

@@ -3,6 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
+import { minutesToMilliseconds } from 'date-fns';
 import { Observable, Subject, merge } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import {
@@ -37,6 +38,7 @@ import { merge as mergeObj } from '../../utils/merge.utils';
 import { PaneManager } from '../pane/pane-manager.component';
 import { PaneComponent } from '../pane/pane.component';
 import { LabelGroup } from '../y_axis/price_labels/y-axis-labels.model';
+import { parseTimeFormatsFromKey } from '../x_axis/time/parser/time-formats-parser.functions';
 import { createBasicScaleViewportTransformer, createTimeFrameViewportTransformer } from './basic-scale';
 import { calculateCandleWidth } from './candle-width-calculator.functions';
 import {
@@ -667,7 +669,7 @@ export class ChartModel extends ChartBaseElement {
 		const safeIdx = Math.max(Math.min(visualCandleSource.length - 1, candleIdx), 0);
 		if ((candleIdx < 0 || candleIdx >= visualCandleSource.length) && extrapolate) {
 			// fake candle
-			return fakeCandle(this.mainCandleSeries.dataPoints, candleIdx, this.chartBaseModel.period);
+			return fakeCandle(this.mainCandleSeries.dataPoints, candleIdx, this.getCandlePeriodWithFake());
 		} else {
 			// real candle
 			return (
@@ -925,6 +927,25 @@ export class ChartModel extends ChartBaseElement {
 
 	public getPeriod(): number {
 		return this.chartBaseModel.period;
+	}
+
+	public setTimeBasedPeriod(timeBased: boolean): void {
+		this.chartBaseModel.timeBasedPeriod = timeBased;
+	}
+
+	public isTimeBasedPeriod(): boolean {
+		return this.chartBaseModel.timeBasedPeriod;
+	}
+
+	public getCandlePeriodWithFake(): number {
+		if (this.isTimeBasedPeriod() || !this.config.components.xAxis.showNonTimeBasedFutureLabels) {
+			return this.getPeriod();
+		}
+		const parsed = parseTimeFormatsFromKey('minute_1');
+		if (parsed && parsed.key === 'minute' && 'value' in parsed) {
+			return minutesToMilliseconds(parsed.value);
+		}
+		return this.getPeriod();
 	}
 
 	public getCandleTimestampAnchor() {

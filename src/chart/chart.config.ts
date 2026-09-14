@@ -200,6 +200,7 @@ export const getDefaultConfig = (): FullChartConfig => ({
 				bottom: 16,
 			},
 			fontStyle: '',
+			showNonTimeBasedFutureLabels: true,
 		},
 		events: {
 			visible: false,
@@ -1108,6 +1109,11 @@ export interface ChartConfigComponentsXAxis {
 	fontSize: number;
 	fontFamily: string;
 	fontStyle: string;
+	/**
+	 * `false`: no x-axis labels in the empty future area for ranges and ticks
+	 * `true`: draw future labels there
+	 */
+	showNonTimeBasedFutureLabels: boolean;
 }
 
 export type YAxisAlign = 'left' | 'right';
