@@ -66,7 +66,6 @@ export class HoverProducerComponent extends ChartBaseElement {
 	 * When true, mobile long-touch (e.g. 200ms) does not activate crosshair / disable pan.
 	 */
 	private longTouchCrosshairSuppressed = false;
-	private hoverOverLastCandle = false;
 	private hoverProducerParts: HoverProducerParts;
 
 	xFormatter: DateTimeFormatter = () => '';
@@ -122,7 +121,7 @@ export class HoverProducerComponent extends ChartBaseElement {
 		this.addRxSubscription(
 			this.chartModel.candlesUpdatedSubject.subscribe(() => {
 				const lastCandle = this.chartModel.getLastVisualCandle();
-				if (this.hover !== null && lastCandle !== undefined && this.hoverOverLastCandle) {
+				if (this.hover !== null && lastCandle !== undefined && this.isHoverOnFormingOrFutureBar()) {
 					this.updateHover(lastCandle);
 				}
 			}),
@@ -130,7 +129,6 @@ export class HoverProducerComponent extends ChartBaseElement {
 		this.addRxSubscription(
 			this.crossEventProducer.crossSubject.subscribe((cross: CrossEvent | null) => {
 				if (cross === null) {
-					this.hoverOverLastCandle = false;
 					this.hoverSubject.next(null);
 				} else {
 					this.createAndFireHover(cross);
@@ -377,17 +375,19 @@ export class HoverProducerComponent extends ChartBaseElement {
 		}
 	}
 
-	private updateHoverLastCandle(hover: Hover): void {
+	/** Crosshair on the forming bar or empty future slots — legend should track live last-bar updates. */
+	private isHoverOnFormingOrFutureBar(): boolean {
+		if (!this.hover) {
+			return false;
+		}
 		const lastCandle = this.chartModel.getLastVisualCandle();
 		if (!lastCandle) {
-			this.hoverOverLastCandle = false;
-			return;
+			return false;
 		}
-		const hoveredCandle = this.chartModel.candleFromX(hover.x, true);
+		const hoveredCandle = this.chartModel.candleFromX(this.hover.x, true);
 		const lastIdx = lastCandle.candle.idx;
 		const hoveredIdx = hoveredCandle.idx;
-		// Only the forming last bar — not empty future slots past the last candle.
-		this.hoverOverLastCandle = lastIdx !== undefined && hoveredIdx !== undefined && hoveredIdx === lastIdx;
+		return lastIdx !== undefined && hoveredIdx !== undefined && hoveredIdx >= lastIdx;
 	}
 
 	/**
@@ -422,10 +422,8 @@ export class HoverProducerComponent extends ChartBaseElement {
 					: hover.candleHover?.visualCandle.candle;
 				candle && this.chartModel.mainCandleSeries.setActiveCandle(candle);
 			}
-			this.updateHoverLastCandle(hover);
 			this.hoverSubject.next(hover);
 		} else {
-			this.hoverOverLastCandle = false;
 			this.crossEventProducer.fireCrossClose();
 		}
 	}
