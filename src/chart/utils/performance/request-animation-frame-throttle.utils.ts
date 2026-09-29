@@ -10,19 +10,19 @@ export let animationFrameId = 0;
 const actions: Map<string, () => void> = new Map<string, () => void>();
 const priorActions: Map<string, () => void> = new Map<string, () => void>();
 
+const flush = (queue: Map<string, () => void>) => {
+	const pending = Array.from(queue.values());
+	queue.clear();
+	pending.forEach(action => action());
+};
+
 const animFrame = () => {
 	if (!fired) {
 		fired = true;
 		animationFrameId = requestAnimationFrame(() => {
-			priorActions.forEach((action, key) => {
-				action();
-				priorActions.delete(key);
-			});
-			actions.forEach((action, key) => {
-				action();
-				actions.delete(key);
-			});
 			fired = false;
+			flush(priorActions);
+			flush(actions);
 		});
 	}
 };

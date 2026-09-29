@@ -67,7 +67,8 @@ export class YAxisModel extends ChartBaseElement {
 	protected doActivate(): void {
 		const contributor: YAxisWidthContributor = {
 			getLargestLabel: () =>
-				(this.labelsGenerator.labelsCache.getLastCachedValue() ?? [])
+				this.labelsGenerator
+					.generateNumericLabels()
 					.map(label => label.text)
 					.concat(this.fancyLabelsModel.orderedLabels.flatMap(l => l.labels).map(l => l.labelText))
 					.reduce(
