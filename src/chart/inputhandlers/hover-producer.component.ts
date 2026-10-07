@@ -135,7 +135,14 @@ export class HoverProducerComponent extends ChartBaseElement {
 				}
 			}),
 		);
-		this.addRxSubscription(this.scale.xChanged.subscribe(() => this.fireLastCross()));
+		this.addRxSubscription(
+			this.scale.xChanged.subscribe(() => {
+				if (isMobile() && !this.longTouchActivatedSubject.getValue()) {
+					return;
+				}
+				this.fireLastCross();
+			}),
+		);
 		this.addRxSubscription(
 			merge(this.chartModel.candlesSetSubject, this.timeZoneModel.observeTimeZoneChanged()).subscribe(() =>
 				this.recalculateCrossToolXFormatter(),
@@ -146,17 +153,18 @@ export class HoverProducerComponent extends ChartBaseElement {
 			this.canvasInputListener.observeTouchStart().subscribe(event => {
 				this.crossEventProducer.crossToolTouchInfo.isCommonTap = true;
 				const { clientX, clientY } = event.touches[0];
+				const x = clientX - this.canvasBoundsContainer.canvasOnPageLocation.x;
+				const y = clientY - this.canvasBoundsContainer.canvasOnPageLocation.y;
 
 				// if common tap - fire hover
 				if (!this.longTouchActivatedSubject.getValue()) {
-					const paneId = this.paneManager.getPaneIfHit({ x: clientX, y: clientY })?.uuid || '';
-					this.createAndFireHover([clientX, clientY, paneId]);
+					const pane = this.paneManager.getPaneIfHit({ x, y });
+					if (pane) {
+						this.createAndFireHover([x, y, pane.uuid]);
+					}
 				} else {
 					// update crosstool placement coordinates
-					this.crossEventProducer.crossToolTouchInfo.temp = {
-						x: clientX - this.canvasBoundsContainer.canvasOnPageLocation.x,
-						y: clientY - this.canvasBoundsContainer.canvasOnPageLocation.y,
-					};
+					this.crossEventProducer.crossToolTouchInfo.temp = { x, y };
 				}
 			}),
 		);
@@ -210,6 +218,10 @@ export class HoverProducerComponent extends ChartBaseElement {
 					!checkChartIsMoving(x, temp.x, y, temp.y)
 				) {
 					this.resetCrossTool();
+					return;
+				}
+
+				if (!this.longTouchActivatedSubject.getValue()) {
 					return;
 				}
 
