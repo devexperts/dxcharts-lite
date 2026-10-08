@@ -70,7 +70,12 @@ export class YAxisModel extends ChartBaseElement {
 				this.labelsGenerator
 					.generateNumericLabels()
 					.map(label => label.text)
-					.concat(this.fancyLabelsModel.orderedLabels.flatMap(l => l.labels).map(l => l.labelText))
+					.concat(
+						this.fancyLabelsModel.orderedLabels
+							.flatMap(l => l.labels)
+							.filter(l => !l.ignoreForAxisWidth)
+							.map(l => l.labelText),
+					)
 					.reduce(
 						(maxLengthText, label) => (label.length > maxLengthText.length ? label : maxLengthText),
 						'',

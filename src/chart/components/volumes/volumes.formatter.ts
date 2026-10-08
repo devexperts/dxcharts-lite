@@ -29,15 +29,17 @@ export const volumeFormatter = (value: number, precision = 1) => {
 			sign = '-';
 			value = -value;
 		}
+		// the next unit starts where the value would round up to 1000, e.g. 999.95K is 1.0M, not 1000.0K
+		const roundingMargin = 500 / Math.pow(10, precision);
 		if (value < 995) {
 			return sign + formatNumber(value);
 		}
-		if (value < 999995) {
+		if (value < 1e6 - roundingMargin) {
 			return sign + formatNumber(value / 1000) + 'K';
 		}
-		if (value < 999999995) {
-			value = 1000 * Math.round(value / 1000);
-			return sign + formatNumber(value / 1000000) + 'M';
+		const valueInThousands = 1000 * Math.round(value / 1000);
+		if (valueInThousands < 1e9 - roundingMargin * 1000) {
+			return sign + formatNumber(valueInThousands / 1000000) + 'M';
 		}
 		value = 1000000 * Math.round(value / 1000000);
 		return sign + formatNumber(value / 1000000000) + 'B';

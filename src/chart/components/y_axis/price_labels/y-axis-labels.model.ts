@@ -42,6 +42,8 @@ export interface VisualYAxisLabel extends YAxisLabelDrawConfig {
 	labelWeight?: number;
 	description?: string;
 	subGroupId?: number; // used to identify linked labels
+	// label does not affect y-axis width, so frequently changing text doesn't resize the chart
+	ignoreForAxisWidth?: boolean;
 }
 
 export interface LabelGroup {
